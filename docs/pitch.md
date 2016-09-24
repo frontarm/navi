@@ -1,0 +1,4 @@
+- composable routing
+- allows 1:many and many:1 routes
+- route matching is part of your model/controller -- not your view
+- don't bikeshed about URLs
