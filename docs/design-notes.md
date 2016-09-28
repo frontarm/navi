@@ -28,12 +28,11 @@ RouteSet(JunctionSet)
 
 ---
 
-State tree:
+State store:
 
-- key1:
+- junctionKey/junctionKey/...:
   - branch key
   - serialized param values
-  - children
 
 ---
 

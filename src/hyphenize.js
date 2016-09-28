@@ -1,7 +1,6 @@
 // From https://github.com/ragingwind/hyphenize/blob/master/index.js
 // MIT Licensed
 // Copyright (c) ragingwind <ragingwind@gmail.com> (ragingwind.me)
-// 
 export default function hyphenize(str) {
   return str
     .replace(/^(\W|-|\.)*/g, '')

@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react'
-import { getLocatedRoutes, createLocationFactory } from './react-navi'
+import { getRouteSetFromLocation, getLocationFromRouteSet, createLookupTree } from './junctions'
 
 
 function getJunctionSetFromComponent(component) {
@@ -41,7 +41,7 @@ export function createRoute(component, junctionSet, path) {
     // - return
   }
 
-
+  const lookupTree = createLookupTree(junctionSet)
 
   class JunctionMount extends Component {
     render() {
@@ -49,8 +49,8 @@ export function createRoute(component, junctionSet, path) {
         
       return (
         React.createElement(WrappedComponent, {
-          routes: getLocatedRoutes(junctionSet, nextState.location, baseLocation),
-          locate: createLocationFactory(junctionSet, baseLocation),
+          routes: getRouteSetFromLocation(nextState.location, lookupTree, junctionSet, baseLocation),
+          locate: routeSet => getLocationFromRouteSet(baseLocation, routeSet, true, junctionSet),
         })
       )
     }
@@ -58,9 +58,8 @@ export function createRoute(component, junctionSet, path) {
 
   function handleChange(_, nextState, replace) {
     const baseLocation = getBaseLocation(nextState)
-    const currentRoutes = getLocatedRoutes(junctionSet, nextState.location, baseLocation)      
-    const locate = createLocationFactory(junctionSet, baseLocation)
-    const canonicalLocation = locate(currentRoutes)
+    const currentRouteSet = getRouteSetFromLocation(nextState.location, lookupTree, junctionSet, baseLocation)      
+    const canonicalLocation = getLocationFromRouteSet(baseLocation, currentRouteSet, true, junctionSet)
     if (!locationsEqual(canonicalLocation, nextState.location)) {
       replace(canonicalLocation)
     }
