@@ -1,6 +1,12 @@
+import { formatPattern } from './PatternUtils'
+import { serializeParams } from './SerializationUtils'
+import getLocationFromRouteSet from './getLocationFromRouteSet'
 
-function getRouteBaseLocation(branch, baseLocation, params, junctionPath) {
+
+function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch, params) {
   if (isRouteInPath) {
+    // TODO: put hidden params in state regardless
+
     const path = formatPattern(branch.pattern, params)
     const query = {} // TODO: handle query
     return {
@@ -17,10 +23,10 @@ function getRouteBaseLocation(branch, baseLocation, params, junctionPath) {
       // TODO: search: mergeQueryStrings(baseLocation.search, createQueryString(query)),
       hash: baseLocation.hash,
       state: Object.assign({}, baseLocation.state, {
-        [JUNCTIONS_STATE]: Object.assign({}, baseLocation.state[JUNCTIONS_STATE], {
+        junctions: Object.assign({}, baseLocation.state.junctions, {
           [junctionPath.join('/')]: {
             branchKey: branch.key,
-            serializedParams: serializeParams(params),
+            serializedParams: serializeParams(branch.params, params),
           }
         }),
       }),
@@ -30,17 +36,16 @@ function getRouteBaseLocation(branch, baseLocation, params, junctionPath) {
 }
 
 
-function getDefaultParams(branch, knownParams={}) {
-  const paramTypes = branch.paramTypes
+function getDefaultParams(branchParams, knownParams={}) {
   const paramKeys = Object.keys(knownParams)
-  const remainingParamKeys = Object.keys(paramTypes)
+  const remainingParamKeys = Object.keys(branchParams)
   const paramsCopy = Object.assign({}, knownParams)
 
   for (let i = 0, len = paramKeys.length; i < len; i++) {
     const key = paramKeys[i]
-    const paramType = paramTypes[key]
+    const branchParam = branchParams[key]
 
-    if (!paramType) {
+    if (!branchParam) {
       throw new Error(`Could not create a route. A param with key '${key}' was specified, but this key is not listed in the corresponding Branche's params.`)
     }
 
@@ -49,23 +54,25 @@ function getDefaultParams(branch, knownParams={}) {
 
   for (let i = 0, len = remainingParamKeys.length; i < len; i++) {
     const key = remainingParamKeys[i]
-    const paramType = paramTypes[key]
+    const branchParam = branchParams[key]
 
-    if (paramType.default) {
-      paramsCopy[key] = paramType.default
+    if (branchParam.default) {
+      paramsCopy[key] = branchParam.default
     }
-    else if (paramType.required) {
+    else if (branchParam.required) {
       throw new Error(`Cannot create route without required key '${key}'`)
     }
   }
+
+  return paramsCopy
 }
 
 
-class Route {
-  constructor(branch, params, children={}) {
+export class Route {
+  constructor(branch, params={}, children={}) {
     this.branch = branch
     this.data = branch.data
-    this.params = getDefaultParams(branch, params)
+    this.params = getDefaultParams(branch.params, params)
     this.children = children
   }
 
@@ -74,11 +81,11 @@ class Route {
   }
 }
 
-class LocatedRoute extends Route {
-  constructor(branch, params, children, baseLocation, isRouteInPath, junctionPath) {
+export class LocatedRoute extends Route {
+  constructor(parentBaseLocation, isRouteInPath, junctionPath, branch, params, children) {
     super(branch, params, children)
 
-    this.baseLocation = getRouteBaseLocation(branch, baseLocation, params, junctionPath)
+    this.baseLocation = getRouteBaseLocation(parentBaseLocation, isRouteInPath, junctionPath, branch, params)
     this.isRouteInPath = isRouteInPath
     this.junctionPath = junctionPath
   }
@@ -86,7 +93,7 @@ class LocatedRoute extends Route {
   getLocation(routeSet) {
     return (
       routeSet
-        ? getLocationFromRouteSet(this.baseLocation, routeSet, this.isRouteInPath, this.junctionPath, this.branch.children)
+        ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.children, routeSet)
         : baseLocation
     )
   }

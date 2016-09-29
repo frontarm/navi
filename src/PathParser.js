@@ -3,14 +3,14 @@ export function createPathParser(junctionSet) {
   const queue = [[junctionSet, tree, []]]
   while (queue) {
     const [junctionNode, treeNode, junctionPath] = queue.pop()
-    const primaryJunctionKey = getPrimaryJunctionKey(junctionNode)
+    const primaryJunctionKey = junctionNode.primaryKey
 
     if (primaryJunctionKey) {
-      const junctionNode.junctions[primaryJunctionKey]
-      const branchKeys = Object.keys(primaryJunction)
+      const primaryJunction = junctionNode.junctions[primaryJunctionKey]
+      const branchKeys = primaryJunction.branchKeys
 
       for (let i = 0, len = branchKeys.length; i < len; i++) {
-        const branch = primaryJunction[branchKeys[i]]
+        const branch = primaryJunction.branches[branchKeys[i]]
         const childNode = {}
         const nextJunctionPath = junctionPath.concat(primaryJunctionKey)
         treeNode[branch.pattern.id] = {

@@ -1,6 +1,3 @@
-import hyphenize from './hyphenize'
-
-
 export function compilePattern(pattern, availableParamNames) {
   if (/\/{2,}/.test(path)) {
     throw new Error(`Pattern "${path}" must not have adjacent "/" characters`)
@@ -8,7 +5,7 @@ export function compilePattern(pattern, availableParamNames) {
   if (path[0] !== '/') {
     throw new Error(`Pattern "${path}" must start with the "/" character`)
   }
-  if (path[path.length - 1] !== '/')
+  if (path[path.length - 1] !== '/') {
     throw new Error(`Pattern "${path}" must not end with the "/" character`)
   }
   if (!/^[A-Za-z0-9$-_.+!*'(),\/]+$/.test(path)) {
@@ -57,14 +54,3 @@ export function formatPattern(pattern, params) {
   return parts.join('/')
 }
 
-
-export function createDefaultPattern(key, paramTypes) {
-  const id = hyphenize(key)
-  const paramNames = Object.entries(paramTypes).filter(entry => entry.required || entry.default).map(([key]) => key)
-        
-  return {
-    id: id,
-    parts: [id].concat(paramNames.map(x => null))
-    paramNames: paramNames,
-  }
-}

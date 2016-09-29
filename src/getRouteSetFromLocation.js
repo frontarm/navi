@@ -1,30 +1,24 @@
+import { deserializeParams } from './SerializationUtils'
+import { LocatedRoute } from './Routes'
 
-function getDefaultChildren(branch, baseLocation, isRouteInPath, junctionPath) {
+
+function getDefaultChildren(baseLocation, isRouteInPath, junctionPath, branch) {
   const children = {}
 
   const junctionSet = branch.children
   if (junctionSet && junctionSet.junctions) {
-    const junctionKeys = Object.keys(junctionSet.junctions)
+    const junctionKeys = junctionSet.junctionKeys
     for (let i = 0, len = junctionKeys.length; i < len; i++) {
       const key = junctionKeys[i]
       const junction = junctionSet.junctions[key]
-      const defaultBranchKey = junction[DEFAULT_KEY]
-
-      if (defaultBranchKey) {
-        const branch = junction[defaultBranchKey]
+      
+      if (junction.defaultKey) {
+        const branch = junction.branches[junction.defaultKey]
         const routeJunctionPath = junctionPath.concat(key)
-        const routeChildren = {}
-        const isBranchRouteInPath = isRouteInPath && key == getPrimaryJunctionKey(junctionSet)
-        
-        children[key] = new LocatedRoute(
-          branch,
-          routeChildren,
-          baseLocation,
-          isBranchRouteInPath,
-          routeJunctionPath
-        )
+        const isBranchRouteInPath = isRouteInPath && key == junctionSet.primaryKey
+        const route = children[key] = new LocatedRoute(baseLocation, isBranchRouteInPath, routeJunctionPath, branch)
 
-        Object.assign(routeChildren, getDefaultChildren(branch, children[key].baseLocation, isBranchRouteInPath, routeJunctionPath),)
+        Object.assign(route, getDefaultChildren(route.baseLocation, isBranchRouteInPath, routeJunctionPath, branch))
       }
     }
   }
@@ -33,7 +27,7 @@ function getDefaultChildren(branch, baseLocation, isRouteInPath, junctionPath) {
 }
 
 
-export function getRouteSetFromLocation(location, parsePath, junctionSet, baseLocation) {
+export default function getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location) {
   // TODO:
   // - memoize by object equality of the previous invocation (only need memory size of 1)
 
@@ -52,7 +46,7 @@ export function getRouteSetFromLocation(location, parsePath, junctionSet, baseLo
   }
 
   const query = {} // TODO: extract query string params and add to state
-  const state = Object.assign({}, location.state[JUNCTIONS_STATE], parsePath(path))
+  const state = Object.assign({}, location.state.junctions, parsePath(path))
   const routeSet = {}
   const baseSet = {}
 
@@ -68,27 +62,26 @@ export function getRouteSetFromLocation(location, parsePath, junctionSet, baseLo
     let junctionSetNode = junctionSet
     for (let i = 0, len = junctionPath.length - 1; i < len; i++) {
       const key = junctionPath[i]
-      const junctionNode = junctionSetNode[key]
+      const junctionNode = junctionSetNode.junctions[key]
       const routeNode = routeSetNode[key]
       routeSetNode = routeNode.children
-      junctionSetNode = junctionNode[routeNode.branch.key].children
+      junctionSetNode = junctionNode.branches[routeNode.branch.key].children
     }
 
-    const junction = junctionSetNode[key]
+    const junction = junctionSetNode.junctions[key]
     const { branchKey, serializedParams, routePath } = state[stateKey]
-    const branch = junction[branchKey]
+    const branch = junction.branches[branchKey]
     const params = deserializeParams(branch.params, serializedParams)
 
     // Copy all state paths except our children
     const baseState = {}
     const basePath = [basePath]
     let j = 0
-    let key
-    while (j < i)
-      key = walkOrder[j]
-      baseState[key] = state[key]
-      if (state[key].routePath) {
-        basePath.push(state[key].routePath)
+    while (j < i) {
+      const stateKey = walkOrder[j]
+      baseState[stateKey] = state[stateKey]
+      if (state[stateKey].routePath) {
+        basePath.push(state[stateKey].routePath)
       }
       j++
     }
@@ -96,8 +89,8 @@ export function getRouteSetFromLocation(location, parsePath, junctionSet, baseLo
       j++
     }
     while (j < len) {
-      key = walkOrder[j]
-      baseState[key] = state[key]
+      const stateKey = walkOrder[j]
+      baseState[stateKey] = state[stateKey]
       j++
     }
 
@@ -105,15 +98,14 @@ export function getRouteSetFromLocation(location, parsePath, junctionSet, baseLo
       pathname: basePath.join('/'),
       hash: baseLocation.hash,
       state: Object.assign({}, baseLocation.state, {
-        [JUNCTIONS_STATE]: baseState
-      })
+        junctions: baseState
+      }),
       hash: baseLocation.query,
       // TODO: search
     } 
 
-    const children = isChildless ? getDefaultChildren(branch, routeBaseLocation, !!routePath, junctionPath) : {}
-    
-    routeSetNode[key] = new LocatedRoute(branch, params, children, routeBaseLocation, !!routePath, junctionPath)
+    const children = isChildless ? getDefaultChildren(routeBaseLocation, !!routePath, junctionPath, branch) : {}
+    routeSetNode[key] = new LocatedRoute(routeBaseLocation, !!routePath, junctionPath, branch, params, children)
   }
 
   // TODO:

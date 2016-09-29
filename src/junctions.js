@@ -1,31 +1,77 @@
+import { Route, LocatedRoute } from './Routes'
+import { compilePattern } from './PatternUtils'
+import hyphenize from './hyphenize'
 
 
+const IS_JUNCTION_SET = Symbol()
 const IS_JUNCTION = Symbol()
 const IS_BRANCH_TEMPLATE = Symbol()
 const IS_BRANCH = Symbol()
-const IS_TYPE = Symbol()
+const IS_SERIALIZER = Symbol()
 const IS_PARAM = Symbol()
 
-const JUNCTIONS_STATE = Symbol()
 
-const DEFAULT_KEY = Symbol()
-const PRIMARY_KEY = Symbol()
+export function isJunctionSet(x) {
+  return x instanceof Object && x[IS_JUNCTION_SET]
+}
+export function isJunction(x) {
+  return x instanceof Object && x[IS_JUNCTION]
+}
+export function isBranchTemplate(x) {
+  return x instanceof Object && x[IS_BRANCH_TEMPLATE]
+}
+export function isBranch(x) {
+  return x instanceof Object && x[IS_BRANCH]
+}
+export function isSerializer(x) {
+  return x instanceof Object && x[IS_SERIALIZER]
+}
+export function isParam(x) {
+  return x instanceof Object && x[IS_PARAM]
+}
+export function isRoute(x) {
+  return x instanceof Route
+}
+export function isLocatedRoute(x) {
+  return x instanceof LocatedRoute
+}
 
 
-export function Junction(branchTemplates, def) {
-  const junction = {}
+export function JunctionSet(junctions, primaryKey) {
+  const junctionKeys = Object.keys(junctions)
 
-  Object.defineProperty(junction, IS_JUNCTION, { value: true })
+  if (junctionKeys.length === 0) {
+    throw new Error('JunctionSet requires at least one Junction to be passed in')
+  }
+  if (!junctions[primaryKey]) {
+    throw new Error(`A JunctionSet was created with primary key "${primaryKey}", but no junction with that key was given.`)
+  }
 
-  if (def) {
-    if (!branchTemplates[def]) {
-      throw new Error(`A Junction specified default key '${def}', but not Branch with that key exists.`)
-    }
+  const junctionSet = {
+    junctions,
+    junctionKeys,
+    primaryKey,
+  }
 
-    Object.defineProperty(junction, DEFAULT_KEY, { value: def })
+  Object.defineProperty(junctionSet, IS_JUNCTION_SET, { value: true })
+
+  return junctionSet
+}
+
+
+export function Junction(branchTemplates, defaultKey) {
+  const branches = {}
+
+  if (defaultKey && !branchTemplates[defaultKey]) {
+    throw new Error(`A Junction specified default key '${def}', but not Branch with that key exists.`)
   }
 
   const branchKeys = Object.keys(branchTemplates)
+
+  if (branchKeys.length === 0) {
+    throw new Error('Junction requires at least one BranchTemplate to be passed in')
+  }
+
   const patternIds = {}
   for (let i = 0, len = branchKeys.length; i < len; i++) {
     const key = branchKeys[i]
@@ -36,69 +82,92 @@ export function Junction(branchTemplates, def) {
 
     const branchTemplate = branchTemplates[key]
 
-    if (!branchTemplate[IS_BRANCH_TEMPLATE]) {
+    if (!isBranchTemplate(branchTemplate)) {
       throw new Error(`An object was passed to Junction which is not a Branch. See key '${key}'.`)
     }
 
-    const branch = (params={}, children={}) => {
-      const route = new Route(branch, params, children)
-      Object.freeze(route)
-      return route
-    }
+    const branch = (params={}, children={}) => Object.freeze(new Route(branch, params, children))
 
     branch.key = key
     branch.pattern = branchTemplate.pattern || createDefaultPattern(key, branch.params)
-    branch.aliases = branchTemplate.aliases
     branch.data = branchTemplate.data
-    branch.paramTypes = branchTemplates.paramTypes
+    branch.params = branchTemplates.params
 
     if (branchTemplate.children) {
       branch.children = branchTemplate.children
     }
     
-    const patterns = branchTemplate.aliases.concat(branch.pattern)
-    for (let i = 0, len = patterns.length; i < len; i++) {
-      const id = patterns[i].id
-      if (patternIds[id]) {
-        throw new Error(`Branch "${key}" uses a pattern or alias starting with "${id}", but another pattern or alias already uses this identifier.`)
-      }
-      patternIds[id] = true
+    const patternId = branch.pattern.id
+    if (patternIds[patternId]) {
+      throw new Error(`Branch "${key}" uses a pattern with "${id}", but another pattern or alias already uses this identifier.`)
     }
+    patternIds[patternId] = true
 
     Object.defineProperty(branch, IS_BRANCH, { value: true })
 
-    junction[key] = Object.freeze(branch)
+    branches[key] = Object.freeze(branch)
   }
     
+  const junction = {
+    branches,
+    branchKeys,
+    defaultKey
+  }
+
+  Object.defineProperty(junction, IS_JUNCTION, { value: true })
+
   return Object.freeze(junction)
 }
 
 
+function createDefaultPattern(key, branchParams) {
+  const id = hyphenize(key)
+  const branchParamKeys = Object.keys(branchParams)
+  const paramNames =
+    branchParamKeys.filter(key => {
+      const param = branchParams[key]
+      return (param.required || param.default) && !param.hidden
+    })
+        
+  return {
+    id: id,
+    parts: [id].concat(paramNames.map(x => null)),
+    paramNames: paramNames,
+  }
+}
+
 export function Branch(options = {}) {
   const data = Object.freeze(options.data || {})
-  const paramTypes = options.paramTypes || {}
-  const paramNames = Object.keys(paramNames)
+  const params = options.params || {}
+  const paramNames = Object.keys(params)
 
   for (let i = 0, len = paramNames.length; i < len; i++) {
-    if (!/A-Za-z0-9_/.test(paramNames[i])) {
+    const paramName = paramNames[i]
+    if (!/A-Za-z0-9_/.test(paramName)) {
       throw new Error(`Branch param keys must only use the characters A-Z, a-z, 0-9 or _`)
+    }
+    if (!isParam(params[paramName])) {
+
     }
   }
   if (data === undefined && typeof data !== 'object') {
     throw new Error(`If a Branch specifies a "data" option, it must be an Object. Instead, it was of type "${typeof data}".`)
   }
-  if ('children' in options && !options.children) {
-    throw new Error(`A 'children' key was specified for a Branch, but no value was specified.`)
-  }
 
   const branchTemplate = {
     pattern: options.pattern && compilePattern(options.pattern, paramNames),
-    aliases: options.aliases ? options.aliases.map((alias) => compilePattern(alias, paramNames)) : [],
     data: data,
-    paramTypes: paramTypes,
+    params: params,
   }
 
+  if ('children' in options && !options.children) {
+    throw new Error(`A 'children' key was specified for a Branch, but no value was specified.`)
+  }
   if (options.children) {
+    if (!isJunctionSet(options.children)) {
+      throw new Error(`The "children" option of a Branch must be a JunctionSet.`)
+    }
+
     branchTemplate.children = options.children
   }
 
@@ -108,7 +177,52 @@ export function Branch(options = {}) {
 }
 
 
-export function getPrimaryJunctionKey(junctionSet) {
-  return 'primaryJunction' in junctionSet ? junctionSet.primaryJunctionKey : Object.keys(junctionSet.junctions)[0]
+const nonEmptyStringSerialier = Serializer({
+  serialize: x => x || '',
+  deserialize: x => x == '' ? null : x,
+  exists: x => x !== '',
+})
+
+/**
+ * Define a parameter which is available for all Routes through a specific branch.
+ * 
+ * @param {Object}          options
+ * @param {function | any}  options.default     A default value, or function to generate one
+ * @param {boolean}         options.hidden      Forces storage in state instead of URL. If also required, prevents the route from being parsed from URLs
+ * @param {boolean}         options.required    Throw an error if a route is created without this param
+ * @param {Serializer}      options.serializer  How to serialize/deserialize
+ */
+export function Param(options = {}) {
+  if (options.serializer && !isSerializer(options.serializer)) {
+    throw new Error (`Param expects the 'serializer' option to an object returned by junctions's Serializer function.`)
+  }
+
+  const param = {
+    default: options.default,
+    required: options.required || false,
+    hidden: options.hidden || false,
+    serializer: options.serializer || nonEmptyStringSerialier,
+  }
+
+  Object.defineProperty(param, IS_PARAM, { value: true })
+
+  return param
 }
 
+
+export function Serializer(options) {
+  if (
+    !options ||
+    typeof options.serialize !== 'function' ||
+    typeof options.deserialize !== 'function' ||
+    typeof options.exists !== 'function'
+  ) {
+    throw new Error(`A junctions Serializer must specify serialize, deserialize and exists functions`)
+  }
+
+  const serializer = Object.assign({}, options)
+
+  Object.defineProperty(serializer, IS_SERIALIZER, { value: true })
+
+  return serializer
+}
