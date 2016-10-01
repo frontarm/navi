@@ -1,6 +1,6 @@
 const assert = require('assert')
 const deepEqual = require('deep-equal')
-const { minimal, junctionSetWithPrimary } = require('./utils/JunctionSets')
+const { minimal, junctionSetWithPrimary } = require('./fixtures/JunctionSets')
 
 const { JunctionSet, Junction, Branch } = require('../lib/junctions')
 const { createPathParser } = require('../lib/PathParser')

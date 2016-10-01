@@ -5,7 +5,7 @@ export function deserializeParams(branchParams, routeParams) {
     const key = keys[i]
     const serializer = branchParams[key].serializer
     const serializedValue = routeParams[key]
-    deserializedParams[key] = serializer.exists(serializedValue) ? serializer.deserialize(serializedValue) : undefined
+    deserializedParams[key] = serializer.deserialize(serializedValue)
   }
   return deserializedParams
 }

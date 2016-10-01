@@ -43,8 +43,16 @@ export function JunctionSet(junctions, primaryKey) {
   if (junctionKeys.length === 0) {
     throw new Error('JunctionSet requires at least one Junction to be passed in')
   }
-  if (!junctions[primaryKey]) {
+  if (primaryKey && !junctions[primaryKey]) {
     throw new Error(`A JunctionSet was created with primary key "${primaryKey}", but no junction with that key was given.`)
+  }
+
+  for (let i = 0, len = junctionKeys.length; i < len; i++) {
+    const key = junctionKeys[i]
+
+    if (!/^[A-Za-z0-9_]+$/.test(key)) {
+      throw new Error('JunctionSet keys must only use the characters A-Z, a-z, 0-9 or _')
+    }
   }
 
   const junctionSet = {
@@ -58,6 +66,22 @@ export function JunctionSet(junctions, primaryKey) {
   return junctionSet
 }
 
+
+function createDefaultPattern(key, branchParams) {
+  const id = hyphenize(key)
+  const branchParamKeys = Object.keys(branchParams)
+  const paramNames =
+    branchParamKeys.filter(key => {
+      const param = branchParams[key]
+      return (param.required || param.default) && !param.hidden
+    })
+        
+  return {
+    id: id,
+    parts: [id].concat(paramNames.map(x => null)),
+    paramNames: paramNames,
+  }
+}
 
 export function Junction(branchTemplates, defaultKey) {
   const branches = {}
@@ -89,9 +113,9 @@ export function Junction(branchTemplates, defaultKey) {
     const branch = (params={}, children={}) => Object.freeze(new Route(branch, params, children))
 
     branch.key = key
-    branch.pattern = branchTemplate.pattern || createDefaultPattern(key, branch.params)
+    branch.pattern = branchTemplate.pattern || createDefaultPattern(key, branchTemplate.params)
     branch.data = branchTemplate.data
-    branch.params = branchTemplates.params
+    branch.params = branchTemplate.params
 
     if (branchTemplate.children) {
       branch.children = branchTemplate.children
@@ -120,22 +144,6 @@ export function Junction(branchTemplates, defaultKey) {
 }
 
 
-function createDefaultPattern(key, branchParams) {
-  const id = hyphenize(key)
-  const branchParamKeys = Object.keys(branchParams)
-  const paramNames =
-    branchParamKeys.filter(key => {
-      const param = branchParams[key]
-      return (param.required || param.default) && !param.hidden
-    })
-        
-  return {
-    id: id,
-    parts: [id].concat(paramNames.map(x => null)),
-    paramNames: paramNames,
-  }
-}
-
 export function Branch(options = {}) {
   const data = Object.freeze(options.data || {})
   const params = options.params || {}
@@ -143,24 +151,24 @@ export function Branch(options = {}) {
 
   for (let i = 0, len = paramNames.length; i < len; i++) {
     const paramName = paramNames[i]
-    if (!/A-Za-z0-9_/.test(paramName)) {
-      throw new Error(`Branch param keys must only use the characters A-Z, a-z, 0-9 or _`)
+    if (!/^[A-Za-z0-9_]+$/.test(paramName)) {
+      throw new Error(`Branch param keys must only use the characters A-Z, a-z, 0-9 or _, but key was named "${paramName}".`)
     }
     if (!isParam(params[paramName])) {
-
+      throw new Error(`Branch params must be a value returned by the "Param" function.`)
     }
   }
-  if (data === undefined && typeof data !== 'object') {
+  if (data !== undefined && typeof data !== 'object') {
     throw new Error(`If a Branch specifies a "data" option, it must be an Object. Instead, it was of type "${typeof data}".`)
   }
 
   const branchTemplate = {
-    pattern: options.pattern && compilePattern(options.pattern, paramNames),
+    pattern: options.path && compilePattern(options.path, paramNames),
     data: data,
     params: params,
   }
 
-  if ('children' in options && !options.children) {
+  if ('children' in options && !isJunctionSet(options.children)) {
     throw new Error(`A 'children' key was specified for a Branch, but no value was specified.`)
   }
   if (options.children) {
@@ -180,7 +188,6 @@ export function Branch(options = {}) {
 const nonEmptyStringSerialier = Serializer({
   serialize: x => x || '',
   deserialize: x => x == '' ? null : x,
-  exists: x => x !== '',
 })
 
 /**
@@ -193,7 +200,7 @@ const nonEmptyStringSerialier = Serializer({
  * @param {Serializer}      options.serializer  How to serialize/deserialize
  */
 export function Param(options = {}) {
-  if (options.serializer && !isSerializer(options.serializer)) {
+  if ('serializer' in options && !isSerializer(options.serializer)) {
     throw new Error (`Param expects the 'serializer' option to an object returned by junctions's Serializer function.`)
   }
 
@@ -214,10 +221,9 @@ export function Serializer(options) {
   if (
     !options ||
     typeof options.serialize !== 'function' ||
-    typeof options.deserialize !== 'function' ||
-    typeof options.exists !== 'function'
+    typeof options.deserialize !== 'function'
   ) {
-    throw new Error(`A junctions Serializer must specify serialize, deserialize and exists functions`)
+    throw new Error(`A junctions Serializer must specify serialize, deserialize`)
   }
 
   const serializer = Object.assign({}, options)
