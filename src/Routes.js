@@ -55,9 +55,9 @@ function getDefaultParams(branchParams, knownParams={}) {
   for (let i = 0, len = remainingParamKeys.length; i < len; i++) {
     const key = remainingParamKeys[i]
     const branchParam = branchParams[key]
-
-    if (branchParam.default) {
-      paramsCopy[key] = branchParam.default
+    const defaultParam = branchParam.default
+    if (defaultParam) {
+      paramsCopy[key] = typeof defaultParam == 'function' ? defaultParam() : defaultParam
     }
     else if (branchParam.required) {
       throw new Error(`Cannot create route without required key '${key}'`)
@@ -70,6 +70,20 @@ function getDefaultParams(branchParams, knownParams={}) {
 
 export class Route {
   constructor(branch, params={}, children={}) {
+    const childKeys = Object.keys(children)
+    for (let i = 0, len = childKeys.length; i < len; i++) {
+      const key = childKeys[i]
+      if (!branch.children.junctions[key]) {
+        throw new Error(`A Route cannot be created with child key "${key}" which is not in the associated branch's children`)
+      }
+      if (children[key] && !(children[key] instanceof Route)) {
+        throw new Error(`A Route cannot be created with a non-Route child (see child key "${key}")`)
+      }
+      if (children[key] && !branch.children.junctions[key].branchValues.includes(children[key].branch)) {
+        throw new Error(`A Route cannot be created with an unknown Branch type for key "${key}"`)
+      }
+    }
+
     this.branch = branch
     this.data = branch.data
     this.params = getDefaultParams(branch.params, params)
@@ -85,7 +99,7 @@ export class LocatedRoute extends Route {
   constructor(parentBaseLocation, isRouteInPath, junctionPath, branch, params, children) {
     super(branch, params, children)
 
-    this.baseLocation = getRouteBaseLocation(parentBaseLocation, isRouteInPath, junctionPath, branch, params)
+    this.baseLocation = getRouteBaseLocation(parentBaseLocation, isRouteInPath, junctionPath, branch, this.params)
     this.isRouteInPath = isRouteInPath
     this.junctionPath = junctionPath
   }

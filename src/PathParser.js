@@ -1,8 +1,8 @@
 export function createPathParser(junctionSet) {
   const tree = {}
   const queue = [[junctionSet, tree, []]]
-  while (queue) {
-    const [junctionNode, treeNode, junctionPath] = queue.pop()
+  while (queue.length) {
+    const [junctionNode, treeNode, junctionPath] = queue.shift()
     const primaryJunctionKey = junctionNode.primaryKey
 
     if (primaryJunctionKey) {
@@ -18,17 +18,18 @@ export function createPathParser(junctionSet) {
           childNode,
           junctionPath: nextJunctionPath.join('/'),
         }
-        queue.push([branch.children, childNode, nextJunctionPath])
+        if (branch.children) {
+          queue.push([branch.children, childNode, nextJunctionPath])
+        }
       }
     }
   }
 
   return function parsePath(path) {
-    // TODO: Do we actually need to strip leading and trailing '/'? Does history do it for us?
     const strippedPath = path.replace(/^\/|\/($|\?)/g, '')
     const branches = {}
 
-    let pathParts = strippedPath === '' ? [] : path.split('/')
+    let pathParts = strippedPath === '' ? [] : strippedPath.split('/')
     let next = tree
     let i = 0
     while (i < pathParts.length) {
@@ -48,7 +49,10 @@ export function createPathParser(junctionSet) {
           const patternPart = patternParts[j]
 
           const pathPart = pathParts[i++]
-          if (patternPart) {
+          if (i > pathParts.length) {
+            return
+          }
+          else if (patternPart) {
             if (patternPart != pathPart) {
               return
             }

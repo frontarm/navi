@@ -24,7 +24,7 @@ describe("Branch", function() {
       path: '/invoices/:_invoiceId',
       data: { test: 1 },
       params: { _invoiceId: Params.id },
-      children: JunctionSets.invoiceScreen,
+      children: JunctionSets.invoiceListScreen,
     })
 
     assert(isBranchTemplate(branchTemplate))

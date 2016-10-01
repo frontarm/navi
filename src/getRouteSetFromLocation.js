@@ -27,11 +27,14 @@ function getDefaultChildren(baseLocation, isRouteInPath, junctionPath, branch) {
 }
 
 
-export default function getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location) {
+export default function getRouteSetFromLocation(parsePath, _baseLocation, junctionSet, location) {
   // TODO:
   // - memoize by object equality of the previous invocation (only need memory size of 1)
 
-  const basePath = baseLocation.path
+  const baseLocation = _baseLocation || {}
+  const basePath = baseLocation.pathname
+
+  const locationState = location.state || {}
 
   let path
   if (basePath) {
@@ -39,14 +42,14 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
       throw new Error(`The specified "location" and "baseLocation" don't match. Expected location to start with "${basePath}" but instead found "${location.path}".`)
     }
 
-    path = location.path.substr(basePath.length)
+    path = location.pathname.substr(basePath.length)
   }
   else {
-    path = location.path || ''
+    path = location.pathname || ''
   }
 
   const query = {} // TODO: extract query string params and add to state
-  const state = Object.assign({}, location.state.junctions, parsePath(path))
+  const state = Object.assign({}, locationState.junctions, parsePath(path))
   const routeSet = {}
   const baseSet = {}
 
@@ -54,7 +57,7 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
   const junctionPaths = walkOrder.map(key => key.split('/'))
   for (let i = 0, len = walkOrder.length; i < len; i++) {
     const stateKey = walkOrder[i]
-    const junctionPath = junctionPaths[i].split('/')
+    const junctionPath = junctionPaths[i]
     const isChildless = (i == walkOrder.length - 1) || junctionPaths[i + 1].length <= junctionPath.length
     const key = junctionPath.slice(-1)
     
@@ -110,4 +113,6 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
 
   // TODO:
   // - walk routeSet and freeze everything
+  
+  return routeSet
 }

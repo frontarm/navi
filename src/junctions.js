@@ -135,6 +135,7 @@ export function Junction(branchTemplates, defaultKey) {
   const junction = {
     branches,
     branchKeys,
+    branchValues: branchKeys.map(k => branches[k]),
     defaultKey
   }
 

@@ -1,13 +1,21 @@
 const assert = require('assert')
 
-const { Junction, Branch, Param, isJunction } = require('../lib/junctions')
+const { Junction, Branch, Param, isJunction, isBranch } = require('../lib/junctions')
+const { Route, LocatedRoute } = require('../lib/Routes')
 const { formatPattern } = require('../lib/PatternUtils')
 const BranchTemplates = require('./fixtures/BranchTemplates')
+const JunctionSets = require('./fixtures/JunctionSets')
 
 
 describe("isJunction", function() {
   it("returns false when passed an empty object", function() {
     assert(!isJunction({}))
+  })
+})
+
+describe("isBranch", function() {
+  it("returns false when passed a BranchTemplate", function() {
+    assert(!isBranch(BranchTemplates.details))
   })
 })
 
@@ -28,6 +36,16 @@ describe("Junction", function() {
     }, 'details')
 
     assert(isJunction(junction))
+  })
+
+
+  it("returns Branch functions instead of BranchTemplate objects", function() {
+    const junction = Junction({
+      details: BranchTemplates.details,
+      attachment: BranchTemplates.attachment,
+    }, 'details')
+
+    assert(isBranch(junction.branches.details))
   })
 
 
@@ -73,5 +91,33 @@ describe("Junction", function() {
         'joe/': BranchTemplates.details,
       })
     })
+  })
+})
+
+
+describe("Junction#branches.branchName", function() {
+  it("returns a Route with correct branch, params and children", function() {
+    // Note: JunctionSets.invoiceScreen is actually a getter, so run it this way to
+    //       avoid creating multiple copies of it
+    const childJunctionSet = JunctionSets.invoiceScreen
+
+    const junction = Junction({
+      invoices: Branch({
+        params: {
+          page: Param({ default: 1 }),
+        },
+        children: childJunctionSet,
+      }),
+    })
+
+    const route = junction.branches.invoices(
+      { page: 2 },
+      { content: childJunctionSet.junctions.content.branches.details() }
+    )
+
+    assert.equal(route.constructor, Route)
+    assert.equal(route.branch, junction.branches.invoices)
+    assert.equal(route.params.page, 2)
+    assert.equal(route.children.content.branch, childJunctionSet.junctions.content.branches.details)
   })
 })

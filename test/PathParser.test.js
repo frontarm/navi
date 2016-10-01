@@ -1,48 +1,41 @@
 const assert = require('assert')
-const deepEqual = require('deep-equal')
-const { minimal, junctionSetWithPrimary } = require('./fixtures/JunctionSets')
 
-const { JunctionSet, Junction, Branch } = require('../lib/junctions')
 const { createPathParser } = require('../lib/PathParser')
-
+const JunctionSets = require('./fixtures/JunctionSets')
 
 
 describe('createPathParser', function() {
-  it("returns a function given a minimal JunctionSet", function() {
-    const junctionSet =
-      JunctionSet({
-        ja: Junction({
-          ba: Branch()
-        })
-      })
+  it("returns a function given a JunctionSet", function() {
+    const parsePath = createPathParser(JunctionSets.invoiceListScreen)
 
-    const pathParser = createPathParser(junctionSet)
-
-    assert(typeof pathParser == 'function', "createPathParser returns a function")
+    assert.equal(typeof parsePath, 'function', "createPathParser returns a function")
   })
 })
 
 
 describe('parsePath', function() {
-  it("converts a path to a map of tree nodes", function() {
-    const junctionSet =
-      JunctionSet({
-        ja: Junction({
-          ba: Branch(),
-          bb: Branch(),
-        }),
-        jb: Junction({
-          ba: Branch(),
-        })
-      }, 'ja')
+  it("converts a primary paths to a map of tree nodes", function() {
+    const parsePath = createPathParser(JunctionSets.invoiceListScreen)
 
-    const parsePath = createPathParser(junctionSetWithPrimary)
-    const map = parsePath('/ba')
+    assert.deepEqual(parsePath('/invoice/test'), {
+      'content': { branchKey: 'invoice', serializedParams: { id: 'test' }, routePath: 'invoice/test' }
+    })
 
-    const expectedMap = {
-      ba: { branchKey: 'ba', serializedParams: {}, routePath: 'ba' }
-    }
+    assert.deepEqual(parsePath('/invoice/test/details'), {
+      'content': { branchKey: 'invoice', serializedParams: { id: 'test' }, routePath: 'invoice/test' },
+      'content/content': { branchKey: 'details', serializedParams: {}, routePath: 'invoice/test/details' },
+    })
+  })
 
-    assert(deepEqual(map, expectedMap), "works correctly")
+  it("ignores non-primary paths", function() {
+    const parsePath = createPathParser(JunctionSets.invoiceListScreen)
+
+    assert.equal(parsePath('/open'), undefined)
+  })
+
+  it("returns null on partial matches", function() {
+    const parsePath = createPathParser(JunctionSets.invoiceListScreen)
+
+    assert.equal(parsePath('/invoice'), null)
   })
 })
