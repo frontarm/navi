@@ -18,12 +18,14 @@ function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch,
     }
   }
   else {
+    const baseState = baseLocation.state || {}
+
     return {
       pathname: baseLocation.pathname,
       // TODO: search: mergeQueryStrings(baseLocation.search, createQueryString(query)),
       hash: baseLocation.hash,
-      state: Object.assign({}, baseLocation.state, {
-        junctions: Object.assign({}, baseLocation.state.junctions, {
+      state: Object.assign({}, baseState, {
+        junctions: Object.assign({}, baseState.junctions, {
           [junctionPath.join('/')]: {
             branchKey: branch.key,
             serializedParams: serializeParams(branch.params, params),
@@ -108,7 +110,7 @@ export class LocatedRoute extends Route {
     return (
       routeSet
         ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.children, routeSet)
-        : baseLocation
+        : this.baseLocation
     )
   }
 }

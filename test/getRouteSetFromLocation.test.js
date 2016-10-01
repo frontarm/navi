@@ -8,47 +8,93 @@ const JunctionSets = require('./fixtures/JunctionSets')
 
 
 describe('getRouteSetFromLocation', function() {
-  it('returns a RouteSet given a location with pathname', function() {
-    const junctionSet = JunctionSets.invoiceListScreen
-    const parsePath = createPathParser(junctionSet)
-    const baseLocation = {}
-    const location = { pathname: '/invoice/test/details' }
-    
-    const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
+  describe('when passed location with pathname only', function() {
+    beforeEach(function() {
+      this.junctionSet = JunctionSets.invoiceListScreen
 
-    assert.equal(routeSet.content.constructor, LocatedRoute, 'creates a LocatedRoute for known routes')
-    assert.equal(routeSet.addModal, undefined, 'does not create a LocatedRoute for unknown routes')
+      const parsePath = createPathParser(this.junctionSet)
+      const baseLocation = {}
+      const location = { pathname: '/invoice/test/attachments' }
+      
+      this.routeSet = getRouteSetFromLocation(parsePath, baseLocation, this.junctionSet, location)
+    })
 
-    assert.equal(routeSet.content.branch, junctionSet.junctions.content.branches.invoice, 'selects the correct branch')
-    assert.equal(routeSet.content.params.id, 'test', 'adds params to LocatedRoute')
-    assert.equal(routeSet.content.data.component, 'invoiceScreen', 'adds data to LocatedRoute')
+    it('returns an appropriate RouteSet', function() {
+      assert.equal(this.routeSet.content.constructor, LocatedRoute, 'creates a LocatedRoute for known routes')
+      assert.equal(this.routeSet.addModal, undefined, 'does not create a LocatedRoute for unknown routes')
 
-    assert.equal(routeSet.content.children.content.constructor, LocatedRoute, 'adds children to LocatedRoute')
+      assert.equal(this.routeSet.content.branch, this.junctionSet.junctions.content.branches.invoice, 'selects the correct branch')
+      assert.equal(this.routeSet.content.params.id, 'test', 'adds params to LocatedRoute')
+      assert.equal(this.routeSet.content.data.component, 'invoiceScreen', 'adds data to LocatedRoute')
+
+      assert.equal(this.routeSet.content.children.content.constructor, LocatedRoute, 'adds children to LocatedRoute')
+    })
+
+    it('creates an appropriate LocatedRoute', function() {
+      const route = this.routeSet.content
+      const childRoute = route.children.content
+
+      assert.equal(route.baseLocation.pathname, '/invoice/test')
+      assert.deepEqual(route.baseLocation.state.junctions, {})
+      assert.equal(route.isRouteInPath, true)
+      assert.deepEqual(route.junctionPath, ['content'])
+
+      assert.equal(childRoute.baseLocation.pathname, '/invoice/test/attachments')
+      assert.deepEqual(childRoute.baseLocation.state.junctions, {})
+      assert.equal(childRoute.isRouteInPath, true)
+      assert.deepEqual(childRoute.junctionPath, ['content', 'content'])
+    })
   })
 
-  it('returns a RouteSet given a location with junctions state', function() {
-    const junctionSet = JunctionSets.invoiceListScreen
-    const parsePath = createPathParser(junctionSet)
-    const baseLocation = {}
-    const location = { 
-      state: {
-        junctions: {
-          'content': { branchKey: 'invoice', serializedParams: { id: 'test' }, routePath: 'invoice/test' },
-          'content/content': { branchKey: 'details', serializedParams: {}, routePath: 'invoice/test/details' },
+  describe('when passed location with state only', function() {
+    beforeEach(function() {
+      this.junctionSet = JunctionSets.invoiceListScreen
+
+      const parsePath = createPathParser(this.junctionSet)
+      const baseLocation = { pathname: '/some-other-path' }
+      const location = { 
+        pathname: '/some-other-path',
+        state: {
+          junctions: {
+            'content': { branchKey: 'invoice', serializedParams: { id: 'test' } },
+            'content/content': { branchKey: 'details', serializedParams: {} },
+          }
         }
       }
-    }
-    
-    const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
+      
+      this.routeSet = getRouteSetFromLocation(parsePath, baseLocation, this.junctionSet, location)
+    })
 
-    assert.equal(routeSet.content.constructor, LocatedRoute, 'creates a LocatedRoute for known routes')
-    assert.equal(routeSet.addModal, undefined, 'does not create a LocatedRoute for unknown routes')
+    it('returns a RouteSet', function() {
+      assert.equal(this.routeSet.content.constructor, LocatedRoute, 'creates a LocatedRoute for known routes')
+      assert.equal(this.routeSet.addModal, undefined, 'does not create a LocatedRoute for unknown routes')
 
-    assert.equal(routeSet.content.branch, junctionSet.junctions.content.branches.invoice, 'selects the correct branch')
-    assert.equal(routeSet.content.params.id, 'test', 'adds params to LocatedRoute')
-    assert.equal(routeSet.content.data.component, 'invoiceScreen', 'adds data to LocatedRoute')
+      assert.equal(this.routeSet.content.branch, this.junctionSet.junctions.content.branches.invoice, 'selects the correct branch')
+      assert.equal(this.routeSet.content.params.id, 'test', 'adds params to LocatedRoute')
+      assert.equal(this.routeSet.content.data.component, 'invoiceScreen', 'adds data to LocatedRoute')
 
-    assert.equal(routeSet.content.children.content.constructor, LocatedRoute, 'adds children to LocatedRoute')
+      assert.equal(this.routeSet.content.children.content.constructor, LocatedRoute, 'adds children to LocatedRoute')
+    })
+
+    it('creates an appropriate LocatedRoute', function() {
+      const route = this.routeSet.content
+      const childRoute = route.children.content
+
+      assert.equal(route.baseLocation.pathname, '/some-other-path')
+      assert.deepEqual(route.baseLocation.state.junctions, {
+        'content': { branchKey: 'invoice', serializedParams: { id: 'test' } },
+      })
+      assert.equal(route.isRouteInPath, false)
+      assert.deepEqual(route.junctionPath, ['content'])
+
+      assert.equal(childRoute.baseLocation.pathname, '/some-other-path')
+      assert.deepEqual(childRoute.baseLocation.state.junctions, {
+        'content': { branchKey: 'invoice', serializedParams: { id: 'test' } },
+        'content/content': { branchKey: 'details', serializedParams: {} },
+      })
+      assert.equal(childRoute.isRouteInPath, false)
+      assert.deepEqual(childRoute.junctionPath, ['content', 'content'])
+    })
   })
 
   it('selects default branches when necessary', function() {
@@ -74,6 +120,4 @@ describe('getRouteSetFromLocation', function() {
 
     assert.equal(routeSet.content.branch, junctionSet.junctions.content.branches.invoice, 'selects the correct branch')
   })
-
-  it('returns routes which can be used to create locations')
 })

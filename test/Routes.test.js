@@ -1,7 +1,7 @@
 const assert = require('assert')
 
 const { Junction, Branch, Param, isJunction, isBranch } = require('../lib/junctions')
-const { Route } = require('../lib/Routes')
+const { Route, LocatedRoute } = require('../lib/Routes')
 const JunctionSets = require('./fixtures/JunctionSets')
 
 
@@ -76,5 +76,73 @@ describe("Route", function() {
     assert.throws(() => {
       route.getLocation
     })    
+  })
+})
+
+
+describe("LocatedRoute#getLocation", function() {
+  describe('for routes in path', function() {
+    beforeEach(function() {
+      this.branch = JunctionSets.invoiceListScreen.junctions.content.branches.invoice
+      this.route = new LocatedRoute(
+        { pathname: '/mountpoint' },
+        true,
+        ['content'],
+        this.branch,
+        { id: 'test-id' },
+        {}
+      )
+    })
+
+    it("generates appropriate locations when not given a routeSet", function() {
+      const location = this.route.getLocation()
+
+      assert.equal(location.pathname, '/mountpoint/invoice/test-id')
+      assert.equal(location.state, null)
+    })
+
+    it("generates appropriate locations when given as routeSet", function() {
+      const location = this.route.getLocation({
+        content: this.branch.children.junctions.content.branches.details()
+      })
+
+      assert.equal(location.pathname, '/mountpoint/invoice/test-id/details')
+      assert.equal(location.state.junctions.content, null)
+    })
+  })
+
+  describe('for routes outside of path', function() {
+    beforeEach(function() {
+      this.branch = JunctionSets.invoiceListScreen.junctions.content.branches.invoice
+      this.route = new LocatedRoute(
+        { pathname: '/mountpoint/something-else' },
+        false,
+        ['content'],
+        this.branch,
+        { id: 'test-id' },
+        {}
+      )
+    })
+
+    it("generates appropriate locations when not given a routeSet", function() {
+      const location = this.route.getLocation()
+
+      assert.equal(location.pathname, '/mountpoint/something-else')
+      assert.deepEqual(location.state.junctions, {
+        'content': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
+      })
+    })
+
+    it("generates appropriate locations when given as routeSet", function() {
+      const location = this.route.getLocation({
+        content: this.branch.children.junctions.content.branches.details()
+      })
+
+      assert.equal(location.pathname, '/mountpoint/something-else')
+      assert.deepEqual(location.state.junctions, {
+        'content': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
+        'content/content': { branchKey: 'details', serializedParams: {} },
+      })
+    })
   })
 })

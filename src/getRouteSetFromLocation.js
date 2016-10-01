@@ -77,31 +77,35 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
     const params = deserializeParams(branch.params, serializedParams)
 
     // Copy all state paths except our children
-    const baseState = {}
-    const basePath = [basePath]
+    const newBaseState = {}
+    const newBasePath = [basePath || '']
     let j = 0
     while (j < i) {
       const stateKey = walkOrder[j]
-      baseState[stateKey] = state[stateKey]
+      // Only state keys returned by the path parser have a `routePath` attribute,
+      // so we can use these to build our basePath
       if (state[stateKey].routePath) {
-        basePath.push(state[stateKey].routePath)
+        newBasePath.push(state[stateKey].routePath)
+      }
+      else {
+        newBaseState[stateKey] = state[stateKey]
       }
       j++
     }
-    while (junctionPaths[j].length > junctionPath.length) {
+    while (j < len && junctionPaths[j].length >= junctionPath.length) {
       j++
     }
     while (j < len) {
       const stateKey = walkOrder[j]
-      baseState[stateKey] = state[stateKey]
+      newBaseState[stateKey] = state[stateKey]
       j++
     }
 
     const routeBaseLocation = {
-      pathname: basePath.join('/'),
+      pathname: newBasePath.join('/'),
       hash: baseLocation.hash,
       state: Object.assign({}, baseLocation.state, {
-        junctions: baseState
+        junctions: newBaseState
       }),
       hash: baseLocation.query,
       // TODO: search

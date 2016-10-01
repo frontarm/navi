@@ -7,16 +7,16 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
   const state = {}
   const query = {}
 
-  const junctionKeys = junctionSet.junctionKeys
-  for (let i = 0, len = junctionKeys.length; i < len; i++) {
-    const junctionKey = junctionKeys[i]
-    const junctionPath = parentJunctionPath.concat(junctionKey)
-    const route = routeSet[junctionKey]
+  const routeKeys = Object.keys(routeSet)
+  for (let i = 0, len = routeKeys.length; i < len; i++) {
+    const routeKey = routeKeys[i]
+    const junctionPath = parentJunctionPath.concat(routeKey)
+    const route = routeSet[routeKey]
     const branch = route.branch
 
-    const isPrimaryRoute = isRouteInPath && junctionSet.primaryKey == junctionKey
+    const isPrimaryRoute = isRouteInPath && junctionSet.primaryKey == routeKey
     if (isPrimaryRoute) {
-      path = formatPattern(primaryRoute.branch.pattern, primaryRoute.params)
+      path = formatPattern(route.branch.pattern, route.params)
 
       // TODO:
       // - add query from rest of params
@@ -52,12 +52,13 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
 // See https://github.com/mjackson/history
 export default function getLocationFromRouteSet(baseLocation, isRouteInPath, parentJunctionPath, junctionSet, routeSet) {
   const { state, path, query } = getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, routeSet)
+  const baseState = baseLocation.state || {}
 
   return {
     pathname: baseLocation.pathname + (path ? '/' + path : ''),
     // TODO: search: mergeQueryStrings(baseLocation.search, createQueryString(query)),
     hash: baseLocation.hash,
-    state: Object.assign({}, baseLocation.state, { junctions: Object.assign(state, baseLocation.state.junctions) }),
+    state: Object.assign({}, baseState, { junctions: Object.assign(state, baseState.junctions) }),
     key: baseLocation.key,
   }
 }
