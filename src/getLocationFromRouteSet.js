@@ -1,6 +1,7 @@
 import { serializeParams } from './SerializationUtils'
 import { formatPattern } from './PatternUtils'
 import joinPaths from './joinPaths'
+import { createSearch, parseSearch } from './SearchUtils'
 
 
 function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, routeSet) {
@@ -53,15 +54,17 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
 // See https://github.com/mjackson/history
 export default function getLocationFromRouteSet(baseLocation, isRouteInPath, parentJunctionPath, junctionSet, routeSet) {
   const { state, path, query } = getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, routeSet)
+
+  const baseQuery = parseSearch(baseLocation.search)
   const baseState = baseLocation.state || {}
+  const finalQuery = Object.assign({}, baseQuery, query)
 
   return {
     pathname: joinPaths(baseLocation.pathname, path),
     hash: baseLocation.hash,
     state: Object.assign({}, baseState, { $$junctions: Object.assign(state, baseState.$$junctions) }),
     key: baseLocation.key,
-
-    // TODO: search: mergeQueryStrings(baseLocation.search, createQueryString(query)),
-    search: baseLocation.search,
+    query: finalQuery,
+    search: createSearch(finalQuery),
   }
 }

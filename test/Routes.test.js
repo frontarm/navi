@@ -71,10 +71,10 @@ describe("Route", function() {
     })
   })
 
-  it("throws if getLocation is accessed", function() {
+  it("throws if locate is accessed", function() {
     const route = new Route(makeBranch())
     assert.throws(() => {
-      route.getLocation
+      route.locate
     })    
   })
 })
@@ -85,7 +85,7 @@ describe("LocatedRoute#getLocation", function() {
     beforeEach(function() {
       this.branch = JunctionSets.invoiceListScreen.content.invoice
       this.route = new LocatedRoute(
-        { pathname: '/mountpoint' },
+        { pathname: '/mountpoint', query: {}, search: '' },
         true,
         ['content'],
         this.branch,
@@ -95,14 +95,14 @@ describe("LocatedRoute#getLocation", function() {
     })
 
     it("generates appropriate locations when not given a routeSet", function() {
-      const location = this.route.getLocation()
+      const location = this.route.locate()
 
       assert.equal(location.pathname, '/mountpoint/invoice/test-id')
       assert.equal(location.state, null)
     })
 
     it("generates appropriate locations when given as routeSet", function() {
-      const location = this.route.getLocation({
+      const location = this.route.locate({
         content: this.branch.children.content.details()
       })
 
@@ -115,7 +115,7 @@ describe("LocatedRoute#getLocation", function() {
     beforeEach(function() {
       this.branch = JunctionSets.invoiceListScreen.content.invoice
       this.route = new LocatedRoute(
-        { pathname: '/mountpoint/something-else' },
+        { pathname: '/mountpoint/something-else', query: {}, search: '' },
         false,
         ['content'],
         this.branch,
@@ -125,7 +125,7 @@ describe("LocatedRoute#getLocation", function() {
     })
 
     it("generates appropriate locations when not given a routeSet", function() {
-      const location = this.route.getLocation()
+      const location = this.route.locate()
 
       assert.equal(location.pathname, '/mountpoint/something-else')
       assert.deepEqual(location.state.$$junctions, {
@@ -134,7 +134,7 @@ describe("LocatedRoute#getLocation", function() {
     })
 
     it("generates appropriate locations when given as routeSet", function() {
-      const location = this.route.getLocation({
+      const location = this.route.locate({
         content: this.branch.children.content.details()
       })
 

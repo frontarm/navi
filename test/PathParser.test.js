@@ -18,12 +18,16 @@ describe('parsePath', function() {
     const parsePath = createPathParser(JunctionSets.invoiceListScreen)
 
     assert.deepEqual(parsePath('/invoice/test'), {
-      'content': { branchKey: 'invoice', serializedParams: { id: 'test' }, routePath: 'invoice/test' }
+      'content': { branchKey: 'invoice', serializedParams: { id: 'test' }, routePath: 'invoice/test', queryParts: {} }
+    })
+
+    assert.deepEqual(parsePath('/list', { page: '2' }), {
+      'content': { branchKey: 'list', serializedParams: { page: '2' }, routePath: 'list', queryParts: { page: '2' } }
     })
 
     assert.deepEqual(parsePath('/invoice/test/details'), {
-      'content': { branchKey: 'invoice', serializedParams: { id: 'test' }, routePath: 'invoice/test' },
-      'content/content': { branchKey: 'details', serializedParams: {}, routePath: 'invoice/test/details' },
+      'content': { branchKey: 'invoice', serializedParams: { id: 'test' }, routePath: 'invoice/test', queryParts: {} },
+      'content/content': { branchKey: 'details', serializedParams: {}, routePath: 'invoice/test/details', queryParts: {} },
     })
   })
 

@@ -54,7 +54,6 @@ describe("Junction", function() {
       testBranch: Branch({
         params: {
           required: Param({ required: true }),
-          requiredAndHidden: Param({ required: true, hidden: true }),
           defaulted: Param({ default: "1" }),
           optional: Param({}),
         },

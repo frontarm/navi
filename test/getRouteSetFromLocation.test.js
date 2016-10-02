@@ -44,6 +44,19 @@ describe('getRouteSetFromLocation', function() {
       assert.equal(childRoute.isRouteInPath, true)
       assert.deepEqual(childRoute.junctionPath, ['content', 'content'])
     })
+
+    it('correctly distributes search parameters to routes', function() {
+      const junctionSet = JunctionSets.appScreen
+      const parsePath = createPathParser(junctionSet)
+      const baseLocation = {}
+      const location = { pathname: '/invoices/list', search: '?pageSize=10&admin&page=3' }
+      const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
+      const route = routeSet.content
+
+      assert.strictEqual(route.children.content.params.pageSize, 10)
+      assert.strictEqual(route.children.content.params.page, 3)
+      assert.strictEqual(route.params.admin, true)
+    })
   })
 
   describe('when passed location with state only', function() {
@@ -102,7 +115,6 @@ describe('getRouteSetFromLocation', function() {
     const parsePath = createPathParser(junctionSet)
     const baseLocation = { pathname: '/' }
     const location = { pathname: '/' }
-
     const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
 
     const defaultRoute = routeSet.content.children.content
@@ -110,14 +122,21 @@ describe('getRouteSetFromLocation', function() {
     assert.equal(defaultRoute.branch.key, 'list', 'selects a default branch')
   })
 
-  it('returns null when an unknown path is received')
+  it('returns null when an unknown path is received', function() {
+    const junctionSet = JunctionSets.appScreen
+    const parsePath = createPathParser(junctionSet)
+    const baseLocation = { pathname: '/' }
+    const location = { pathname: '/FAIL' }
+    const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
+
+    assert.equal(routeSet, null)
+  })
 
   it('ignores the pathname part of baseLocation', function() {
     const junctionSet = JunctionSets.invoiceListScreen
     const parsePath = createPathParser(junctionSet)
     const baseLocation = { pathname: '/mountpoint' }
     const location = { pathname: '/mountpoint/invoice/test' }
-
     const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
 
     assert.equal(routeSet.content.branch, junctionSet.content.invoice, 'selects the correct branch')

@@ -50,4 +50,10 @@ describe('getLocationFromRouteSet', function() {
       'parent/content': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
     })
   })
+
+  it('adds search parameters when they differ from defaults')
+
+  it('does not add search parameters when they equal a default value')
+
+  it('does not add search parameters for undefined query items')
 })

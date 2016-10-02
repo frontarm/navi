@@ -1,5 +1,7 @@
 import { deserializeParams } from './SerializationUtils'
+import { parseSearch } from './SearchUtils'
 import { LocatedRoute } from './Routes'
+import omit from './omit'
 
 
 function getDefaultChildren(baseLocation, isRouteInPath, junctionPath, junctionSetMeta) {
@@ -29,7 +31,7 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
   // TODO:
   // - memoize by object equality of the previous invocation (only need memory size of 1)
 
-  const baseLocation = _baseLocation || {}
+  const baseLocation = _baseLocation ? Object.assign({}, _baseLocation, { query: parseSearch(_baseLocation.search) }) : { query: {} }
   const basePath = baseLocation.pathname
 
   const locationState = location.state || {}
@@ -46,15 +48,17 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
     path = location.pathname || ''
   }
 
+
+  const query = omit(parseSearch(location.search), Object.keys(baseLocation.query))
+
   let pathState = {}
   if (path !== '') {
-    pathState = parsePath(path)
+    pathState = parsePath(path, query)
     if (!pathState) {
       return
     }
   }
 
-  const query = {} // TODO: extract query string params and add to state
   const state = Object.assign({}, locationState.$$junctions, pathState)
   const routeSet = {}
   const baseSet = {}
@@ -90,6 +94,7 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
 
     // Copy all state paths except our children
     const newBaseState = {}
+    const newBaseQuery = {}
     const newBasePath = [basePath || '']
     let j = 0
     while (j < i) {
@@ -98,6 +103,10 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
       // so we can use these to build our basePath
       if (state[stateKey].routePath) {
         newBasePath.push(state[stateKey].routePath)
+
+        if (state[stateKey].queryParts) {
+          Object.assign(newBaseQuery, state[stateKey].queryParts)
+        }
       }
       else {
         newBaseState[stateKey] = state[stateKey]
@@ -119,8 +128,7 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
       state: Object.assign({}, baseLocation.state, {
         $$junctions: newBaseState
       }),
-      // TODO: search
-      search: baseLocation.search,
+      query: Object.assign({}, baseLocation.query, newBaseQuery),
     } 
 
     const children =

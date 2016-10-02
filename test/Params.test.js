@@ -17,7 +17,6 @@ describe("Param", function() {
   it("returns a Param", function() {
     const param = Param({
       required: true,
-      hidden: true,
       default: 1,
       serializer: Serializers.number,
     })

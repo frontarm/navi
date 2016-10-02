@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { Branch, isBranchTemplate } = require('../lib/junctions')
+const { Param, JunctionSet, Junction, Branch, isBranchTemplate } = require('../lib/junctions')
 const Params = require('./fixtures/Params')
 const JunctionSets = require('./fixtures/JunctionSets')
 
@@ -28,6 +28,25 @@ describe("Branch", function() {
     })
 
     assert(isBranchTemplate(branchTemplate))
+  })
+
+  it("fails when given a non-pattern param key which is already taken by a child branch", function() {
+    const childJunctions = JunctionSet({
+      x: Junction({
+        y: Branch({
+          params: { page: Param() },
+        })
+      })
+    }, 'x')
+
+    assert.throws(() => {
+      Junction({
+        a: Branch({
+          params: { page: Param() },
+          children: childJunctions
+        })
+      })
+    })
   })
 
   it("fails when given a param key with the non alphanumeric/underscore value 'a1-'", function() {

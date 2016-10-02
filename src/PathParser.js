@@ -25,7 +25,7 @@ export function createPathParser(junctionSet) {
     }
   }
 
-  return function parsePath(path) {
+  return function parsePath(path, query) {
     const strippedPath = path.replace(/^\/|\/($|\?)/g, '')
     const branches = {}
 
@@ -66,10 +66,21 @@ export function createPathParser(junctionSet) {
           }
         }
 
+        const queryParts = {}
+        for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
+          const queryKey = branch.queryKeys[i]
+          if (query[queryKey]) {
+            const value = query[queryKey]
+            queryParts[queryKey] = value
+            serializedParams[queryKey] = value
+          }
+        }
+
         branches[junctionPath] = {
           branchKey: branch.key,
           serializedParams: serializedParams,
-          routePath: pathParts.slice(0, i).join('/')
+          routePath: pathParts.slice(0, i).join('/'),
+          queryParts: queryParts,
         }
 
         next = childNode

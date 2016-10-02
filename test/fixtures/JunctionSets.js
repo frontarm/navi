@@ -1,5 +1,6 @@
 const { JunctionSet, Junction, Branch, Param } = require('../../lib/junctions')
 const Junctions = require('./Junctions')
+const Serializers = require('./Serializers')
 
 
 module.exports = {
@@ -15,7 +16,13 @@ module.exports = {
   get invoiceListScreen() {
     return JunctionSet({
       content: Junction({
-        list: Branch({}),
+        list: Branch({
+          path: '/list',
+          params: {
+            page: Param({ default: 1, serializer: Serializers.number }),
+            pageSize: Param({ default: 20, serializer: Serializers.number }),
+          }
+        }),
         invoice: Branch({
           data: {
             component: 'invoiceScreen',
@@ -37,9 +44,12 @@ module.exports = {
       content: Junction({
         dashboard: Branch(),
         invoices: Branch({
+          params: {
+            admin: Param({ serializer: Serializers.flag }),
+          },
           children: module.exports.invoiceListScreen,
         }),
       }, 'invoices')
-    })
+    }, 'content')
   }
 }

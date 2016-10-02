@@ -2,17 +2,18 @@ import { formatPattern } from './PatternUtils'
 import { serializeParams } from './SerializationUtils'
 import getLocationFromRouteSet from './getLocationFromRouteSet'
 import joinPaths from './joinPaths'
+import splitBy from './splitBy'
+import { createSearch } from './SearchUtils'
 
 
 function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch, params) {
   if (isRouteInPath) {
-    // TODO: put hidden params in state regardless
-
-    const path = formatPattern(branch.pattern, params)
-    const query = {} // TODO: handle query
+    const [included, excluded] = splitBy(params, branch.queryKeys)
+    const query = Object.assign({}, baseLocation.query, included)
     return {
-      pathname: joinPaths(baseLocation.pathname, path),
-      // TODO: search: mergeQueryStrings(baseLocation.search, createQueryString(query)),
+      pathname: joinPaths(baseLocation.pathname, formatPattern(branch.pattern, excluded)),
+      query: query,
+      search: createSearch(query),
       hash: baseLocation.hash,
       state: baseLocation.state,
       key: baseLocation.key,
@@ -23,7 +24,8 @@ function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch,
 
     return {
       pathname: baseLocation.pathname,
-      // TODO: search: mergeQueryStrings(baseLocation.search, createQueryString(query)),
+      query: baseLocation.query,
+      search: createSearch(baseLocation.query),
       hash: baseLocation.hash,
       state: Object.assign({}, baseState, {
         $$junctions: Object.assign({}, baseState.$$junctions, {
@@ -92,9 +94,9 @@ export class Route {
     this.params = getDefaultParams(branch.params, params)
     this.children = children
 
-    Object.defineProperty(this, 'getLocation', {
+    Object.defineProperty(this, 'locate', {
       get: () => {
-        throw new Error(`You cannot access the 'getLocation' function on routes created directly with Branch. Instead, use the 'link' passed in via your component's props.`)  
+        throw new Error(`You cannot access the 'locate' function on routes created directly with Branch. Instead, use the 'link' passed in via your component's props.`)  
       },
       configurable: true,
     })
@@ -109,7 +111,7 @@ export class LocatedRoute extends Route {
     this.isRouteInPath = isRouteInPath
     this.junctionPath = junctionPath
 
-    Object.defineProperty(this, 'getLocation', {
+    Object.defineProperty(this, 'locate', {
       value: (routeSet) => {
         return (
           routeSet

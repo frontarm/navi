@@ -48,12 +48,17 @@ export function isLocatedRoute(x) {
 
 
 export function JunctionSet(_junctions, primaryKey) {
+  if (primaryKey && !_junctions[primaryKey]) {
+    throw new Error(`A JunctionSet was created with primary key "${primaryKey}", but no junction with that key was given.`)
+  }
+
   const junctionKeys = Object.keys(_junctions)
   const junctions = {}
   const junctionSetMeta = {
     junctions,
     junctionKeys,
     primaryKey,
+    queryKeys: primaryKey && _junctions[primaryKey].$$junctionMeta.queryKeys,
   }
   Object.defineProperty(junctions, '$$junctionSetMeta', { value: junctionSetMeta })
   Object.assign(junctions, _junctions)
@@ -62,10 +67,7 @@ export function JunctionSet(_junctions, primaryKey) {
   if (junctionKeys.length === 0) {
     throw new Error('JunctionSet requires at least one Junction to be passed in')
   }
-  if (primaryKey && !junctions[primaryKey]) {
-    throw new Error(`A JunctionSet was created with primary key "${primaryKey}", but no junction with that key was given.`)
-  }
-
+  
   for (let i = 0, len = junctionKeys.length; i < len; i++) {
     const key = junctionKeys[i]
 
@@ -84,7 +86,7 @@ function createDefaultPattern(key, branchParams) {
   const paramNames =
     branchParamKeys.filter(key => {
       const param = branchParams[key]
-      return (param.required || param.default) && !param.hidden
+      return param.required || param.default
     })
         
   return {
@@ -97,6 +99,7 @@ function createDefaultPattern(key, branchParams) {
 export function Junction(branchTemplates, defaultKey) {
   const junctionMeta = {}
   const branches = {}
+  const queryKeys = {}
   Object.defineProperty(branches, '$$junctionMeta', { value: junctionMeta })
 
   if (defaultKey && !branchTemplates[defaultKey]) {
@@ -124,13 +127,25 @@ export function Junction(branchTemplates, defaultKey) {
     }
 
     const branch = (params={}, children={}) => Object.freeze(new Route(branch, params, children))
+    const pattern = branchTemplate.pattern || createDefaultPattern(key, branchTemplate.params)
 
     branch.key = key
-    branch.pattern = branchTemplate.pattern || createDefaultPattern(key, branchTemplate.params)
+    branch.pattern = pattern
     branch.data = branchTemplate.data
     branch.params = branchTemplate.params
+    branch.queryKeys = Object.keys(branch.params).filter(x => !pattern.paramNames.includes(x))
+
+    for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
+      queryKeys[branch.queryKeys[i]] = true
+    }
 
     if (branchTemplate.children) {
+      const childQueryKeys = branchTemplate.children.$$junctionSetMeta.queryKeys
+      const duplicateKey = branch.queryKeys.find(x => childQueryKeys.includes(x))
+      if (duplicateKey) {
+        throw new Error(`The param "${duplicateKey}" was specified in branches "${key}" as well as one of its child branches`)
+      }
+
       branch.children = branchTemplate.children
     }
     
@@ -149,12 +164,17 @@ export function Junction(branchTemplates, defaultKey) {
   junctionMeta.branchKeys = branchKeys
   junctionMeta.branchValues = branchKeys.map(k => branches[k])
   junctionMeta.defaultKey = defaultKey
+  junctionMeta.queryKeys = Object.keys(queryKeys)
 
   return Object.freeze(branches)
 }
 
 
 export function Branch(options = {}) {
+  if ('children' in options && !isJunctionSet(options.children)) {
+    throw new Error(`A 'children' key was specified for a Branch, but no value was specified.`)
+  }
+
   const data = Object.freeze(options.data || {})
   const params = options.params || {}
   const paramNames = Object.keys(params)
@@ -172,15 +192,14 @@ export function Branch(options = {}) {
     throw new Error(`If a Branch specifies a "data" option, it must be an Object. Instead, it was of type "${typeof data}".`)
   }
 
+  const pattern = options.path && compilePattern(options.path, paramNames)
+
   const branchTemplate = {
-    pattern: options.path && compilePattern(options.path, paramNames),
+    pattern: pattern,
     data: data,
     params: params,
   }
 
-  if ('children' in options && !isJunctionSet(options.children)) {
-    throw new Error(`A 'children' key was specified for a Branch, but no value was specified.`)
-  }
   if (options.children) {
     if (!isJunctionSet(options.children)) {
       throw new Error(`The "children" option of a Branch must be a JunctionSet.`)
@@ -205,7 +224,6 @@ const nonEmptyStringSerialier = Serializer({
  * 
  * @param {Object}          options
  * @param {function | any}  options.default     A default value, or function to generate one
- * @param {boolean}         options.hidden      Forces storage in state instead of URL. If also required, prevents the route from being parsed from URLs
  * @param {boolean}         options.required    Throw an error if a route is created without this param
  * @param {Serializer}      options.serializer  How to serialize/deserialize
  */
@@ -217,7 +235,6 @@ export function Param(options = {}) {
   const param = {
     default: options.default,
     required: options.required || false,
-    hidden: options.hidden || false,
     serializer: options.serializer || nonEmptyStringSerialier,
   }
 
