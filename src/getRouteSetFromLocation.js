@@ -2,22 +2,21 @@ import { deserializeParams } from './SerializationUtils'
 import { LocatedRoute } from './Routes'
 
 
-function getDefaultChildren(baseLocation, isRouteInPath, junctionPath, junctionSet) {
+function getDefaultChildren(baseLocation, isRouteInPath, junctionPath, junctionSetMeta) {
   const children = {}
+  const junctionKeys = junctionSetMeta.junctionKeys
+  for (let i = 0, len = junctionKeys.length; i < len; i++) {
+    const key = junctionKeys[i]
+    const junctionMeta = junctionSetMeta.junctions[key].$$junctionMeta
+    
+    if (junctionMeta.defaultKey) {
+      const branch = junctionMeta.branches[junctionMeta.defaultKey]
+      const routeJunctionPath = junctionPath.concat(key)
+      const isBranchRouteInPath = isRouteInPath && key == junctionSetMeta.primaryKey
+      const route = children[key] = new LocatedRoute(baseLocation, isBranchRouteInPath, routeJunctionPath, branch)
 
-  if (junctionSet && junctionSet.junctions) {
-    const junctionKeys = junctionSet.junctionKeys
-    for (let i = 0, len = junctionKeys.length; i < len; i++) {
-      const key = junctionKeys[i]
-      const junction = junctionSet.junctions[key]
-      
-      if (junction.defaultKey) {
-        const branch = junction.branches[junction.defaultKey]
-        const routeJunctionPath = junctionPath.concat(key)
-        const isBranchRouteInPath = isRouteInPath && key == junctionSet.primaryKey
-        const route = children[key] = new LocatedRoute(baseLocation, isBranchRouteInPath, routeJunctionPath, branch)
-
-        Object.assign(route.children, getDefaultChildren(route.baseLocation, isBranchRouteInPath, routeJunctionPath, branch.children))
+      if (branch.children) {
+        Object.assign(route.children, getDefaultChildren(route.baseLocation, isBranchRouteInPath, routeJunctionPath, branch.children.$$junctionSetMeta))
       }
     }
   }
@@ -56,7 +55,7 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
   }
 
   const query = {} // TODO: extract query string params and add to state
-  const state = Object.assign({}, locationState.junctions, pathState)
+  const state = Object.assign({}, locationState.$$junctions, pathState)
   const routeSet = {}
   const baseSet = {}
 
@@ -64,7 +63,7 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
 
   if (walkOrder.length === 0) {
     // We have a valid path but no state, so use defaults on the root junctions
-    return getDefaultChildren(baseLocation, true, [], junctionSet)
+    return getDefaultChildren(baseLocation, true, [], junctionSet.$$junctionSetMeta)
   }
 
   const junctionPaths = walkOrder.map(key => key.split('/'))
@@ -78,15 +77,15 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
     let junctionSetNode = junctionSet
     for (let i = 0, len = junctionPath.length - 1; i < len; i++) {
       const key = junctionPath[i]
-      const junctionNode = junctionSetNode.junctions[key]
+      const junctionNode = junctionSetNode[key]
       const routeNode = routeSetNode[key]
       routeSetNode = routeNode.children
-      junctionSetNode = junctionNode.branches[routeNode.branch.key].children
+      junctionSetNode = junctionNode[routeNode.branch.key].children
     }
 
-    const junction = junctionSetNode.junctions[key]
+    const junction = junctionSetNode[key]
     const { branchKey, serializedParams, routePath } = state[stateKey]
-    const branch = junction.branches[branchKey]
+    const branch = junction[branchKey]
     const params = deserializeParams(branch.params, serializedParams)
 
     // Copy all state paths except our children
@@ -118,13 +117,17 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
       pathname: newBasePath.join('/'),
       hash: baseLocation.hash,
       state: Object.assign({}, baseLocation.state, {
-        junctions: newBaseState
+        $$junctions: newBaseState
       }),
       // TODO: search
       search: baseLocation.search,
     } 
 
-    const children = isChildless ? getDefaultChildren(routeBaseLocation, !!routePath, junctionPath, branch.children) : {}
+    const children =
+      isChildless && branch.children
+        ? getDefaultChildren(routeBaseLocation, !!routePath, junctionPath, branch.children.$$junctionSetMeta)
+        : {}
+
     routeSetNode[key] = new LocatedRoute(routeBaseLocation, !!routePath, junctionPath, branch, params, children)
   }
 

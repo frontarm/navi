@@ -1,6 +1,7 @@
 import { formatPattern } from './PatternUtils'
 import { serializeParams } from './SerializationUtils'
 import getLocationFromRouteSet from './getLocationFromRouteSet'
+import joinPaths from './joinPaths'
 
 
 function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch, params) {
@@ -10,7 +11,7 @@ function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch,
     const path = formatPattern(branch.pattern, params)
     const query = {} // TODO: handle query
     return {
-      pathname: baseLocation.pathname + '/' + path,
+      pathname: joinPaths(baseLocation.pathname, path),
       // TODO: search: mergeQueryStrings(baseLocation.search, createQueryString(query)),
       hash: baseLocation.hash,
       state: baseLocation.state,
@@ -25,7 +26,7 @@ function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch,
       // TODO: search: mergeQueryStrings(baseLocation.search, createQueryString(query)),
       hash: baseLocation.hash,
       state: Object.assign({}, baseState, {
-        junctions: Object.assign({}, baseState.junctions, {
+        $$junctions: Object.assign({}, baseState.$$junctions, {
           [junctionPath.join('/')]: {
             branchKey: branch.key,
             serializedParams: serializeParams(branch.params, params),
@@ -75,13 +76,13 @@ export class Route {
     const childKeys = Object.keys(children)
     for (let i = 0, len = childKeys.length; i < len; i++) {
       const key = childKeys[i]
-      if (!branch.children.junctions[key]) {
+      if (!branch.children[key]) {
         throw new Error(`A Route cannot be created with child key "${key}" which is not in the associated branch's children`)
       }
       if (children[key] && !(children[key] instanceof Route)) {
         throw new Error(`A Route cannot be created with a non-Route child (see child key "${key}")`)
       }
-      if (children[key] && !branch.children.junctions[key].branchValues.includes(children[key].branch)) {
+      if (children[key] && !branch.children[key].$$junctionMeta.branchValues.includes(children[key].branch)) {
         throw new Error(`A Route cannot be created with an unknown Branch type for key "${key}"`)
       }
     }
@@ -90,10 +91,13 @@ export class Route {
     this.data = branch.data
     this.params = getDefaultParams(branch.params, params)
     this.children = children
-  }
 
-  get getLocation() {
-    throw new Error(`You cannot access the 'getLocation' function on routes created directly with Branch. Instead, use the 'link' passed in via your component's props.`)
+    Object.defineProperty(this, 'getLocation', {
+      get: () => {
+        throw new Error(`You cannot access the 'getLocation' function on routes created directly with Branch. Instead, use the 'link' passed in via your component's props.`)  
+      },
+      configurable: true,
+    })
   }
 }
 
@@ -104,13 +108,15 @@ export class LocatedRoute extends Route {
     this.baseLocation = getRouteBaseLocation(parentBaseLocation, isRouteInPath, junctionPath, branch, this.params)
     this.isRouteInPath = isRouteInPath
     this.junctionPath = junctionPath
-  }
-  
-  getLocation(routeSet) {
-    return (
-      routeSet
-        ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.children, routeSet)
-        : this.baseLocation
-    )
+
+    Object.defineProperty(this, 'getLocation', {
+      value: (routeSet) => {
+        return (
+          routeSet
+            ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.children, routeSet)
+            : this.baseLocation
+        )
+      }
+    })
   }
 }

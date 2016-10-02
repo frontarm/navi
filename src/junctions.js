@@ -21,31 +21,23 @@ export function createConverter(junctionSet) {
 }
 
 
-const IS_JUNCTION_SET = Symbol()
-const IS_JUNCTION = Symbol()
-const IS_BRANCH_TEMPLATE = Symbol()
-const IS_BRANCH = Symbol()
-const IS_SERIALIZER = Symbol()
-const IS_PARAM = Symbol()
-
-
 export function isJunctionSet(x) {
-  return x instanceof Object && x[IS_JUNCTION_SET]
+  return x instanceof Object && x.$$junctionSetMeta
 }
 export function isJunction(x) {
-  return x instanceof Object && x[IS_JUNCTION]
+  return x instanceof Object && x.$$junctionMeta
 }
 export function isBranchTemplate(x) {
-  return x instanceof Object && x[IS_BRANCH_TEMPLATE]
+  return x instanceof Object && x.$$branchTemplate
 }
 export function isBranch(x) {
-  return x instanceof Object && x[IS_BRANCH]
+  return x instanceof Object && x.$$branch
 }
 export function isSerializer(x) {
-  return x instanceof Object && x[IS_SERIALIZER]
+  return x instanceof Object && x.$$serializer
 }
 export function isParam(x) {
-  return x instanceof Object && x[IS_PARAM]
+  return x instanceof Object && x.$$param
 }
 export function isRoute(x) {
   return x instanceof Route
@@ -55,8 +47,17 @@ export function isLocatedRoute(x) {
 }
 
 
-export function JunctionSet(junctions, primaryKey) {
-  const junctionKeys = Object.keys(junctions)
+export function JunctionSet(_junctions, primaryKey) {
+  const junctionKeys = Object.keys(_junctions)
+  const junctions = {}
+  const junctionSetMeta = {
+    junctions,
+    junctionKeys,
+    primaryKey,
+  }
+  Object.defineProperty(junctions, '$$junctionSetMeta', { value: junctionSetMeta })
+  Object.assign(junctions, _junctions)
+  Object.freeze(junctions)
 
   if (junctionKeys.length === 0) {
     throw new Error('JunctionSet requires at least one Junction to be passed in')
@@ -69,19 +70,11 @@ export function JunctionSet(junctions, primaryKey) {
     const key = junctionKeys[i]
 
     if (!/^[A-Za-z0-9_]+$/.test(key)) {
-      throw new Error('JunctionSet keys must only use the characters A-Z, a-z, 0-9 or _')
+      throw new Error(`JunctionSet keys must only use the characters A-Z, a-z, 0-9 or _. See key "${key}"`)
     }
   }
 
-  const junctionSet = {
-    junctions,
-    junctionKeys,
-    primaryKey,
-  }
-
-  Object.defineProperty(junctionSet, IS_JUNCTION_SET, { value: true })
-
-  return junctionSet
+  return junctions
 }
 
 
@@ -102,7 +95,9 @@ function createDefaultPattern(key, branchParams) {
 }
 
 export function Junction(branchTemplates, defaultKey) {
+  const junctionMeta = {}
   const branches = {}
+  Object.defineProperty(branches, '$$junctionMeta', { value: junctionMeta })
 
   if (defaultKey && !branchTemplates[defaultKey]) {
     throw new Error(`A Junction specified default key '${def}', but not Branch with that key exists.`)
@@ -145,21 +140,17 @@ export function Junction(branchTemplates, defaultKey) {
     }
     patternIds[patternId] = true
 
-    Object.defineProperty(branch, IS_BRANCH, { value: true })
+    Object.defineProperty(branch, '$$branch', { value: true })
 
     branches[key] = Object.freeze(branch)
   }
     
-  const junction = {
-    branches,
-    branchKeys,
-    branchValues: branchKeys.map(k => branches[k]),
-    defaultKey
-  }
+  junctionMeta.branches = branches
+  junctionMeta.branchKeys = branchKeys
+  junctionMeta.branchValues = branchKeys.map(k => branches[k])
+  junctionMeta.defaultKey = defaultKey
 
-  Object.defineProperty(junction, IS_JUNCTION, { value: true })
-
-  return Object.freeze(junction)
+  return Object.freeze(branches)
 }
 
 
@@ -198,7 +189,7 @@ export function Branch(options = {}) {
     branchTemplate.children = options.children
   }
 
-  Object.defineProperty(branchTemplate, IS_BRANCH_TEMPLATE, { value: true })
+  Object.defineProperty(branchTemplate, '$$branchTemplate', { value: true })
 
   return Object.freeze(branchTemplate)
 }
@@ -230,7 +221,7 @@ export function Param(options = {}) {
     serializer: options.serializer || nonEmptyStringSerialier,
   }
 
-  Object.defineProperty(param, IS_PARAM, { value: true })
+  Object.defineProperty(param, '$$param', { value: true })
 
   return param
 }
@@ -247,7 +238,7 @@ export function Serializer(options) {
 
   const serializer = Object.assign({}, options)
 
-  Object.defineProperty(serializer, IS_SERIALIZER, { value: true })
+  Object.defineProperty(serializer, '$$serializer', { value: true })
 
   return serializer
 }

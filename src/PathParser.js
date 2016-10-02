@@ -1,16 +1,16 @@
 export function createPathParser(junctionSet) {
   const tree = {}
-  const queue = [[junctionSet, tree, []]]
+  const queue = [[junctionSet.$$junctionSetMeta, tree, []]]
   while (queue.length) {
-    const [junctionNode, treeNode, junctionPath] = queue.shift()
-    const primaryJunctionKey = junctionNode.primaryKey
+    const [junctionSetMetaNode, treeNode, junctionPath] = queue.shift()
+    const primaryJunctionKey = junctionSetMetaNode.primaryKey
 
     if (primaryJunctionKey) {
-      const primaryJunction = junctionNode.junctions[primaryJunctionKey]
-      const branchKeys = primaryJunction.branchKeys
+      const primaryJunction = junctionSetMetaNode.junctions[primaryJunctionKey]
+      const branchKeys = primaryJunction.$$junctionMeta.branchKeys
 
       for (let i = 0, len = branchKeys.length; i < len; i++) {
-        const branch = primaryJunction.branches[branchKeys[i]]
+        const branch = primaryJunction[branchKeys[i]]
         const childNode = {}
         const nextJunctionPath = junctionPath.concat(primaryJunctionKey)
         treeNode[branch.pattern.id] = {
@@ -19,7 +19,7 @@ export function createPathParser(junctionSet) {
           junctionPath: nextJunctionPath.join('/'),
         }
         if (branch.children) {
-          queue.push([branch.children, childNode, nextJunctionPath])
+          queue.push([branch.children.$$junctionSetMeta, childNode, nextJunctionPath])
         }
       }
     }

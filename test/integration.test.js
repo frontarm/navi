@@ -57,7 +57,7 @@ describe('Integration: ', function() {
     const location = {
       pathname: '/mountpoint/invoices/1/abc123/details',
       state: {
-        junctions: {
+        $$junctions: {
           'content/addModal': { branchKey: 'open', serializedParams: {} },
         },
       },
@@ -67,6 +67,6 @@ describe('Integration: ', function() {
     const reverseLocation = getLocationFromRouteSet(this.baseLocation, true, [], this.junctionSet, routeSet)
 
     assert.equal(location.pathname, reverseLocation.pathname)
-    assert.deepEqual(location.state.junctions, reverseLocation.state.junctions)
+    assert.deepEqual(location.state.$$junctions, reverseLocation.state.$$junctions)
   })
 })

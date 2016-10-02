@@ -1,5 +1,6 @@
 import { serializeParams } from './SerializationUtils'
 import { formatPattern } from './PatternUtils'
+import joinPaths from './joinPaths'
 
 
 function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, routeSet) {
@@ -14,9 +15,9 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
     const route = routeSet[routeKey]
     const branch = route.branch
 
-    const isPrimaryRoute = isRouteInPath && junctionSet.primaryKey == routeKey
+    const isPrimaryRoute = isRouteInPath && junctionSet.$$junctionSetMeta.primaryKey == routeKey
     if (isPrimaryRoute) {
-      path = formatPattern(route.branch.pattern, route.params)
+      path = formatPattern(branch.pattern, route.params)
 
       // TODO:
       // - add query from rest of params
@@ -25,7 +26,7 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
     else {
       state[junctionPath.join('/')] = {
         branchKey: branch.key,
-        serializedParams: serializeParams(route.branch.params, route.params),
+        serializedParams: serializeParams(branch.params, route.params),
       }
     }
 
@@ -55,9 +56,9 @@ export default function getLocationFromRouteSet(baseLocation, isRouteInPath, par
   const baseState = baseLocation.state || {}
 
   return {
-    pathname: baseLocation.pathname + (path ? ((baseLocation.pathname.substr(-1) === '/' ? '' : '/') + path) : ''),
+    pathname: joinPaths(baseLocation.pathname, path),
     hash: baseLocation.hash,
-    state: Object.assign({}, baseState, { junctions: Object.assign(state, baseState.junctions) }),
+    state: Object.assign({}, baseState, { $$junctions: Object.assign(state, baseState.$$junctions) }),
     key: baseLocation.key,
 
     // TODO: search: mergeQueryStrings(baseLocation.search, createQueryString(query)),

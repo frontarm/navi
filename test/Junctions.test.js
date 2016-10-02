@@ -45,7 +45,7 @@ describe("Junction", function() {
       attachment: BranchTemplates.attachment,
     }, 'details')
 
-    assert(isBranch(junction.branches.details))
+    assert(isBranch(junction.details))
   })
 
 
@@ -61,7 +61,7 @@ describe("Junction", function() {
       }),
     })
 
-    const formattedPath = formatPattern(junction.branches.testBranch.pattern, {
+    const formattedPath = formatPattern(junction.testBranch.pattern, {
       required: 'a',
       defaulted: 'b',
     })
@@ -110,14 +110,14 @@ describe("Junction#branches.branchName", function() {
       }),
     })
 
-    const route = junction.branches.invoices(
+    const route = junction.invoices(
       { page: 2 },
-      { content: childJunctionSet.junctions.content.branches.details() }
+      { content: childJunctionSet.content.details() }
     )
 
     assert.equal(route.constructor, Route)
-    assert.equal(route.branch, junction.branches.invoices)
+    assert.equal(route.branch, junction.invoices)
     assert.equal(route.params.page, 2)
-    assert.equal(route.children.content.branch, childJunctionSet.junctions.content.branches.details)
+    assert.equal(route.children.content.branch, childJunctionSet.content.details)
   })
 })
