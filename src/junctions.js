@@ -2,6 +2,24 @@ import { Route, LocatedRoute } from './Routes'
 import { compilePattern } from './PatternUtils'
 import hyphenize from './hyphenize'
 
+import { createPathParser } from './PathParser'
+import getLocationFromRouteSet from './getLocationFromRouteSet'
+import getRouteSetFromLocation from './getRouteSetFromLocation'
+
+
+export function createConverter(junctionSet) {
+  const parsePath = createPathParser(junctionSet)
+
+  return {
+    getLocationFromRouteSet(baseLocation, routeSet) {
+      return getLocationFromRouteSet(baseLocation, true, [], junctionSet, routeSet)
+    },
+    getRouteSetFromLocation(baseLocation, location) {
+      return getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
+    },
+  }
+}
+
 
 const IS_JUNCTION_SET = Symbol()
 const IS_JUNCTION = Symbol()

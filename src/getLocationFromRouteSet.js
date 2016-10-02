@@ -55,10 +55,12 @@ export default function getLocationFromRouteSet(baseLocation, isRouteInPath, par
   const baseState = baseLocation.state || {}
 
   return {
-    pathname: baseLocation.pathname + (path ? '/' + path : ''),
-    // TODO: search: mergeQueryStrings(baseLocation.search, createQueryString(query)),
+    pathname: baseLocation.pathname + (path ? ((baseLocation.pathname.substr(-1) === '/' ? '' : '/') + path) : ''),
     hash: baseLocation.hash,
     state: Object.assign({}, baseState, { junctions: Object.assign(state, baseState.junctions) }),
     key: baseLocation.key,
+
+    // TODO: search: mergeQueryStrings(baseLocation.search, createQueryString(query)),
+    search: baseLocation.search,
   }
 }

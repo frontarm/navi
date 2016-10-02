@@ -15,19 +15,31 @@ module.exports = {
   get invoiceListScreen() {
     return JunctionSet({
       content: Junction({
+        list: Branch({}),
         invoice: Branch({
           data: {
-            component: 'invoiceScreen'
+            component: 'invoiceScreen',
           },
           params: {
             id: Param({ required: true }),
           },
           children: module.exports.invoiceScreen,
         }),
-      }),
+      }, 'list'),
       addModal: Junction({
         open: Branch(),
       }),
     }, 'content')
+  },
+
+  get appScreen() {
+    return JunctionSet({
+      content: Junction({
+        dashboard: Branch(),
+        invoices: Branch({
+          children: module.exports.invoiceListScreen,
+        }),
+      }, 'invoices')
+    })
   }
 }

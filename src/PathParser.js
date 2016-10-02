@@ -29,7 +29,11 @@ export function createPathParser(junctionSet) {
     const strippedPath = path.replace(/^\/|\/($|\?)/g, '')
     const branches = {}
 
-    let pathParts = strippedPath === '' ? [] : strippedPath.split('/')
+    if (strippedPath === '') {
+      return
+    }
+
+    let pathParts = strippedPath.split('/')
     let next = tree
     let i = 0
     while (i < pathParts.length) {

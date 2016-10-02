@@ -69,16 +69,4 @@ describe('Integration: ', function() {
     assert.equal(location.pathname, reverseLocation.pathname)
     assert.deepEqual(location.state.junctions, reverseLocation.state.junctions)
   })
-
-  it('getRouteSetFromLocation reverts the result of getLocationFromRouteSet'/*, function() {
-    const routeSet = {
-      
-    }
-    
-    const location = getLocationFromRouteSet(this.baseLocation, true, [], this.junctionSet, routeSet)
-    const reverseRouteSet = getRouteSetFromLocation(this.parsePath, this.baseLocation, this.junctionSet, location)
-
-    // assert.equal(location.pathname, reverseLocation.pathname)
-    // assert.deepEqual(location.state.junctions, reverseLocation.state.junctions)
-  }*/)
 })

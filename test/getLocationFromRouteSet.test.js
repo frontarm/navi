@@ -10,7 +10,7 @@ describe('getLocationFromRouteSet', function() {
   it('returns correct location from a childless Route with path', function() {
     const junctionSet = JunctionSets.invoiceListScreen
     const route = junctionSet.junctions.content.branches.invoice({ id:'test-id' })
-    const location = getLocationFromRouteSet({ pathname: '' }, true, [], junctionSet, { content: route })
+    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { content: route })
     
     assert.equal(location.pathname, '/invoice/test-id')
     assert.deepEqual(location.state.junctions, {})

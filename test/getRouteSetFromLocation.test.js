@@ -97,18 +97,20 @@ describe('getRouteSetFromLocation', function() {
     })
   })
 
-  it('selects default branches when necessary', function() {
-    const junctionSet = JunctionSets.invoiceListScreen
+  it('selects default branches on known paths', function() {
+    const junctionSet = JunctionSets.appScreen
     const parsePath = createPathParser(junctionSet)
-    const baseLocation = {}
-    const location = { pathname: '/invoice/test' }
+    const baseLocation = { pathname: '/' }
+    const location = { pathname: '/' }
 
     const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
 
     const defaultRoute = routeSet.content.children.content
 
-    assert.equal(defaultRoute.branch.key, 'details', 'selects a default branch')
+    assert.equal(defaultRoute.branch.key, 'list', 'selects a default branch')
   })
+
+  it('returns null when an unknown path is received')
 
   it('ignores the pathname part of baseLocation', function() {
     const junctionSet = JunctionSets.invoiceListScreen
