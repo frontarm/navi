@@ -49,6 +49,7 @@ describe('Integration: ', function() {
       state: {
         lessAwesomeRouter: true,
       },
+      query: {}
     }
     this.parsePath = createPathParser(this.junctionSet)
   })
@@ -61,6 +62,7 @@ describe('Integration: ', function() {
           'content/addModal': { branchKey: 'open', serializedParams: {} },
         },
       },
+      query: {}
     }
     
     const routeSet = getRouteSetFromLocation(this.parsePath, this.baseLocation, this.junctionSet, location)

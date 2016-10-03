@@ -2,18 +2,28 @@ import { formatPattern } from './PatternUtils'
 import { serializeParams } from './SerializationUtils'
 import getLocationFromRouteSet from './getLocationFromRouteSet'
 import joinPaths from './joinPaths'
-import splitBy from './splitBy'
+import select from './select'
 import { createSearch } from './SearchUtils'
 
 
 function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch, params) {
   if (isRouteInPath) {
-    const [included, excluded] = splitBy(params, branch.queryKeys)
-    const query = Object.assign({}, baseLocation.query, included)
+    const queryParams = {}
+    for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
+      const key = branch.queryKeys[i]
+      const value = params[key]
+      if (value !== undefined && value !== branch.params[key].default) {
+        queryParams[key] = value
+      }
+    }
+
+    const serializedQuery = serializeParams(branch.params, queryParams)
+    const serializedPathParams = serializeParams(branch.params, select(params, branch.queryKeys, false))
+
+    const query = Object.assign({}, serializedQuery, baseLocation.query)
     return {
-      pathname: joinPaths(baseLocation.pathname, formatPattern(branch.pattern, excluded)),
+      pathname: joinPaths(baseLocation.pathname, formatPattern(branch.pattern, serializedPathParams)),
       query: query,
-      search: createSearch(query),
       hash: baseLocation.hash,
       state: baseLocation.state,
       key: baseLocation.key,
@@ -25,7 +35,6 @@ function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch,
     return {
       pathname: baseLocation.pathname,
       query: baseLocation.query,
-      search: createSearch(baseLocation.query),
       hash: baseLocation.hash,
       state: Object.assign({}, baseState, {
         $$junctions: Object.assign({}, baseState.$$junctions, {
@@ -113,11 +122,14 @@ export class LocatedRoute extends Route {
 
     Object.defineProperty(this, 'locate', {
       value: (routeSet) => {
-        return (
-          routeSet
-            ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.children, routeSet)
-            : this.baseLocation
-        )
+        const location = routeSet
+          ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.children, routeSet)
+          : Object.assign({}, this.baseLocation)
+
+        location.search = createSearch(location.query)
+        delete location.query
+
+        return Object.freeze(location)
       }
     })
   }

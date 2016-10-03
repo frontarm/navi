@@ -1,7 +1,6 @@
 import { deserializeParams } from './SerializationUtils'
-import { parseSearch } from './SearchUtils'
 import { LocatedRoute } from './Routes'
-import omit from './omit'
+import select from './select'
 
 
 function getDefaultChildren(baseLocation, isRouteInPath, junctionPath, junctionSetMeta) {
@@ -27,11 +26,10 @@ function getDefaultChildren(baseLocation, isRouteInPath, junctionPath, junctionS
 }
 
 
-export default function getRouteSetFromLocation(parsePath, _baseLocation, junctionSet, location) {
+export default function getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location) {
   // TODO:
   // - memoize by object equality of the previous invocation (only need memory size of 1)
 
-  const baseLocation = _baseLocation ? Object.assign({}, _baseLocation, { query: parseSearch(_baseLocation.search) }) : { query: {} }
   const basePath = baseLocation.pathname
 
   const locationState = location.state || {}
@@ -49,8 +47,7 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
   }
 
 
-  const query = omit(parseSearch(location.search), Object.keys(baseLocation.query))
-
+  const query = select(location.query, Object.keys(baseLocation.query), false)
   let pathState = {}
   if (path !== '') {
     pathState = parsePath(path, query)
@@ -140,7 +137,7 @@ export default function getRouteSetFromLocation(parsePath, _baseLocation, juncti
   }
 
   // TODO:
-  // - walk routeSet and freeze everything
+  // - walk routeSet and freeze all routes and route sets
   
   return routeSet
 }

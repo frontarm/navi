@@ -1,5 +1,6 @@
 import { Route, LocatedRoute } from './Routes'
 import { compilePattern } from './PatternUtils'
+import { createSearch, parseSearch } from './SearchUtils'
 import hyphenize from './hyphenize'
 
 import { createPathParser } from './PathParser'
@@ -11,11 +12,17 @@ export function createConverter(junctionSet) {
   const parsePath = createPathParser(junctionSet)
 
   return {
-    getLocationFromRouteSet(baseLocation, routeSet) {
-      return getLocationFromRouteSet(baseLocation, true, [], junctionSet, routeSet)
+    getLocationFromRouteSet(routeSet, baseLocation={ pathname: '/' }) {
+      const baseLocationWithQuery = Object.assign({}, baseLocation, { query: parseSearch(baseLocation.search) })
+      const location = getLocationFromRouteSet(baseLocationWithQuery, true, [], junctionSet, routeSet)
+      location.search = createSearch(location.query)
+      delete location.query
+      return Object.freeze(location)
     },
-    getRouteSetFromLocation(baseLocation, location) {
-      return getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
+    getRouteSetFromLocation(location, baseLocation={ pathname: '/' }) {
+      const baseLocationWithQuery = Object.assign({}, baseLocation, { query: parseSearch(baseLocation.search) })
+      const locationWithQuery = Object.assign({}, location, { query: parseSearch(location.search) })
+      return getRouteSetFromLocation(parsePath, baseLocationWithQuery, junctionSet, locationWithQuery)
     },
   }
 }

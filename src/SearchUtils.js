@@ -25,7 +25,7 @@ export function parseSearch(search) {
   const queryParts = search.slice(1).split('&')
   for (let i = 0, len = queryParts.length; i < len; i++) {
     const x = queryParts[i].split('=')
-    query[x[0]] = decodeURIComponent(x[1])
+    query[x[0]] = x[1] ? decodeURIComponent(x[1]) : ''
   }
 
   return query

@@ -13,8 +13,8 @@ describe('getRouteSetFromLocation', function() {
       this.junctionSet = JunctionSets.invoiceListScreen
 
       const parsePath = createPathParser(this.junctionSet)
-      const baseLocation = {}
-      const location = { pathname: '/invoice/test/attachments' }
+      const baseLocation = { query: {} }
+      const location = { pathname: '/invoice/test/attachments', query: {} }
       
       this.routeSet = getRouteSetFromLocation(parsePath, baseLocation, this.junctionSet, location)
     })
@@ -44,18 +44,29 @@ describe('getRouteSetFromLocation', function() {
       assert.equal(childRoute.isRouteInPath, true)
       assert.deepEqual(childRoute.junctionPath, ['content', 'content'])
     })
+  })
 
-    it('correctly distributes search parameters to routes', function() {
+  describe('when given query parameters', function() {
+    beforeEach(function() {
       const junctionSet = JunctionSets.appScreen
       const parsePath = createPathParser(junctionSet)
-      const baseLocation = {}
-      const location = { pathname: '/invoices/list', search: '?pageSize=10&admin&page=3' }
+      const baseLocation = { query: {} }
+      const location = { pathname: '/invoices/list', query: { pageSize: '10', admin: '', page: '3' } }
       const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
-      const route = routeSet.content
+      this.route = routeSet.content
+    })
 
-      assert.strictEqual(route.children.content.params.pageSize, 10)
-      assert.strictEqual(route.children.content.params.page, 3)
-      assert.strictEqual(route.params.admin, true)
+    it('correctly distributes search parameters to routes', function() {
+      assert.strictEqual(this.route.children.content.params.pageSize, 10)
+      assert.strictEqual(this.route.children.content.params.page, 3)
+      assert.strictEqual(this.route.params.admin, true)
+    })
+
+    it('adds query parameters to baseLocation', function() {
+      assert.strictEqual(this.route.children.content.baseLocation.query.pageSize, '10')
+      assert.strictEqual(this.route.children.content.baseLocation.query.page, '3')
+      assert.strictEqual(this.route.children.content.baseLocation.query.admin, '')
+      assert.strictEqual(this.route.baseLocation.query.admin, '')
     })
   })
 
@@ -64,7 +75,7 @@ describe('getRouteSetFromLocation', function() {
       this.junctionSet = JunctionSets.invoiceListScreen
 
       const parsePath = createPathParser(this.junctionSet)
-      const baseLocation = { pathname: '/some-other-path' }
+      const baseLocation = { pathname: '/some-other-path', query: {} }
       const location = { 
         pathname: '/some-other-path',
         state: {
@@ -72,7 +83,8 @@ describe('getRouteSetFromLocation', function() {
             'content': { branchKey: 'invoice', serializedParams: { id: 'test' } },
             'content/content': { branchKey: 'details', serializedParams: {} },
           }
-        }
+        },
+        query: {}
       }
       
       this.routeSet = getRouteSetFromLocation(parsePath, baseLocation, this.junctionSet, location)
@@ -113,8 +125,8 @@ describe('getRouteSetFromLocation', function() {
   it('selects default branches on known paths', function() {
     const junctionSet = JunctionSets.appScreen
     const parsePath = createPathParser(junctionSet)
-    const baseLocation = { pathname: '/' }
-    const location = { pathname: '/' }
+    const baseLocation = { pathname: '/', query: {} }
+    const location = { pathname: '/', query: {} }
     const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
 
     const defaultRoute = routeSet.content.children.content
@@ -125,8 +137,8 @@ describe('getRouteSetFromLocation', function() {
   it('returns null when an unknown path is received', function() {
     const junctionSet = JunctionSets.appScreen
     const parsePath = createPathParser(junctionSet)
-    const baseLocation = { pathname: '/' }
-    const location = { pathname: '/FAIL' }
+    const baseLocation = { pathname: '/', query: {} }
+    const location = { pathname: '/FAIL', query: {} }
     const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
 
     assert.equal(routeSet, null)
@@ -135,8 +147,8 @@ describe('getRouteSetFromLocation', function() {
   it('ignores the pathname part of baseLocation', function() {
     const junctionSet = JunctionSets.invoiceListScreen
     const parsePath = createPathParser(junctionSet)
-    const baseLocation = { pathname: '/mountpoint' }
-    const location = { pathname: '/mountpoint/invoice/test' }
+    const baseLocation = { pathname: '/mountpoint', query: {} }
+    const location = { pathname: '/mountpoint/invoice/test', query: {} }
     const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
 
     assert.equal(routeSet.content.branch, junctionSet.content.invoice, 'selects the correct branch')

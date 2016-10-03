@@ -1,7 +1,6 @@
 import { serializeParams } from './SerializationUtils'
 import { formatPattern } from './PatternUtils'
 import joinPaths from './joinPaths'
-import { createSearch, parseSearch } from './SearchUtils'
 
 
 function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, routeSet) {
@@ -15,19 +14,25 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
     const junctionPath = parentJunctionPath.concat(routeKey)
     const route = routeSet[routeKey]
     const branch = route.branch
+    const serializedParams = serializeParams(branch.params, route.params)
 
     const isPrimaryRoute = isRouteInPath && junctionSet.$$junctionSetMeta.primaryKey == routeKey
     if (isPrimaryRoute) {
-      path = formatPattern(branch.pattern, route.params)
+      for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
+        const key = branch.queryKeys[i]
+        const value = serializedParams[key] 
+        if (value !== undefined && route.params[key] !== branch.params[key].default) {
+          query[key] = value
+        }
+        delete serializedParams[key]
+      }
 
-      // TODO:
-      // - add query from rest of params
-      // - throw error if there are remaining params
+      path = formatPattern(branch.pattern, serializedParams)
     }
     else {
       state[junctionPath.join('/')] = {
         branchKey: branch.key,
-        serializedParams: serializeParams(branch.params, route.params),
+        serializedParams: serializedParams,
       }
     }
 
@@ -35,13 +40,12 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
       const childLocation = getJunctionsLocation(isPrimaryRoute, junctionPath, branch.children, route.children)
 
       Object.assign(state, childLocation.state)
+      Object.assign(query, childLocation.query)
 
       if (childLocation.path) {
         path += '/' + childLocation.path
       }
     }
-
-    // TODO: handle child location query
   }
 
   return { state, path, query }
@@ -54,10 +58,8 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
 // See https://github.com/mjackson/history
 export default function getLocationFromRouteSet(baseLocation, isRouteInPath, parentJunctionPath, junctionSet, routeSet) {
   const { state, path, query } = getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, routeSet)
-
-  const baseQuery = parseSearch(baseLocation.search)
   const baseState = baseLocation.state || {}
-  const finalQuery = Object.assign({}, baseQuery, query)
+  const finalQuery = Object.assign({}, baseLocation.query, query)
 
   return {
     pathname: joinPaths(baseLocation.pathname, path),
@@ -65,6 +67,5 @@ export default function getLocationFromRouteSet(baseLocation, isRouteInPath, par
     state: Object.assign({}, baseState, { $$junctions: Object.assign(state, baseState.$$junctions) }),
     key: baseLocation.key,
     query: finalQuery,
-    search: createSearch(finalQuery),
   }
 }

@@ -51,9 +51,34 @@ describe('getLocationFromRouteSet', function() {
     })
   })
 
-  it('adds search parameters when they differ from defaults')
+  it('adds search parameters when they differ from defaults', function() {
+    const junctionSet = JunctionSets.appScreen
+    const route = junctionSet.content.invoices({
+      admin: true, 
+    }, {
+      content: junctionSet.content.invoices.children.content.list({
+        pageSize: 10,
+        page: 3,
+      }),
+    })
+    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { content: route })
+    
+    assert.strictEqual(location.query.pageSize, '10')
+    assert.strictEqual(location.query.page, '3')
+    assert.strictEqual(location.query.admin, '')
+  })
 
-  it('does not add search parameters when they equal a default value')
-
-  it('does not add search parameters for undefined query items')
+  it('does not add search parameters when they equal a default value', function() {
+    const junctionSet = JunctionSets.appScreen
+    const route = junctionSet.content.invoices({}, {
+      content: junctionSet.content.invoices.children.content.list({
+        pageSize: 20,
+        page: 1,
+      }),
+    })
+    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { content: route })
+    
+    assert.deepEqual(location.query, {})
+  })
 })
+  

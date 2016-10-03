@@ -69,7 +69,7 @@ export function createPathParser(junctionSet) {
         const queryParts = {}
         for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
           const queryKey = branch.queryKeys[i]
-          if (query[queryKey]) {
+          if (query[queryKey] !== undefined) {
             const value = query[queryKey]
             queryParts[queryKey] = value
             serializedParams[queryKey] = value
