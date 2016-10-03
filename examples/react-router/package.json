@@ -1,0 +1,21 @@
+{
+  "name": "react-router",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "react-scripts": "0.6.1"
+  },
+  "dependencies": {
+    "react": "^15.3.2",
+    "react-dom": "^15.3.2",
+    "react-router": "^2.8.1",
+    "react-junctions": "^0.0.1",
+    "junctions": "^0.0.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  }
+}
