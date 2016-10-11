@@ -1,4 +1,4 @@
-# <a href='https://github.com/jamesknelson/junctions/blob/master/README.md'><img src='https://raw.githubusercontent.com/jamesknelson/junctions/master/media/logo-title-dark.png' width='232'></a>
+# <a href='https://github.com/jamesknelson/junctions/blob/master/README.md'><img src='https://raw.githubusercontent.com/jamesknelson/junctions/master/media/logo-title-dark.png' alt="Junctions" width='232'></a>
 
 Composable and context-free routing for React, built on the excellent [history](https://github.com/mjackson/history) package.
 
@@ -9,16 +9,43 @@ Why use Junctions?
 - They're **context-free**. Now you can understand how your own app works!
 - They're **simple**. 6 exports. *Thats it.*
 
+## Demo
+
+See [live demo](http://jamesknelson.com/react-junctions-example/), with source available in [examples/raw-react](https://github.com/jamesknelson/junctions/tree/master/examples/raw-react).
+
 ## Installation
+
+At minimum, you'll need the junctions package
 
 ```
 npm install junctions --save
+```
 
-# If you want to use with react-router, or you want a React `<Link>` component
+If you want a `<Link>` component to get `pushState` working with React, install `react-junctions`
+
+```
 npm install react-junctions --save
 ```
 
+Or if you want to use junctions-based components within a react-router application, install `react-router-junctions`
+
+```
+npm install react-router-junctions --save
+```
+
+Alternatively, use plain-ol' script tags with unpackage. See the live demo source for an example.
+
+```
+<script src="https://unpkg.com/junctions@0.0.5/dist/junctions.js"></script>
+<script src="https://unpkg.com/react-junctions@0.0.5/dist/index.js"></script>
+```
+
 ## Introduction
+
+1. [Motivation](#motivation)
+2. [Three Principles](#the-three-principles)
+3. [The Basics](#the-basics)
+4. [An Example](#example)
 
 ### Motivation
 
@@ -52,7 +79,7 @@ In a server side application, *every request has a URL*. As such, it makes sense
 
 In a client side application, a URL is just a UX optimization. In fact, HTML5 History can store additional information which is linked with the Back/Forward buttons, but is hidden from the user-facing URL. And importantly, HTML5 History means that *you're no longer limited to having one route active at once*. Which makes dealing with modals a whole lot easier.
 
-Junctions does not assume that your URLs correspond to component hierarchy. Instead, it maps your entire [Location]() to a set of plain old JavaScript objects. It is then up to your components to render their current location in whichever way works best -- whether that is by delegating to a child component, displaying a modal, or even ignoring the information completely.
+Junctions does not assume that your URLs correspond to component hierarchy. Instead, it maps your entire [Location](#location) to a set of plain old JavaScript objects. It is then up to your components to render their current location in whichever way works best -- whether that is by delegating to a child component, displaying a modal, or even ignoring the information completely.
 
 #### Routing should not prevent reusability
 
@@ -72,29 +99,29 @@ So now you know what Junctions don't do. But you're probably more interested in 
 
 This package uses five major concepts:
 
-1.  [**Junction**]()
+1.  [**Junction**](#junction)
 
     A way to specify the **Branches** (or Route Types) which a component knows how to render.
 
-2.  [**Route**]()
+2.  [**Route**](#route)
 
     An object representing the *current* state of one Junction.
 
-3.  [**Junction Set**]()
+3.  [**Junction Set**](#junction-set)
 
     The group of junctions associated with one component. Assigning multiple junctions to a component allows a component to have multiple active routes simultaneously.
 
-4.  [**Location**]()
+4.  [**Location**](#location)
 
     An object usde by the [history](https://github.com/mjackson/history) package which contains one state of your browser history, including both URL and HTML5 History state.
 
-5.  [**Converter**]()
+5.  [**Converter**](#converter)
 
     Methods for converting between your application Location, and application Routes.
 
 For Junctions, Routes and Junction Sets, you may find it easier to visualize them than read the above descriptions. Here's an example of the Junction Diagram for a simple application with a dashboard and contact list:
 
-**DIAGRAM**
+*TODO: diagram*
 
 Let's go into a little more detail on each of these basic concepts.
 
@@ -104,7 +131,7 @@ Junctions are pretty important. So important -- in fact -- that this package was
 
 Junctions represent places in your application where control can flow through **one** of many Branches, and where this decision depends on your application's current location. You can think of a Junction as a declaration that "there will be a switch somewhere in the application which expects a value following one of these patterns". That's why they're represented as a switch in a Junction Diagram:
 
-**Junction switch image**
+*TODO: junction switch symbol*
 
 Junctions are defined with the `Junction` function, and take two parameters: A list of Branches, and an optional *default* branch.
 
@@ -152,7 +179,7 @@ Branch({
 })
 ```
 
-Just like Routes in other frameworks, branches can have params which are plucked from the URL. Of course, with Junctions, they can be stored with HTML5 History too. See the [Params]() API documentation for more details.
+Just like Routes in other frameworks, branches can have params which are plucked from the URL. Of course, with Junctions, they can be stored with HTML5 History too. See the [Params](#param-default-required-serializer-) API documentation for more details.
 
 Unlike the Routes you might be used to, a Branch does not have to correspond to a specific component. Instead, a Branch can have a `data` object whose value will be available in the corresponding `Route` object. You can include the component you'd like to render here to get behavior close to a standard router.
 
@@ -198,7 +225,7 @@ By modelling the modal state as a separate junction, you avoid the issue of "do 
 
 From the above example, you can see how you might think of a `JunctionSet` as a "splitter". At allows the control flow of your application to continue down two paths instead of just one. This is why a `JunctionSet` is represented as a splitter in a Junction Diagram -- with the double line representing the Junction which corresponds to URL state:
 
-**Splitter**
+*TODO: junction set symbol*
 
 Now that you know about `JunctionSet` and `Junction`, you know everything there is to know about declaring your application's structure. But how do you actually *use* this information? For that, you'll need to learn about Routes.
 
@@ -208,7 +235,7 @@ Where a `Branch` object declares that your app "can" be in a state, a `Route` ob
 
 One way you can think of this is that a Branch represents a "Route Type". But if you prefer to think with pictures, a Route represents which Branches control currently flows through in your Junction tree:
 
-**Flow diagram**
+*TODO: route flow diagram*
 
 While Junctions must be declared by you, Routes can come into exist in two ways. And actually, the type of route you get will differ based on how it comes into existence.
 
@@ -238,13 +265,13 @@ The only way to get a Route which knows where it is on an *application* level is
 const location = appRoute.locate({ content: route })
 ```
 
-`LocatedRoute` objects have a `locate` method which takes an object of Routes with the same keys as children of the Located Route's Branch. This is a bit of a moutheful, but its easy to get the hang of in real life. To see it in action, check out the [Example]().
+`LocatedRoute` objects have a `locate` method which takes an object of Routes with the same keys as children of the Located Route's Branch. This is a bit of a moutheful, but its easy to get the hang of in real life. To see it in action, check out the [Example](#example).
 
 Ok, you can pass a `Route` to the `locate` method to create a link within your component. And `locate` is a method on a `LocatedRoute`. You should have one `LocatedRoute` per Junction, representing the current state of that Junction. But how do you get your application's Located Routes? With the Converter. But before we look at the Converter, let's detour through Locations.
 
 #### Location
 
-A `Location` object holds *one* state of your application. In a way, it is a lot like a `LocatedRoute` tree. The difference is that a `LocatedRoute` tree is structued after your Junctions, while a `Location` mirrors the state stored in your browser. Or more specifically, the part of your browser which the [history]() package exposes.
+A `Location` object holds *one* state of your application. In a way, it is a lot like a `LocatedRoute` tree. The difference is that a `LocatedRoute` tree is structued after your Junctions, while a `Location` mirrors the state stored in your browser. Or more specifically, the part of your browser which the [history](https://github.com/mjackson/history) package exposes.
 
 But enough rambling. Here is what a Location looks like:
 
@@ -280,7 +307,7 @@ const location = locationConverter.getLocationFromRouteSet(routes)
 
 Obviously, you don't have to pass in the same routes as your current location. You can pass in any routes -- including the vanilla `Route` variety -- as long as they're routes for `rootJunctionSet`.
 
-Actually, `LocatedRoute.prototype.locate` uses `getLocationFromRouteSet` under the hood. As does the `<Mount>` component for react-router in the [react-junctions]() package. In fact, other than a bunch of sanity checking code in the five declaration functions (`JunctionSet`, `Junction`, `Branch`, `Param`, `Serializer`), the entire library is basically these two functions. Which makes it hard to imagine the API will be changing any time soon.
+Actually, `LocatedRoute.prototype.locate` uses `getLocationFromRouteSet` under the hood. As does the `<Mount>` component for react-router in the [react-router-junctions](https://github.com/jamesknelson/react-router-junctions) package. In fact, other than a bunch of sanity checking code in the five declaration functions (`JunctionSet`, `Junction`, `Branch`, `Param`, `Serializer`), the entire library is basically these two functions. Which makes it hard to imagine the API will be changing any time soon.
 
 But before we talk about the API, let's have a look at a quick example using React.
 
@@ -288,7 +315,207 @@ But before we talk about the API, let's have a look at a quick example using Rea
 
 Let's put this all together with an example of Junctions usage which follows the above Junctions diagram. I've written the example in React, but you should be able to use Junctions with any component-based view library.
 
+```jsx
+const history = History.createBrowserHistory()
+const { JunctionSet, Junction, Branch, Param, Serializer } = Junctions
+const { Link } = ReactJunctions
 
+
+/*
+ * Dashboard Screen
+ */
+
+const DashboardScreen = React.createClass({
+  render: function() {
+    return (
+      <div>
+        <h2>Dashboard</h2>
+      </div>
+    )
+  },
+})
+
+
+/*
+ * Contacts Screen
+ */
+
+const ContactsContent = Junction({
+  list: Branch({}),
+
+  id: Branch({
+    path: '/:id',
+    params: {
+      id: Param({ required: true }),
+    }
+  }),
+},
+'list')
+
+const ContactsModal = Junction({
+  add: Branch({}),
+})
+
+
+const ContactsScreen = React.createClass({
+  statics: {
+    junctionSet:
+      JunctionSet({
+        content: ContactsContent,
+        modal: ContactsModal,
+      },
+      'content')
+  },
+
+  render: function() {
+    const locate = this.props.locate
+    const { page, pageSize } = this.props.params
+    const { content, modal } = this.props.routes
+
+    const detail = 
+      content &&
+      content.branch == ContactsContent.id &&
+      <div>
+        <h3>Contact #{content.params.id}</h3>
+      </div>
+
+    const modalElement =
+      modal &&
+      <div style={{
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        right: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      }}>
+        <div style={{backgroundColor: 'white'}}>
+          <h1>Add</h1>
+          <nav>
+            <Link to={ locate({ content, modal: null }) } history={history}>Close</Link>
+          </nav>
+        </div>
+      </div>
+
+    return (
+      <div>
+        <div>
+          <h2>Contacts Page {this.props.params.page}</h2>
+          <nav>
+            <Link to={ locate({ content, modal: ContactsModal.add() }) } history={history}>Add</Link>
+          </nav>
+          <ul>
+            <li><Link to={ locate({ content: ContactsContent.id({ id: 'james-nelson' }) }) } history={history}>James K Nelson</Link></li>
+          </ul>
+        </div>
+        {detail}
+        {modalElement}
+      </div>
+    )
+  },
+})
+
+
+/*
+ * App Screen
+ */
+
+const AppContent = Junction({
+  dashboard: Branch({
+    data: {
+      Component: DashboardScreen,
+    },
+  }),
+  contacts: Branch({
+    path: '/contacts',
+    data: {
+      Component: ContactsScreen,
+    },
+    children: ContactsScreen.junctionSet,
+    params: {
+      page: Param({
+        default: 1,
+        serializer: Serializer({ serialize: x => String(x), deserialize: x => x === '' ? null : parseInt(x) })
+      }),
+      pageSize: Param({
+        default: 20,
+        serializer: Serializer({ serialize: x => String(x), deserialize: x => x === '' ? null : parseInt(x) })
+      }),
+    },
+  }),
+},
+'dashboard')
+
+
+const AppScreen = React.createClass({
+  statics: {
+    junctionSet:
+      JunctionSet({
+        content: AppContent,
+      },
+      'content')
+  },
+
+  render: function() {
+    const locate = this.props.locate
+    const { content } = this.props.routes
+
+    return (
+      <div>
+        <p>
+          Hi! This is a demo for the <a href="https://github.com/jamesknelson/junctions">Junctions</a> routing system for React.
+        </p>
+        <p>
+          The source is all contained in old-school script tags. View source to get smarter. Also check out the <a href="">Junction Diagram</a>.
+        </p>
+        <hr />
+        <nav>
+          <Link to={ locate({ content: AppContent.dashboard() }) } history={history}>Dashboard</Link>
+          <Link to={ locate({ content: AppContent.contacts() }) } history={history}>Contacts</Link>
+        </nav>
+        <content.data.Component
+            routes={content.children}
+            locate={content.locate}
+            params={content.params}
+        />
+      </div>
+    )
+  },
+})
+
+
+/*
+ * Entry Point
+ */
+
+const baseLocation = { pathname: '/' }
+const locationConverter = Junctions.createConverter(AppScreen.junctionSet)
+const locate = routeSet => locationConverter.getLocationFromRouteSet(routeSet, baseLocation)
+
+function render(routes) {
+  ReactDOM.render(
+    <AppScreen
+      routes={routes}
+      locate={locate}
+    />,
+    document.getElementById('app')
+  )
+}
+
+function handleLocationChange(location) {
+  const routes = locationConverter.getRouteSetFromLocation(location, baseLocation)
+  const canonicalLocation = locate(routes)
+
+  if (!Junctions.locationsEqual(location, canonicalLocation)) {
+    history.replace(canonicalLocation)
+  }
+
+  render(routes)
+}
+
+handleLocationChange(history.location)
+history.listen(handleLocationChange)
+```
 
 
 ## API

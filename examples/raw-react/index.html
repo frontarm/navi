@@ -11,7 +11,7 @@
   <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.js"></script>
   <script src="https://unpkg.com/history@4.3.0/umd/history.min.js"></script>
   <script src="https://unpkg.com/junctions@0.0.5/dist/junctions.js"></script>
-  <script src="https://unpkg.com/react-junctions@0.0.4/dist/index.js"></script>
+  <script src="https://unpkg.com/react-junctions@0.0.5/dist/index.js"></script>
 </head>
 <body>
   <div id="app"></div>
@@ -188,8 +188,9 @@
      * Entry Point
      */
 
+    const baseLocation = { pathname: '/' }
     const locationConverter = Junctions.createConverter(AppScreen.junctionSet)
-    const locate = routeSet => locationConverter.getLocationFromRouteSet(routeSet)
+    const locate = routeSet => locationConverter.getLocationFromRouteSet(routeSet, baseLocation)
 
     function render(routes) {
       ReactDOM.render(
@@ -202,7 +203,7 @@
     }
 
     function handleLocationChange(location) {
-      const routes = locationConverter.getRouteSetFromLocation(location)
+      const routes = locationConverter.getRouteSetFromLocation(location, baseLocation)
       const canonicalLocation = locate(routes)
 
       if (!Junctions.locationsEqual(location, canonicalLocation)) {

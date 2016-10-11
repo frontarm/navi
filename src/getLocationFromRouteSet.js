@@ -13,37 +13,40 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
     const routeKey = routeKeys[i]
     const junctionPath = parentJunctionPath.concat(routeKey)
     const route = routeSet[routeKey]
-    const branch = route.branch
-    const serializedParams = serializeParams(branch.params, route.params)
 
-    const isPrimaryRoute = isRouteInPath && junctionSet.$$junctionSetMeta.primaryKey == routeKey
-    if (isPrimaryRoute) {
-      for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
-        const key = branch.queryKeys[i]
-        const value = serializedParams[key] 
-        if (value !== undefined && route.params[key] !== branch.params[key].default) {
-          query[key] = value
+    if (route) {
+      const branch = route.branch
+      const serializedParams = serializeParams(branch.params, route.params)
+
+      const isPrimaryRoute = isRouteInPath && junctionSet.$$junctionSetMeta.primaryKey == routeKey
+      if (isPrimaryRoute) {
+        for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
+          const key = branch.queryKeys[i]
+          const value = serializedParams[key] 
+          if (value !== undefined && route.params[key] !== branch.params[key].default) {
+            query[key] = value
+          }
+          delete serializedParams[key]
         }
-        delete serializedParams[key]
+
+        path = formatPattern(branch.pattern, serializedParams)
+      }
+      else {
+        state[junctionPath.join('/')] = {
+          branchKey: branch.key,
+          serializedParams: serializedParams,
+        }
       }
 
-      path = formatPattern(branch.pattern, serializedParams)
-    }
-    else {
-      state[junctionPath.join('/')] = {
-        branchKey: branch.key,
-        serializedParams: serializedParams,
-      }
-    }
+      if (branch.children) {
+        const childLocation = getJunctionsLocation(isPrimaryRoute, junctionPath, branch.children, route.children)
 
-    if (branch.children) {
-      const childLocation = getJunctionsLocation(isPrimaryRoute, junctionPath, branch.children, route.children)
+        Object.assign(state, childLocation.state)
+        Object.assign(query, childLocation.query)
 
-      Object.assign(state, childLocation.state)
-      Object.assign(query, childLocation.query)
-
-      if (childLocation.path) {
-        path += '/' + childLocation.path
+        if (childLocation.path) {
+          path += '/' + childLocation.path
+        }
       }
     }
   }
