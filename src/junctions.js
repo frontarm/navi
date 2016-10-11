@@ -2,6 +2,7 @@ import { Route, LocatedRoute } from './Routes'
 import { compilePattern } from './PatternUtils'
 import { createSearch, parseSearch } from './SearchUtils'
 import hyphenize from './hyphenize'
+import objectsEqual from './objectsEqual'
 
 import { createPathParser } from './PathParser'
 import getLocationFromRouteSet from './getLocationFromRouteSet'
@@ -25,6 +26,21 @@ export function createConverter(junctionSet) {
       return getRouteSetFromLocation(parsePath, baseLocationWithQuery, junctionSet, locationWithQuery)
     },
   }
+}
+
+
+export function locationsEqual(x, y) {
+  if (x === y) return true
+
+  return (
+    x.pathname == y.pathname &&
+    x.search == y.search &&
+    objectsEqual(
+      (x.state && x.state.$$junctions) || {},
+      (y.state && y.state.$$junctions) || {},
+      (x, y) => x.branchKey == y.branchKey && objectsEqual(x.serializedParams, y.serializedParams)
+    )
+  )
 }
 
 
