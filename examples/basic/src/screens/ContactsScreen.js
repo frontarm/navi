@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import Link from 'react-junctions/Link'
+import { Link } from 'react-junctions'
 import { JunctionSet, Junction, Branch, Param } from 'junctions'
 import ContactDetailsScreen from './ContactDetailsScreen'
 

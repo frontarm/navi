@@ -9,8 +9,8 @@
     "history": "^4.3.0",
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
-    "react-junctions": "^0.0.1",
-    "junctions": "^0.0.1"
+    "react-junctions": "^0.0.2",
+    "junctions": "^0.0.4"
   },
   "scripts": {
     "start": "react-scripts start",
