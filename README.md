@@ -7,7 +7,7 @@ Why use Junctions?
 - They're **composable**. Re-use components, even if they contain links!
 - They're **superimposable**. Because sometimes two routes can be active at once.
 - They're **context-free**. Now you can understand how your own app works!
-- They're **simple**. Don't believe me? Click the link on the next line.*
+- They're **simple**. Don't believe me? Click the link on the next line.
 
 ## Demo
 
