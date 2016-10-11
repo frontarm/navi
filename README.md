@@ -1,4 +1,4 @@
-# Juntions
+# <a href='https://github.com/jamesknelson/junctions/blob/master/README.md'><img src='https://raw.githubusercontent.com/jamesknelson/junctions/master/media/logo-title-dark.png' width='232'></a>
 
 Composable and context-free routing for React, built on the excellent [history](https://github.com/mjackson/history) package.
 
