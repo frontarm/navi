@@ -5,15 +5,15 @@ Don't use any other logos to represent Junctions.
 
 ## Just the Logo
 
-<img src='https://raw.githubusercontent.com/jamesknelson/junctions/master/logo/logo.png' alt='Junctions Logo' width='300'>
+<img src='https://raw.githubusercontent.com/jamesknelson/junctions/master/media/logo.png' alt='Junctions Logo' width='300'>
 
-Download as [PNG](https://raw.githubusercontent.com/jamesknelson/junctions/master/logo/logo.png) or [SVG](https://raw.githubusercontent.com/reactjs/redux/master/logo/logo.svg).
+Download as [PNG](https://raw.githubusercontent.com/jamesknelson/junctions/master/media/logo.png).
 
 ## Logo with a Dark Title
 
-<img src='https://raw.githubusercontent.com/jamesknelson/junctions/master/logo/logo-title-dark.png' alt='Junctions Logo with Dark Title' width='465'>
+<img src='https://raw.githubusercontent.com/jamesknelson/junctions/master/media/logo-title-dark.png' alt='Junctions Logo with Dark Title' width='465'>
 
-Download as [PNG](https://raw.githubusercontent.com/jamesknelson/junctions/master/logo/logo-title-dark.png).
+Download as [PNG](https://raw.githubusercontent.com/jamesknelson/junctions/master/media/logo-title-dark.png).
 
 ## License
 
