@@ -3,6 +3,15 @@
   "version": "0.0.5",
   "description": "Declare junctions for your routes",
   "main": "lib/junctions.js",
+  "module": "es/junctions.js",
+  "jsnext:main": "es/junctions.js",
+  "files": [
+    "docs",
+    "dist",
+    "lib",
+    "es",
+    "src"
+  ],
   "scripts": {
     "clean": "rimraf lib dist es coverage",
     "compile:watch": "babel --watch --source-maps=inline -d lib/ src/",
@@ -13,11 +22,23 @@
     "build": "npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min",
     "prepublish": "npm run clean && npm run build",
     "test": "npm run build:commonjs && mocha test/*.test.js",
-    "test:watch": "mocha --watch test/*.test.js"
+    "test:watch": "mocha --watch test/*.test.js",
+    "docs:clean": "rimraf _book",
+    "docs:prepare": "gitbook install",
+    "docs:build": "npm run docs:prepare && gitbook build -g jamesknelson/junctions",
+    "docs:watch": "npm run docs:prepare && gitbook serve",
+    "docs:publish": "npm run docs:clean && npm run docs:build && cp CNAME _book && cd _book && git init && git commit --allow-empty -m 'update book' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update book' && git push git@github.com:jamesknelson/junctions gh-pages --force"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jamesknelson/junctions.git"
   },
   "keywords": [
     "routing",
-    "react"
+    "router",
+    "route",
+    "react",
+    "junction"
   ],
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -29,6 +50,7 @@
     "babel-preset-react": "^6.11.1",
     "babel-preset-stage-0": "^6.5.0",
     "cross-env": "^1.0.7",
+    "gitbook-cli": "^2.3.0",
     "mocha": "^3.0.2",
     "rimraf": "^2.3.4",
     "webpack": "^1.9.6"
