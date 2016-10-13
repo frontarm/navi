@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
-import Link from 'react-junctions/Link'
-import { JunctionSet, Junction, Branch, Param } from 'junctions'
+import { Link } from 'react-junctions'
+import { JunctionSet, Junction, Branch, Param, createRoute } from 'junctions'
 import ContactDetailsScreen from './ContactDetailsScreen'
 
 
-const Content = Junction({
-  List: Branch(),
+const Main = Junction({
+  List: Branch({ default: true }),
   Details: Branch({
     path: '/:slug/:id',
     params: {
@@ -16,7 +16,7 @@ const Content = Junction({
       Component: ContactDetailsScreen
     },
   }),
-}, 'List')
+})
 
 const Modal = Junction({
   Add: Branch(),
@@ -24,11 +24,11 @@ const Modal = Junction({
 
 
 export default class ContactsScreen extends Component {
-  static junctionSet = JunctionSet({ content: Content, modal: Modal }, 'content')
+  static junctionSet = JunctionSet({ main: Main, modal: Modal })
 
   render() {
     const locate = this.props.locate
-    const { content, modal } = this.props.routes
+    const { main, modal } = this.props.routes
 
     return (
       <div>
@@ -42,17 +42,17 @@ export default class ContactsScreen extends Component {
         <div>Page Size: {this.props.params.pageSize}</div>
         <div>
           <nav>
-            <Link to={ locate({ content, modal: Modal.Add() }) }>Add</Link>
+            <Link to={ locate(main, createRoute(Modal.Add)) }>Add</Link>
           </nav>
           <ul>
             <li>
-              <Link to={ locate({ content: Content.Details({ id: 'abcdef', slug: 'james-nelson' }) }) }>James Nelson</Link>
+              <Link to={ locate(createRoute(Main.Details, { id: 'abcdef', slug: 'james-nelson' })) }>James Nelson</Link>
             </li>
           </ul>
         </div>
         {
-          content.data.Component &&
-          <content.data.Component locate={content.locate} routes={content.children} params={content.params} />
+          main.data.Component &&
+          <main.data.Component locate={main.locate} routes={main.children} params={main.params} />
         }
       </div>
     )

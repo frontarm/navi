@@ -8,9 +8,10 @@ import createHistory from 'history/createBrowserHistory'
 import AppScreen from './screens/AppScreen'
 
 
+const baseLocation = { pathname: '/' }
 const history = createHistory()
 const locationConverter = createConverter(AppScreen.junctionSet)
-const locate = routeSet => locationConverter.getLocationFromRouteSet(routeSet)
+const locate = (...children) => locationConverter.getLocation(baseLocation, ...children)
 
 function render(routes) {
   ReactDOM.render(
@@ -25,7 +26,7 @@ function render(routes) {
 }
 
 function handleLocationChange(location) {
-  const routes = locationConverter.getRouteSetFromLocation(location)
+  const routes = locationConverter.getRouteSet(baseLocation, location)
   const canonicalLocation = locate(routes)
 
   if (!locationsEqual(location, canonicalLocation)) {

@@ -1,5 +1,6 @@
 const assert = require('assert')
 
+const { createRoute } = require('../lib/junctions')
 const { createPathParser } = require('../lib/PathParser')
 const { default: getLocationFromRouteSet } = require('../lib/getLocationFromRouteSet')
 
@@ -9,8 +10,8 @@ const JunctionSets = require('./fixtures/JunctionSets')
 describe('getLocationFromRouteSet', function() {
   it('returns correct location from a childless Route with path', function() {
     const junctionSet = JunctionSets.invoiceListScreen
-    const route = junctionSet.content.invoice({ id:'test-id' })
-    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { content: route })
+    const route = createRoute(junctionSet.main.invoice, { id:'test-id' })
+    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { main: route })
     
     assert.equal(location.pathname, '/invoice/test-id')
     assert.deepEqual(location.state.$$junctions, {})
@@ -24,13 +25,13 @@ describe('getLocationFromRouteSet', function() {
       }
     }
     const junctionSet = JunctionSets.invoiceListScreen
-    const contentRoute = junctionSet.content.invoice({
-      id:'test-id',
-    }, {
-      content: junctionSet.content.invoice.children.content.details(),
-    })
-    const modalRoute = junctionSet.addModal.open()
-    const routeSet = { content: contentRoute, addModal: modalRoute }
+    const mainRoute = createRoute(
+      junctionSet.main.invoice,
+      { id:'test-id' },
+      createRoute(junctionSet.main.invoice.children.main.details)
+    )
+    const modalRoute = createRoute(junctionSet.addModal.open)
+    const routeSet = { main: mainRoute, addModal: modalRoute }
     const location = getLocationFromRouteSet(baseLocation, true, [], junctionSet, routeSet)
     
     assert.equal(location.pathname, '/mountpoint/invoice/test-id/details')
@@ -42,26 +43,26 @@ describe('getLocationFromRouteSet', function() {
 
   it('returns correct location from a childless Route without path', function() {
     const junctionSet = JunctionSets.invoiceListScreen
-    const route = junctionSet.content.invoice({ id:'test-id' })
-    const location = getLocationFromRouteSet({ pathname: '/parent' }, false, ['parent'], junctionSet, { content: route })
+    const route = createRoute(junctionSet.main.invoice, { id:'test-id' })
+    const location = getLocationFromRouteSet({ pathname: '/parent' }, false, ['parent'], junctionSet, { main: route })
     
     assert.equal(location.pathname, '/parent')
     assert.deepEqual(location.state.$$junctions, {
-      'parent/content': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
+      'parent/main': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
     })
   })
 
   it('adds search parameters when they differ from defaults', function() {
     const junctionSet = JunctionSets.appScreen
-    const route = junctionSet.content.invoices({
-      admin: true, 
-    }, {
-      content: junctionSet.content.invoices.children.content.list({
-        pageSize: 10,
-        page: 3,
-      }),
-    })
-    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { content: route })
+    const route = createRoute(
+      junctionSet.main.invoices,
+      { admin: true },
+      createRoute(
+        junctionSet.main.invoices.children.main.list,
+        { pageSize: 10, page: 3}
+      )
+    )
+    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { main: route })
     
     assert.strictEqual(location.query.pageSize, '10')
     assert.strictEqual(location.query.page, '3')
@@ -70,13 +71,15 @@ describe('getLocationFromRouteSet', function() {
 
   it('does not add search parameters when they equal a default value', function() {
     const junctionSet = JunctionSets.appScreen
-    const route = junctionSet.content.invoices({}, {
-      content: junctionSet.content.invoices.children.content.list({
-        pageSize: 20,
-        page: 1,
-      }),
-    })
-    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { content: route })
+    const route = createRoute(
+      junctionSet.main.invoices,
+      {},
+      createRoute(
+        junctionSet.main.invoices.children.main.list,
+        { pageSize: 20, page: 1 }
+      )
+    )
+    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { main: route })
     
     assert.deepEqual(location.query, {})
   })

@@ -9,8 +9,9 @@
     "react": "^15.3.2",
     "react-dom": "^15.3.2",
     "react-router": "^2.8.1",
-    "junctions": "^0.0.5",
-    "react-router-junctions": "^0.0.5"
+    "junctions": "^0.1.0",
+    "react-junctions": "^0.1.0",
+    "react-router-junctions": "^0.1.0"
   },
   "scripts": {
     "start": "react-scripts start",

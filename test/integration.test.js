@@ -10,14 +10,14 @@ const Serializers = require('./fixtures/Serializers')
 describe('Integration: ', function() {
   beforeEach(function() {
     const invoiceScreen = JunctionSet({
-      content: Junction({
+      main: Junction({
         details: Branch(),
         attachments: Branch(),
       }, 'details')
-    }, 'content')
+    }, 'main')
 
     const invoiceListScreen = JunctionSet({
-      content: Junction({
+      main: Junction({
         invoice: Branch({
           path: '/:id',
           params: {
@@ -29,10 +29,10 @@ describe('Integration: ', function() {
       addModal: Junction({
         open: Branch(),
       }),
-    }, 'content')
+    }, 'main')
 
     const appScreen = JunctionSet({
-      content: Junction({
+      main: Junction({
         dashboard: Branch(),
         invoices: Branch({
           params: {
@@ -41,7 +41,7 @@ describe('Integration: ', function() {
           children: invoiceListScreen,
         }),
       }, 'dashboard')
-    }, 'content')
+    }, 'main')
 
     this.junctionSet = appScreen
     this.baseLocation = {
@@ -59,7 +59,7 @@ describe('Integration: ', function() {
       pathname: '/mountpoint/invoices/1/abc123/details',
       state: {
         $$junctions: {
-          'content/addModal': { branchKey: 'open', serializedParams: {} },
+          'main/addModal': { branchKey: 'open', serializedParams: {} },
         },
       },
       query: {}

@@ -4,7 +4,7 @@ const Params = require('./Params')
 
 module.exports = {
   get details() {
-    return Branch()
+    return Branch({ default: true })
   },
 
   get attachment() {

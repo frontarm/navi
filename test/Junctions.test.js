@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { Junction, Branch, Param, isJunction, isBranch } = require('../lib/junctions')
+const { Junction, Branch, Param, isJunction, isBranch, createRoute } = require('../lib/junctions')
 const { Route, LocatedRoute } = require('../lib/Routes')
 const { formatPattern } = require('../lib/PatternUtils')
 const BranchTemplates = require('./fixtures/BranchTemplates')
@@ -33,7 +33,7 @@ describe("Junction", function() {
     const junction = Junction({
       details: BranchTemplates.details,
       attachment: BranchTemplates.attachment,
-    }, 'details')
+    })
 
     assert(isJunction(junction))
   })
@@ -43,7 +43,7 @@ describe("Junction", function() {
     const junction = Junction({
       details: BranchTemplates.details,
       attachment: BranchTemplates.attachment,
-    }, 'details')
+    })
 
     assert(isBranch(junction.details))
   })
@@ -75,12 +75,12 @@ describe("Junction", function() {
     })
   })
 
-  it("fails when given an unknown key for default", function() {
+  it("fails when given multiple defaults", function() {
     assert.throws(() => {
       Junction({
-        details: BranchTemplates.details,
-        attachment: BranchTemplates.attachment,
-      }, 'something-else')   
+        details: Branch({ default: true }),
+        attachment: Branch({ default: true }),
+      })
     })
   })
 
@@ -109,14 +109,15 @@ describe("Junction#branches.branchName", function() {
       }),
     })
 
-    const route = junction.invoices(
+    const route = createRoute(
+      junction.invoices,
       { page: 2 },
-      { content: childJunctionSet.content.details() }
+      createRoute(childJunctionSet.main.details)
     )
 
     assert.equal(route.constructor, Route)
     assert.equal(route.branch, junction.invoices)
     assert.equal(route.params.page, 2)
-    assert.equal(route.children.content.branch, childJunctionSet.content.details)
+    assert.equal(route.children.main.branch, childJunctionSet.main.details)
   })
 })

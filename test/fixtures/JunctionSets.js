@@ -6,17 +6,18 @@ const Serializers = require('./Serializers')
 module.exports = {
   get invoiceScreen() {
     return JunctionSet({
-      content: Junction({
-        details: Branch(),
+      main: Junction({
+        details: Branch({ default: true }),
         attachments: Branch(),
-      }, 'details')
-    }, 'content')
+      })
+    })
   },
 
   get invoiceListScreen() {
     return JunctionSet({
-      content: Junction({
+      main: Junction({
         list: Branch({
+          default: true,
           path: '/list',
           params: {
             page: Param({ default: 1, serializer: Serializers.number }),
@@ -32,24 +33,25 @@ module.exports = {
           },
           children: module.exports.invoiceScreen,
         }),
-      }, 'list'),
+      }),
       addModal: Junction({
         open: Branch(),
       }),
-    }, 'content')
+    })
   },
 
   get appScreen() {
     return JunctionSet({
-      content: Junction({
+      main: Junction({
         dashboard: Branch(),
         invoices: Branch({
+          default: true,
           params: {
             admin: Param({ serializer: Serializers.flag }),
           },
           children: module.exports.invoiceListScreen,
         }),
-      }, 'invoices')
-    }, 'content')
+      })
+    })
   }
 }

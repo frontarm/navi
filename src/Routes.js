@@ -4,6 +4,7 @@ import getLocationFromRouteSet from './getLocationFromRouteSet'
 import joinPaths from './joinPaths'
 import select from './select'
 import { createSearch } from './SearchUtils'
+import desugarChildren from './desugarChildren'
 
 
 function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch, params) {
@@ -121,9 +122,9 @@ export class LocatedRoute extends Route {
     this.junctionPath = junctionPath
 
     Object.defineProperty(this, 'locate', {
-      value: (routeSet) => {
-        const location = routeSet
-          ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.children, routeSet)
+      value: (...children) => {
+        const location = children.length > 0
+          ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.children, desugarChildren(this.branch.children, children))
           : Object.assign({}, this.baseLocation)
 
         location.search = createSearch(location.query)

@@ -7,7 +7,7 @@ module.exports = {
     return Junction({
       details: BranchTemplates.details,
       attachment: BranchTemplates.attachment,
-    }, 'details')
+    })
   },
 
   get addInvoiceModal() {

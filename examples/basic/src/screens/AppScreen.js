@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
-import { JunctionSet, Junction, Branch, Param } from 'junctions'
+import { JunctionSet, Junction, Branch, Param, createRoute } from 'junctions'
 import { Link } from 'react-junctions'
 import ContactsScreen from './ContactsScreen'
 
 
-const Content = Junction({
+const Main = Junction({
   Contacts: Branch({
+    default: true,
     path: '/contacts',
     children: ContactsScreen.junctionSet,
     params: {
@@ -16,25 +17,25 @@ const Content = Junction({
       Component: ContactsScreen
     }
   }),
-}, 'Contacts')
+})
 
 
 export default class AppScreen extends Component {
-  static junctionSet = JunctionSet({ content: Content }, 'content')
+  static junctionSet = JunctionSet({ main: Main })
 
   render() {
     const locate = this.props.locate
-    const { content } = this.props.routes
+    const { main } = this.props.routes
 
     return (
       <div>
         <nav>
-          <Link to={locate({ content: Content.Contacts() })}>Contacts</Link>
+          <Link to={locate(createRoute(Main.Contacts))}>Contacts</Link>
         </nav>
-        <content.data.Component
-          locate={content.locate}
-          routes={content.children}
-          params={content.params}
+        <main.data.Component
+          locate={main.locate}
+          routes={main.children}
+          params={main.params}
         />
       </div>
     );

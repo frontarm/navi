@@ -9,8 +9,8 @@ describe('locationsEqual', function() {
       pathname: '/some-other-path',
       state: {
         $$junctions: {
-          'content': { branchKey: 'invoice', serializedParams: { id: 'test' } },
-          'content/content': { branchKey: 'details', serializedParams: {} },
+          'main': { branchKey: 'invoice', serializedParams: { id: 'test' } },
+          'main/main': { branchKey: 'details', serializedParams: {} },
         }
       },
       search: '?test=a'
@@ -20,8 +20,8 @@ describe('locationsEqual', function() {
       pathname: '/some-other-path',
       state: {
         $$junctions: {
-          'content': { branchKey: 'invoice', serializedParams: { id: 'test' } },
-          'content/content': { branchKey: 'details', serializedParams: {} },
+          'main': { branchKey: 'invoice', serializedParams: { id: 'test' } },
+          'main/main': { branchKey: 'details', serializedParams: {} },
         }
       },
       search: '?test=a'
@@ -76,8 +76,8 @@ describe('locationsEqual', function() {
       pathname: '/path-1',
       state: {
         $$junctions: {
-          'content': { branchKey: 'invoice', serializedParams: { id: 'test' } },
-          'content/content': { branchKey: 'details', serializedParams: {} },
+          'main': { branchKey: 'invoice', serializedParams: { id: 'test' } },
+          'main/main': { branchKey: 'details', serializedParams: {} },
         }
       },
     }
@@ -86,7 +86,7 @@ describe('locationsEqual', function() {
       pathname: '/path-1',
       state: {
         $$junctions: {
-          'content': { branchKey: 'invoice', serializedParams: { id: 'test' } },
+          'main': { branchKey: 'invoice', serializedParams: { id: 'test' } },
         }
       },
     }
@@ -99,7 +99,7 @@ describe('locationsEqual', function() {
       pathname: '/path-1',
       state: {
         $$junctions: {
-          'content': { branchKey: 'invoice', serializedParams: { id: 'test' } },
+          'main': { branchKey: 'invoice', serializedParams: { id: 'test' } },
         }
       },
     }
@@ -108,7 +108,7 @@ describe('locationsEqual', function() {
       pathname: '/path-1',
       state: {
         $$junctions: {
-          'content': { branchKey: 'invoice', serializedParams: { id: 'test-2' } },
+          'main': { branchKey: 'invoice', serializedParams: { id: 'test-2' } },
         }
       },
     }

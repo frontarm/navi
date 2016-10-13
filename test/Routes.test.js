@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { Junction, Branch, Param, isJunction, isBranch } = require('../lib/junctions')
+const { Junction, Branch, Param, isJunction, isBranch, createRoute } = require('../lib/junctions')
 const { Route, LocatedRoute } = require('../lib/Routes')
 const JunctionSets = require('./fixtures/JunctionSets')
 
@@ -33,7 +33,7 @@ describe("Route", function() {
     const route = new Route(makeBranch({
       children: JunctionSets.invoiceScreen,
     }))
-    assert.equal(route.children.content, null)
+    assert.equal(route.children.main, null)
   })
 
   it("accepts parameters", function() {
@@ -49,8 +49,8 @@ describe("Route", function() {
   it("accepts children", function() {
     const children = JunctionSets.invoiceScreen
     const branch = makeBranch({ children: children })
-    const route = new Route(branch, {}, { content: children.content.details() })
-    assert.equal(route.children.content.branch, children.content.details)
+    const route = new Route(branch, {}, { main: createRoute(children.main.details) })
+    assert.equal(route.children.main.branch, children.main.details)
   })
 
   it("fails when missing required parameters", function() {
@@ -67,7 +67,7 @@ describe("Route", function() {
     const branch = makeBranch({ children: JunctionSets.invoiceScreen })
     
     assert.throws(() => {
-      new Route(branch, {}, { content: Branch() })
+      new Route(branch, {}, { main: Branch() })
     })
   })
 
@@ -83,11 +83,11 @@ describe("Route", function() {
 describe("LocatedRoute#getLocation", function() {
   describe('for routes in path', function() {
     beforeEach(function() {
-      this.branch = JunctionSets.invoiceListScreen.content.invoice
+      this.branch = JunctionSets.invoiceListScreen.main.invoice
       this.route = new LocatedRoute(
         { pathname: '/mountpoint', query: {}, search: '' },
         true,
-        ['content'],
+        ['main'],
         this.branch,
         { id: 'test-id' },
         {}
@@ -103,21 +103,30 @@ describe("LocatedRoute#getLocation", function() {
 
     it("generates appropriate locations when given as routeSet", function() {
       const location = this.route.locate({
-        content: this.branch.children.content.details()
+        main: createRoute(this.branch.children.main.details)
       })
 
       assert.equal(location.pathname, '/mountpoint/invoice/test-id/details')
-      assert.equal(location.state.$$junctions.content, null)
+      assert.equal(location.state.$$junctions.main, null)
+    })
+
+    it("generates appropriate locations when given a route", function() {
+      const location = this.route.locate(
+        createRoute(this.branch.children.main.details)
+      )
+
+      assert.equal(location.pathname, '/mountpoint/invoice/test-id/details')
+      assert.equal(location.state.$$junctions.main, null)
     })
   })
 
   describe('for routes outside of path', function() {
     beforeEach(function() {
-      this.branch = JunctionSets.invoiceListScreen.content.invoice
+      this.branch = JunctionSets.invoiceListScreen.main.invoice
       this.route = new LocatedRoute(
         { pathname: '/mountpoint/something-else', query: {}, search: '' },
         false,
-        ['content'],
+        ['main'],
         this.branch,
         { id: 'test-id' },
         {}
@@ -129,19 +138,19 @@ describe("LocatedRoute#getLocation", function() {
 
       assert.equal(location.pathname, '/mountpoint/something-else')
       assert.deepEqual(location.state.$$junctions, {
-        'content': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
+        'main': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
       })
     })
 
     it("generates appropriate locations when given as routeSet", function() {
       const location = this.route.locate({
-        content: this.branch.children.content.details()
+        main: createRoute(this.branch.children.main.details)
       })
 
       assert.equal(location.pathname, '/mountpoint/something-else')
       assert.deepEqual(location.state.$$junctions, {
-        'content': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
-        'content/content': { branchKey: 'details', serializedParams: {} },
+        'main': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
+        'main/main': { branchKey: 'details', serializedParams: {} },
       })
     })
   })

@@ -3,6 +3,7 @@ import { compilePattern } from './PatternUtils'
 import { createSearch, parseSearch } from './SearchUtils'
 import hyphenize from './hyphenize'
 import objectsEqual from './objectsEqual'
+import desugarChildren from './desugarChildren'
 
 import { createPathParser } from './PathParser'
 import getLocationFromRouteSet from './getLocationFromRouteSet'
@@ -13,19 +14,24 @@ export function createConverter(junctionSet) {
   const parsePath = createPathParser(junctionSet)
 
   return {
-    getLocationFromRouteSet(routeSet, baseLocation={ pathname: '/' }) {
+    getLocation(baseLocation, ...children) {
       const baseLocationWithQuery = Object.assign({}, baseLocation, { query: parseSearch(baseLocation.search) })
-      const location = getLocationFromRouteSet(baseLocationWithQuery, true, [], junctionSet, routeSet)
+      const location = getLocationFromRouteSet(baseLocationWithQuery, true, [], junctionSet, desugarChildren(junctionSet, children))
       location.search = createSearch(location.query)
       delete location.query
       return Object.freeze(location)
     },
-    getRouteSetFromLocation(location, baseLocation={ pathname: '/' }) {
+    getRouteSet(baseLocation, location) {
       const baseLocationWithQuery = Object.assign({}, baseLocation, { query: parseSearch(baseLocation.search) })
       const locationWithQuery = Object.assign({}, location, { query: parseSearch(location.search) })
       return getRouteSetFromLocation(parsePath, baseLocationWithQuery, junctionSet, locationWithQuery)
     },
   }
+}
+
+
+export function createRoute(branch, params, ...children) {
+  return Object.freeze(new Route(branch, params, desugarChildren(branch.children, children)))
 }
 
 
@@ -70,10 +76,8 @@ export function isLocatedRoute(x) {
 }
 
 
-export function JunctionSet(_junctions, primaryKey) {
-  if (primaryKey && !_junctions[primaryKey]) {
-    throw new Error(`A JunctionSet was created with primary key "${primaryKey}", but no junction with that key was given.`)
-  }
+export function JunctionSet(_junctions) {
+  const primaryKey = _junctions.main ? 'main' : undefined
 
   const junctionKeys = Object.keys(_junctions)
   const junctions = {}
@@ -119,15 +123,11 @@ function createDefaultPattern(key, branchParams) {
   }
 }
 
-export function Junction(branchTemplates, defaultKey) {
+export function Junction(branchTemplates) {
   const junctionMeta = {}
   const branches = {}
   const queryKeys = {}
   Object.defineProperty(branches, '$$junctionMeta', { value: junctionMeta })
-
-  if (defaultKey && !branchTemplates[defaultKey]) {
-    throw new Error(`A Junction specified default key '${def}', but not Branch with that key exists.`)
-  }
 
   const branchKeys = Object.keys(branchTemplates)
 
@@ -145,18 +145,25 @@ export function Junction(branchTemplates, defaultKey) {
 
     const branchTemplate = branchTemplates[key]
 
+    if (branchTemplate.default) {
+      if (junctionMeta.defaultKey) {
+        throw new Error(`Branch "${key}" was specified as default, when branch "${junctionMeta.defaultKey}" was already used as default.`)
+      }
+      junctionMeta.defaultKey = key
+    }
+
     if (!isBranchTemplate(branchTemplate)) {
       throw new Error(`An object was passed to Junction which is not a Branch. See key '${key}'.`)
     }
 
-    const branch = (params={}, children={}) => Object.freeze(new Route(branch, params, children))
     const pattern = branchTemplate.pattern || createDefaultPattern(key, branchTemplate.params)
-
-    branch.key = key
-    branch.pattern = pattern
-    branch.data = branchTemplate.data
-    branch.params = branchTemplate.params
-    branch.queryKeys = Object.keys(branch.params).filter(x => !pattern.paramNames.includes(x))
+    const branch = {
+      key: key,
+      pattern: pattern,
+      data: branchTemplate.data,
+      params: branchTemplate.params,
+      queryKeys: Object.keys(branchTemplate.params).filter(x => !pattern.paramNames.includes(x)),
+    }
 
     for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
       queryKeys[branch.queryKeys[i]] = true
@@ -166,7 +173,7 @@ export function Junction(branchTemplates, defaultKey) {
       const childQueryKeys = branchTemplate.children.$$junctionSetMeta.queryKeys
       const duplicateKey = branch.queryKeys.find(x => childQueryKeys.includes(x))
       if (duplicateKey) {
-        throw new Error(`The param "${duplicateKey}" was specified in branches "${key}" as well as one of its child branches`)
+        throw new Error(`The param "${duplicateKey}" was specified in branch "${key}" as well as one of its child branches`)
       }
 
       branch.children = branchTemplate.children
@@ -186,7 +193,6 @@ export function Junction(branchTemplates, defaultKey) {
   junctionMeta.branches = branches
   junctionMeta.branchKeys = branchKeys
   junctionMeta.branchValues = branchKeys.map(k => branches[k])
-  junctionMeta.defaultKey = defaultKey
   junctionMeta.queryKeys = Object.keys(queryKeys)
 
   return Object.freeze(branches)
@@ -218,6 +224,7 @@ export function Branch(options = {}) {
   const pattern = options.path && compilePattern(options.path, paramNames)
 
   const branchTemplate = {
+    default: !!options.default,
     pattern: pattern,
     data: data,
     params: params,

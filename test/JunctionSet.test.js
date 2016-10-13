@@ -12,19 +12,11 @@ describe("isJunctionSet", function() {
 
 
 describe("JunctionSet", function() {
-  it("returns a JunctionSet when given no primary", function() {
+  it("returns a JunctionSet", function() {
     const junction = JunctionSet({
-      abc123_: Junctions.invoiceScreenContent,
+      abc123_: Junctions.invoiceScreenmain,
+      b: Junctions.invoiceScreenmain,
     })
-
-    assert(isJunctionSet(junction))
-  })
-
-  it("returns a JunctionSet when given a primary", function() {
-    const junction = JunctionSet({
-      a: Junctions.invoiceScreenContent,
-      b: Junctions.invoiceScreenContent,
-    }, 'a')
 
     assert(isJunctionSet(junction))
   })
@@ -36,18 +28,10 @@ describe("JunctionSet", function() {
     })
   })
 
-  it("fails when given an unknown key for primary", function() {
-    assert.throws(() => {
-      JunctionSet({
-        a: Junctions.invoiceScreenContent,
-      }, 'b')   
-    })
-  })
-
   it("fails when the key contains the non-alphanumeric/underscore character '/'", function() {
     assert.throws(() => {
       JunctionSet({
-        'joe/': Junctions.invoiceScreenContent,
+        'joe/': Junctions.invoiceScreenmain,
       })
     })
   })
