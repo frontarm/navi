@@ -26,7 +26,6 @@ const Content = Junction({
     }
   }),
 }, 'Dashboard')
-```
 
 
 export default class AppScreen extends Component {
