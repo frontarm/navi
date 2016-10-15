@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { Param, JunctionSet, Junction, Branch, isBranchTemplate } = require('../lib/junctions')
+const { Param, JunctionSet, Junction, Branch, isBranchTemplate } = require('../lib')
 const Params = require('./fixtures/Params')
 const JunctionSets = require('./fixtures/JunctionSets')
 

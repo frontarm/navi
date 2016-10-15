@@ -1,79 +1,6 @@
-import { Route, LocatedRoute } from './Routes'
-import { compilePattern } from './PatternUtils'
-import { createSearch, parseSearch } from './SearchUtils'
-import hyphenize from './hyphenize'
-import objectsEqual from './objectsEqual'
-import desugarChildren from './desugarChildren'
-
-import { createPathParser } from './PathParser'
-import getLocationFromRouteSet from './getLocationFromRouteSet'
-import getRouteSetFromLocation from './getRouteSetFromLocation'
-
-
-export function createConverter(junctionSet) {
-  const parsePath = createPathParser(junctionSet)
-
-  return {
-    getLocation(baseLocation, ...children) {
-      const baseLocationWithQuery = Object.assign({}, baseLocation, { query: parseSearch(baseLocation.search) })
-      const location = getLocationFromRouteSet(baseLocationWithQuery, true, [], junctionSet, desugarChildren(junctionSet, children))
-      location.search = createSearch(location.query)
-      delete location.query
-      return Object.freeze(location)
-    },
-    getRouteSet(baseLocation, location) {
-      const baseLocationWithQuery = Object.assign({}, baseLocation, { query: parseSearch(baseLocation.search) })
-      const locationWithQuery = Object.assign({}, location, { query: parseSearch(location.search) })
-      return getRouteSetFromLocation(parsePath, baseLocationWithQuery, junctionSet, locationWithQuery)
-    },
-  }
-}
-
-
-export function createRoute(branch, params, ...children) {
-  return Object.freeze(new Route(branch, params, desugarChildren(branch.children, children)))
-}
-
-
-export function locationsEqual(x, y) {
-  if (x === y) return true
-
-  return (
-    x.pathname == y.pathname &&
-    x.search == y.search &&
-    objectsEqual(
-      (x.state && x.state.$$junctions) || {},
-      (y.state && y.state.$$junctions) || {},
-      (x, y) => x.branchKey == y.branchKey && objectsEqual(x.serializedParams, y.serializedParams)
-    )
-  )
-}
-
-
-export function isJunctionSet(x) {
-  return x instanceof Object && x.$$junctionSetMeta
-}
-export function isJunction(x) {
-  return x instanceof Object && x.$$junctionMeta
-}
-export function isBranchTemplate(x) {
-  return x instanceof Object && x.$$branchTemplate
-}
-export function isBranch(x) {
-  return x instanceof Object && x.$$branch
-}
-export function isSerializer(x) {
-  return x instanceof Object && x.$$serializer
-}
-export function isParam(x) {
-  return x instanceof Object && x.$$param
-}
-export function isRoute(x) {
-  return x instanceof Route
-}
-export function isLocatedRoute(x) {
-  return x instanceof LocatedRoute
-}
+import hyphenize from './utils/hyphenize'
+import { compilePattern } from './utils/PatternUtils'
+import { isJunctionSet, isJunction, isBranchTemplate, isParam, isSerializer } from './TypeGuards'
 
 
 export function JunctionSet(_junctions) {
@@ -98,6 +25,9 @@ export function JunctionSet(_junctions) {
   for (let i = 0, len = junctionKeys.length; i < len; i++) {
     const key = junctionKeys[i]
 
+    if (!isJunction(_junctions[key])) {
+      throw new Error(`An object was passed to JunctionSet which is not a Junction. See key "${key}"`)
+    }
     if (!/^[A-Za-z0-9_]+$/.test(key)) {
       throw new Error(`JunctionSet keys must only use the characters A-Z, a-z, 0-9 or _. See key "${key}"`)
     }

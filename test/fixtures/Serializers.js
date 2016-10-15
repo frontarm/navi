@@ -1,4 +1,4 @@
-const { Serializer } = require('../../lib/junctions')
+const { Serializer } = require('../../lib')
 
 
 module.exports = {

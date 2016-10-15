@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { createRoute } = require('../lib/junctions')
+const { createRoute } = require('../lib')
 const { createPathParser } = require('../lib/PathParser')
 const { default: getLocationFromRouteSet } = require('../lib/getLocationFromRouteSet')
 

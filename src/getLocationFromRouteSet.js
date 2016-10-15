@@ -1,6 +1,6 @@
-import { serializeParams } from './SerializationUtils'
-import { formatPattern } from './PatternUtils'
-import joinPaths from './joinPaths'
+import joinPaths from './utils/joinPaths'
+import { formatPattern } from './utils/PatternUtils'
+import { serializeParams } from './utils/SerializationUtils'
 
 
 function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, routeSet) {

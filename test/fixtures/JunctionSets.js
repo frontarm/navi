@@ -1,4 +1,4 @@
-const { JunctionSet, Junction, Branch, Param } = require('../../lib/junctions')
+const { JunctionSet, Junction, Branch, Param } = require('../../lib')
 const Junctions = require('./Junctions')
 const Serializers = require('./Serializers')
 

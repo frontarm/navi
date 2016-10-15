@@ -1,4 +1,4 @@
-const { Junction, Branch } = require('../../lib/junctions')
+const { Junction, Branch } = require('../../lib')
 const BranchTemplates = require('./BranchTemplates')
 
 

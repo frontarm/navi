@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { JunctionSet, isJunctionSet } = require('../lib/junctions')
+const { JunctionSet, isJunctionSet } = require('../lib')
 const Junctions = require('./fixtures/Junctions')
 
 
@@ -14,8 +14,8 @@ describe("isJunctionSet", function() {
 describe("JunctionSet", function() {
   it("returns a JunctionSet", function() {
     const junction = JunctionSet({
-      abc123_: Junctions.invoiceScreenmain,
-      b: Junctions.invoiceScreenmain,
+      abc123_: Junctions.invoiceScreenContent,
+      b: Junctions.invoiceScreenContent,
     })
 
     assert(isJunctionSet(junction))
@@ -31,7 +31,7 @@ describe("JunctionSet", function() {
   it("fails when the key contains the non-alphanumeric/underscore character '/'", function() {
     assert.throws(() => {
       JunctionSet({
-        'joe/': Junctions.invoiceScreenmain,
+        'joe/': Junctions.invoiceScreenContent,
       })
     })
   })

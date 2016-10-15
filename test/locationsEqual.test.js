@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { locationsEqual } = require('../lib/junctions')
+const { locationsEqual } = require('../lib')
 
 
 describe('locationsEqual', function() {

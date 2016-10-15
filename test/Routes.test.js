@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { Junction, Branch, Param, isJunction, isBranch, createRoute } = require('../lib/junctions')
+const { Junction, Branch, Param, isJunction, isBranch, createRoute } = require('../lib')
 const { Route, LocatedRoute } = require('../lib/Routes')
 const JunctionSets = require('./fixtures/JunctionSets')
 

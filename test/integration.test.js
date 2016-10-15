@@ -1,7 +1,7 @@
 const assert = require('assert')
 
 const { createPathParser } = require('../lib/PathParser')
-const { JunctionSet, Junction, Branch, Param, Serializer } = require('../lib/junctions')
+const { JunctionSet, Junction, Branch, Param, Serializer } = require('../lib')
 const { default: getLocationFromRouteSet } = require('../lib/getLocationFromRouteSet')
 const { default: getRouteSetFromLocation } = require('../lib/getRouteSetFromLocation')
 const Serializers = require('./fixtures/Serializers')

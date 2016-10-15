@@ -1,6 +1,6 @@
-import { deserializeParams } from './SerializationUtils'
 import { LocatedRoute } from './Routes'
-import select from './select'
+import omit from './utils/omit'
+import { deserializeParams } from './utils/SerializationUtils'
 
 
 function getDefaultChildren(baseLocation, isRouteInPath, junctionPath, junctionSetMeta) {
@@ -47,7 +47,7 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
   }
 
 
-  const query = select(location.query, Object.keys(baseLocation.query), false)
+  const query = omit(location.query, Object.keys(baseLocation.query))
   let pathState = {}
   if (path !== '') {
     pathState = parsePath(path, query)

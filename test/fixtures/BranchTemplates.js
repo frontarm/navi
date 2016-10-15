@@ -1,4 +1,4 @@
-const { Branch } = require('../../lib/junctions')
+const { Branch } = require('../../lib')
 const Params = require('./Params')
 
 

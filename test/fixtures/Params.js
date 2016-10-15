@@ -1,4 +1,4 @@
-const { Param } = require('../../lib/junctions')
+const { Param } = require('../../lib')
 const Serializers = require('./Serializers')
 
 

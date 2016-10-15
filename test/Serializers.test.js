@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { Serializer, isSerializer } = require('../lib/junctions')
+const { Serializer, isSerializer } = require('../lib')
 const { deserializeParams, serializeParams } = require('../lib/SerializationUtils')
 
 
