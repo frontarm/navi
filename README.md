@@ -46,7 +46,7 @@ See the what brought this package about in the short [Introduction](https://junc
 
 ## Example
 
-This is an example of a [Screen Component](https://junctions.js.org/docs/getting-started/ScreensAndLinks.html) written with Junctions. To see how to use this within an actual example, see one of the applications in the project's [examples](https://github.com/jamesknelson/junctions/tree/master/examples) directory.
+This is an example of a composable [Screen Component](https://junctions.js.org/docs/getting-started/ScreensAndLinks.html) written with Junctions. To see how to use this within an actual application, see one of the projects in this repository's [examples](https://github.com/jamesknelson/junctions/tree/master/examples) directory.
 
 ```jsx
 const ContactsMain = Junction({
