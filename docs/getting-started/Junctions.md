@@ -5,9 +5,7 @@ So far, you've learned about the two types of objects which hold the location st
 - `Location` objects, which store state in the format of the Browser's API
 - `RouteSet` objects, which store state in the format of your Component tree
 
-Junctions are another type of Object. But in contrast to the first two objects, Junctions don't actually hold any state. Instead, each Junction corresonds to a single part of a `Location`, and specifies how to *just that part* of a Location to a `Route`. How do they do this?
-
-**`Junction` objects contain the information used to map a *given part* of a `Location` to a `Route`, and vice versa.**
+Junctions are another type of object. But in contrast to the first two objects, Junctions don't actually hold any state. Instead, **each Junction specifies how *one part* of a `Location` maps to a `Route`, and vice versa**.
 
 In a way, `Junction` objects are just like the junctions in a railway system. They're points at which a route can take one of many branches. Each junction can feed into the next junction to create a tree. And the Route you take through them all will depend on your final Location.
 
