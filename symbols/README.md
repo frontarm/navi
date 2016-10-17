@@ -18,6 +18,7 @@ Represents a [Junction](/docs/api/Junction.md) and its [Branches](/docs/api/Bran
 
 Represents a Junction and its Branches, where no branch is active by default.
 
+* [junction-1.svg](junction-1.svg)
 * [junction-2.svg](junction-2.svg)
 * [junction-3.svg](junction-3.svg)
 * [junction-4.svg](junction-4.svg)

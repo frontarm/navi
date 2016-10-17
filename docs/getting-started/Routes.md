@@ -6,7 +6,7 @@ Routes are objects which have a similar purpose to Location objects -- they cont
 
 If this feels a little like word soup, it might help to consider what the words "Route" and "Location" mean in plain English. While a "Location" is like a point on a map, a "Route" contains the information on how to actually get there. So where a `Location` can hold the absolute location of *any* point within your app, a `Route` holds a tree of *decisions* on which branch to follow at a given point.
 
-**TODO: junction diagram on left, single junction with many choices on right**
+![Routes vs Locations](routes-vs-locations.png)
 
 So what does a `Route` object look like in practice? Here's a really simple one:
 
@@ -57,11 +57,11 @@ This is an important difference between Junctions and URL-based routers, so it i
 
 The thing about URLs is that they're like a list of instructions -- "take this branch, then take that branch, then take that branch". This means that you represent a URL as a *list* of routes, or as a "tree" where each Route only has one child.
 
-**todo: diagram with a path through a number of junctions**
+![Path through junctions](active-route.png)
 
 But by using `state`, we're no longer limited in this way. We can now take multiple paths at once, and render mutiple child components with their own routes from within a single component. Or in other words, we can have **superimposed** routes.
 
-**todo: diagram with a splitter and multiple active routes**
+![Junction Set splitter](junction-sets.png)
 
 ## Example
 

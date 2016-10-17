@@ -40,9 +40,9 @@ A junction diagram is kind of like a schematic for your application. It represen
 2. Junction Sets are represented as splitters
 3. Routes can be drawn onto the diagram by lighting up one path through a series of junctions
 
-Here's an example:
+Here's an example. In fact, its pretty close to what you saw in the [Routes](Routes.md) page -- the main difference is that it now shows default branches.
 
-**TODO: diagram*
+![Junction Diagram](junction-diagram.png)
 
 Junction diagrams are a great tool to reason about an application's structure. In fact, if we were to also write out the options for each Branch, these diagrams would contain enough information to perform a mapping between Locations and RouteSets. But as great as diagrams may be for humans, they're not very useful for machines. So to represent our Junctions within an actual application, we'll need to declare our junctions as objects.
 
