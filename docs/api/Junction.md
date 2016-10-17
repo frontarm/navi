@@ -1,3 +1,13 @@
-# Junction({ [key: string]: BranchTemplate }, defaultBranchKey): Junction
+# `Junction(branches)`
 
-Represents a point in your application where one of multiple branches must be selected
+
+
+#### Arguments
+
+* `branches` (*{ [key]: [BranchTemplate](Branch.md) }*): A keyed set of branch templates - i.e., the objects returned by [Branch](Branch.md).
+
+#### Returns
+
+(*Junction*) 
+
+#### Example:

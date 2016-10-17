@@ -11,7 +11,7 @@ Why use Junctions?
 
 ## Demo
 
-See [live demo](http://jamesknelson.com/react-junctions-example/), with source available in [examples/raw-react](https://github.com/jamesknelson/junctions/tree/master/examples/raw-react).
+See [live demo](http://jamesknelson.com/react-junctions-example/), with source available in [examples/raw-react](https://github.com/jamesknelson/junctions/tree/master/examples/raw-react). Then read the [Getting Started](https://junctions.js.org/docs/getting-started/Locations.html) guide to see how it works.
 
 ## Installation
 
