@@ -1,6 +1,6 @@
 # The Converter
 
-A Converter is a tool which Junctions provides to convert between `Location` and `RouteSet` objects. Usage is simple:
+The Converter is the tool which Junctions provides to convert between `Location` and `RouteSet` objects. Usage is simple:
 
 ```js
 // Turn a Location into a RouteSet
@@ -23,4 +23,4 @@ Before continuing, I should mention that the converter has a couple of extra opt
 - `getLocation` can also process individual routes -- as opposed to route sets
 - `createConverter` can accept a *base location* -- allow you to mount your app under a subdirectory
 
-If you'd like details on these, check the API documentation. But otherwise, you now know everything there is to know about setting your app up with Junctions. So let's move on to actually using them.
+If you'd like details on these, check the [API reference](/docs/api/README.md). But otherwise, you now know everything there is to know about setting your app up with Junctions. So let's move on to actually using them.

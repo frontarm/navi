@@ -1,6 +1,6 @@
-# Declaring a Junction Tree
+# Declaring Junctions
 
-To create a junction tree, you use the five *declaration functions*:
+This package is designed to do the hard work of converting between Locations and Route Sets. But to do its job, it needs you to declare your junctions in a format which it understands. And that means using the five *declaration functions*:
 
 - `Branch`
 - `Junction`
@@ -8,7 +8,7 @@ To create a junction tree, you use the five *declaration functions*:
 - `Param`
 - `Serializer`
 
-Let's have a look at how they're used in practice. For more details, you can see the API documentation.
+Let's have a look at how they're used in practice. For more details, you can see the [API reference](/docs/api/README.md).
 
 ## `Junction` and `Branch`
 
@@ -34,7 +34,7 @@ const AppJunction = Junction({
 
 `Junction` takes a single object mapping keys to branches. The keys are used internally, but they're also used to generate default paths. In this example, the dashboard branch will use the default path, while the contacts branch will use the given one.
 
-`Branch` specifies a single type of Route which can be extract from the part of the `Location` which our junction corresponds to. It can contains the following options:
+`Branch` specifies a single type of Route which can be extracted from the part of the `Location` which our junction corresponds to. It can contains the following options:
 
 -   `path`: *string*
 

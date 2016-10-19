@@ -1,8 +1,10 @@
 # Usage with react-router
 
-Components create with the [Screens](Screens.md) pattern can be mounted within an existing react-router app using the `Mount` component in the [react-router-junctions](https://github.com/jamesknelson/react-router-junctions) package.
+[Screen Components](/docs/getting-started/ScreensAndLinks.md) can be mounted within an existing react-router app using the `Mount` component in the [react-router-junctions](https://github.com/jamesknelson/react-router-junctions) package.
 
 They can be mounted at the root of your application, under an existing route, or even in both places at once.
+
+## Example
 
 ```jsx
 import React from 'react'

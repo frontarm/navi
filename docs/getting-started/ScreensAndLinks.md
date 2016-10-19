@@ -25,7 +25,9 @@ Assuming we have a `Route` object like the following, what should we actually do
 }
 ```
 
-First, I want to stress the point that *there is no wrong answer* to this question. How you use a `Route` is completely up to you! Of course, this isn't very helpful if yuo're just getting started. So let's work through an example of how we'd consume a hypothetical route with a React component.
+First, I want to stress the point that *there is no wrong answer* to this question. How you use a `Route` is completely up to you! Of course, this isn't very helpful if you're just getting started. So let's work through an example of how we'd consume a hypothetical route with a React component.
+
+## Screens consume `RouteSet` objects
 
 But first, let's ammend the problem. The thing is, we generally don't want to pass a single `Route` into a component. This would limit us to rendering a single child route. And while we could fix this by passing multiple Route objects via different props, this would introduce an annoying step into our design process where we need to think about prop names. So instead of passing a `Route`, let's pass a `RouteSet`. 
 
@@ -64,7 +66,7 @@ render() {
 }
 ```
 
-Actually, any component which handles a route set is probably going to follow this pattern. These components are so common, in fact, that they have their own name -- Screen Components.
+In my experience, any component which handles a route set is probably going to follow this pattern. These components are so common, in fact, that they have their own name -- Screen Components.
 
 ## Screen Components
 
@@ -199,3 +201,9 @@ class ContactsScreen extends React.Component {
   }
 }
 ```
+
+## Next steps
+
+Now that you know about Routes, Locations, Junctions and Screens, you know everything there is to know about Junctions. Congratulations!
+
+Let's put this all together into a simple example application which includes the above screen, as well a `history` and the entry point to stitch it all together.

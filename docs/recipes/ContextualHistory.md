@@ -2,6 +2,8 @@
 
 By wrapping your application with the `<HistoryContext>` component from [react-junctions](https://github.com/jamesknelson/react-junctions), you eliminate the need to pass `history` via props to each `<Link>`.
 
+## Example
+
 ```jsx
 import React from 'react'
 import ReactDOM from 'react-dom'
