@@ -17,3 +17,17 @@ Represents one possible type of Route which can be taken on a given Junction.
 (*BranchTemplate*) 
 
 #### Example:
+
+```js
+Branch({
+  path: '/contacts',
+  data: {
+    Component: ContactsScreen,
+  },
+  children: ContactsScreen.junctionSet,
+  params: {
+    page: Param(),
+    pageSize: Param(),
+  },
+})
+```

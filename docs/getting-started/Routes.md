@@ -1,6 +1,6 @@
 # Routes
 
-Routes are objects which contain instructions on which parts of the applicaiton to display. In a way, they're a lot like [Locations](Location.md). In fact, both Location objects and Route objects store *exactly the same information*. The difference is in how this information is structured.
+Routes are objects which contain instructions on which parts of the application to display. In a way, they're a lot like [Locations](Location.md). In fact, both Location objects and Route objects store *exactly the same information*. The difference is in how this information is structured.
 
 **`Route` objects have a structure which mirrors your component hierarchy. `Location` objects have a structure which mirrors your browser's History and URL API.**
 

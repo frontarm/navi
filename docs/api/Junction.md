@@ -11,3 +11,10 @@
 (*Junction*) 
 
 #### Example:
+
+```js
+Junction({
+  dashboard: Branch(),
+  contacts: Branch()
+})
+```

@@ -1,7 +1,7 @@
 const assert = require('assert')
 
 const { Serializer, isSerializer } = require('../lib')
-const { deserializeParams, serializeParams } = require('../lib/SerializationUtils')
+const { deserializeParams, serializeParams } = require('../lib/utils/SerializationUtils')
 
 
 function serializeNumber(number) {

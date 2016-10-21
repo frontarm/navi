@@ -2,7 +2,7 @@ const assert = require('assert')
 
 const { Junction, Branch, Param, isJunction, isBranch, createRoute } = require('../lib')
 const { Route, LocatedRoute } = require('../lib/Routes')
-const { formatPattern } = require('../lib/PatternUtils')
+const { formatPattern } = require('../lib/utils/PatternUtils')
 const BranchTemplates = require('./fixtures/BranchTemplates')
 const JunctionSets = require('./fixtures/JunctionSets')
 

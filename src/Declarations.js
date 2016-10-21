@@ -3,8 +3,8 @@ import { compilePattern } from './utils/PatternUtils'
 import { isJunctionSet, isJunction, isBranchTemplate, isParam, isSerializer } from './TypeGuards'
 
 
-export function JunctionSet(_junctions) {
-  const primaryKey = _junctions.main ? 'main' : undefined
+export function JunctionSet(_junctions, _primaryKey) {
+  const primaryKey = _primaryKey || (_junctions.main ? 'main' : undefined)
 
   const junctionKeys = Object.keys(_junctions)
   const junctions = {}

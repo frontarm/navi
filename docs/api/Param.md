@@ -13,3 +13,11 @@ Represents one parameter which routes through a Branch can take
 (*Param*) 
 
 #### Example:
+
+```js
+Param({
+  default: () => 1,
+  required: true,
+  serializer: Serializer({ serialize: x => moment(x), deserialize: x => x === '' ? null : parseInt(x) })
+})
+```

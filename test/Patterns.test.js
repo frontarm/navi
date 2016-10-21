@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { compilePattern, formatPattern } = require('../lib/PatternUtils')
+const { compilePattern, formatPattern } = require('../lib/utils/PatternUtils')
 
 
 describe('compilePattern', function() {

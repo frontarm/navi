@@ -11,3 +11,10 @@ Represents a group of Junctions, where your application will have at most one Ro
 (*JunctionSet*) 
 
 #### Example:
+
+```
+JunctionSet({
+  main: Junction(...),
+  modal: Junction(...),
+})
+```

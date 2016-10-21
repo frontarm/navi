@@ -16,6 +16,10 @@ Accepts an object mapping JunctionSet key to Route object, and converts it to a 
 
 #### Example:
 
+```js
+const canonicalLocation = converter.getLocation(routes)
+```
+
 ### <a id='getRouteSet'></a>[`getRouteSet(location)`](#getRouteSet)
 
 Accepts a Location object (such as the current location from a history object), and converts it into a set of routes following the specification in the converter's JunctionSet
@@ -30,3 +34,6 @@ Accepts a Location object (such as the current location from a history object), 
 
 #### Example:
 
+```js
+const routes = converter.getRouteSet(location)
+```

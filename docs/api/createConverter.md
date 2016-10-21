@@ -11,3 +11,8 @@ Create a [Converter](Converter.md) object with two methods two help you switch b
 (*[Converter](Converter.md)*) 
 
 #### Example:
+
+```
+const baseLocation = { pathname: '/blog/' }
+const converter = Junctions.createConverter(AppScreen.junctionSet, baseLocation)    
+```

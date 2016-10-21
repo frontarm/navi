@@ -4,11 +4,18 @@ Defines a way to serialize and deserialize parameters. This allows your paramete
 
 #### Options
 
-* `serialize` (*function*): ...
-* `deserialize` (*function*): ...
+* `serialize` (*function*): A function taking a value and returning the serialized string
+* `deserialize` (*function*): A function taking a serialized string and returning the value
 
 #### Returns
 
 (*Serializer*) 
 
 #### Example:
+
+```js
+Serializer({
+  serialize: x => String(x),
+  deserialize: x => x === '' ? null : parseInt(x)
+})
+```
