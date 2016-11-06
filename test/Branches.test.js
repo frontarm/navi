@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { Param, JunctionSet, Junction, Branch, isBranchTemplate } = require('../lib')
+const { JunctionSet, Junction, Branch, isBranchTemplate } = require('../lib')
 const Params = require('./fixtures/Params')
 const JunctionSets = require('./fixtures/JunctionSets')
 
@@ -34,7 +34,7 @@ describe("Branch", function() {
     const childJunctions = JunctionSet({
       x: Junction({
         y: Branch({
-          params: { page: Param() },
+          params: { page: true },
         })
       })
     }, 'x')
@@ -42,7 +42,7 @@ describe("Branch", function() {
     assert.throws(() => {
       Junction({
         a: Branch({
-          params: { page: Param() },
+          params: { page: true },
           children: childJunctions
         })
       })

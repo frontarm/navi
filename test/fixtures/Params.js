@@ -1,26 +1,25 @@
-const { Param } = require('../../lib')
 const Serializers = require('./Serializers')
 
 
 module.exports = {
   get id() {
-    return Param({
+    return {
       serializer: Serializers.number,
       required: true,
-    })
+    }
   },
 
   get page() {
-    return Param({
+    return {
       serializer: Serializers.number,
       default: 1,
       required: true,
-    }) 
+    }
   },
 
   get slug() {
-    return Param({
+    return {
       required: true,
-    }) 
+    }
   },
 }

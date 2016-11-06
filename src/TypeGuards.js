@@ -13,12 +13,6 @@ export function isBranchTemplate(x) {
 export function isBranch(x) {
   return x instanceof Object && x.$$branch
 }
-export function isSerializer(x) {
-  return x instanceof Object && x.$$serializer
-}
-export function isParam(x) {
-  return x instanceof Object && x.$$param
-}
 export function isRoute(x) {
   return x instanceof Route
 }

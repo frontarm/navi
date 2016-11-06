@@ -2,8 +2,6 @@ export {
   JunctionSet,
   Junction,
   Branch,
-  Param,
-  Serializer,
 } from './Declarations'
 
 export { createRoute } from './Routes'
@@ -16,8 +14,6 @@ export {
   isJunction,
   isBranchTemplate,
   isBranch,
-  isSerializer,
-  isParam,
   isRoute,
   isLocatedRoute
 } from './TypeGuards'

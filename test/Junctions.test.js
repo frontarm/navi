@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { Junction, Branch, Param, isJunction, isBranch, createRoute } = require('../lib')
+const { Junction, Branch, isJunction, isBranch, createRoute } = require('../lib')
 const { Route, LocatedRoute } = require('../lib/Routes')
 const { formatPattern } = require('../lib/utils/PatternUtils')
 const BranchTemplates = require('./fixtures/BranchTemplates')
@@ -53,9 +53,9 @@ describe("Junction", function() {
     const junction = Junction({
       testBranch: Branch({
         params: {
-          required: Param({ required: true }),
-          defaulted: Param({ default: "1" }),
-          optional: Param({}),
+          required: { required: true },
+          defaulted: { default: "1" },
+          optional: {},
         },
       }),
     })
@@ -103,7 +103,7 @@ describe("Junction#branches.branchName", function() {
     const junction = Junction({
       invoices: Branch({
         params: {
-          page: Param({ default: 1 }),
+          page: { default: 1 },
         },
         children: childJunctionSet,
       }),

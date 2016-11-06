@@ -1,22 +1,19 @@
-const { Serializer } = require('../../lib')
-
-
 module.exports = {
   get number() {
-    return Serializer({
+    return {
       serialize: function serializeNumber(number) {
         return ""+number
       },
       deserialize: function deserializeNumber(string) {
         return parseFloat(string)
       },
-    })
+    }
   },
 
   get flag() {
-    return Serializer({
+    return {
       serialize: (value) => '',
       deserialize: (string) => true,
-    })
+    }
   }
 }

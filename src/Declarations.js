@@ -1,6 +1,6 @@
 import hyphenize from './utils/hyphenize'
 import { compilePattern } from './utils/PatternUtils'
-import { isJunctionSet, isJunction, isBranchTemplate, isParam, isSerializer } from './TypeGuards'
+import { isJunctionSet, isJunction, isBranchTemplate } from './TypeGuards'
 
 
 export function JunctionSet(_junctions, _primaryKey) {
@@ -135,17 +135,15 @@ export function Branch(options = {}) {
   }
 
   const data = Object.freeze(options.data || {})
-  const params = options.params || {}
-  const paramNames = Object.keys(params)
+  const params = {}
+  const paramNames = options.params ? Object.keys(options.params) : []
 
   for (let i = 0, len = paramNames.length; i < len; i++) {
     const paramName = paramNames[i]
     if (!/^[A-Za-z0-9_]+$/.test(paramName)) {
       throw new Error(`Branch param keys must only use the characters A-Z, a-z, 0-9 or _, but key was named "${paramName}".`)
     }
-    if (!isParam(params[paramName])) {
-      throw new Error(`Branch params must be a value returned by the "Param" function.`)
-    }
+    params[paramName] = Param(options.params[paramName])
   }
   if (data !== undefined && typeof data !== 'object') {
     throw new Error(`If a Branch specifies a "data" option, it must be an Object. Instead, it was of type "${typeof data}".`)
@@ -188,17 +186,16 @@ const nonEmptyStringSerialier = Serializer({
  * @param {Serializer}      options.serializer  How to serialize/deserialize
  */
 export function Param(options = {}) {
-  if ('serializer' in options && !isSerializer(options.serializer)) {
-    throw new Error (`Param expects the 'serializer' option to an object returned by junctions's Serializer function.`)
-  }
-
+  const serializer =
+    (options !== true && 'serializer' in options)
+      ? Serializer(options.serializer)
+      : nonEmptyStringSerialier
+  
   const param = {
     default: options.default,
     required: options.required || false,
-    serializer: options.serializer || nonEmptyStringSerialier,
+    serializer: serializer,
   }
-
-  Object.defineProperty(param, '$$param', { value: true })
 
   return param
 }
@@ -215,7 +212,8 @@ export function Serializer(options) {
 
   const serializer = Object.assign({}, options)
 
-  Object.defineProperty(serializer, '$$serializer', { value: true })
-
-  return serializer
+  return {
+    serialize: options.serialize,
+    deserialize: options.deserialize
+  }
 }

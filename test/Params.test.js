@@ -1,16 +1,9 @@
 const assert = require('assert')
 
-const { Param, isParam } = require('../lib')
+const { Param } = require('../lib/Declarations')
 const { deserializeParams, serializeParams } = require('../lib/utils/SerializationUtils')
 const Serializers = require('./fixtures/Serializers')
 const Params = require('./fixtures/Params')
-
-
-describe("isParam", function() {
-  it("returns false when passed an empty object", function() {
-    assert(!isParam({}))
-  })
-})
 
 
 describe("Param", function() {
@@ -21,7 +14,9 @@ describe("Param", function() {
       serializer: Serializers.number,
     })
 
-    assert(isParam(param))
+    assert.equal(param.required, true)
+    assert.equal(param.default, 1)
+    assert(param.serializer)
   })
 
   it("fails when `serializer` is not a serializer", function() {

@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { Junction, Branch, Param, isJunction, isBranch, createRoute } = require('../lib')
+const { Junction, Branch, isJunction, isBranch, createRoute } = require('../lib')
 const { Route, LocatedRoute } = require('../lib/Routes')
 const JunctionSets = require('./fixtures/JunctionSets')
 
@@ -14,7 +14,7 @@ describe("Route", function() {
   it("adds static default parameters", function() {
     const route = new Route(makeBranch({
       params: {
-        page: Param({ required: true, default: 1 })
+        page: { required: true, default: 1 }
       }
     }))
     assert.equal(route.params.page, 1)
@@ -23,7 +23,7 @@ describe("Route", function() {
   it("adds dynamic default parameters", function() {
     const route = new Route(makeBranch({
       params: {
-        page: Param({ required: true, default: () => 1 })
+        page: { required: true, default: () => 1 }
       }
     }))
     assert.equal(route.params.page, 1)
@@ -39,7 +39,7 @@ describe("Route", function() {
   it("accepts parameters", function() {
     const branch = makeBranch({
       params: {
-        page: Param({ default: () => 1 })
+        page: { default: () => 1 }
       }
     })
     const route = new Route(branch, { page: 2 })
@@ -57,7 +57,7 @@ describe("Route", function() {
     assert.throws(() => {
       new Route(makeBranch({
         params: {
-          id: Param({ required: true })
+          id: { required: true }
         }
       }))
     })

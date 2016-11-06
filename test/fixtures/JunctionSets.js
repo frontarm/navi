@@ -1,4 +1,4 @@
-const { JunctionSet, Junction, Branch, Param } = require('../../lib')
+const { JunctionSet, Junction, Branch } = require('../../lib')
 const Junctions = require('./Junctions')
 const Serializers = require('./Serializers')
 
@@ -20,8 +20,8 @@ module.exports = {
           default: true,
           path: '/list',
           params: {
-            page: Param({ default: 1, serializer: Serializers.number }),
-            pageSize: Param({ default: 20, serializer: Serializers.number }),
+            page: { default: 1, serializer: Serializers.number },
+            pageSize: { default: 20, serializer: Serializers.number },
           }
         }),
         invoice: Branch({
@@ -29,7 +29,7 @@ module.exports = {
             component: 'invoiceScreen',
           },
           params: {
-            id: Param({ required: true }),
+            id: { required: true },
           },
           children: module.exports.invoiceScreen,
         }),
@@ -47,7 +47,7 @@ module.exports = {
         invoices: Branch({
           default: true,
           params: {
-            admin: Param({ serializer: Serializers.flag }),
+            admin: { serializer: Serializers.flag },
           },
           children: module.exports.invoiceListScreen,
         }),

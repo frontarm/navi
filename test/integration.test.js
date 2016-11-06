@@ -1,7 +1,7 @@
 const assert = require('assert')
 
 const { createPathParser } = require('../lib/PathParser')
-const { JunctionSet, Junction, Branch, Param, Serializer } = require('../lib')
+const { JunctionSet, Junction, Branch } = require('../lib')
 const { default: getLocationFromRouteSet } = require('../lib/getLocationFromRouteSet')
 const { default: getRouteSetFromLocation } = require('../lib/getRouteSetFromLocation')
 const Serializers = require('./fixtures/Serializers')
@@ -21,7 +21,7 @@ describe('Integration: ', function() {
         invoice: Branch({
           path: '/:id',
           params: {
-            id: Param({ required: true }),
+            id: { required: true },
           },
           children: invoiceScreen,
         }),
@@ -36,7 +36,7 @@ describe('Integration: ', function() {
         dashboard: Branch(),
         invoices: Branch({
           params: {
-            page: Param({ default: 1, serializer: Serializers.number }),
+            page: { default: 1, serializer: Serializers.number },
           },
           children: invoiceListScreen,
         }),
