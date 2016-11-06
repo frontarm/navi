@@ -1,52 +1,20 @@
 const assert = require('assert')
 
-const { JunctionSet, Junction, Branch, isBranchTemplate } = require('../lib')
+const { JunctionSet, Junction, Branch } = require('../lib/Declarations')
 const paramTypes = require('./fixtures/ParamTypes')
 const JunctionSets = require('./fixtures/JunctionSets')
 
 
-describe("isBranchTemplate", function() {
-  it("returns false when passed an empty object", function() {
-    assert(!isBranchTemplate({}))
-  })
-})
-
-
 describe("Branch", function() {
-  it("returns a BranchTemplate", function() {
-    const branchTemplate = Branch()
-
-    assert(isBranchTemplate(branchTemplate))
-  })
-
-  it("returns a BranchTemplate when options are given", function() {
-    const branchTemplate = Branch({
+  it("returns a Branch when options are given", function() {
+    const branch = Branch({
       path: '/invoices/:_invoiceId',
       data: { test: 1 },
       paramTypes: { _invoiceId: paramTypes.id },
       children: JunctionSets.invoiceListScreen,
     })
 
-    assert(isBranchTemplate(branchTemplate))
-  })
-
-  it("fails when given a non-pattern param key which is already taken by a child branch", function() {
-    const childJunctions = JunctionSet({
-      x: Junction({
-        y: Branch({
-          paramTypes: { page: true },
-        })
-      })
-    }, 'x')
-
-    assert.throws(() => {
-      Junction({
-        a: Branch({
-          paramTypes: { page: true },
-          children: childJunctions
-        })
-      })
-    })
+    assert(branch)
   })
 
   it("fails when given a param key with the non alphanumeric/underscore value 'a1-'", function() {

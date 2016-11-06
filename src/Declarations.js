@@ -73,17 +73,13 @@ export function Junction(branchTemplates) {
       throw new Error('Junction keys must only use the characters A-Z, a-z, 0-9 or _')
     }
 
-    const branchTemplate = branchTemplates[key]
+    const branchTemplate = Branch(branchTemplates[key])
 
     if (branchTemplate.default) {
       if (junctionMeta.defaultKey) {
         throw new Error(`Branch "${key}" was specified as default, when branch "${junctionMeta.defaultKey}" was already used as default.`)
       }
       junctionMeta.defaultKey = key
-    }
-
-    if (!isBranchTemplate(branchTemplate)) {
-      throw new Error(`An object was passed to Junction which is not a Branch. See key '${key}'.`)
     }
 
     const pattern = branchTemplate.pattern || createDefaultPattern(key, branchTemplate.paramTypes)
@@ -130,6 +126,10 @@ export function Junction(branchTemplates) {
 
 
 export function Branch(options = {}) {
+  if (options === true) {
+    return { data: {}, paramTypes: {}, pattern: false, default: false }
+  }
+
   if ('children' in options && !isJunctionSet(options.children)) {
     throw new Error(`A 'children' key was specified for a Branch, but no value was specified.`)
   }
@@ -165,8 +165,6 @@ export function Branch(options = {}) {
 
     branchTemplate.children = options.children
   }
-
-  Object.defineProperty(branchTemplate, '$$branchTemplate', { value: true })
 
   return Object.freeze(branchTemplate)
 }

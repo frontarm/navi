@@ -1,18 +1,18 @@
-const { Junction, Branch } = require('../../lib')
-const BranchTemplates = require('./BranchTemplates')
+const { Junction } = require('../../lib')
+const Branches = require('./Branches')
 
 
 module.exports = {
   get invoiceScreenContent() {
     return Junction({
-      details: BranchTemplates.details,
-      attachment: BranchTemplates.attachment,
+      details: Branches.details,
+      attachment: Branches.attachment,
     })
   },
 
   get addInvoiceModal() {
     return Junction({
-      open: Branch(),
+      open: true,
     })
   }
 }

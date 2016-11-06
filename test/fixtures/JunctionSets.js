@@ -1,4 +1,4 @@
-const { JunctionSet, Junction, Branch } = require('../../lib')
+const { JunctionSet, Junction } = require('../../lib')
 const Junctions = require('./Junctions')
 const Serializers = require('./Serializers')
 
@@ -7,8 +7,8 @@ module.exports = {
   get invoiceScreen() {
     return JunctionSet({
       main: Junction({
-        details: Branch({ default: true }),
-        attachments: Branch(),
+        details: { default: true },
+        attachments: true,
       })
     })
   },
@@ -16,15 +16,15 @@ module.exports = {
   get invoiceListScreen() {
     return JunctionSet({
       main: Junction({
-        list: Branch({
+        list: {
           default: true,
           path: '/list',
           paramTypes: {
             page: { default: 1, serializer: Serializers.number },
             pageSize: { default: 20, serializer: Serializers.number },
           }
-        }),
-        invoice: Branch({
+        },
+        invoice: {
           data: {
             component: 'invoiceScreen',
           },
@@ -32,10 +32,10 @@ module.exports = {
             id: { required: true },
           },
           children: module.exports.invoiceScreen,
-        }),
+        },
       }),
       addModal: Junction({
-        open: Branch(),
+        open: true,
       }),
     })
   },
@@ -43,14 +43,14 @@ module.exports = {
   get appScreen() {
     return JunctionSet({
       main: Junction({
-        dashboard: Branch(),
-        invoices: Branch({
+        dashboard: {},
+        invoices: {
           default: true,
           paramTypes: {
             admin: { serializer: Serializers.flag },
           },
           children: module.exports.invoiceListScreen,
-        }),
+        },
       })
     })
   }

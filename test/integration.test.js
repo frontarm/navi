@@ -11,36 +11,36 @@ describe('Integration: ', function() {
   beforeEach(function() {
     const invoiceScreen = JunctionSet({
       main: Junction({
-        details: Branch(),
-        attachments: Branch(),
+        details: {},
+        attachments: {},
       }, 'details')
     }, 'main')
 
     const invoiceListScreen = JunctionSet({
       main: Junction({
-        invoice: Branch({
+        invoice: {
           path: '/:id',
           paramTypes: {
             id: { required: true },
           },
           children: invoiceScreen,
-        }),
+        },
       }),
       addModal: Junction({
-        open: Branch(),
+        open: {},
       }),
     }, 'main')
 
     const appScreen = JunctionSet({
       main: Junction({
-        dashboard: Branch(),
-        invoices: Branch({
+        dashboard: { default: true },
+        invoices: {
           paramTypes: {
             page: { default: 1, serializer: Serializers.number },
           },
           children: invoiceListScreen,
-        }),
-      }, 'dashboard')
+        },
+      })
     }, 'main')
 
     this.junctionSet = appScreen

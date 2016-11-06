@@ -1,12 +1,12 @@
 const assert = require('assert')
 
-const { Junction, Branch, isJunction, isBranch, createRoute } = require('../lib')
+const { Junction, isJunction, isBranch, createRoute } = require('../lib')
 const { Route, LocatedRoute } = require('../lib/Routes')
 const JunctionSets = require('./fixtures/JunctionSets')
 
 
 function makeBranch(options) {
-  return Junction({ a: Branch(options) }).a
+  return Junction({ a: options }).a
 }
 
 
@@ -67,7 +67,7 @@ describe("Route", function() {
     const branch = makeBranch({ children: JunctionSets.invoiceScreen })
     
     assert.throws(() => {
-      new Route(branch, {}, { main: Branch() })
+      new Route(branch, {}, { main: true })
     })
   })
 

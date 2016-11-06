@@ -4,16 +4,16 @@ const ParamTypes = require('./ParamTypes')
 
 module.exports = {
   get details() {
-    return Branch({ default: true })
+    return { default: true }
   },
 
   get attachment() {
-    return Branch({
+    return {
       path: '/attachment/:attachmentId',
       paramTypes: {
         attachmentId: ParamTypes.id,
       },
       data: { component: 'component' },
-    })
+    }
   },
 }

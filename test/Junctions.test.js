@@ -1,9 +1,9 @@
 const assert = require('assert')
 
-const { Junction, Branch, isJunction, isBranch, createRoute } = require('../lib')
+const { JunctionSet, Junction, isJunction, isBranch, createRoute } = require('../lib')
 const { Route, LocatedRoute } = require('../lib/Routes')
 const { formatPattern } = require('../lib/utils/PatternUtils')
-const BranchTemplates = require('./fixtures/BranchTemplates')
+const Branches = require('./fixtures/Branches')
 const JunctionSets = require('./fixtures/JunctionSets')
 
 
@@ -14,8 +14,8 @@ describe("isJunction", function() {
 })
 
 describe("isBranch", function() {
-  it("returns false when passed a BranchTemplate", function() {
-    assert(!isBranch(BranchTemplates.details))
+  it("returns false when passed a branch definition object", function() {
+    assert(!isBranch(Branches.details))
   })
 })
 
@@ -23,7 +23,7 @@ describe("isBranch", function() {
 describe("Junction", function() {
   it("returns a Junction when given no default", function() {
     const junction = Junction({
-      abc123_: BranchTemplates.details,
+      abc123_: Branches.details,
     })
 
     assert(isJunction(junction))
@@ -31,8 +31,8 @@ describe("Junction", function() {
 
   it("returns a Junction when given a default", function() {
     const junction = Junction({
-      details: BranchTemplates.details,
-      attachment: BranchTemplates.attachment,
+      details: Branches.details,
+      attachment: Branches.attachment,
     })
 
     assert(isJunction(junction))
@@ -41,8 +41,8 @@ describe("Junction", function() {
 
   it("returns Branch functions instead of BranchTemplate objects", function() {
     const junction = Junction({
-      details: BranchTemplates.details,
-      attachment: BranchTemplates.attachment,
+      details: Branches.details,
+      attachment: Branches.attachment,
     })
 
     assert(isBranch(junction.details))
@@ -51,13 +51,13 @@ describe("Junction", function() {
 
   it("creates a default pattern based on branch paramTypes", function() {
     const junction = Junction({
-      testBranch: Branch({
+      testBranch: {
         paramTypes: {
           required: { required: true },
           defaulted: { default: "1" },
           optional: {},
         },
-      }),
+      },
     })
 
     const formattedPath = formatPattern(junction.testBranch.pattern, {
@@ -78,8 +78,8 @@ describe("Junction", function() {
   it("fails when given multiple defaults", function() {
     assert.throws(() => {
       Junction({
-        details: Branch({ default: true }),
-        attachment: Branch({ default: true }),
+        details: { default: true },
+        attachment: { default: true },
       })
     })
   })
@@ -88,6 +88,25 @@ describe("Junction", function() {
     assert.throws(() => {
       Junction({
         'joe/': BranchTemplates.details,
+      })
+    })
+  })
+
+  it("fails when given a non-pattern param key which is already taken by a child branch", function() {
+    const childJunctions = JunctionSet({
+      x: Junction({
+        y: {
+          paramTypes: { page: true },
+        }
+      })
+    }, 'x')
+
+    assert.throws(() => {
+      Junction({
+        a: {
+          paramTypes: { page: true },
+          children: childJunctions
+        }
       })
     })
   })
@@ -101,12 +120,12 @@ describe("Junction#branches.branchName", function() {
     const childJunctionSet = JunctionSets.invoiceScreen
 
     const junction = Junction({
-      invoices: Branch({
+      invoices: {
         paramTypes: {
           page: { default: 1 },
         },
         children: childJunctionSet,
-      }),
+      },
     })
 
     const route = createRoute(
