@@ -19,7 +19,7 @@ module.exports = {
         list: Branch({
           default: true,
           path: '/list',
-          params: {
+          paramTypes: {
             page: { default: 1, serializer: Serializers.number },
             pageSize: { default: 20, serializer: Serializers.number },
           }
@@ -28,7 +28,7 @@ module.exports = {
           data: {
             component: 'invoiceScreen',
           },
-          params: {
+          paramTypes: {
             id: { required: true },
           },
           children: module.exports.invoiceScreen,
@@ -46,7 +46,7 @@ module.exports = {
         dashboard: Branch(),
         invoices: Branch({
           default: true,
-          params: {
+          paramTypes: {
             admin: { serializer: Serializers.flag },
           },
           children: module.exports.invoiceListScreen,

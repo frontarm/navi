@@ -1,5 +1,5 @@
 const { Branch } = require('../../lib')
-const Params = require('./Params')
+const ParamTypes = require('./ParamTypes')
 
 
 module.exports = {
@@ -10,8 +10,8 @@ module.exports = {
   get attachment() {
     return Branch({
       path: '/attachment/:attachmentId',
-      params: {
-        attachmentId: Params.id,
+      paramTypes: {
+        attachmentId: ParamTypes.id,
       },
       data: { component: 'component' },
     })

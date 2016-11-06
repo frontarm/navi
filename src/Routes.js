@@ -14,13 +14,13 @@ function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch,
     for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
       const key = branch.queryKeys[i]
       const value = params[key]
-      if (value !== undefined && value !== branch.params[key].default) {
+      if (value !== undefined && value !== branch.paramTypes[key].default) {
         queryParams[key] = value
       }
     }
 
-    const serializedQuery = serializeParams(branch.params, queryParams)
-    const serializedPathParams = serializeParams(branch.params, omit(params, branch.queryKeys))
+    const serializedQuery = serializeParams(branch.paramTypes, queryParams)
+    const serializedPathParams = serializeParams(branch.paramTypes, omit(params, branch.queryKeys))
 
     const query = Object.assign({}, serializedQuery, baseLocation.query)
     return {
@@ -42,7 +42,7 @@ function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch,
         $$junctions: Object.assign({}, baseState.$$junctions, {
           [junctionPath.join('/')]: {
             branchKey: branch.key,
-            serializedParams: serializeParams(branch.params, params),
+            serializedParams: serializeParams(branch.paramTypes, params),
           }
         }),
       }),
@@ -52,16 +52,16 @@ function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch,
 }
 
 
-function getDefaultParams(branchParams, knownParams={}) {
+function getDefaultParams(paramTypes, knownParams={}) {
   const paramKeys = Object.keys(knownParams)
-  const remainingParamKeys = Object.keys(branchParams)
+  const remainingParamKeys = Object.keys(paramTypes)
   const paramsCopy = Object.assign({}, knownParams)
 
   for (let i = 0, len = paramKeys.length; i < len; i++) {
     const key = paramKeys[i]
-    const branchParam = branchParams[key]
+    const paramType = paramTypes[key]
 
-    if (!branchParam) {
+    if (!paramType) {
       throw new Error(`Could not create a route. A param with key '${key}' was specified, but this key is not listed in the corresponding Branche's params.`)
     }
 
@@ -70,12 +70,12 @@ function getDefaultParams(branchParams, knownParams={}) {
 
   for (let i = 0, len = remainingParamKeys.length; i < len; i++) {
     const key = remainingParamKeys[i]
-    const branchParam = branchParams[key]
-    const defaultParam = branchParam.default
+    const paramType = paramTypes[key]
+    const defaultParam = paramType.default
     if (defaultParam) {
       paramsCopy[key] = typeof defaultParam == 'function' ? defaultParam() : defaultParam
     }
-    else if (branchParam.required) {
+    else if (paramType.required) {
       throw new Error(`Cannot create route without required key '${key}'`)
     }
   }
@@ -102,7 +102,7 @@ export class Route {
 
     this.branch = branch
     this.data = branch.data
-    this.params = getDefaultParams(branch.params, params)
+    this.params = getDefaultParams(branch.paramTypes, params)
     this.children = children
 
     Object.defineProperty(this, 'locate', {

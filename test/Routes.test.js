@@ -13,7 +13,7 @@ function makeBranch(options) {
 describe("Route", function() {
   it("adds static default parameters", function() {
     const route = new Route(makeBranch({
-      params: {
+      paramTypes: {
         page: { required: true, default: 1 }
       }
     }))
@@ -22,7 +22,7 @@ describe("Route", function() {
 
   it("adds dynamic default parameters", function() {
     const route = new Route(makeBranch({
-      params: {
+      paramTypes: {
         page: { required: true, default: () => 1 }
       }
     }))
@@ -38,7 +38,7 @@ describe("Route", function() {
 
   it("accepts parameters", function() {
     const branch = makeBranch({
-      params: {
+      paramTypes: {
         page: { default: () => 1 }
       }
     })
@@ -56,7 +56,7 @@ describe("Route", function() {
   it("fails when missing required parameters", function() {
     assert.throws(() => {
       new Route(makeBranch({
-        params: {
+        paramTypes: {
           id: { required: true }
         }
       }))

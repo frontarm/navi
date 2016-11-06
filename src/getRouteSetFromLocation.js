@@ -87,7 +87,7 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
     const junction = junctionSetNode[key]
     const { branchKey, serializedParams, routePath } = state[stateKey]
     const branch = junction[branchKey]
-    const params = deserializeParams(branch.params, serializedParams)
+    const params = deserializeParams(branch.paramTypes, serializedParams)
 
     // Copy all state paths except our children
     const newBaseState = {}

@@ -16,14 +16,14 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
 
     if (route) {
       const branch = route.branch
-      const serializedParams = serializeParams(branch.params, route.params)
+      const serializedParams = serializeParams(branch.paramTypes, route.params)
 
       const isPrimaryRoute = isRouteInPath && junctionSet.$$junctionSetMeta.primaryKey == routeKey
       if (isPrimaryRoute) {
         for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
           const key = branch.queryKeys[i]
           const value = serializedParams[key] 
-          if (value !== undefined && route.params[key] !== branch.params[key].default) {
+          if (value !== undefined && route.params[key] !== branch.paramTypes[key].default) {
             query[key] = value
           }
           delete serializedParams[key]

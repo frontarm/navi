@@ -37,12 +37,12 @@ export function JunctionSet(_junctions, _primaryKey) {
 }
 
 
-function createDefaultPattern(key, branchParams) {
+function createDefaultPattern(key, paramTypes) {
   const id = hyphenize(key)
-  const branchParamKeys = Object.keys(branchParams)
+  const branchParamKeys = Object.keys(paramTypes)
   const paramNames =
     branchParamKeys.filter(key => {
-      const param = branchParams[key]
+      const param = paramTypes[key]
       return param.required || param.default
     })
         
@@ -86,13 +86,13 @@ export function Junction(branchTemplates) {
       throw new Error(`An object was passed to Junction which is not a Branch. See key '${key}'.`)
     }
 
-    const pattern = branchTemplate.pattern || createDefaultPattern(key, branchTemplate.params)
+    const pattern = branchTemplate.pattern || createDefaultPattern(key, branchTemplate.paramTypes)
     const branch = {
       key: key,
       pattern: pattern,
       data: branchTemplate.data,
-      params: branchTemplate.params,
-      queryKeys: Object.keys(branchTemplate.params).filter(x => !pattern.paramNames.includes(x)),
+      paramTypes: branchTemplate.paramTypes,
+      queryKeys: Object.keys(branchTemplate.paramTypes).filter(x => !pattern.paramNames.includes(x)),
     }
 
     for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
@@ -135,15 +135,15 @@ export function Branch(options = {}) {
   }
 
   const data = Object.freeze(options.data || {})
-  const params = {}
-  const paramNames = options.params ? Object.keys(options.params) : []
+  const paramTypes = {}
+  const paramNames = options.paramTypes ? Object.keys(options.paramTypes) : []
 
   for (let i = 0, len = paramNames.length; i < len; i++) {
     const paramName = paramNames[i]
     if (!/^[A-Za-z0-9_]+$/.test(paramName)) {
       throw new Error(`Branch param keys must only use the characters A-Z, a-z, 0-9 or _, but key was named "${paramName}".`)
     }
-    params[paramName] = Param(options.params[paramName])
+    paramTypes[paramName] = ParamType(options.paramTypes[paramName])
   }
   if (data !== undefined && typeof data !== 'object') {
     throw new Error(`If a Branch specifies a "data" option, it must be an Object. Instead, it was of type "${typeof data}".`)
@@ -155,7 +155,7 @@ export function Branch(options = {}) {
     default: !!options.default,
     pattern: pattern,
     data: data,
-    params: params,
+    paramTypes: paramTypes,
   }
 
   if (options.children) {
@@ -185,7 +185,7 @@ const nonEmptyStringSerialier = Serializer({
  * @param {boolean}         options.required    Throw an error if a route is created without this param
  * @param {Serializer}      options.serializer  How to serialize/deserialize
  */
-export function Param(options = {}) {
+export function ParamType(options = {}) {
   const serializer =
     (options !== true && 'serializer' in options)
       ? Serializer(options.serializer)

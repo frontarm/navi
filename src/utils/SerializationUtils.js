@@ -1,21 +1,21 @@
-export function deserializeParams(branchParams, routeParams) {
+export function deserializeParams(paramTypes, params) {
   const deserializedParams = {}
-  const keys = Object.keys(routeParams)
+  const keys = Object.keys(params)
   for (let i = 0, len = keys.length; i < len; i++) {
     const key = keys[i]
-    const serializer = branchParams[key].serializer
-    const serializedValue = routeParams[key]
+    const serializer = paramTypes[key].serializer
+    const serializedValue = params[key]
     deserializedParams[key] = serializer.deserialize(serializedValue)
   }
   return deserializedParams
 }
 
-export function serializeParams(branchParams, routeParams) {
+export function serializeParams(paramTypes, params) {
   const serializedParams = {}
-  const keys = Object.keys(routeParams)
+  const keys = Object.keys(params)
   for (let i = 0, len = keys.length; i < len; i++) {
     const key = keys[i]
-    serializedParams[key] = branchParams[key].serializer.serialize(routeParams[key])
+    serializedParams[key] = paramTypes[key].serializer.serialize(params[key])
   }
   return serializedParams
 }

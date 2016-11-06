@@ -49,10 +49,10 @@ describe("Junction", function() {
   })
 
 
-  it("creates a default pattern based on branch params", function() {
+  it("creates a default pattern based on branch paramTypes", function() {
     const junction = Junction({
       testBranch: Branch({
-        params: {
+        paramTypes: {
           required: { required: true },
           defaulted: { default: "1" },
           optional: {},
@@ -95,14 +95,14 @@ describe("Junction", function() {
 
 
 describe("Junction#branches.branchName", function() {
-  it("returns a Route with correct branch, params and children", function() {
+  it("returns a Route with correct branch, paramTypes and children", function() {
     // Note: JunctionSets.invoiceScreen is actually a getter, so run it this way to
     //       avoid creating multiple copies of it
     const childJunctionSet = JunctionSets.invoiceScreen
 
     const junction = Junction({
       invoices: Branch({
-        params: {
+        paramTypes: {
           page: { default: 1 },
         },
         children: childJunctionSet,

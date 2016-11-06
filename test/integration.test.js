@@ -20,7 +20,7 @@ describe('Integration: ', function() {
       main: Junction({
         invoice: Branch({
           path: '/:id',
-          params: {
+          paramTypes: {
             id: { required: true },
           },
           children: invoiceScreen,
@@ -35,7 +35,7 @@ describe('Integration: ', function() {
       main: Junction({
         dashboard: Branch(),
         invoices: Branch({
-          params: {
+          paramTypes: {
             page: { default: 1, serializer: Serializers.number },
           },
           children: invoiceListScreen,

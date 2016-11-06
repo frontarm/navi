@@ -1,7 +1,7 @@
 const assert = require('assert')
 
 const { JunctionSet, Junction, Branch, isBranchTemplate } = require('../lib')
-const Params = require('./fixtures/Params')
+const paramTypes = require('./fixtures/ParamTypes')
 const JunctionSets = require('./fixtures/JunctionSets')
 
 
@@ -23,7 +23,7 @@ describe("Branch", function() {
     const branchTemplate = Branch({
       path: '/invoices/:_invoiceId',
       data: { test: 1 },
-      params: { _invoiceId: Params.id },
+      paramTypes: { _invoiceId: paramTypes.id },
       children: JunctionSets.invoiceListScreen,
     })
 
@@ -34,7 +34,7 @@ describe("Branch", function() {
     const childJunctions = JunctionSet({
       x: Junction({
         y: Branch({
-          params: { page: true },
+          paramTypes: { page: true },
         })
       })
     }, 'x')
@@ -42,7 +42,7 @@ describe("Branch", function() {
     assert.throws(() => {
       Junction({
         a: Branch({
-          params: { page: true },
+          paramTypes: { page: true },
           children: childJunctions
         })
       })
@@ -51,7 +51,7 @@ describe("Branch", function() {
 
   it("fails when given a param key with the non alphanumeric/underscore value 'a1-'", function() {
     assert.throws(() => {
-      Branch({ params: { 'a1-': Params.id } })
+      Branch({ paramTypes: { 'a1-': paramTypes.id } })
     })
   })
 
@@ -75,7 +75,7 @@ describe("Branch", function() {
 
   it("fails when a param is passed which is not a Param", function() {
     assert.throws(() => {
-      Branch({ params: { test: null } })
+      Branch({ paramTypes: { test: null } })
     })
   })
 })

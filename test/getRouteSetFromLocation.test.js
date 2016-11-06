@@ -24,7 +24,7 @@ describe('getRouteSetFromLocation', function() {
       assert.equal(this.routeSet.addModal, undefined, 'does not create a LocatedRoute for unknown routes')
 
       assert.equal(this.routeSet.main.branch, this.junctionSet.main.invoice, 'selects the correct branch')
-      assert.equal(this.routeSet.main.params.id, 'test', 'adds params to LocatedRoute')
+      assert.equal(this.routeSet.main.params.id, 'test', 'adds paramTypes to LocatedRoute')
       assert.equal(this.routeSet.main.data.component, 'invoiceScreen', 'adds data to LocatedRoute')
 
       assert.equal(this.routeSet.main.children.main.constructor, LocatedRoute, 'adds children to LocatedRoute')
@@ -95,7 +95,7 @@ describe('getRouteSetFromLocation', function() {
       assert.equal(this.routeSet.addModal, undefined, 'does not create a LocatedRoute for unknown routes')
 
       assert.equal(this.routeSet.main.branch, this.junctionSet.main.invoice, 'selects the correct branch')
-      assert.equal(this.routeSet.main.params.id, 'test', 'adds params to LocatedRoute')
+      assert.equal(this.routeSet.main.params.id, 'test', 'adds paramTypes to LocatedRoute')
       assert.equal(this.routeSet.main.data.component, 'invoiceScreen', 'adds data to LocatedRoute')
 
       assert.equal(this.routeSet.main.children.main.constructor, LocatedRoute, 'adds children to LocatedRoute')
