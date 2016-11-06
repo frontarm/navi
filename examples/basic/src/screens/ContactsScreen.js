@@ -1,30 +1,36 @@
 import React, { Component } from 'react'
 import { Link } from 'react-junctions'
-import { JunctionSet, Junction, Branch, Param, createRoute } from 'junctions'
+import { createJunction } from 'junctions'
 import ContactDetailsScreen from './ContactDetailsScreen'
 
 
-const Main = Junction({
-  List: Branch({ default: true }),
-  Details: Branch({
+const Main = createJunction({
+  list: {
+    default: true
+  },
+  details: {
     path: '/:slug/:id',
     params: {
-      id: Param({ required: true }),
-      slug: Param({ default: '-' }),
+      id: {
+        required: true
+      },
+      slug: {
+        default: '-'
+      },
     },
     data: {
       Component: ContactDetailsScreen
     },
-  }),
+  },
 })
 
-const Modal = Junction({
-  Add: Branch(),
+const Modal = createJunction({
+  Add: {},
 })
 
 
 export default class ContactsScreen extends Component {
-  static junctionSet = JunctionSet({ main: Main, modal: Modal })
+  static junctions = { main: Main, modal: Modal }
 
   render() {
     const locate = this.props.locate
@@ -42,11 +48,11 @@ export default class ContactsScreen extends Component {
         <div>Page Size: {this.props.params.pageSize}</div>
         <div>
           <nav>
-            <Link to={ locate(main, createRoute(Modal.Add)) }>Add</Link>
+            <Link to={ locate(main, Modal.createRoute('add')) }>Add</Link>
           </nav>
           <ul>
             <li>
-              <Link to={ locate(createRoute(Main.Details, { id: 'abcdef', slug: 'james-nelson' })) }>James Nelson</Link>
+              <Link to={ locate(Main.createRoute('details', { id: 'abcdef', slug: 'james-nelson' })) }>James Nelson</Link>
             </li>
           </ul>
         </div>
