@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { createJunction, isJunction, isBranch, createRoute } = require('../lib')
+const { createJunction, isJunction, isBranch } = require('../lib')
 const { Route, LocatedRoute } = require('../lib/Routes')
 const { formatPattern } = require('../lib/utils/PatternUtils')
 const Branches = require('./fixtures/Branches')
@@ -128,10 +128,10 @@ describe("Junction#branches.branchName", function() {
       },
     })
 
-    const route = createRoute(
-      junction.invoices,
+    const route = junction.createRoute(
+      'invoices',
       { page: 2 },
-      createRoute(childJunctionSet.main.details)
+      childJunctionSet.main.createRoute('details')
     )
 
     assert.equal(route.constructor, Route)

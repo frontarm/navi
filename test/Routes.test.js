@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { createJunction, isJunction, isBranch, createRoute } = require('../lib')
+const { createJunction, isJunction, isBranch } = require('../lib')
 const { Route, LocatedRoute } = require('../lib/Routes')
 const JunctionSets = require('./fixtures/JunctionSets')
 
@@ -49,7 +49,7 @@ describe("Route", function() {
   it("accepts children", function() {
     const children = JunctionSets.invoiceScreen
     const branch = makeBranch({ children: children })
-    const route = new Route(branch, {}, { main: createRoute(children.main.details) })
+    const route = new Route(branch, {}, { main: children.main.createRoute('details') })
     assert.equal(route.children.main.branch, children.main.details)
   })
 
@@ -103,7 +103,7 @@ describe("LocatedRoute#getLocation", function() {
 
     it("generates appropriate locations when given as routeSet", function() {
       const location = this.route.locate({
-        main: createRoute(this.branch.children.main.details)
+        main: this.branch.children.main.createRoute('details')
       })
 
       assert.equal(location.pathname, '/mountpoint/invoice/test-id/details')
@@ -112,7 +112,7 @@ describe("LocatedRoute#getLocation", function() {
 
     it("generates appropriate locations when given a route", function() {
       const location = this.route.locate(
-        createRoute(this.branch.children.main.details)
+        this.branch.children.main.createRoute('details')
       )
 
       assert.equal(location.pathname, '/mountpoint/invoice/test-id/details')
@@ -144,7 +144,7 @@ describe("LocatedRoute#getLocation", function() {
 
     it("generates appropriate locations when given as routeSet", function() {
       const location = this.route.locate({
-        main: createRoute(this.branch.children.main.details)
+        main: this.branch.children.main.createRoute('details')
       })
 
       assert.equal(location.pathname, '/mountpoint/something-else')

@@ -1,6 +1,5 @@
 const assert = require('assert')
 
-const { createRoute } = require('../lib')
 const { createPathParser } = require('../lib/PathParser')
 const { default: getLocationFromRouteSet } = require('../lib/getLocationFromRouteSet')
 
@@ -10,7 +9,7 @@ const JunctionSets = require('./fixtures/JunctionSets')
 describe('getLocationFromRouteSet', function() {
   it('returns correct location from a childless Route with path', function() {
     const junctionSet = JunctionSets.invoiceListScreen
-    const route = createRoute(junctionSet.main.invoice, { id:'test-id' })
+    const route = junctionSet.main.createRoute('invoice', { id:'test-id' })
     const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { main: route })
     
     assert.equal(location.pathname, '/invoice/test-id')
@@ -25,12 +24,12 @@ describe('getLocationFromRouteSet', function() {
       }
     }
     const junctionSet = JunctionSets.invoiceListScreen
-    const mainRoute = createRoute(
-      junctionSet.main.invoice,
+    const mainRoute = junctionSet.main.createRoute(
+      'invoice',
       { id:'test-id' },
-      createRoute(junctionSet.main.invoice.children.main.details)
+      junctionSet.main.invoice.children.main.createRoute('details')
     )
-    const modalRoute = createRoute(junctionSet.addModal.open)
+    const modalRoute = junctionSet.addModal.createRoute('open')
     const routeSet = { main: mainRoute, addModal: modalRoute }
     const location = getLocationFromRouteSet(baseLocation, true, [], junctionSet, routeSet)
     
@@ -43,7 +42,7 @@ describe('getLocationFromRouteSet', function() {
 
   it('returns correct location from a childless Route without path', function() {
     const junctionSet = JunctionSets.invoiceListScreen
-    const route = createRoute(junctionSet.main.invoice, { id:'test-id' })
+    const route = junctionSet.main.createRoute('invoice', { id:'test-id' })
     const location = getLocationFromRouteSet({ pathname: '/parent' }, false, ['parent'], junctionSet, { main: route })
     
     assert.equal(location.pathname, '/parent')
@@ -54,11 +53,11 @@ describe('getLocationFromRouteSet', function() {
 
   it('adds search parameters when they differ from defaults', function() {
     const junctionSet = JunctionSets.appScreen
-    const route = createRoute(
-      junctionSet.main.invoices,
+    const route = junctionSet.main.createRoute(
+      'invoices',
       { admin: true },
-      createRoute(
-        junctionSet.main.invoices.children.main.list,
+      junctionSet.main.invoices.children.main.createRoute(
+        'list',
         { pageSize: 10, page: 3}
       )
     )
@@ -71,11 +70,11 @@ describe('getLocationFromRouteSet', function() {
 
   it('does not add search parameters when they equal a default value', function() {
     const junctionSet = JunctionSets.appScreen
-    const route = createRoute(
-      junctionSet.main.invoices,
+    const route = junctionSet.main.createRoute(
+      'invoices',
       {},
-      createRoute(
-        junctionSet.main.invoices.children.main.list,
+      junctionSet.main.invoices.children.main.createRoute(
+        'list',
         { pageSize: 20, page: 1 }
       )
     )

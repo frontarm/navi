@@ -1,6 +1,7 @@
 import hyphenize from './utils/hyphenize'
 import { compilePattern } from './utils/PatternUtils'
-import { isJunction, isBranchTemplate } from './TypeGuards'
+import { isJunction } from './TypeGuards'
+import { createRoute } from './Routes'
 
 
 export function JunctionSet(_junctions, _primaryKey) {
@@ -53,16 +54,20 @@ function createDefaultPattern(key, paramTypes) {
   }
 }
 
-export function createJunction(branchTemplates) {
+export function createJunction(branchOptions) {
   const junctionMeta = {}
   const branches = {}
   const queryKeys = {}
   Object.defineProperty(branches, '$$junctionMeta', { value: junctionMeta })
 
-  const branchKeys = Object.keys(branchTemplates)
+  const branchKeys = Object.keys(branchOptions)
 
   if (branchKeys.length === 0) {
     throw new Error('Junction requires at least one BranchTemplate to be passed in')
+  }
+
+  if (branchKeys.createRoute !== undefined) {
+    throw new Error('You cannot supply a branch named `createRoute` to `createJunction`, as it is a reserved name.')
   }
 
   const patternIds = {}
@@ -73,7 +78,7 @@ export function createJunction(branchTemplates) {
       throw new Error('Junction keys must only use the characters A-Z, a-z, 0-9 or _')
     }
 
-    const branchTemplate = Branch(branchTemplates[key])
+    const branchTemplate = Branch(branchOptions[key])
 
     if (branchTemplate.default) {
       if (junctionMeta.defaultKey) {
@@ -120,6 +125,16 @@ export function createJunction(branchTemplates) {
   junctionMeta.branchKeys = branchKeys
   junctionMeta.branchValues = branchKeys.map(k => branches[k])
   junctionMeta.queryKeys = Object.keys(queryKeys)
+
+  branches.createRoute = (branchKey, params, ...children) => {
+    const branch = branches[branchKey]
+
+    if (branch === undefined) {
+      throw new Error(`Could not create route as the key "${branchKey}" is not known.`)
+    }
+
+    return createRoute(branch, params, ...children)
+  }
 
   return Object.freeze(branches)
 }
