@@ -1,7 +1,8 @@
 const assert = require('assert')
 
 const { createPathParser } = require('../lib/PathParser')
-const { JunctionSet, Junction, Branch } = require('../lib')
+const { JunctionSet } = require('../lib/Declarations')
+const { createJunction } = require('../lib')
 const { default: getLocationFromRouteSet } = require('../lib/getLocationFromRouteSet')
 const { default: getRouteSetFromLocation } = require('../lib/getRouteSetFromLocation')
 const Serializers = require('./fixtures/Serializers')
@@ -10,14 +11,14 @@ const Serializers = require('./fixtures/Serializers')
 describe('Integration: ', function() {
   beforeEach(function() {
     const invoiceScreen = JunctionSet({
-      main: Junction({
+      main: createJunction({
         details: {},
         attachments: {},
       }, 'details')
-    }, 'main')
+    })
 
     const invoiceListScreen = JunctionSet({
-      main: Junction({
+      main: createJunction({
         invoice: {
           path: '/:id',
           paramTypes: {
@@ -26,13 +27,13 @@ describe('Integration: ', function() {
           children: invoiceScreen,
         },
       }),
-      addModal: Junction({
+      addModal: createJunction({
         open: {},
       }),
-    }, 'main')
+    })
 
     const appScreen = JunctionSet({
-      main: Junction({
+      main: createJunction({
         dashboard: { default: true },
         invoices: {
           paramTypes: {
@@ -41,7 +42,7 @@ describe('Integration: ', function() {
           children: invoiceListScreen,
         },
       })
-    }, 'main')
+    })
 
     this.junctionSet = appScreen
     this.baseLocation = {

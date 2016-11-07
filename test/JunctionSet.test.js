@@ -1,14 +1,7 @@
 const assert = require('assert')
 
-const { JunctionSet, isJunctionSet } = require('../lib')
+const { JunctionSet } = require('../lib/Declarations')
 const Junctions = require('./fixtures/Junctions')
-
-
-describe("isJunctionSet", function() {
-  it("returns false when passed an empty object", function() {
-    assert(!isJunctionSet({}))
-  })
-})
 
 
 describe("JunctionSet", function() {
@@ -18,7 +11,7 @@ describe("JunctionSet", function() {
       b: Junctions.invoiceScreenContent,
     })
 
-    assert(isJunctionSet(junction))
+    assert(junction)
   })
 
 

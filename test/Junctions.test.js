@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { JunctionSet, Junction, isJunction, isBranch, createRoute } = require('../lib')
+const { createJunction, isJunction, isBranch, createRoute } = require('../lib')
 const { Route, LocatedRoute } = require('../lib/Routes')
 const { formatPattern } = require('../lib/utils/PatternUtils')
 const Branches = require('./fixtures/Branches')
@@ -22,7 +22,7 @@ describe("isBranch", function() {
 
 describe("Junction", function() {
   it("returns a Junction when given no default", function() {
-    const junction = Junction({
+    const junction = createJunction({
       abc123_: Branches.details,
     })
 
@@ -30,7 +30,7 @@ describe("Junction", function() {
   })
 
   it("returns a Junction when given a default", function() {
-    const junction = Junction({
+    const junction = createJunction({
       details: Branches.details,
       attachment: Branches.attachment,
     })
@@ -40,7 +40,7 @@ describe("Junction", function() {
 
 
   it("returns Branch functions instead of BranchTemplate objects", function() {
-    const junction = Junction({
+    const junction = createJunction({
       details: Branches.details,
       attachment: Branches.attachment,
     })
@@ -50,7 +50,7 @@ describe("Junction", function() {
 
 
   it("creates a default pattern based on branch paramTypes", function() {
-    const junction = Junction({
+    const junction = createJunction({
       testBranch: {
         paramTypes: {
           required: { required: true },
@@ -71,13 +71,13 @@ describe("Junction", function() {
 
   it("fails when given no branches", function() {
     assert.throws(() => {
-      Junction({})
+      createJunction({})
     })
   })
 
   it("fails when given multiple defaults", function() {
     assert.throws(() => {
-      Junction({
+      createJunction({
         details: { default: true },
         attachment: { default: true },
       })
@@ -86,23 +86,23 @@ describe("Junction", function() {
 
   it("fails when the key contains the non-alphanumeric/underscore character '/'", function() {
     assert.throws(() => {
-      Junction({
+      createJunction({
         'joe/': BranchTemplates.details,
       })
     })
   })
 
   it("fails when given a non-pattern param key which is already taken by a child branch", function() {
-    const childJunctions = JunctionSet({
-      x: Junction({
+    const childJunctions = {
+      x: createJunction({
         y: {
           paramTypes: { page: true },
         }
       })
-    }, 'x')
+    }
 
     assert.throws(() => {
-      Junction({
+      createJunction({
         a: {
           paramTypes: { page: true },
           children: childJunctions
@@ -119,7 +119,7 @@ describe("Junction#branches.branchName", function() {
     //       avoid creating multiple copies of it
     const childJunctionSet = JunctionSets.invoiceScreen
 
-    const junction = Junction({
+    const junction = createJunction({
       invoices: {
         paramTypes: {
           page: { default: 1 },

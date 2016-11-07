@@ -3,10 +3,13 @@ import getLocationFromRouteSet from './getLocationFromRouteSet'
 import getRouteSetFromLocation from './getRouteSetFromLocation'
 import { createPathParser } from './PathParser'
 import hyphenize from './utils/hyphenize'
+import { JunctionSet } from './Declarations'
 import { createSearch, parseSearch } from './utils/SearchUtils'
 
 
-export default function createConverter(junctionSet, baseLocation={ pathname: '/' }) {
+export default function createConverter(junctionSetOptions, baseLocation={ pathname: '/' }) {
+  const junctionSet = JunctionSet(junctionSetOptions)
+
   const parsePath = createPathParser(junctionSet)
   const baseLocationWithQuery = Object.assign({}, baseLocation, { query: parseSearch(baseLocation.search) })
  

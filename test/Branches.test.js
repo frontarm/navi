@@ -1,6 +1,6 @@
 const assert = require('assert')
 
-const { JunctionSet, Junction, Branch } = require('../lib/Declarations')
+const { Junction, Branch } = require('../lib/Declarations')
 const paramTypes = require('./fixtures/ParamTypes')
 const JunctionSets = require('./fixtures/JunctionSets')
 

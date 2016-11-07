@@ -1,17 +1,17 @@
-const { Junction } = require('../../lib')
+const { createJunction } = require('../../lib')
 const Branches = require('./Branches')
 
 
 module.exports = {
   get invoiceScreenContent() {
-    return Junction({
+    return createJunction({
       details: Branches.details,
       attachment: Branches.attachment,
     })
   },
 
   get addInvoiceModal() {
-    return Junction({
+    return createJunction({
       open: true,
     })
   }

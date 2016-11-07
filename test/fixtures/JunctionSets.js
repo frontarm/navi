@@ -1,4 +1,5 @@
-const { JunctionSet, Junction } = require('../../lib')
+const { createJunction } = require('../../lib')
+const { JunctionSet } = require('../../lib/Declarations')
 const Junctions = require('./Junctions')
 const Serializers = require('./Serializers')
 
@@ -6,7 +7,7 @@ const Serializers = require('./Serializers')
 module.exports = {
   get invoiceScreen() {
     return JunctionSet({
-      main: Junction({
+      main: createJunction({
         details: { default: true },
         attachments: true,
       })
@@ -15,7 +16,7 @@ module.exports = {
 
   get invoiceListScreen() {
     return JunctionSet({
-      main: Junction({
+      main: createJunction({
         list: {
           default: true,
           path: '/list',
@@ -34,7 +35,7 @@ module.exports = {
           children: module.exports.invoiceScreen,
         },
       }),
-      addModal: Junction({
+      addModal: createJunction({
         open: true,
       }),
     })
@@ -42,7 +43,7 @@ module.exports = {
 
   get appScreen() {
     return JunctionSet({
-      main: Junction({
+      main: createJunction({
         dashboard: {},
         invoices: {
           default: true,

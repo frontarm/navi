@@ -1,9 +1,6 @@
 import { Route, LocatedRoute } from './Routes'
 
 
-export function isJunctionSet(x) {
-  return x instanceof Object && x.$$junctionSetMeta
-}
 export function isJunction(x) {
   return x instanceof Object && x.$$junctionMeta
 }

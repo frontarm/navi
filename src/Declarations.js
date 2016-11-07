@@ -1,6 +1,6 @@
 import hyphenize from './utils/hyphenize'
 import { compilePattern } from './utils/PatternUtils'
-import { isJunctionSet, isJunction, isBranchTemplate } from './TypeGuards'
+import { isJunction, isBranchTemplate } from './TypeGuards'
 
 
 export function JunctionSet(_junctions, _primaryKey) {
@@ -53,7 +53,7 @@ function createDefaultPattern(key, paramTypes) {
   }
 }
 
-export function Junction(branchTemplates) {
+export function createJunction(branchTemplates) {
   const junctionMeta = {}
   const branches = {}
   const queryKeys = {}
@@ -130,10 +130,6 @@ export function Branch(options = {}) {
     return { data: {}, paramTypes: {}, pattern: false, default: false }
   }
 
-  if ('children' in options && !isJunctionSet(options.children)) {
-    throw new Error(`A 'children' key was specified for a Branch, but no value was specified.`)
-  }
-
   const data = Object.freeze(options.data || {})
   const paramTypes = {}
   const paramNames = options.paramTypes ? Object.keys(options.paramTypes) : []
@@ -158,12 +154,8 @@ export function Branch(options = {}) {
     paramTypes: paramTypes,
   }
 
-  if (options.children) {
-    if (!isJunctionSet(options.children)) {
-      throw new Error(`The "children" option of a Branch must be a JunctionSet.`)
-    }
-
-    branchTemplate.children = options.children
+  if ('children' in options) {
+    branchTemplate.children = JunctionSet(options.children)
   }
 
   return Object.freeze(branchTemplate)
