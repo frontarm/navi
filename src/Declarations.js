@@ -13,7 +13,7 @@ export function JunctionSet(_junctions, _primaryKey) {
     junctions,
     junctionKeys,
     primaryKey,
-    queryKeys: primaryKey && _junctions[primaryKey].$$junctionMeta.queryKeys,
+    queryKeys: primaryKey ? _junctions[primaryKey].$$junctionMeta.queryKeys : [],
   }
   Object.defineProperty(junctions, '$$junctionSetMeta', { value: junctionSetMeta })
   Object.assign(junctions, _junctions)

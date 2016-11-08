@@ -94,7 +94,7 @@ describe("Junction", function() {
 
   it("fails when given a non-pattern param key which is already taken by a child branch", function() {
     const childJunctions = {
-      x: createJunction({
+      main: createJunction({
         y: {
           paramTypes: { page: true },
         }
