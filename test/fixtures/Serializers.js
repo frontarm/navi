@@ -12,7 +12,7 @@ module.exports = {
 
   get flag() {
     return {
-      serialize: (value) => '',
+      serialize: (value) => value ? '' : undefined,
       deserialize: (string) => true,
     }
   }

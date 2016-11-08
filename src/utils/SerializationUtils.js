@@ -15,7 +15,10 @@ export function serializeParams(paramTypes, params) {
   const keys = Object.keys(params)
   for (let i = 0, len = keys.length; i < len; i++) {
     const key = keys[i]
-    serializedParams[key] = paramTypes[key].serializer.serialize(params[key])
+    const serializedValue = paramTypes[key].serializer.serialize(params[key])
+    if (serializedValue !== undefined) {
+      serializedParams[key] = serializedValue
+    }
   }
   return serializedParams
 }
