@@ -8,19 +8,19 @@ const Main = createJunction({
   contacts: {
     default: true,
     path: '/contacts',
-    children: ContactsScreen.junctionSet,
-    params: {
+    children: ContactsScreen.junctions,
+    paramTypes: {
       page: {
         default: 1
-      }),
+      },
       pageSize: {
         default: 20
-      }),
+      },
     },
     data: {
       Component: ContactsScreen
     }
-  }),
+  },
 })
 
 

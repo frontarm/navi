@@ -10,7 +10,7 @@ const Main = createJunction({
   },
   details: {
     path: '/:slug/:id',
-    params: {
+    paramTypes: {
       id: {
         required: true
       },
@@ -25,7 +25,7 @@ const Main = createJunction({
 })
 
 const Modal = createJunction({
-  Add: {},
+  add: {},
 })
 
 
