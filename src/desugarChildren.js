@@ -1,15 +1,16 @@
 import { Route } from './Routes'
 
 
-export default function desugarChildren(junctionSet, children) {
-  if (children.length) {
-    if (children[0] instanceof Route) {
+export default function desugarChildren(junctionSet, _children) {
+  if (_children.length) {
+    if (!_children[0] || (_children[0] instanceof Route)) {
       // Find the junction keys of the passed in routes by looking through the available children of
       // the passed in branch. Use these junction keys to build a route set.
       if (!junctionSet) {
         throw new Error('You attempted to pass child routes when no child junctions are available')
       }
 
+      const children = _children.filter(child => child)
       const routeSet = {}
 
       const childBranches = children.map(child => child.branch)
@@ -42,7 +43,7 @@ export default function desugarChildren(junctionSet, children) {
       return routeSet
     }
     else {
-      return children[0]
+      return _children[0]
     }
   }
 }

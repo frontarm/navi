@@ -7,6 +7,8 @@ import { createRoute } from './Routes'
 export function JunctionSet(_junctions, _primaryKey) {
   const primaryKey = _primaryKey || (_junctions.main ? 'main' : undefined)
 
+  // TODO: instead of having a _primaryKey function, look for a `$$primaryKey` option on `_junctions`
+
   const junctionKeys = Object.keys(_junctions)
   const junctions = {}
   const junctionSetMeta = {
