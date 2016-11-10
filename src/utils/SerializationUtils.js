@@ -5,7 +5,7 @@ export function deserializeParams(paramTypes, params) {
     const key = keys[i]
     const serializer = paramTypes[key].serializer
     const serializedValue = params[key]
-    deserializedParams[key] = decodeURIComponent(serializer.deserialize(serializedValue))
+    deserializedParams[key] = serializer.deserialize(decodeURIComponent(serializedValue))
   }
   return deserializedParams
 }
