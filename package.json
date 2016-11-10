@@ -1,6 +1,6 @@
 {
   "name": "junctions",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Declare junctions for your routes",
   "main": "lib/index.js",
   "module": "es/index.js",

@@ -92,7 +92,7 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
     // Copy all state paths except our children
     const newBaseState = {}
     const newBaseQuery = {}
-    const newBasePath = [basePath || '']
+    const newBasePath = [(!basePath || basePath === '/') ? '' : basePath]
     let j = 0
     while (j < i) {
       const stateKey = walkOrder[j]
