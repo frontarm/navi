@@ -128,15 +128,17 @@ export function createJunction(branchOptions) {
   junctionMeta.branchValues = branchKeys.map(k => branches[k])
   junctionMeta.queryKeys = Object.keys(queryKeys)
 
-  branches.createRoute = (branchKey, params, ...children) => {
-    const branch = branches[branchKey]
+  Object.defineProperty(branches, 'createRoute', {
+    value: (branchKey, params, ...children) => {
+      const branch = branches[branchKey]
 
-    if (branch === undefined) {
-      throw new Error(`Could not create route as the key "${branchKey}" is not known.`)
+      if (branch === undefined) {
+        throw new Error(`Could not create route as the key "${branchKey}" is not known.`)
+      }
+
+      return createRoute(branch, params, ...children)
     }
-
-    return createRoute(branch, params, ...children)
-  }
+  })
 
   return Object.freeze(branches)
 }
