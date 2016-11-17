@@ -1,13 +1,13 @@
 # <a href='https://github.com/jamesknelson/junctions/blob/master/README.md'><img src='https://raw.githubusercontent.com/jamesknelson/junctions/master/media/logo-title-dark.png' alt="Junctions" width='232'></a>
 
-Composable and context-free routing for React, built on the excellent [history](https://github.com/mjackson/history) package.
+Routing you can understand. Built on the excellent [history](https://github.com/mjackson/history) package.
 
 Why use Junctions?
 
-- They're **composable**. Re-use components, even if they contain links!
-- They're **superimposable**. Because sometimes two routes can be active at once.
-- They're **context-free**. Now you can understand how your own app works!
-- They're **simple**. See for yourself in the [Introduction](https://junctions.js.org/docs/introduction/Motivation.html).
+- **It's built for components.** Use with React, Vue, or even Angular!
+- **It makes links composable.** Now routing is reusable too!
+- **It works with HTML5 History.** Don't limit yourself to old tech.
+- **It's simple.** Everything you need in 4 functions and 4 methods.
 
 ## Demo
 
@@ -36,79 +36,111 @@ npm install react-router-junctions --save
 Alternatively, use plain-ol' script tags with unpackage. See the live demo source for an example.
 
 ```
-<script src="https://unpkg.com/junctions@0.1.0/dist/junctions.js"></script>
-<script src="https://unpkg.com/react-junctions@0.1.0/dist/index.js"></script>
+<script src="https://unpkg.com/junctions@0.2.6/dist/junctions.js"></script>
+<script src="https://unpkg.com/react-junctions@0.2.6/dist/index.js"></script>
 ```
 
 ## Getting Started
 
-See the what brought this package about in the short [Introduction](https://junctions.js.org/docs/introduction/Motivation.html). Then, once you're convinced it is right for you, learn how to use it with the [Getting Started](https://junctions.js.org/docs/getting-started/Locations.html) guide.
+But first, you really should understand whether you even *need* a router. The [Introduction](https://junctions.js.org/docs/introduction/DoINeedARouter.html) covers this, before introducing the three main concepts you'll use with Junctions. And as a bonus, it uses pictures!
+
+The next step is to actually use them. The [Tutorial]() is makes this easy. You'll have your first app working in just a few minutes.
+
+And once you've finished the tutorial and have built something with Routes, Locations and Junctions, you'll be ready to build the next unicorn killer! But if you'd like to explore the limits of Junctions, the [API documentation]() has you covered.
 
 ## Example
 
-This is an example of a composable [Screen Component](https://junctions.js.org/docs/getting-started/ScreensAndLinks.html) written with Junctions. To see how to use this within an actual application, see one of the projects in this repository's [examples](https://github.com/jamesknelson/junctions/tree/master/examples) directory.
+The best way to understand Junctions is to see it in action. This example demonstrates how you could write a master-detail contact list component, using Junctions for routes. To see how to use this within an actual application, see one of the projects in this repository's [examples](https://github.com/jamesknelson/junctions/tree/master/examples) directory.
 
 ```jsx
-const ContactsMain = Junction({
-  Details: Branch({
-    path: '/:contactId',
-    params: {
-      contactId: Param({ required: true }),
-    },
-    data: {
-      Component: ContactDetailsScreen,
-    },
-    children: ContactDetailsScreen.junctionSet,
-  }),
-})
-
-const ContactsModal = Junction({
-  Add: Branch({}),
-})
-
 class ContactsScreen extends React.Component {
-  static junctionSet =
-    JunctionSet({
-      main: ContactsMain,
-      modal: ContactsModal,
-    })
+  /**
+   * A `Junction` object represents a set of possible routes which a component
+   * knows how to render.
+   *
+   * Junctions-based apps use a convention where a component can tell its
+   * consumers about these available routes by setting a `junction` or
+   * `junctions` static property.
+   */
+  static junction = createJunction({
+    Add: {
+      data: {
+        Component: NewContactScreen,
+      },
+    },
 
+    Details: {
+      paramTypes: {
+        contactId: { required: true },
+      },
+      data: {
+        Component: ContactDetailsScreen,
+      },
+    }
+  })
+
+  /**
+   * Components which have defined their possible routes by setting the
+   * `junction` static will expect to receive `route` and `locate` props.
+   */
   static propTypes = {
-    routes: React.PropTypes.object.isRequired,
-    params: React.PropTypes.object.isRequired,
+    /**
+     * A Route object representing the current route for this component
+     * @type LocatedRoute
+     */
+    route: React.PropTypes.object.isRequired,
+
+    /**
+     * A function which converts a Route for this component's Junction into
+     * a Location object, allowing use of Links and HTML5 History
+     * @type (route: Route): Location
+     */
     locate: React.PropTypes.func.isRequired,
   }
 
   render() {
-    const locate = this.props.locate
-    const { main, modal } = this.props.routes
+    const { route, locate, contacts } = this.props.locate
+    const junction = ContactsScreen.junction
+
+    /**
+     * The <Link> component exported by `react-junctions` expects to be passed
+     * a Location object. To get these Locations, we create Route objects with
+     * `junction.createRoute`, and pass them to `this.props.locate`.
+     */
+    const locations = {
+      add: locate(junction.createRoute('Add')),
+      details: (contactId) => locate(junction.createRote('Details', { contactId }))
+    }
+
+    /**
+     * Each type of route defined in a Junction has a `data` property, whose
+     * value will be available on matching routes.
+     *
+     * By storing a Component in this `data` property, we can render a
+     * different component depending on th route. And we can pass in any
+     * parameters we need as well!
+     */
+    const content = 
+      route &&
+      <div className='content'>
+        <route.data.Component {...route.params} />
+      </div>
 
     return (
       <div>
-        {
-          modal &&
-          <div>
-            Add A Contact
-          </div>
-        }
-        <div>
+        <div className='list'>
           <nav>
-            <Link to={ locate(main, createRoute(ContactsModal.Add)) }>Add</Link>
+            <Link to={locations.add}>Add</Link>
           </nav>
           <ul>
-            <li>
-              <Link to={ locate(createRoute(ContactsMain.Details, { id: 'abcdef' })) }>James Nelson</Link>
-            </li>
+            {contacts.map(contact =>
+              <li>
+                <Link to={locations.details(contact.id)}>James Nelson</Link>
+              </li>
+            }
           </ul>
         </div>
-        {
-          main.data.Component &&
-          <main.data.Component
-            locate={main.locate}
-            routes={main.children}
-            params={main.params}
-          />
-        }
+        {content}
       </div>
     )
   }
