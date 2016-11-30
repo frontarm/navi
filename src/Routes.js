@@ -101,6 +101,7 @@ export class Route {
     }
 
     this.branch = branch
+    this.key = branch.key
     this.data = branch.data
     this.params = getDefaultParams(branch.paramTypes, params)
     this.children = children
