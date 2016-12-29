@@ -1,5 +1,39 @@
 # Do I Need A Router?
 
+- Routers seem important.
+- Everybody uses routers.
+- All these people can't be wrong. Doing this by ourself must be painful, right?
+
+Routers do a lot for you.
+    
+- Smoothing browser inconsistencies
+- Helpers for working with React
+- Responding to browser navigation events
+- Telling React about Location changes
+- Rendering your routes
+
+But can we do this by ourselves?
+
+- Let's find out by writing a router.
+- *one sub section per heading above*
+
+Turns out we can do it! But do we want to?
+
+- You definitely want to use history
+- Complex URLs are difficult to break down
+- Nested application structures require thought to route properly
+
+You don't need a router, but you might want one
+
+- Writing routing code is easy
+- Structuring it gets harder as your app scales
+- Don't use a router to avoid writing routing code
+- Do use a router to add structure to your application
+
+---
+
+# Do I Need A Router?
+
 So you've decided to build a new React app. And usually, your first step would be to add a routing library. *But do you really need one?*
 
 <!--more-->
@@ -159,5 +193,5 @@ But to return to the original question; *do I even need a routing library?* The 
 
 Are you writing a simple application where you've got few enough URLs that a simple `<Application>` component is easily comprehensible? Then you probably don't need a routing library. Using the history package with a custom `<Link>` component is nice and simple. And if your application grows, you can always add appropriate tools down the track.
 
-But maybe your URLs are complex enough that you'd like to break them down into more manageable parts. Or maybe you want individual screens to manage their own routes -- as opposed to a single application-wide `<Application>` component. Or maybe you just want some well-defined patterns to follow. In this case, Junctions is just what you need! And the perfect place to start is with the basics guide on the left.
+But maybe your URLs are complex enough that you'd like to break them down into more manageable parts. Or maybe you want individual screens to manage their own routes -- as opposed to a single application-wide `<Application>` component. Or maybe you just want some well-defined patterns to follow. In this case, Junctions is just what you need!
 

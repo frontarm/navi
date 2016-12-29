@@ -2,7 +2,7 @@
 
 ## [junctions](https://github.com/jamesknelson/react) package
 
-Junctions is not tied to any specific view library. It works with React, Angular, and any other component-based framework. As such, the functionality has been separated into a core package (i.e. this package), and library-specific packages.
+Junctions is not tied to any specific view library. Instead, its functionality has been separated into a core package (i.e. this package), and packages to integrate junctions with other libraries.
 
 ### Classes and Structures
 

@@ -6,7 +6,7 @@ To get around this, Junctions uses the concept of a **Canonical Location**. This
 
 You may want to redirect your user to the canonical location for whichever URL they enter. This can be achieved by checking the canonical location of the route set from each location emitted by a `history`:
 
-```jsx
+```js
 const converter = Junctions.createConverter(AppScreen.junctionSet, baseLocation)
     
 function handleLocationChange(location) {
@@ -23,3 +23,5 @@ function handleLocationChange(location) {
 handleLocationChange(history.location)
 history.listen(handleLocationChange)
 ```
+
+

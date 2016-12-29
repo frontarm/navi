@@ -1,10 +1,9 @@
 # Basics
 
-* [Do I Need A Router?](/docs/DoINeedARouter.md)
 * [Locations](/docs/introduction/Locations.md)
 * [Routes](/docs/introduction/Routes.md)
-* [Junctions and Branches](/docs/basics/JunctionsAndBranches.md)
+* [Junctions](/docs/basics/Junctions.md)
 * [Converting Locations to Routes](/docs/basics/ConvertingLocationsToRoutes.md)
-* [Screen Components](/docs/basics/ScreenComponents.md)
+* [The Screen Pattern](/docs/basics/The Screen Pattern.md)
 * [Links](/docs/basics/Links.md)
-* [Example: Contact List](/docs/basics/Example-ContactList.md)
+* [An Example: Contact List](/docs/basics/Example-ContactList.md)
