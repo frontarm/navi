@@ -1,7 +1,7 @@
 import { LocatedRoute } from './Routes'
 import omit from './utils/omit'
 import joinPaths from './utils/joinPaths'
-import { deserializeParams } from './utils/SerializationUtils'
+import { deserializeParams } from './Params'
 
 
 function getDefaultChildren(baseLocation, isRouteInPath, junctionPath, junctionSetMeta) {

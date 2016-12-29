@@ -1,14 +1,14 @@
 const assert = require('assert')
 
-const { ParamType } = require('../lib/Declarations')
-const { deserializeParams, serializeParams } = require('../lib/utils/SerializationUtils')
+const { createParamType } = require('../lib/Params')
+const { deserializeParams, serializeParams } = require('../lib/Params')
 const Serializers = require('./fixtures/Serializers')
 const paramTypes = require('./fixtures/ParamTypes')
 
 
-describe("Param", function() {
-  it("returns a Param", function() {
-    const param = ParamType({
+describe("createParamType", function() {
+  it("returns a ParamType", function() {
+    const param = createParamType({
       required: true,
       default: 1,
       serializer: Serializers.number,
@@ -21,8 +21,28 @@ describe("Param", function() {
 
   it("fails when `serializer` is not a serializer", function() {
     assert.throws(() => {
-      const param = ParamType({
+      const param = createParamType({
         serializer: null,
+      })
+    })
+  })
+
+  it("fails when `serialize` is missing", function() {
+    assert.throws(() => {
+      createParamType({
+        serializer: {
+          deserialize: function() {},
+        }
+      })
+    })
+  })
+
+  it("fails when `deserialize` is missing", function() {
+    assert.throws(() => {
+      createParamType({
+        serializer: {
+          serialize: function() {},
+        }
       })
     })
   })

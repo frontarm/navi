@@ -2,10 +2,9 @@ import desugarChildren from './desugarChildren'
 import getLocationFromRouteSet from './getLocationFromRouteSet'
 import joinPaths from './utils/joinPaths'
 import omit from './utils/omit'
-import { isBranch } from './TypeGuards'
 import { formatPattern } from './utils/PatternUtils'
 import { createSearch } from './utils/SearchUtils'
-import { serializeParams } from './utils/SerializationUtils'
+import { serializeParams } from './Params'
 
 
 function getRouteBaseLocation(baseLocation, isRouteInPath, junctionPath, branch, params) {
@@ -140,10 +139,6 @@ export class LocatedRoute extends Route {
 
 
 export function createRoute(branch, params, ...children) {
-  if (!isBranch(branch)) {
-    throw new Error(`The first argument to createRoute must be a Branch object.`)
-  }
-
   return Object.freeze(new Route(branch, params, desugarChildren(branch.children, children)))
 }
 

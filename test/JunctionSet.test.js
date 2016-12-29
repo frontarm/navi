@@ -1,17 +1,24 @@
 const assert = require('assert')
 
-const { JunctionSet } = require('../lib/Declarations')
+const JunctionSet = require('../lib/JunctionSet').default
 const Junctions = require('./fixtures/Junctions')
 
 
 describe("JunctionSet", function() {
-  it("returns a JunctionSet", function() {
+  it("accepts an object of junctions", function() {
     const junction = JunctionSet({
       abc123_: Junctions.invoiceScreenContent,
       b: Junctions.invoiceScreenContent,
     })
 
     assert(junction)
+  })
+
+
+  it("accepts single Junctions", function() {
+    const junction = JunctionSet(Junctions.invoiceScreenContent)
+
+    assert(junction.main)
   })
 
 
@@ -25,6 +32,14 @@ describe("JunctionSet", function() {
     assert.throws(() => {
       JunctionSet({
         'joe/': Junctions.invoiceScreenContent,
+      })
+    })
+  })
+
+  it("fails when the options object include as non-Junction value", function() {
+    assert.throws(() => {
+      JunctionSet({
+        test: 'FAIL'
       })
     })
   })

@@ -5,7 +5,7 @@ const { Route, LocatedRoute } = require('../lib/Routes')
 const JunctionSets = require('./fixtures/JunctionSets')
 
 
-function makeBranch(options) {
+function makeBranch(options={}) {
   return createJunction({ a: options }).a
 }
 

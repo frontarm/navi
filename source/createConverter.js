@@ -3,7 +3,7 @@ import getLocationFromRouteSet from './getLocationFromRouteSet'
 import getRouteSetFromLocation from './getRouteSetFromLocation'
 import { createPathParser } from './PathParser'
 import hyphenize from './utils/hyphenize'
-import { JunctionSet } from './Declarations'
+import JunctionSet from './JunctionSet'
 import { createSearch, parseSearch } from './utils/SearchUtils'
 
 

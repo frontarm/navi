@@ -1,6 +1,6 @@
 const assert = require('assert')
 const desugarChildren = require('../lib/desugarChildren').default
-const { JunctionSet } = require('../lib/Declarations')
+const JunctionSet = require('../lib/JunctionSet').default
 const { createJunction } = require('../lib')
 
 

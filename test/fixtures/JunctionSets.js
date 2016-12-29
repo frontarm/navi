@@ -1,5 +1,5 @@
 const { createJunction } = require('../../lib')
-const { JunctionSet } = require('../../lib/Declarations')
+const JunctionSet = require('../../lib/JunctionSet').default
 const Junctions = require('./Junctions')
 const Serializers = require('./Serializers')
 

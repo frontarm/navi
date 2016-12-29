@@ -1,26 +1,13 @@
 const assert = require('assert')
 
-const { createJunction, isJunction, isBranch } = require('../lib')
+const { createJunction, isJunction } = require('../lib')
 const { Route, LocatedRoute } = require('../lib/Routes')
 const { formatPattern } = require('../lib/utils/PatternUtils')
 const Branches = require('./fixtures/Branches')
 const JunctionSets = require('./fixtures/JunctionSets')
 
 
-describe("isJunction", function() {
-  it("returns false when passed an empty object", function() {
-    assert(!isJunction({}))
-  })
-})
-
-describe("isBranch", function() {
-  it("returns false when passed a branch definition object", function() {
-    assert(!isBranch(Branches.details))
-  })
-})
-
-
-describe("Junction", function() {
+describe("createJunction", function() {
   it("returns a Junction when given no default", function() {
     const junction = createJunction({
       abc123_: Branches.details,
@@ -39,13 +26,15 @@ describe("Junction", function() {
   })
 
 
-  it("returns Branch functions instead of BranchTemplate objects", function() {
+  it("creates new Branch objects for given options", function() {
+    const branchConfig = { data: 'test' }
+
     const junction = createJunction({
-      details: Branches.details,
-      attachment: Branches.attachment,
+      test: branchConfig,
     })
 
-    assert(isBranch(junction.details))
+    assert.equal(junction.test.data, 'test')
+    assert.notEqual(junction.test, branchConfig)
   })
 
 
@@ -72,6 +61,38 @@ describe("Junction", function() {
   it("fails when given no branches", function() {
     assert.throws(() => {
       createJunction({})
+    })
+  })
+
+  it("fails when given a param key with the non alphanumeric/underscore value 'a1-'", function() {
+    assert.throws(() => {
+      createJunction({
+        test: { paramTypes: { 'a1-': paramTypes.id } }
+      })
+    })
+  })
+
+  it("fails when children are undefined", function() {
+    assert.throws(() => {
+      createJunction({
+        test: { children: undefined }
+      })
+    })
+  })
+
+  it("fails when an invalid path is given", function() {
+    assert.throws(() => {
+      createJunction({
+        test: { path: 'in:va:lid?/' }
+      })
+    })
+  })
+
+  it("fails when a param is passed which is not a Param", function() {
+    assert.throws(() => {
+      createJunction({
+        test: { paramTypes: { test: null } }
+      })
     })
   })
 

@@ -1,5 +1,5 @@
 import { isRoute } from './TypeGuards'
-import { serializeParams } from './utils/SerializationUtils'
+import { serializeParams } from './Params'
 import objectsEqual from './utils/objectsEqual'
 
 export default function routesEqual(a, b) {
