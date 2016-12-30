@@ -28,19 +28,19 @@ export class LocatedRoute extends Route {
     this.isRouteInPath = isRouteInPath
     this.junctionPath = junctionPath
 
+    this.locate = (...children) => {
+      const location =
+        children.length > 0
+          ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.children, children)
+          : Object.assign({}, this.baseLocation)
+
+      location.search = createSearch(location.query)
+      delete location.query
+
+      return Object.freeze(location)
+    }
+
     Object.freeze(this)
-  }
-
-  locate(...children) {
-    const location =
-      children.length > 0
-        ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.children, children)
-        : Object.assign({}, this.baseLocation)
-
-    location.search = createSearch(location.query)
-    delete location.query
-
-    return Object.freeze(location)
   }
 }
 

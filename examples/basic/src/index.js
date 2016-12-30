@@ -9,13 +9,13 @@ import AppScreen from './screens/AppScreen'
 
 
 const history = createHistory()
-const converter = createConverter(AppScreen.junctions)
+const converter = createConverter(AppScreen.junction)
 
-function render(routes) {
+function render(route) {
   ReactDOM.render(
     <HistoryContext history={history}>
       <AppScreen
-        routes={routes}
+        route={route}
         locate={converter.locate}
       />
     </HistoryContext>,
@@ -24,14 +24,14 @@ function render(routes) {
 }
 
 function handleLocationChange(location) {
-  const routes = converter.route(location)
-  const canonicalLocation = converter.locate(routes)
+  const route = converter.route(location)
+  const canonicalLocation = converter.locate(route)
 
   if (!locationsEqual(location, canonicalLocation)) {
     history.replace(canonicalLocation)
   }
 
-  render(routes)
+  render(route)
 }
 
 handleLocationChange(history.location)

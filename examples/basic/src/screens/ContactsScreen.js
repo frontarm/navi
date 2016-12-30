@@ -4,7 +4,7 @@ import { createJunction } from 'junctions'
 import ContactDetailsScreen from './ContactDetailsScreen'
 
 
-const Main = createJunction({
+const mainJunction = createJunction({
   list: {
     default: true
   },
@@ -24,22 +24,22 @@ const Main = createJunction({
   },
 })
 
-const Modal = createJunction({
+const modalJunction = createJunction({
   add: {},
 })
 
 
 export default class ContactsScreen extends Component {
-  static junctions = { main: Main, modal: Modal }
+  static junction = { main: mainJunction, modal: modalJunction }
 
   render() {
     const locate = this.props.locate
-    const { main, modal } = this.props.routes
+    const { main: mainRoute, modal: modalRoute } = this.props.route
 
     return (
       <div>
         {
-          modal &&
+          modalRoute &&
           <div>
             Add A Contact
           </div>
@@ -48,17 +48,21 @@ export default class ContactsScreen extends Component {
         <div>Page Size: {this.props.params.pageSize}</div>
         <div>
           <nav>
-            <Link to={ locate(main, Modal.createRoute('add')) }>Add</Link>
+            <Link to={ locate(mainRoute, modalJunction.createRoute('add')) }>Add</Link>
           </nav>
           <ul>
             <li>
-              <Link to={ locate(Main.createRoute('details', { id: 'abcdef', slug: 'james-nelson' })) }>James Nelson</Link>
+              <Link to={ locate(mainJunction.createRoute('details', { id: 'abcdef', slug: 'james-nelson' })) }>James Nelson</Link>
             </li>
           </ul>
         </div>
         {
-          main.data.Component &&
-          <main.data.Component locate={main.locate} routes={main.children} params={main.params} />
+          mainRoute.data.Component &&
+          <mainRoute.data.Component
+            locate={mainRoute.locate}
+            route={mainRoute.children}
+            params={mainRoute.params}
+          />
         }
       </div>
     )

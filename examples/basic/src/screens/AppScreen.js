@@ -4,11 +4,11 @@ import { Link } from 'react-junctions'
 import ContactsScreen from './ContactsScreen'
 
 
-const Main = createJunction({
+const junction = createJunction({
   contacts: {
     default: true,
     path: '/contacts',
-    children: ContactsScreen.junctions,
+    children: ContactsScreen.junction,
     paramTypes: {
       page: {
         default: 1
@@ -25,21 +25,20 @@ const Main = createJunction({
 
 
 export default class AppScreen extends Component {
-  static junctions = { main: Main }
+  static junction = junction
 
   render() {
-    const locate = this.props.locate
-    const { main } = this.props.routes
+    const { route, locate } = this.props
 
     return (
       <div>
         <nav>
-          <Link to={locate(Main.createRoute('contacts'))}>Contacts</Link>
+          <Link to={locate(junction.createRoute('contacts'))}>Contacts</Link>
         </nav>
-        <main.data.Component
-          locate={main.locate}
-          routes={main.children}
-          params={main.params}
+        <route.data.Component
+          locate={route.locate}
+          route={route.children}
+          params={route.params}
         />
       </div>
     );
