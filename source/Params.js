@@ -66,3 +66,34 @@ export function serializeParams(paramTypes, params) {
   }
   return serializedParams
 }
+
+export function addDefaultParams(paramTypes, knownParams={}) {
+  const paramKeys = Object.keys(knownParams)
+  const remainingParamKeys = Object.keys(paramTypes)
+  const paramsCopy = Object.assign({}, knownParams)
+
+  for (let i = 0, len = paramKeys.length; i < len; i++) {
+    const key = paramKeys[i]
+    const paramType = paramTypes[key]
+
+    if (!paramType) {
+      throw new Error(`Could not create a route. A param with key '${key}' was specified, but this key is not listed in the corresponding Branche's params.`)
+    }
+
+    remainingParamKeys.splice(remainingParamKeys.indexOf(key), 1)
+  }
+
+  for (let i = 0, len = remainingParamKeys.length; i < len; i++) {
+    const key = remainingParamKeys[i]
+    const paramType = paramTypes[key]
+    const defaultParam = paramType.default
+    if (defaultParam) {
+      paramsCopy[key] = typeof defaultParam == 'function' ? defaultParam() : defaultParam
+    }
+    else if (paramType.required) {
+      throw new Error(`Cannot create route without required key '${key}'`)
+    }
+  }
+
+  return paramsCopy
+}

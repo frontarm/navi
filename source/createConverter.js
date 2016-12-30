@@ -1,4 +1,3 @@
-import desugarChildren from './desugarChildren'
 import getLocationFromRouteSet from './getLocationFromRouteSet'
 import getRouteSetFromLocation from './getRouteSetFromLocation'
 import { createPathParser } from './PathParser'
@@ -15,7 +14,7 @@ export default function createConverter(junctionSetOptions, baseLocation={ pathn
  
   return {
     locate(...children) {
-      const location = getLocationFromRouteSet(baseLocationWithQuery, true, [], junctionSet, desugarChildren(junctionSet, children))
+      const location = getLocationFromRouteSet(baseLocationWithQuery, true, [], junctionSet, children)
       location.search = createSearch(location.query)
       delete location.query
       return Object.freeze(location)

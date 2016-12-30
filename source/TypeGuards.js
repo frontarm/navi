@@ -2,7 +2,7 @@ import { Route, LocatedRoute } from './Routes'
 
 
 export function isJunction(x) {
-  return x instanceof Object && x.$$junctionMeta
+  return x && !!x.$$junctionMeta
 }
 export function isRoute(x) {
   return x instanceof Route

@@ -1,7 +1,6 @@
 const assert = require('assert')
 
-const { createParamType } = require('../lib/Params')
-const { deserializeParams, serializeParams } = require('../lib/Params')
+const { createParamType, addDefaultParams, deserializeParams, serializeParams } = require('../lib/Params')
 const Serializers = require('./fixtures/Serializers')
 const paramTypes = require('./fixtures/ParamTypes')
 
@@ -59,5 +58,23 @@ describe("deserializeParams", function() {
 describe("serializeParams", function() {
   it("serializes passed in paramTypes", function() {
     assert.strictEqual(serializeParams({ page: paramTypes.page }, { page: 1 }).page, "1")
+  })
+})
+
+
+describe('addDefaultParams', function() {
+  it("adds static default parameters", function() {
+    const defaultParams = addDefaultParams({ page: { required: true, default: 1 } })
+    assert.equal(defaultParams.page, 1)
+  })
+
+  it("adds dynamic default parameters", function() {
+    const defaultParams = addDefaultParams({ page: { required: true, default: () => 1 } })
+    assert.equal(defaultParams.page, 1)
+  })
+
+  it("doesn't change existing parameters", function() {
+    const defaultParams = addDefaultParams({ page: { required: true, default: () => 1 } }, { page: 5 })
+    assert.equal(defaultParams.page, 5)
   })
 })

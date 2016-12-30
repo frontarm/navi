@@ -27,12 +27,12 @@ describe('getRouteSetFromLocation', function() {
       assert.equal(this.routeSet.main.params.id, 'test', 'adds paramTypes to LocatedRoute')
       assert.equal(this.routeSet.main.data.component, 'invoiceScreen', 'adds data to LocatedRoute')
 
-      assert.equal(this.routeSet.main.children.main.constructor, LocatedRoute, 'adds children to LocatedRoute')
+      assert.equal(this.routeSet.main.children.constructor, LocatedRoute, 'adds children to LocatedRoute')
     })
 
     it('creates an appropriate LocatedRoute', function() {
       const route = this.routeSet.main
-      const childRoute = route.children.main
+      const childRoute = route.children
 
       assert.equal(route.baseLocation.pathname, '/invoice/test')
       assert.deepEqual(route.baseLocation.state.$$junctions, {})
@@ -52,8 +52,7 @@ describe('getRouteSetFromLocation', function() {
       const parsePath = createPathParser(junctionSet)
       const baseLocation = { query: {} }
       const location = { pathname: '/invoices/list', query: { pageSize: '10', admin: '', page: '3' } }
-      const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
-      this.route = routeSet.main
+      this.route = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
     })
 
     it('correctly distributes search parameters to routes', function() {
@@ -98,12 +97,12 @@ describe('getRouteSetFromLocation', function() {
       assert.equal(this.routeSet.main.params.id, 'test', 'adds paramTypes to LocatedRoute')
       assert.equal(this.routeSet.main.data.component, 'invoiceScreen', 'adds data to LocatedRoute')
 
-      assert.equal(this.routeSet.main.children.main.constructor, LocatedRoute, 'adds children to LocatedRoute')
+      assert.equal(this.routeSet.main.children.constructor, LocatedRoute, 'adds children to LocatedRoute')
     })
 
     it('creates an appropriate LocatedRoute', function() {
       const route = this.routeSet.main
-      const childRoute = route.children.main
+      const childRoute = route.children
 
       assert.equal(route.baseLocation.pathname, '/some-other-path')
       assert.deepEqual(route.baseLocation.state.$$junctions, {
@@ -127,11 +126,10 @@ describe('getRouteSetFromLocation', function() {
     const parsePath = createPathParser(junctionSet)
     const baseLocation = { pathname: '/', query: {} }
     const location = { pathname: '/', query: {} }
-    const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
+    const route = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
 
-    const defaultRoute = routeSet.main.children.main
-
-    assert.equal(defaultRoute.branch.key, 'list', 'selects a default branch')
+    assert.equal(route.key, 'invoices', 'selects a default branch')
+    assert.equal(route.children.main.key, 'list', 'selects a default branch on default children')
   })
 
   it('returns null when an unknown path is received', function() {
@@ -139,9 +137,9 @@ describe('getRouteSetFromLocation', function() {
     const parsePath = createPathParser(junctionSet)
     const baseLocation = { pathname: '/', query: {} }
     const location = { pathname: '/FAIL', query: {} }
-    const routeSet = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
+    const route = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
 
-    assert.equal(routeSet, null)
+    assert.equal(route, null)
   })
 
   it('ignores the pathname part of baseLocation', function() {

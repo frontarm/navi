@@ -10,7 +10,7 @@ describe('getLocationFromRouteSet', function() {
   it('returns correct location from a childless Route with path', function() {
     const junctionSet = JunctionSets.invoiceListScreen
     const route = junctionSet.main.createRoute('invoice', { id:'test-id' })
-    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { main: route })
+    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, [route])
     
     assert.equal(location.pathname, '/invoice/test-id')
     assert.deepEqual(location.state.$$junctions, {})
@@ -31,7 +31,7 @@ describe('getLocationFromRouteSet', function() {
     )
     const modalRoute = junctionSet.addModal.createRoute('open')
     const routeSet = { main: mainRoute, addModal: modalRoute }
-    const location = getLocationFromRouteSet(baseLocation, true, [], junctionSet, routeSet)
+    const location = getLocationFromRouteSet(baseLocation, true, [], junctionSet, [routeSet])
     
     assert.equal(location.pathname, '/mountpoint/invoice/test-id/details')
     assert.equal(location.state.someOtherLibrary, true)
@@ -43,7 +43,7 @@ describe('getLocationFromRouteSet', function() {
   it('returns correct location from a childless Route without path', function() {
     const junctionSet = JunctionSets.invoiceListScreen
     const route = junctionSet.main.createRoute('invoice', { id:'test-id' })
-    const location = getLocationFromRouteSet({ pathname: '/parent' }, false, ['parent'], junctionSet, { main: route })
+    const location = getLocationFromRouteSet({ pathname: '/parent' }, false, ['parent'], junctionSet, [route])
     
     assert.equal(location.pathname, '/parent')
     assert.deepEqual(location.state.$$junctions, {
@@ -61,7 +61,7 @@ describe('getLocationFromRouteSet', function() {
         { pageSize: 10, page: 3}
       )
     )
-    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { main: route })
+    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, [route])
     
     assert.strictEqual(location.query.pageSize, '10')
     assert.strictEqual(location.query.page, '3')
@@ -78,7 +78,7 @@ describe('getLocationFromRouteSet', function() {
         { pageSize: 20, page: 1 }
       )
     )
-    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, { main: route })
+    const location = getLocationFromRouteSet({ pathname: '/' }, true, [], junctionSet, [route])
     
     assert.deepEqual(location.query, {})
   })

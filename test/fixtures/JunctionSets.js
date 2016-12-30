@@ -6,12 +6,10 @@ const Serializers = require('./Serializers')
 
 module.exports = {
   get invoiceScreen() {
-    return JunctionSet({
-      main: createJunction({
-        details: { default: true },
-        attachments: true,
-      })
-    })
+    return JunctionSet(createJunction({
+      details: { default: true },
+      attachments: true,
+    }))
   },
 
   get invoiceListScreen() {
@@ -42,17 +40,15 @@ module.exports = {
   },
 
   get appScreen() {
-    return JunctionSet({
-      main: createJunction({
-        dashboard: {},
-        invoices: {
-          default: true,
-          paramTypes: {
-            admin: { serializer: Serializers.flag },
-          },
-          children: module.exports.invoiceListScreen,
+    return JunctionSet(createJunction({
+      dashboard: {},
+      invoices: {
+        default: true,
+        paramTypes: {
+          admin: { serializer: Serializers.flag },
         },
-      })
-    })
+        children: module.exports.invoiceListScreen,
+      },
+    }))
   }
 }

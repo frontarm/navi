@@ -1,7 +1,7 @@
 const assert = require('assert')
 
 const { createJunction, isJunction, isBranch } = require('../lib')
-const { Route, LocatedRoute } = require('../lib/Routes')
+const { createRoute, Route, LocatedRoute } = require('../lib/Routes')
 const JunctionSets = require('./fixtures/JunctionSets')
 
 
@@ -11,51 +11,26 @@ function makeBranch(options={}) {
 
 
 describe("Route", function() {
-  it("adds static default parameters", function() {
-    const route = new Route(makeBranch({
-      paramTypes: {
-        page: { required: true, default: 1 }
-      }
-    }))
-    assert.equal(route.params.page, 1)
+  it("throws if locate is called", function() {
+    const route = new Route(makeBranch())
+    assert.throws(() => {
+      route.locate()
+    })    
   })
+})
 
-  it("adds dynamic default parameters", function() {
-    const route = new Route(makeBranch({
-      paramTypes: {
-        page: { required: true, default: () => 1 }
-      }
-    }))
-    assert.equal(route.params.page, 1)
-  })
 
-  it("does not add default children", function() {
-    const route = new Route(makeBranch({
-      children: JunctionSets.invoiceScreen,
-    }))
-    assert.equal(route.children.main, null)
-  })
-
-  it("accepts parameters", function() {
-    const branch = makeBranch({
-      paramTypes: {
-        page: { default: () => 1 }
-      }
-    })
-    const route = new Route(branch, { page: 2 })
-    assert.equal(route.params.page, 2)
-  })
-
+describe("createRoute", function() {
   it("accepts children", function() {
     const children = JunctionSets.invoiceScreen
     const branch = makeBranch({ children: children })
-    const route = new Route(branch, {}, { main: children.main.createRoute('details') })
-    assert.equal(route.children.main.branch, children.main.details)
+    const route = createRoute(branch, {}, children.main.createRoute('details'))
+    assert.equal(route.children.branch, children.main.details)
   })
 
   it("fails when missing required parameters", function() {
     assert.throws(() => {
-      new Route(makeBranch({
+      createRoute(makeBranch({
         paramTypes: {
           id: { required: true }
         }
@@ -67,15 +42,8 @@ describe("Route", function() {
     const branch = makeBranch({ children: JunctionSets.invoiceScreen })
     
     assert.throws(() => {
-      new Route(branch, {}, { main: true })
+      createRoute(branch, {}, 'FAIL')
     })
-  })
-
-  it("throws if locate is accessed", function() {
-    const route = new Route(makeBranch())
-    assert.throws(() => {
-      route.locate
-    })    
   })
 })
 
@@ -83,9 +51,10 @@ describe("Route", function() {
 describe("LocatedRoute#getLocation", function() {
   describe('for routes in path', function() {
     beforeEach(function() {
+      // TODO: take into account the fact that LocatedRoute no longer generates base locations
       this.branch = JunctionSets.invoiceListScreen.main.invoice
       this.route = new LocatedRoute(
-        { pathname: '/mountpoint', query: {}, search: '' },
+        { pathname: '/mountpoint/invoice/test-id', query: {}, search: '' },
         true,
         ['main'],
         this.branch,
@@ -124,7 +93,9 @@ describe("LocatedRoute#getLocation", function() {
     beforeEach(function() {
       this.branch = JunctionSets.invoiceListScreen.main.invoice
       this.route = new LocatedRoute(
-        { pathname: '/mountpoint/something-else', query: {}, search: '' },
+        { pathname: '/mountpoint/something-else', query: {}, search: '', state: { $$junctions: {
+          'main': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
+        } } },
         false,
         ['main'],
         this.branch,

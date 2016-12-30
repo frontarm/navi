@@ -10,12 +10,10 @@ const Serializers = require('./fixtures/Serializers')
 
 describe('Integration: ', function() {
   beforeEach(function() {
-    const invoiceScreen = JunctionSet({
-      main: createJunction({
-        details: {},
-        attachments: {},
-      }, 'details')
-    })
+    const invoiceScreen = JunctionSet(createJunction({
+      details: {},
+      attachments: {},
+    }))
 
     const invoiceListScreen = JunctionSet({
       main: createJunction({
@@ -32,17 +30,15 @@ describe('Integration: ', function() {
       }),
     })
 
-    const appScreen = JunctionSet({
-      main: createJunction({
-        dashboard: { default: true },
-        invoices: {
-          paramTypes: {
-            page: { default: 1, serializer: Serializers.number },
-          },
-          children: invoiceListScreen,
+    const appScreen = JunctionSet(createJunction({
+      dashboard: { default: true },
+      invoices: {
+        paramTypes: {
+          page: { default: 1, serializer: Serializers.number },
         },
-      })
-    })
+        children: invoiceListScreen,
+      },
+    }))
 
     this.junctionSet = appScreen
     this.baseLocation = {
@@ -66,8 +62,8 @@ describe('Integration: ', function() {
       query: {}
     }
     
-    const routeSet = getRouteSetFromLocation(this.parsePath, this.baseLocation, this.junctionSet, location)
-    const reverseLocation = getLocationFromRouteSet(this.baseLocation, true, [], this.junctionSet, routeSet)
+    const route = getRouteSetFromLocation(this.parsePath, this.baseLocation, this.junctionSet, location)
+    const reverseLocation = getLocationFromRouteSet(this.baseLocation, true, [], this.junctionSet, [route])
 
     assert.equal(location.pathname, reverseLocation.pathname)
     assert.deepEqual(location.state.$$junctions, reverseLocation.state.$$junctions)

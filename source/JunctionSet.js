@@ -5,6 +5,8 @@ const NODE_ENV = typeof process !== 'undefined' ? process.env.NODE_ENV : 'develo
 
 
 export default function JunctionSet(options) {
+  if (options.$$junctionSetMeta) return options
+
   const isSingle = isJunction(options)
   const primaryKey = (isSingle || options.main) ? 'main' : undefined
   const junctions = isSingle ? { main: options } : Object.assign({}, options)

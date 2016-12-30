@@ -158,6 +158,6 @@ describe("Junction#branches.branchName", function() {
     assert.equal(route.constructor, Route)
     assert.equal(route.branch, junction.invoices)
     assert.equal(route.params.page, 2)
-    assert.equal(route.children.main.branch, childJunctionSet.main.details)
+    assert.equal(route.children.branch, childJunctionSet.main.details)
   })
 })
