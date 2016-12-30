@@ -18,8 +18,8 @@ export function createPathParser(junctionSet) {
           childNode,
           junctionPath: nextJunctionPath.join('/'),
         }
-        if (branch.children) {
-          queue.push([branch.children.$$junctionSetMeta, childNode, nextJunctionPath])
+        if (branch.next) {
+          queue.push([branch.next.$$junctionSetMeta, childNode, nextJunctionPath])
         }
       }
     }

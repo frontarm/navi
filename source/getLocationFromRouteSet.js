@@ -1,7 +1,7 @@
 import joinPaths from './utils/joinPaths'
 import { formatPattern } from './utils/PatternUtils'
 import { serializeParams } from './Params'
-import desugarChildren from './desugarChildren'
+import desugarNext from './desugarNext'
 
 
 function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, routeSet) {
@@ -39,8 +39,8 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
         }
       }
 
-      if (branch.children) {
-        const childLocation = getJunctionsLocation(isPrimaryRoute, junctionPath, branch.children, route.childRouteSet)
+      if (branch.next) {
+        const childLocation = getJunctionsLocation(isPrimaryRoute, junctionPath, branch.next, route.childRouteSet)
 
         Object.assign(state, childLocation.state)
         Object.assign(query, childLocation.query)
@@ -61,7 +61,7 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
 //
 // See https://github.com/mjackson/history
 export default function getLocationFromRouteSet(baseLocation, isRouteInPath, parentJunctionPath, junctionSet, routes) {
-  const routeSet = desugarChildren(junctionSet, routes)
+  const routeSet = desugarNext(junctionSet, routes)
   const { state, path, query } = getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, routeSet)
   const baseState = baseLocation.state || {}
   const finalQuery = Object.assign({}, baseLocation.query, query)

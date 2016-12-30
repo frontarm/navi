@@ -72,10 +72,10 @@ describe("createJunction", function() {
     })
   })
 
-  it("fails when children are undefined", function() {
+  it("fails when next are undefined", function() {
     assert.throws(() => {
       createJunction({
-        test: { children: undefined }
+        test: { next: undefined }
       })
     })
   })
@@ -126,7 +126,7 @@ describe("createJunction", function() {
       createJunction({
         a: {
           paramTypes: { page: true },
-          children: childJunctions
+          next: childJunctions
         }
       })
     })
@@ -135,7 +135,7 @@ describe("createJunction", function() {
 
 
 describe("Junction#branches.branchName", function() {
-  it("returns a Route with correct branch, paramTypes and children", function() {
+  it("returns a Route with correct branch, paramTypes and next", function() {
     // Note: JunctionSets.invoiceScreen is actually a getter, so run it this way to
     //       avoid creating multiple copies of it
     const childJunctionSet = JunctionSets.invoiceScreen
@@ -145,7 +145,7 @@ describe("Junction#branches.branchName", function() {
         paramTypes: {
           page: { default: 1 },
         },
-        children: childJunctionSet,
+        next: childJunctionSet,
       },
     })
 
@@ -158,6 +158,6 @@ describe("Junction#branches.branchName", function() {
     assert.equal(route.constructor, Route)
     assert.equal(route.branch, junction.invoices)
     assert.equal(route.params.page, 2)
-    assert.equal(route.children.branch, childJunctionSet.main.details)
+    assert.equal(route.next.branch, childJunctionSet.main.details)
   })
 })

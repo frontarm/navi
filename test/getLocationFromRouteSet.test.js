@@ -16,7 +16,7 @@ describe('getLocationFromRouteSet', function() {
     assert.deepEqual(location.state.$$junctions, {})
   })
 
-  it('returns correct location from a Route with children, path and baseLocation', function() {
+  it('returns correct location from a Route with next, path and baseLocation', function() {
     const baseLocation = {
       pathname: '/mountpoint',
       state: {
@@ -27,7 +27,7 @@ describe('getLocationFromRouteSet', function() {
     const mainRoute = junctionSet.main.createRoute(
       'invoice',
       { id:'test-id' },
-      junctionSet.main.invoice.children.main.createRoute('details')
+      junctionSet.main.invoice.next.main.createRoute('details')
     )
     const modalRoute = junctionSet.addModal.createRoute('open')
     const routeSet = { main: mainRoute, addModal: modalRoute }
@@ -56,7 +56,7 @@ describe('getLocationFromRouteSet', function() {
     const route = junctionSet.main.createRoute(
       'invoices',
       { admin: true },
-      junctionSet.main.invoices.children.main.createRoute(
+      junctionSet.main.invoices.next.main.createRoute(
         'list',
         { pageSize: 10, page: 3}
       )
@@ -73,7 +73,7 @@ describe('getLocationFromRouteSet', function() {
     const route = junctionSet.main.createRoute(
       'invoices',
       {},
-      junctionSet.main.invoices.children.main.createRoute(
+      junctionSet.main.invoices.next.main.createRoute(
         'list',
         { pageSize: 20, page: 1 }
       )

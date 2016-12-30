@@ -21,11 +21,11 @@ describe("Route", function() {
 
 
 describe("createRoute", function() {
-  it("accepts children", function() {
-    const children = JunctionSets.invoiceScreen
-    const branch = makeBranch({ children: children })
-    const route = createRoute(branch, {}, children.main.createRoute('details'))
-    assert.equal(route.children.branch, children.main.details)
+  it("accepts next", function() {
+    const next = JunctionSets.invoiceScreen
+    const branch = makeBranch({ next: next })
+    const route = createRoute(branch, {}, next.main.createRoute('details'))
+    assert.equal(route.next.branch, next.main.details)
   })
 
   it("fails when missing required parameters", function() {
@@ -39,7 +39,7 @@ describe("createRoute", function() {
   })
 
   it("throws if given a Route with an unknown Branch", function() {
-    const branch = makeBranch({ children: JunctionSets.invoiceScreen })
+    const branch = makeBranch({ next: JunctionSets.invoiceScreen })
     
     assert.throws(() => {
       createRoute(branch, {}, 'FAIL')
@@ -72,7 +72,7 @@ describe("LocatedRoute#getLocation", function() {
 
     it("generates appropriate locations when given as routeSet", function() {
       const location = this.route.locate({
-        main: this.branch.children.main.createRoute('details')
+        main: this.branch.next.main.createRoute('details')
       })
 
       assert.equal(location.pathname, '/mountpoint/invoice/test-id/details')
@@ -81,7 +81,7 @@ describe("LocatedRoute#getLocation", function() {
 
     it("generates appropriate locations when given a route", function() {
       const location = this.route.locate(
-        this.branch.children.main.createRoute('details')
+        this.branch.next.main.createRoute('details')
       )
 
       assert.equal(location.pathname, '/mountpoint/invoice/test-id/details')
@@ -115,7 +115,7 @@ describe("LocatedRoute#getLocation", function() {
 
     it("generates appropriate locations when given as routeSet", function() {
       const location = this.route.locate({
-        main: this.branch.children.main.createRoute('details')
+        main: this.branch.next.main.createRoute('details')
       })
 
       assert.equal(location.pathname, '/mountpoint/something-else')

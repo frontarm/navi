@@ -25,7 +25,7 @@ export default function routesEqual(a, b) {
       return false
     }
 
-    return branch.children ? routesEqual(a.children, b.children) : true
+    return branch.next ? routesEqual(a.next, b.next) : true
   }
 
   if (typeof a !== 'object' || typeof b !== 'object') {

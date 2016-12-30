@@ -1,15 +1,15 @@
-import desugarChildren from './desugarChildren'
+import desugarNext from './desugarNext'
 import getLocationFromRouteSet from './getLocationFromRouteSet'
 import { createSearch } from './utils/SearchUtils'
 import { addDefaultParams } from './Params'
 
 
 export class Route {
-  constructor(branch, params={}, children={}) {
-    this.childRouteSet = children
+  constructor(branch, params={}, next={}) {
+    this.childRouteSet = next
     
     this.branch = branch
-    this.children = branch.children && (branch.children.$$junctionSetMeta.isSingle ? children.main : children)
+    this.next = branch.next && (branch.next.$$junctionSetMeta.isSingle ? next.main : next)
     this.data = branch.data
     this.key = branch.key
     this.params = params
@@ -21,17 +21,17 @@ export class Route {
 }
 
 export class LocatedRoute extends Route {
-  constructor(baseLocation, isRouteInPath, junctionPath, branch, params, children) {
-    super(branch, params, children)
+  constructor(baseLocation, isRouteInPath, junctionPath, branch, params, next) {
+    super(branch, params, next)
 
     this.baseLocation = baseLocation
     this.isRouteInPath = isRouteInPath
     this.junctionPath = junctionPath
 
-    this.locate = (...children) => {
+    this.locate = (...next) => {
       const location =
-        children.length > 0
-          ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.children, children)
+        next.length > 0
+          ? getLocationFromRouteSet(this.baseLocation, this.isRouteInPath, this.junctionPath, this.branch.next, next)
           : Object.assign({}, this.baseLocation)
 
       location.search = createSearch(location.query)
@@ -45,19 +45,19 @@ export class LocatedRoute extends Route {
 }
 
 
-export function createRoute(branch, params, ...children) {
-  const desugaredChildren = desugarChildren(branch.children, children) || {}
+export function createRoute(branch, params, ...next) {
+  const desugaredNext = desugarNext(branch.next, next) || {}
 
-  const childKeys = Object.keys(desugaredChildren)
+  const childKeys = Object.keys(desugaredNext)
   for (let i = 0, len = childKeys.length; i < len; i++) {
     const key = childKeys[i]
-    if (!branch.children[key]) {
-      throw new Error(`A Route cannot be created with child key "${key}" which is not in the associated branch's children`)
+    if (!branch.next[key]) {
+      throw new Error(`A Route cannot be created with child key "${key}" which is not in the associated branch's next`)
     }
-    if (desugaredChildren[key] && !(desugaredChildren[key] instanceof Route)) {
+    if (desugaredNext[key] && !(desugaredNext[key] instanceof Route)) {
       throw new Error(`A Route cannot be created with a non-Route child (see child key "${key}")`)
     }
-    if (desugaredChildren[key] && !branch.children[key].$$junctionMeta.branchValues.includes(desugaredChildren[key].branch)) {
+    if (desugaredNext[key] && !branch.next[key].$$junctionMeta.branchValues.includes(desugaredNext[key].branch)) {
       throw new Error(`A Route cannot be created with an unknown Branch type for key "${key}"`)
     }
   }
@@ -65,7 +65,7 @@ export function createRoute(branch, params, ...children) {
   return Object.freeze(new Route(
     branch, 
     addDefaultParams(branch.paramTypes, params),
-    desugaredChildren,
+    desugaredNext,
   ))
 }
 

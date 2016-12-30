@@ -22,7 +22,7 @@ describe('Integration: ', function() {
           paramTypes: {
             id: { required: true },
           },
-          children: invoiceScreen,
+          next: invoiceScreen,
         },
       }),
       addModal: createJunction({
@@ -36,7 +36,7 @@ describe('Integration: ', function() {
         paramTypes: {
           page: { default: 1, serializer: Serializers.number },
         },
-        children: invoiceListScreen,
+        next: invoiceListScreen,
       },
     }))
 

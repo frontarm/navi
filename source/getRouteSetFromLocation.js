@@ -58,8 +58,8 @@ function createLocatedRouteSetFor(junctionSetMeta, parentRouteOptions, routeSetO
     
     if (routeSetOptions[key]) {
       const routeOptions = routeSetOptions[key]
-      const childJunctionSet = junctionSetMeta.junctions[key].$$junctionMeta.branches[routeOptions.branch.key].children
-      const routeChildren = childJunctionSet && createLocatedRouteSetFor(childJunctionSet.$$junctionSetMeta, routeOptions, routeOptions.children)
+      const childJunctionSet = junctionSetMeta.junctions[key].$$junctionMeta.branches[routeOptions.branch.key].next
+      const routeNext = childJunctionSet && createLocatedRouteSetFor(childJunctionSet.$$junctionSetMeta, routeOptions, routeOptions.next)
 
       routeSet[key] = new LocatedRoute(
         routeOptions.baseLocation,
@@ -67,7 +67,7 @@ function createLocatedRouteSetFor(junctionSetMeta, parentRouteOptions, routeSetO
         routeOptions.junctionPath,
         routeOptions.branch,
         routeOptions.params,
-        routeChildren
+        routeNext
       )
     }
     else {
@@ -88,7 +88,7 @@ function createLocatedRouteSetFor(junctionSetMeta, parentRouteOptions, routeSetO
           params: routeParams,
         }
 
-        const routeChildren = branch.children && createLocatedRouteSetFor(branch.children.$$junctionSetMeta, defaultRouteOptions)
+        const routeNext = branch.next && createLocatedRouteSetFor(branch.next.$$junctionSetMeta, defaultRouteOptions)
 
         routeSet[key] = new LocatedRoute(
           routeBaseLocation,
@@ -96,7 +96,7 @@ function createLocatedRouteSetFor(junctionSetMeta, parentRouteOptions, routeSetO
           routeJunctionPath,
           branch,
           routeParams,
-          routeChildren
+          routeNext
         )
       }
     }
@@ -165,8 +165,8 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
       const key = junctionPath[i]
       const junctionNode = junctionSetNode[key]
       const routeOptionsNode = routeSetOptionsNode[key]
-      routeSetOptionsNode = routeOptionsNode.children
-      junctionSetNode = junctionNode[routeOptionsNode.branch.key].children
+      routeSetOptionsNode = routeOptionsNode.next
+      junctionSetNode = junctionNode[routeOptionsNode.branch.key].next
     }
 
     const junction = junctionSetNode[key]
@@ -175,7 +175,7 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
     const params = addDefaultParams(branch.paramTypes, deserializeParams(branch.paramTypes, serializedParams))
     const isRouteInPath = !!routePath
 
-    // Copy all state paths except our children
+    // Copy all state paths except our next
     const newBaseState = {}
     const newBaseQuery = {}
     let newBasePath = basePath
@@ -220,7 +220,7 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
       junctionPath,
       branch,
       params,
-      children: {}
+      next: {}
     }
   }
 

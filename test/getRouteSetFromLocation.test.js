@@ -27,12 +27,12 @@ describe('getRouteSetFromLocation', function() {
       assert.equal(this.routeSet.main.params.id, 'test', 'adds paramTypes to LocatedRoute')
       assert.equal(this.routeSet.main.data.component, 'invoiceScreen', 'adds data to LocatedRoute')
 
-      assert.equal(this.routeSet.main.children.constructor, LocatedRoute, 'adds children to LocatedRoute')
+      assert.equal(this.routeSet.main.next.constructor, LocatedRoute, 'adds next to LocatedRoute')
     })
 
     it('creates an appropriate LocatedRoute', function() {
       const route = this.routeSet.main
-      const childRoute = route.children
+      const childRoute = route.next
 
       assert.equal(route.baseLocation.pathname, '/invoice/test')
       assert.deepEqual(route.baseLocation.state.$$junctions, {})
@@ -56,15 +56,15 @@ describe('getRouteSetFromLocation', function() {
     })
 
     it('correctly distributes search parameters to routes', function() {
-      assert.strictEqual(this.route.children.main.params.pageSize, 10)
-      assert.strictEqual(this.route.children.main.params.page, 3)
+      assert.strictEqual(this.route.next.main.params.pageSize, 10)
+      assert.strictEqual(this.route.next.main.params.page, 3)
       assert.strictEqual(this.route.params.admin, true)
     })
 
     it('adds query parameters to baseLocation', function() {
-      assert.strictEqual(this.route.children.main.baseLocation.query.pageSize, '10')
-      assert.strictEqual(this.route.children.main.baseLocation.query.page, '3')
-      assert.strictEqual(this.route.children.main.baseLocation.query.admin, '')
+      assert.strictEqual(this.route.next.main.baseLocation.query.pageSize, '10')
+      assert.strictEqual(this.route.next.main.baseLocation.query.page, '3')
+      assert.strictEqual(this.route.next.main.baseLocation.query.admin, '')
       assert.strictEqual(this.route.baseLocation.query.admin, '')
     })
   })
@@ -97,12 +97,12 @@ describe('getRouteSetFromLocation', function() {
       assert.equal(this.routeSet.main.params.id, 'test', 'adds paramTypes to LocatedRoute')
       assert.equal(this.routeSet.main.data.component, 'invoiceScreen', 'adds data to LocatedRoute')
 
-      assert.equal(this.routeSet.main.children.constructor, LocatedRoute, 'adds children to LocatedRoute')
+      assert.equal(this.routeSet.main.next.constructor, LocatedRoute, 'adds next to LocatedRoute')
     })
 
     it('creates an appropriate LocatedRoute', function() {
       const route = this.routeSet.main
-      const childRoute = route.children
+      const childRoute = route.next
 
       assert.equal(route.baseLocation.pathname, '/some-other-path')
       assert.deepEqual(route.baseLocation.state.$$junctions, {
@@ -129,7 +129,7 @@ describe('getRouteSetFromLocation', function() {
     const route = getRouteSetFromLocation(parsePath, baseLocation, junctionSet, location)
 
     assert.equal(route.key, 'invoices', 'selects a default branch')
-    assert.equal(route.children.main.key, 'list', 'selects a default branch on default children')
+    assert.equal(route.next.main.key, 'list', 'selects a default branch on default next')
   })
 
   it('returns null when an unknown path is received', function() {

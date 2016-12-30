@@ -36,7 +36,7 @@ describe('routesEqual', function() {
     assert(!routesEqual(a, b))
   })
 
-  it("returns false when children don't match", function() {
+  it("returns false when next don't match", function() {
     const childJunction = createJunction({
       details: {
         paramTypes: {
@@ -46,7 +46,7 @@ describe('routesEqual', function() {
     })
     const topJunction = createJunction({
       x: {
-        children: {
+        next: {
           y: childJunction,
         }
       }
@@ -62,7 +62,7 @@ describe('routesEqual', function() {
     assert(!routesEqual(a, b))
   })
 
-  it('returns true for when branch, params and children match', function() {
+  it('returns true for when branch, params and next match', function() {
     const inner1 = createJunction({
       test1: {
         paramTypes: {
@@ -80,7 +80,7 @@ describe('routesEqual', function() {
             serializer: Serializers.flag
           },
         },
-        children: {
+        next: {
           inner1: inner1,
         }
       }
@@ -90,7 +90,7 @@ describe('routesEqual', function() {
         paramTypes: {
           test: {}
         },
-        children: {
+        next: {
           inner1: inner1,
           inner2: inner2,
         }

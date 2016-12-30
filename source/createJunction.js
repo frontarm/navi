@@ -64,7 +64,7 @@ export default function createJunction(branchOptions) {
     patternIds[pattern.id] = true
 
     const branch = {
-      children: options.children && JunctionSet(options.children),
+      next: options.next && JunctionSet(options.next),
       data: Object.freeze(options.data || {}),
       default: !!options.default,
       key: key,
@@ -73,12 +73,12 @@ export default function createJunction(branchOptions) {
       queryKeys: Object.keys(paramTypes).filter(x => !pattern.paramNames.includes(x)),
     }
 
-    if ('children' in options && options.children === undefined) {
-      throw new Error(`Branch "${key}" was given a children propery, but its value was "undefined"`)
+    if ('next' in options && options.next === undefined) {
+      throw new Error(`Branch "${key}" was given a next propery, but its value was "undefined"`)
     }
 
-    if (branch.children) {
-      const childQueryKeys = branch.children.$$junctionSetMeta.queryKeys
+    if (branch.next) {
+      const childQueryKeys = branch.next.$$junctionSetMeta.queryKeys
       const duplicateKey = branch.queryKeys.find(x => childQueryKeys.includes(x))
       if (duplicateKey) {
         throw new Error(`The param "${duplicateKey}" was specified in branch "${key}" as well as one of its child branches`)
@@ -109,14 +109,14 @@ export default function createJunction(branchOptions) {
 
   Object.defineProperty(branches, '$$junctionMeta', { value: junctionMeta })
   Object.defineProperty(branches, 'createRoute', {
-    value: (branchKey, params, ...children) => {
+    value: (branchKey, params, ...next) => {
       const branch = branches[branchKey]
 
       if (branch === undefined) {
         throw new Error(`Could not create route as the key "${branchKey}" is not known.`)
       }
 
-      return createRoute(branch, params, ...children)
+      return createRoute(branch, params, ...next)
     }
   })
 

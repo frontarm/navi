@@ -13,8 +13,8 @@ export default function createConverter(junctionSetOptions, baseLocation={ pathn
   const baseLocationWithQuery = Object.assign({}, baseLocation, { query: parseSearch(baseLocation.search) })
  
   return {
-    locate(...children) {
-      const location = getLocationFromRouteSet(baseLocationWithQuery, true, [], junctionSet, children)
+    locate(...next) {
+      const location = getLocationFromRouteSet(baseLocationWithQuery, true, [], junctionSet, next)
       location.search = createSearch(location.query)
       delete location.query
       return Object.freeze(location)

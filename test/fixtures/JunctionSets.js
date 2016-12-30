@@ -30,7 +30,7 @@ module.exports = {
           paramTypes: {
             id: { required: true },
           },
-          children: module.exports.invoiceScreen,
+          next: module.exports.invoiceScreen,
         },
       }),
       addModal: createJunction({
@@ -47,7 +47,7 @@ module.exports = {
         paramTypes: {
           admin: { serializer: Serializers.flag },
         },
-        children: module.exports.invoiceListScreen,
+        next: module.exports.invoiceListScreen,
       },
     }))
   }
