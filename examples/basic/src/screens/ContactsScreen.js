@@ -60,7 +60,7 @@ export default class ContactsScreen extends Component {
           mainRoute.data.Component &&
           <mainRoute.data.Component
             locate={mainRoute.locate}
-            route={mainRoute.children}
+            route={mainRoute.next}
             params={mainRoute.params}
           />
         }

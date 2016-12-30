@@ -8,7 +8,7 @@ const junction = createJunction({
   contacts: {
     default: true,
     path: '/contacts',
-    children: ContactsScreen.junction,
+    next: ContactsScreen.junction,
     paramTypes: {
       page: {
         default: 1
@@ -37,7 +37,7 @@ export default class AppScreen extends Component {
         </nav>
         <route.data.Component
           locate={route.locate}
-          route={route.children}
+          route={route.next}
           params={route.params}
         />
       </div>
