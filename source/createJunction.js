@@ -42,7 +42,7 @@ export default function createJunction(branchOptions) {
     const key = branchKeys[i]
 
     if (!/^[A-Za-z0-9_]+$/.test(key)) {
-      throw new Error('Junction keys must only use the characters A-Z, a-z, 0-9 or _')
+      throw new Error(`Junction keys must only use the characters A-Z, a-z, 0-9, or _, but key was named "${key}".`)
     }
 
     const options = branchOptions[key] === true ? {} : branchOptions[key]

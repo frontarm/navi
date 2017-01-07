@@ -1,0 +1,29 @@
+{
+  "scripts": {
+    "build": "webpack -p && npm run service-worker",
+    "start": "webpack-dev-server --inline",
+    "service-worker": "cp -R static/ build/ && sw-precache --root='build/' --static-file-globs='build/**/!(*map*)'"
+  },
+  "devDependencies": {
+    "bundle-loader": "0.5.4",
+    "css-loader": "0.23.1",
+    "file-loader": "^0.9.0",
+    "front-matter": "^2.1.1",
+    "history": "^4.5.0",
+    "html-loader": "^0.4.3",
+    "html-webpack-plugin": "^2.22.0",
+    "less": "^2.7.2",
+    "less-loader": "^2.2.3",
+    "markdown-it": "^7.0.0",
+    "markdown-it-anchor": "^2.5.1",
+    "prismjs-loader": "0.0.3",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "react-junctions": "^0.3.2",
+    "style-loader": "0.13.1",
+    "sw-precache": "^4.2.2",
+    "url-loader": "^0.5.7",
+    "webpack": "1.13.1",
+    "webpack-dev-server": "1.14.1"
+  }
+}

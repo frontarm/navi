@@ -1,0 +1,60 @@
+@logo-color: #10b068;
+
+.MenuWrapper {
+  &-sidebar {
+    width: 250px;
+    float: left;
+  }
+
+  &-body {
+    margin-left: 280px;
+    min-height: 100%;
+    padding-top: 1px;
+  }
+
+  &-menu {
+    padding: 0;
+    margin: 50px 0 0 0;
+    list-style: none;
+
+    > li {
+      margin-bottom: 10px;
+    }
+  }
+
+  &-submenu {
+    padding: 0;
+    list-style: none;
+    margin-bottom: 20px;
+
+    > li {
+      margin: 5px 0;
+    }
+  }
+
+  &-heading {
+    font-weight: 500;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  &-link {
+    color: #666;
+    font-size: 15px;
+
+    &-primary {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    &-active {
+      text-decoration: none;
+      color: @logo-color;
+    }
+
+    &:hover {
+      text-decoration: none; 
+    }
+  }
+}

@@ -14,6 +14,8 @@ export default function createConverter(junctionSetOptions, baseLocation={ pathn
  
   return {
     locate(...next) {
+      if (next.length === 0) return baseLocation
+
       const location = getLocationFromRouteSet(baseLocationWithQuery, true, [], junctionSet, next)
       location.search = createSearch(location.query)
       delete location.query

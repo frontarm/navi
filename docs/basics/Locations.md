@@ -1,3 +1,7 @@
+---
+title: Locations
+---
+
 # Locations
 
 - A `Location` is an object which contains one possible value of your app's Navigation State.

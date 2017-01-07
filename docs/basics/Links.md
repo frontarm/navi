@@ -1,3 +1,7 @@
+---
+title: Links
+---
+
 # Links
 
 - *Junctions* aims to make as few assumptions about your environment as possible.

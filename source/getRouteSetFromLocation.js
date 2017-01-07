@@ -150,7 +150,9 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
   if (walkOrder.length === 0) {
     // We have a valid path but no state, so use defaults on the root junctions
     const routeSet = createLocatedRouteSetFor(junctionSet.$$junctionSetMeta, rootParentOptions, routeSetOptions)
-    return junctionSet.$$junctionSetMeta.isSingle ? routeSet.main : routeSet
+
+    // Emit null insteaed of undefined to indicate that it is still a known route
+    return junctionSet.$$junctionSetMeta.isSingle ? (routeSet.main || null) : routeSet
   }
 
   const junctionPaths = walkOrder.map(key => key.split('/'))
@@ -225,5 +227,7 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
   }
 
   const routeSet = createLocatedRouteSetFor(junctionSet.$$junctionSetMeta, rootParentOptions, routeSetOptions)
-  return junctionSet.$$junctionSetMeta.isSingle ? routeSet.main : routeSet
+
+  // Emit null insteaed of undefined to indicate that it is still a known route
+  return junctionSet.$$junctionSetMeta.isSingle ? (routeSet.main || null) : routeSet
 }

@@ -1,3 +1,7 @@
+---
+title: Junctions
+---
+
 # Junctions
 
 - So far, we've discussed the two types of objects which *hold* our state - Locations and Routes.

@@ -1,28 +1,24 @@
-# API Reference
+# About The API
 
-## [junctions](https://github.com/jamesknelson/react) package
+Junctions is not tied to any specific view library. Instead, its functionality has been separated into a core package, and packages to integrate junctions with other libraries.
 
-Junctions is not tied to any specific view library. Instead, its functionality has been separated into a core package (i.e. this package), and packages to integrate junctions with other libraries.
+The core package is called [junctions](https://github.com/jamesknelson/react). It contains the important parts. In particular, it contains:
 
-### Classes and Structures
+## Core package
 
-* [Location](/docs/api/Location.md) - *Also see the [history](https://github.com/mjackson/history) package's documentation*
-* [Route](/docs/api/Route.md)
-  * [locate(...routes)](/docs/api/Route.md#locate)
-* [Junction](/docs/api/Junction.md)
-  * [createRoute(key, params, ...routes)](/docs/api/Junction.md#createRoute)
-* [Converter](/docs/api/Converter.md)
-  * [locate(...routes)](/docs/api/Converter.md#locate)
-  * [route(location)](/docs/api/Converter.md#route)
+- [createJunction](/docs/api/junctions/createJunction), used to define new [Junction](/docs/api/junctions/Junction) objects
+- [createConverter](/docs/api/junctions/createConverter), used to create your application-wide [Converter](/docs/api/junctions/Converter) object
+- [routesMatch](/docs/api/junctions/routesMatch), used to check if two [Route](/docs/api/junctions/Route) objects are equivalent
+- [locationsEqual](/docs/api/junctions/locationsEqual), used to check if two [Location](/docs/api/junctions/Location) objects are exactly equal
 
-### Functions
+## Integration packages
 
-* [createJunction(branches)](/docs/api/createJunction.md)
-* [createConverter(junction | junctions, [baseLocation])](/docs/api/createConverter.md)
-* [locationsEqual(locationA, locationB)](/docs/api/locationsEqual.md)
-* [routesEqual(routeA, routeB)](/docs/api/routesEqual.md)
+Additional packages are available to ease integration with other tools and libraries:
 
-### Importing
+- [react-junctions](https://github.com/jamesknelson/react-junctions) provides components for React
+- [react-router-junctions](https://github.com/jamesknelson/react-router-junctions) allows you to mount a Junctions-based Component in a react-router app
+
+## Importing
 
 Functions and classes are top-level exports. State types cannot be created by themselves, but are returned from some of the top level functions.
 
@@ -37,39 +33,3 @@ var createJunction = require('junctions').createJunction
 var createJunction = Junctions.createJunction
 ```
 
-## [react-junctions](https://github.com/jamesknelson/react-junctions) package
-
-This package provides tools to use `Location` objects within a React-based application
-
-* [Link](/docs/api/Link.md)
-* [HistoryContext](/docs/api/HistoryContext.md)
-
-To import, use one of the following
-
-```js
-// ES6
-import { Link } from 'react-junctions'
-
-// ES5
-var Link = require('react-junctions').Link
-
-// UMD
-var Link = ReactJunctions.Link
-```
-
-## [react-router-junctions](https://github.com/jamesknelson/react-router-junctions) package
-
-This package provides an interface to "mount" Junctions-based Screens within an existing react-router based application.
-
-* [Mount](/docs/api/Mount.md)
-
-```js
-// ES6
-import { Mount } from 'react-junctions'
-
-// ES5
-var Mount = require('react-junctions').Mount
-
-// UMD
-var Mount = ReactRouterJunctions.Mount
-```

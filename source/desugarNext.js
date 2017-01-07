@@ -2,7 +2,7 @@ import { Route } from './Routes'
 
 
 export default function desugarNext(junctionSet, _next) {
-  if (_next.length) {
+  if (_next.length && !(_next[0] == undefined && _next.length == 1)) {
     if (!_next[0] || (_next[0] instanceof Route)) {
       // Find the junction keys of the passed in routes by looking through the available next of
       // the passed in branch. Use these junction keys to build a route set.
@@ -46,4 +46,5 @@ export default function desugarNext(junctionSet, _next) {
       return _next[0]
     }
   }
+  return {}
 }
