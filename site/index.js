@@ -8,22 +8,6 @@ import createBrowserHistory from 'history/createBrowserHistory'
 import Link from './controls/Link'
 
 
-window.Junctions = Junctions
-window.ReactJunctions = ReactJunctions
-console.log(`
-------------------------------------
-G'day. Thank's for trying Junctions.
-
-Want to play around? Just type "Junctions" to see what's available.
-Or want to see inside a Junction object? Here's one:", site.root.junctio
-Also, I'll log your current route to the console each time you navigate.
-
-Happy JavaScripting!
-------------------------------------
-
-`)
-
-
 function camelize(string) {
   return string.replace(/-(.)/g, (_, character) => character.toUpperCase())
 }
@@ -61,6 +45,23 @@ const site = require('../SITE.js').initialize(page => {
     }
   }
 })
+
+
+window.Junctions = Junctions
+window.ReactJunctions = ReactJunctions
+console.log(`
+------------------------------------
+G'day. Thank's for trying Junctions.
+
+Want to play around? Just type "Junctions" to see what's available.
+Or want to see inside a Junction object? Here's one:`, site.root.junction)
+console.log(`
+Also, I'll log your current route to the console each time you navigate.
+
+Happy JavaScripting!
+------------------------------------
+
+`)
 
 
 // Create a route for the page with the given id
