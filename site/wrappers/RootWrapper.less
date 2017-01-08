@@ -1,4 +1,5 @@
 @logo-color: #10b068;
+@mobile-break: ~"only screen and (max-width: 510px)"; 
 
 .RootWrapper {
   min-height: 100%;
@@ -14,17 +15,25 @@
     &-inner {
       max-width: 900px;
       margin: 0 auto;
-
       text-align: right;
       line-height: 50px;
+    
+      @media @mobile-break {
+        text-align: center;
+      }
+
     }
   }
 
   &-body {
-    padding: 50px 0;
+    padding: 50px 10px;
     max-width: 900px;
     min-height: 100%;
     margin: 0 auto;
+    
+    @media @mobile-break {
+      padding-top: 100px;
+    }
   }
 
   &-junctions {
@@ -43,8 +52,12 @@
     color: #333;
     font-size: 24px;
     font-weight: 500;
-
     float: left;
+
+    @media @mobile-break {
+        text-align:center;
+        width:100%;
+    }
   }
 
   &-footer {
