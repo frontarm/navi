@@ -17,7 +17,7 @@ export default function RootWrapper({ root, page, route, locate, children }) {
         <div className='RootWrapper-header-inner'>
           <Link page='/' className='RootWrapper-junctions'><div className='RootWrapper-junctions-logo' />Junctions</Link>
           <Link page='/docs/introduction/do-i-need-a-router' view={<LinkView />}>Guide</Link>
-          <Link page='/examples/Basic' view={<LinkView />}>Examples</Link>
+          <Link page='/examples/Raw' view={<LinkView />}>Examples</Link>
           <Link page='/docs/api' view={<LinkView />}>API Reference</Link>
           <a className='RootWrapper-link' href="https://github.com/jamesknelson/junctions">GitHub</a>
         </div>
