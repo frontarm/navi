@@ -1,6 +1,6 @@
 # About The API
 
-Junctions was designed to work great with React -- without be tied to it. To facilitate this, its functionality has been separated into a core package, and packages to integrate junctions with other libraries.
+Junctions was designed to work great with React -- without being tied to it. To facilitate this, its functionality has been separated into a core package, and packages to integrate junctions with other libraries.
 
 ## Core package
 
