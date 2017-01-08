@@ -1,15 +1,28 @@
 @logo-color: #10b068;
+@mobile-break: ~"only screen and (max-width: 510px)"; 
 
 .MenuWrapper {
   &-sidebar {
     width: 250px;
     float: left;
+
+    @media @mobile-break {
+      width: 100px;
+    }
   }
 
   &-body {
     margin-left: 280px;
     min-height: 100%;
     padding-top: 1px;
+
+    @media @mobile-break {
+      margin-left: 110px;
+
+      .header-anchor {
+        display: none;
+      }
+    }
   }
 
   &-menu {
@@ -19,6 +32,10 @@
 
     > li {
       margin-bottom: 10px;
+
+      @media @mobile-break {
+        margin-bottom: 20px;
+      }
     }
   }
 
@@ -29,6 +46,10 @@
 
     > li {
       margin: 5px 0;
+
+      @media @mobile-break {
+        margin: 10px 0;
+      }
     }
   }
 
