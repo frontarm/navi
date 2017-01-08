@@ -5,6 +5,6 @@ module.exports = {
       require('./introduction/SITE.js'),
       require('./basics/SITE.js'),
       require('./advanced/SITE.js'),
-      require('./glossary.md'),
+      require('./Glossary.md'),
   ],
 }
