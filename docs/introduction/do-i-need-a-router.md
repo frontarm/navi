@@ -91,11 +91,11 @@ A full featured implementation of `<Link>` will probably want a few extra featur
 
 And while most routing libraries will probably provide some other bits and pieces, it is unlikely you'll actually need them. I mean, you don't even really need a `<Link>` component; if you use a [hash based](http://jamesknelson.com/push-state-vs-hash-based-routing-with-react-js/) router instead, then you'll be fine without it. But assuming you're using push state, it isn't a huge problem to just roll your own.
 
-So maybe we don't need a routing library? But there is still one thing we need to take care of. Even if we can render `<Link>` tags and receive notification when the user navigates, we still don't know what to actually *do* with the received locations.
+So maybe we don't need a routing library? But there is still one thing we need to take care of. Even if we can render `<Link>` tags and receive a notification when the user navigates, we still don't know what to actually *do* with the received locations.
 
 ### Responding to browser navigation events
 
-Given we have a `history.listen()` handler, our application is going to receive a series `location` objects. Each one looks something like this:
+Given we have a `history.listen()` handler, our application is going to receive a series of `location` objects. Each one looks something like this:
 
 ```js
 {
@@ -143,7 +143,7 @@ With this, you can now always access the most recent location at `this.state.loc
 
 #### Rendering your routes
 
-In React, rendering your routes is really no different to rendering anything else. You just take the location at `this.state.location`, and return an element based on its value. Like this:
+In React, rendering your routes is really no different than rendering anything else. You just take the location at `this.state.location`, and return an element based on its value. Like this:
 
 ```js
 render() {
