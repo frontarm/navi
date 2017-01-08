@@ -2,7 +2,9 @@
   "scripts": {
     "build": "webpack -p && npm run service-worker",
     "start": "webpack-dev-server --inline",
-    "service-worker": "cp -R static/ build/ && sw-precache --root='build/' --static-file-globs='build/**/!(*map*)'"
+    "service-worker": "cp -R static/ build/ && sw-precache --root='build/' --static-file-globs='build/**/!(*map*)'",
+    "build:clean": "rimraf build",
+    "publish": "yarn run build:clean && yarn build && cp ../CNAME build && cd build && git init && git commit --allow-empty -m 'update book' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update docs' && git push git@github.com:jamesknelson/junctions gh-pages --force"
   },
   "devDependencies": {
     "bundle-loader": "0.5.4",

@@ -22,7 +22,7 @@ class Route {
   key: string;
   data: Object;
   params: { [key: string]: any };
-  children: Route | ParallelRoutes;
+  next: Route | { [key: string]: Route };
 }
 ```
 
@@ -38,10 +38,11 @@ type Junction = {
 
 ```js
 type Branch = {
-  key: string;
+  default: boolean;
+  path: string;
   data: Object;
   paramTypes: { [key: string]: ParamType };
-  children: Junction | ParallelJunctions;
+  next: Junction | { [key: string]: Junction };
 }
 ```
 
@@ -68,8 +69,8 @@ type Serializer = {
 
 ```js
 type Converter = {
-  route: (location: Location) => Route | ParallelRoutes;
-  locate: (routes: Route | ParallelRoutes) => Location;
+  route: (location: Location) => Route | { [key: string]: Route };
+  locate: (...routes: Route[]) => Location;
 }
 ```
 
@@ -77,24 +78,6 @@ type Converter = {
 
 ```js
 class LocatedRoute extends Route {
-  locate(Route | ParallelRoutes): Location;
+  locate(...routes: Route[]): Location;
 }
 ```
-
-## Parallel Routes
-
-```js
-type ParallelRoutes = {
-  [key: string]: Route
-}
-```
-
-## Parallel Junctions
-
-```js
-type ParallelJunctions = {
-  [key: string]: Junctions
-}
-```
-
-

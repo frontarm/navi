@@ -10,7 +10,7 @@ title: Converting Locations to Routes
 
 ```js
 const converter = createConverter(rootJunction)
-const rootRoute = converter.getRoute(location)
+const rootRoute = converter.route(location)
 ```
 
 - In fact, we *could* make this even simpler by creating a `getRoute` function which accepts both the location and Junction.

@@ -22,12 +22,7 @@
     "build": "npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min",
     "prepublish": "npm run clean && npm run build",
     "test": "npm run build:commonjs && mocha test/*.test.js",
-    "test:watch": "mocha --watch test/*.test.js",
-    "docs:clean": "rimraf _book",
-    "docs:prepare": "gitbook install",
-    "docs:build": "npm run docs:prepare && gitbook build -g jamesknelson/junctions",
-    "docs:watch": "npm run docs:prepare && gitbook serve",
-    "docs:publish": "npm run docs:clean && npm run docs:build && cp CNAME _book && cd _book && git init && git commit --allow-empty -m 'update book' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update book' && git push git@github.com:jamesknelson/junctions gh-pages --force"
+    "test:watch": "mocha --watch test/*.test.js"
   },
   "repository": {
     "type": "git",
