@@ -2,6 +2,8 @@
 title: The Screen Pattern
 ---
 
+**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
+
 # The Screen Pattern
 
 *Junctions* is a single tool for converting between Routes and Locations -- and that's it. But while this gives you a huge amount of flexibility, it can also leave you scratching your head as to the best way to use it.

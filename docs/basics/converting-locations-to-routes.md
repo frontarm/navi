@@ -2,6 +2,8 @@
 title: Converting Locations to Routes
 ---
 
+**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
+
 # Converting Locations to Routes
 
 - Junctions is -- at its core -- a package for converting between 'Location' and 'Route' objects. So how do you actually accomplish this?

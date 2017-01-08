@@ -2,6 +2,8 @@
 title: Links
 ---
 
+**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
+
 # Links
 
 - *Junctions* aims to make as few assumptions about your environment as possible.

@@ -2,6 +2,8 @@
 title: Junctions
 ---
 
+**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
+
 # Junctions
 
 - So far, we've discussed the two types of objects which *hold* our state - Locations and Routes.

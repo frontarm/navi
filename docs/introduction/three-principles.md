@@ -2,6 +2,8 @@
 title: The Three Principles
 ---
 
+**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
+
 # The Three Principles
 
 - How do we ensure that routable components are independent and reusable? Junctions uses three principles to do so.

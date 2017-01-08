@@ -2,6 +2,8 @@
 title: Motivation
 ---
 
+**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
+
 # Motivation
 
 - I got a request from a client - "I want my screens to be reusable. And I want the app to use react-router."

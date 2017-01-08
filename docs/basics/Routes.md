@@ -2,6 +2,8 @@
 title: Routes
 ---
 
+**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
+
 # Routes
 
 - A `Route` is an object which contains a portion of your app's Navigation state.

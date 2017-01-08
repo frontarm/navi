@@ -2,6 +2,8 @@
 title: Locations, Routes and Maps
 ---
 
+**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
+
 # Locations, Routes and Maps
 
 - Routers are a way of adding structure to an application
