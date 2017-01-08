@@ -2,53 +2,59 @@
 title: createConverter
 ---
 
-# `createConverter(junction | junctions, [baseLocation])`
+# `createConverter(junction, [baseLocation])`
 
-Create a [Converter](Converter) object with two methods to help you switch between [Route](Route) and [Location](Location) objects.
+Creates a [Converter](Converter) object to help convert between [Route](Route) and [Location](Location) objects.
 
 #### Arguments
 
-* `junction | junctions` (*[Junction](Junction) | {[key]: Junction}*): The Junction or group of Junctions which define the Routes which the Converter should support
-* `baseLocation` (*optional*) (*[Location](Location)*): 
+* `junction` (*[Junction](Junction) | { [key]: [Junction](Junction) }*): The Junction or Junctions which specify the [map](/docs/introduction/locations-routes-and-maps) between Route and Location.
+* `baseLocation` *<small>optional</small>* (*[Location](Location)*): Location information which must be part of every `Location` object consumed and produced by this `Converter`.
 
 #### Returns
 
-(*[Converter](Converter)*) A Converter object
+(*[Converter](Converter)*) A `Converter` object
 
-## Typical Usage
+#### Examples
 
-This function is typically used by passing a single [Junction](Junction), indicating that you expect `Converter#route` to return a single Route for any input Location.
+##### Typical Usage
 
-#### Example
+Pass a single [Junction](Junction), indicating that you expect [converter.route()](Converter#routelocation) to return a single `Route` for any input `Location`.
 
 ```js
 // Create a Converter for a single Junction
 const converter = createConverter(appJunction)
 ```
 
-## Multiple Junctions
+##### Multiple Junctions
 
-It is also possible to pass a *group* of Junctions, indicating that multiple Routes may be active simultaneously. This is useful when you have multiple navigation controls display simultaneously at the same level of hierarchy. For example, a modal and a tab bar.
+It is also possible to pass a *group* of Junctions, indicating that multiple Routes may be active simultaneously. 
 
-To pass a group of Junctions, you should call `createConverter()` with a JavaScript object whose values are Junction objects. The keys can be chosen arbitrarily; the return of `Converter#route` will use the same keys, but the values will be [Route](Route) objects.
-
-#### Example
+Use this feature when you want to allow one component to render multiple Routes simultaneously. For example, a modal *and* a tab bar.
 
 ```js
-// Create a Converter for multiple Junctions
 const converter = createConverter({
-  main: mainJunction,
-  modal: modalJunction,
+
+  // This Junction represents your main navigation
+  main: createJunction({
+    dashboard: { default: true },
+    invoices: {},
+    contacts: {},
+  }),
+
+  // This Junction allows you to overlay a modal over your entire application
+  modal: createJunction({
+    settings: {},
+  }),
+
 })
 ```
 
-## Base Location
+##### Base Location
 
-By passing `createConverter()` a `baseLocation`, `Converter#route` will filter out parts of the [Location](Location) which are irrelevant to your application. This will also cause `Converter#locate` to add this information to any generated `Locations.
+The optional `baseLocation` argument allows you to specify parts of your `Location` objects which should be ignored by `converter.route()`, and added to locations produced by `converter.locate()`.
 
-This option is particularly useful if your app is being served from a subdirectory, as opposed to the root of your domain.
-
-#### Example
+Use this argument if your app is being served from a subdirectory, as opposed to the root of your domain.
 
 ```js
 const baseLocation = {

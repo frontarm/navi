@@ -1,7 +1,15 @@
+/**
+ * This example is similar to the Basic example, but its `<Router>`
+ * component uses the `baseLocation` prop to specify a base location.
+ *
+ * In practice, this application would need to be mounted under the
+ * `/mountpoint` directory of its server -- allowing it to be hosted
+ * within an existing website.
+ */
+
 import React from 'react'
 import { createJunction } from 'junctions'
 import { Link, Router } from 'react-junctions'
-
 
 function Home() {
   return (
@@ -11,7 +19,6 @@ function Home() {
   )
 }
 
-
 function About() {
   return (
     <div>
@@ -20,7 +27,6 @@ function About() {
   )
 }
 
-
 function Topic({ id }) {
   return (
     <div>
@@ -28,7 +34,6 @@ function Topic({ id }) {
     </div>
   )
 }
-
 
 TopicsScreen.junction = createJunction({
   details: {
@@ -39,13 +44,21 @@ TopicsScreen.junction = createJunction({
   },
 })
 function TopicsScreen({ route, locate }) {
+  const junction = TopicsScreen.junction
+
   return (
     <div>
       <h2>Topics</h2>
       <nav>
-        <Link to={locate(TopicsScreen.junction.createRoute('details', { id: 'rendering' }))}>Rendering with React</Link>
-        <Link to={locate(TopicsScreen.junction.createRoute('details', { id: 'components' }))}>Components</Link>
-        <Link to={locate(TopicsScreen.junction.createRoute('details', { id: 'props-v-state' }))}>Props v. State</Link>
+        <Link to={locate(junction.createRoute('details', { id: 'rendering' }))}>
+          Rendering with React
+        </Link>
+        <Link to={locate(junction.createRoute('details', { id: 'components' }))}>
+          Components
+        </Link>
+        <Link to={locate(junction.createRoute('details', { id: 'props-v-state' }))}>
+          Props v. State
+        </Link>
       </nav>
 
       {
@@ -57,12 +70,13 @@ function TopicsScreen({ route, locate }) {
   )
 }
 
-
 AppScreen.junction = createJunction({
   about: {},
   topics: { next: TopicsScreen.junction },
 })
 function AppScreen({ route, locate }) {
+  const junction = AppScreen.junction
+
   let content
   switch (route && route.key) {
     case 'about':
@@ -81,8 +95,8 @@ function AppScreen({ route, locate }) {
     <div>
       <nav>
         <Link to={locate()}>Home</Link>
-        <Link to={locate(AppScreen.junction.createRoute('about'))}>About</Link>
-        <Link to={locate(AppScreen.junction.createRoute('topics'))}>Topics</Link>
+        <Link to={locate(junction.createRoute('about'))}>About</Link>
+        <Link to={locate(junction.createRoute('topics'))}>Topics</Link>
       </nav>
       {content}
     </div>
@@ -90,9 +104,6 @@ function AppScreen({ route, locate }) {
 }
 
 
-// The `history` prop is an object produced by the npm `history` package.
-// This package is used to normalize browser history APIs.
-// For more details, see https://github.com/mjackson/history
 export default function BasicExample({ history }) {
   return (
     <Router

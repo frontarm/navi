@@ -1,10 +1,14 @@
 ---
-title: <HistoryContext />
+title: <HistoryContext>
 ---
 
 # `<HistoryContext history={history}>`
 
+*Note: The [&lt;Router&gt;](Router) component has a `<HistoryContext>` built in. You *do not need* to use both `<Router>` and `<HistoryContext>`!*
 
+Adds a `history` entry to the [context](https://facebook.github.io/react/docs/context.html) of any child components.
+
+Use this to avoid the need to directly pass a [History](https://github.com/mjackson/history#properties) object to each [&lt;Link&gt;](Link) element.
 
 #### Props
 
@@ -14,4 +18,16 @@ title: <HistoryContext />
 
 * `history` (*History*): A history object.
 
-#### Example:
+#### Example
+
+```js
+// With HistoryContext
+<HistoryContext history={history}>
+  <Link to={{ pathname: '/home' }}>Home</Link>
+  <Link to={{ pathname: '/about' }}>About</Link>
+</HistoryContext>
+
+// Without HistoryContext
+<Link history={history} to={{ pathname: '/home' }}>Home</Link>
+<Link history={history} to={{ pathname: '/about' }}>About</Link>
+```

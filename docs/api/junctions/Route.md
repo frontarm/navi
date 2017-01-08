@@ -4,29 +4,58 @@ title: Route
 
 # Route
 
-An object which holds information about the state of a single [Junction](Junction), including its child junctions.
+Routes are objects which represent a single state of a [Junction](Junction). To learn more about what Routes are and how they're used, read [Locations, Routes and Maps](/docs/introduction/locations-routes-and-maps) and [Routes](/docs/basics/routes) in the Junctions Guide.
 
-TODO:
-- It is named after its visual representation -- a route through a set of Junctions.
+Route objects are most commonly used as props of your components. By checking a [Screen Component](/docs/basics/the-screen-pattern)'s `route` prop, you can decide what content that screen should render.
 
-## Nesting Routes
+Routes are also used as a way of referring to arbitrary locations within your application. They can be used in combination with a `Converter` or `LocatedRoute` object's [locate()](#locateroutes) method to produce [Location](Location) objects used for navigating.
 
-TODO:
-- Routes can be nested
+## Route vs. LocatedRoute
+
+There are two types of `Route` objects. 
+
+- Standard routes are created by calling a `Junction` object's [createRoute()](Junction#createroutekey-params-next) method.
+- `LocatedRoute` objects are returned by calling a `Converter` object's [route()](Converter#routelocation) method. 
+
+The difference is that `LocatedRoute` objects have a [locate()](#locateroutes) method, which acts like the [similarly named](Converter#locateroutes) method on `Converter` but produces a [Location](Location) which is *relative* to that `LocatedRoute`.
+
+## Properties
+
+-   `key` (*string*)
+
+    They key of the [Branch](Junction) whose format this route follows
+
+-   `params` (*object*)
+
+    The values of any params which this route holds
+
+-   `data` (*object*)
+
+    The value of the `data` property defined on the associated branch in [createJunction](createJunction), if any
+
+-   `next` (*[Route](Route) | { [key]: [Route](Route) }*)
+
+    The `Route` object or objects which specify the state of any `next` junctions on the associated branch
 
 #### Example
 
+`Route` objects are instances of an internal `Route` or `LocatedRoute` class, so they may not be represented by plain old JavaScript objects. With this in mind, here is an example of the *shape* which a `Route` object may take.
+
 ```js
 {
-  branch: Contacts,
-  data: { ... },
+  key: 'Invoices',
+  data: {
+    Component: InvoicesScreen,
+  },
   params: {
     id: '15',
   },
-  children: {
+  next: {
     main: {
-      branch: PaymentList,
-      data: { ... },
+      key: 'Payments',
+      data: {
+        Component: InvoicePaymentsScreen,
+      },
       params: {
         order: 'date',
         where: { paid: false },
@@ -34,37 +63,33 @@ TODO:
     },
 
     modal: {
-      branch: AddContactModal,
-      data: { ... },
+      key: 'AddPayment',
+      data: {
+        Component: AddPaymentScreen,
+      },
     },
   },
 }
 ```
 
-## Properties
-- `branch` (*[Branch](Junction#branch)*): ...
-- `params` (*object*): ...
-- `children` (*[Route](Route) | {[key]: Route}*): ...
-- `data` (*object*): ...
-
 ## Methods
 
 ### locate(...routes)
 
-*This method is only available on Routes created by `Converter#route()`. It is not available on routes created by `Junction#createRoute`.*
+*This method is only available on `LocatedRoute` objects -- i.e. those created by `converter.route()`. It is not available on routes created by `junction.createRoute()`.*
 
-Create a new [Location](Location) from the Location of this [Route](Route), but with child routes replaced by the arguments (or removed entirely in the case of no arguments).
+Create a new [Location](Location) from the Location of this [Route](Route), but with `next` routes replaced by the arguments (or removed entirely in the case of no arguments).
 
 #### Arguments
 
-* `...routes` (*[Route](Route)*): Up to one Route for each of this Route Type's child Junctions.
+-   `...routes` (*[Route](Route)*)
+
+    Up to one `Route` for each `Junction` specified on the associated branch's `next` Junction
 
 #### Returns
 
-(*[Location](Location)*) A Location which is equivalent to the passed-in Routes
+(*[Location](Location)*) A `Location` which includes this Route's `Location`, and extends it to also correspond to the passed in `Route` objects
 
-#### Differences with `Converter#locate`
+#### Example
 
-This method is similar to [Converter#locate](Converter#locate). The main difference is that the base location of `Converter#locate` is specified when you create the `Converter` instance, while the base location of `Route#locate` is the location of the `Route` itself.
-
-#### Example:
+The `locate` method of a `LocatedRoute` is often passed to child components along with the route's `next` route. This allows child components to create `Location` objects linking within the component -- without knowing where in the application the component is mounted. For more details, read [The Screen Pattern](/docs/basics/the-screen-pattern) in the Junctions Guide.

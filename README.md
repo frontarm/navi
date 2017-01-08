@@ -1,11 +1,11 @@
-# Junctions: Routing You Can Understand.
+# Junctions: Routing You Can Follow.
 
 Built for React, using the excellent [history](https://github.com/mjackson/history) package.
 
 Why use Junctions?
 
-- **It's simple.** Everything you need in 4 functions and 4 methods.
-- **It makes links composable.** Now routing is reusable too!
+- **It's reusable.** No hard-coded URLs means *truly* reusable components.
+- **It's simple.** Everything you need in only 4 functions and 4 methods.
 - **It's independent.** Works great with React, but doesn't rely on it.
 
 ## Demo

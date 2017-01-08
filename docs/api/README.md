@@ -1,10 +1,10 @@
 # About The API
 
-Junctions is not tied to any specific view library. Instead, its functionality has been separated into a core package, and packages to integrate junctions with other libraries.
-
-The core package is called [junctions](https://github.com/jamesknelson/react). It contains the important parts. In particular, it contains:
+Junctions was designed to work great with React -- without be tied to it. To facilitate this, its functionality has been separated into a core package, and packages to integrate junctions with other libraries.
 
 ## Core package
+
+The core package is called [junctions](https://github.com/jamesknelson/react). It contains the important parts. In particular:
 
 - [createJunction](/docs/api/junctions/createJunction), used to define new [Junction](/docs/api/junctions/Junction) objects
 - [createConverter](/docs/api/junctions/createConverter), used to create your application-wide [Converter](/docs/api/junctions/Converter) object

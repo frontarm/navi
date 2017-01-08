@@ -1,3 +1,9 @@
+/**
+ * This example shows a simple application with nested components
+ * and route parameters. Its routing is handled by a <Router>
+ * component from `react-junctions`.
+ */
+
 import React from 'react'
 import { createJunction } from 'junctions'
 import { Link, Router } from 'react-junctions'
@@ -35,13 +41,21 @@ TopicsScreen.junction = createJunction({
   },
 })
 function TopicsScreen({ route, locate }) {
+  const junction = TopicsScreen.junction
+
   return (
     <div>
       <h2>Topics</h2>
       <nav>
-        <Link to={locate(TopicsScreen.junction.createRoute('details', { id: 'rendering' }))}>Rendering with React</Link>
-        <Link to={locate(TopicsScreen.junction.createRoute('details', { id: 'components' }))}>Components</Link>
-        <Link to={locate(TopicsScreen.junction.createRoute('details', { id: 'props-v-state' }))}>Props v. State</Link>
+        <Link to={locate(junction.createRoute('details', { id: 'rendering' }))}>
+          Rendering with React
+        </Link>
+        <Link to={locate(junction.createRoute('details', { id: 'components' }))}>
+          Components
+        </Link>
+        <Link to={locate(junction.createRoute('details', { id: 'props-v-state' }))}>
+          Props v. State
+        </Link>
       </nav>
 
       {
@@ -58,6 +72,8 @@ AppScreen.junction = createJunction({
   topics: { next: TopicsScreen.junction },
 })
 function AppScreen({ route, locate }) {
+  const junction = AppScreen.junction
+
   let content
   switch (route && route.key) {
     case 'about':
@@ -76,8 +92,8 @@ function AppScreen({ route, locate }) {
     <div>
       <nav>
         <Link to={locate()}>Home</Link>
-        <Link to={locate(AppScreen.junction.createRoute('about'))}>About</Link>
-        <Link to={locate(AppScreen.junction.createRoute('topics'))}>Topics</Link>
+        <Link to={locate(junction.createRoute('about'))}>About</Link>
+        <Link to={locate(junction.createRoute('topics'))}>Topics</Link>
       </nav>
       {content}
     </div>
@@ -85,9 +101,6 @@ function AppScreen({ route, locate }) {
 }
 
 
-// The `history` prop is an object produced by the npm `history` package.
-// This package is used to normalize browser history APIs.
-// For more details, see https://github.com/mjackson/history
 export default function BasicExample({ history }) {
   return (
     <Router
