@@ -1,5 +1,5 @@
 @logo-color: #10b068;
-@mobile-break: ~"only screen and (max-width: 510px)"; 
+@mobile-break: ~"only screen and (max-width: 700px)"; 
 
 .MenuWrapper {
   &-sidebar {
@@ -8,17 +8,19 @@
 
     @media @mobile-break {
       width: 100px;
+      float: none;
+      width: 100%;
+      margin-top:5px;
     }
   }
 
   &-body {
-    margin-left: 280px;
+    margin-left:280px;
     min-height: 100%;
     padding-top: 1px;
 
     @media @mobile-break {
-      margin-left: 110px;
-
+      margin-left:0;
       .header-anchor {
         display: none;
       }
@@ -30,11 +32,18 @@
     margin: 50px 0 0 0;
     list-style: none;
 
+    @media @mobile-break {
+      margin: 35px 0 0 0;
+    }
+
     > li {
       margin-bottom: 10px;
 
       @media @mobile-break {
         margin-bottom: 20px;
+        display: inline-block;
+        margin-right:10px;
+        width: 100%;
       }
     }
   }
@@ -43,6 +52,10 @@
     padding: 0;
     list-style: none;
     margin-bottom: 20px;
+    
+    @media @mobile-break {
+      display: block;
+    }
 
     > li {
       margin: 5px 0;
