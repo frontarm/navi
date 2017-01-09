@@ -1,9 +1,15 @@
+@mobile-break: ~"only screen and (max-width: 510px)"; 
+
 .ExampleWrapper {
   h2 {
     color: #666;
     font-weight: 500;
     font-size: 16px;
-    margin: 5px 0 10px;
+
+    margin: 40px 0 10px;
+    @media @mobile-break {
+      margin: 5px 0 10px;
+    }
   }
 
   pre.PrismSourceView {
