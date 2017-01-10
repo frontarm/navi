@@ -2,37 +2,59 @@
 title: Motivation
 ---
 
-**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
-
 # Motivation
 
-- I got a request from a client - "I want my screens to be reusable. And I want the app to use react-router."
-- React components are reusable. Screens are components. And react-router is pretty standard. This seemed reasonable, so I said OK
+It was pretty normal day in Tokyo when I received a request from a client. "I'd like this application screen to be a React Component. And I want it to be reusable." 
 
-Things weren't OK
+Given my client's app was created with React, I naturally said "Yes Sir". I mean, the best part about React is that components are reusable. What could go wrong?
 
-- As I tried to implement things, I started to run into issues
-- Many of these issues stemmed from decisions made for me by react-router
+The answer is *Links*. Links are what could go wrong.
 
-    How do you link within screens?
-    
-    - How do you link if you don't know the URL until the app is mounted?
-    
-    Re-usable components shouldn't need access to the application root
-    
-    - React-router defines its routes at the top level of the application
-    
-    What if your screen doesn't have a URL? 
-    
-    - Modals don't need URLs
-    - But you still might want a re-usable screen within a modal
+You see, the thing about the *web* is that it is made of URLs. And the thing about URLs is that they don't compose. But reusable components need to compose.
 
-Components should be independent
+To demonstrate, imagine that you'd like to make a self contained `PaymentsScreen` component, like so:
 
-- It forces components to use its context-based interface to get information.
-- It ties your components to react-router
-- It steal's your components independence. They're no longer re-usable components, they're just react-router plugins
+```
+class PaymentsScreen extends Component {
+    static propTypes = {
+        path: PropTypes.oneOf(['/new', '/list']),
+    }
 
-- What if you want to make real, reusable components?
-- Components should be just that - React components
-- Junctions is my toolbox for doing just this. And to do so, it follows three principles.
+    render() {
+        return (
+            <div>
+                <nav>
+                    <a href='/new'>Add Payment</a>
+                    <a href='/list'>List</a>
+                </nav>
+                <div>
+                    Hi!
+                </div>
+            </div>
+        )
+    }
+}
+```
+
+Easy, right? Except -- what if you want to mount this component somewhere other than the application root? The `<a>` tags are going to break.
+
+But you've got you're head screwed on, so you know how to fix this. Just pass in a `basePath`.
+
+```js
+<a href=`${basePath}/new`>Add Payment</a>
+<a href=`${basePath}/list`>List</a>
+```
+
+And this works. Until you want to mount this component within a modal which doesn't *have* URLs. *Don't mount it in a modal, you say*. But your client insists. Now what?
+
+*You're up the creek with no paddle.* That's what.
+
+## Components With URLs Aren't Reusable
+
+Routable components have Links. Links point to URLs. And URLs cause components to be dependent on their environment. *So perhaps we should just give up on reusability for any components with links?*
+
+But wait a minute. The great thing about React is that it lets you write reusable components. And the great thing about the web is that all its content has URLs. So wouldn't be ideal if you could have your cake and eat it too?
+
+This is the question that led to Junctions. And happily, it turns out that you *can* have your cake and eat it too! You just need to make sure that your routing library follows three principles.
+
+
