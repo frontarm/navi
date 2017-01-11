@@ -25,15 +25,6 @@ Given that the state you need is already available, **creating and storing any n
 
 In order to make the best design decisions, you need to understand how your application really works. But if your data passes through opaque third-party components, your task becomes a lot harder.
 
-```js
-// How does this even work?
-<Router history={browserHistory}>
-    <Route path="/" component={App}>
-        <Route path="about" component={About}/>
-    </Route>
-</Router>
-```
-
 To ensure data flow is clear, routing libraries should complete all required work *before* the data enters the application proper. Once the data enters the application, it should be structured in such a way that it flows naturally -- without the help of third party components.
 
 By requiring that routing data is passed directly between components as `props`, your application becomes easier to reason about. But more than that, it lets you **focus on creating components which fit the task at hand -- not the API of your routing library.**
