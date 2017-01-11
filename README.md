@@ -39,7 +39,7 @@ Alternatively, use plain-ol' script tags with unpkg.
 
 But before starting, ask yourself -- do you really *need* a Router? The [Introduction](https://junctions.js.org/docs/introduction/do-i-need-a-router) covers this, before introducing the three main concepts you'll use with Junctions.
 
-The next step is practice. The [Basics](https://junctions.js.org/docs/basics/locations) section of the Guide will walk you through using the most important tools which Junctions provides, finishing with a full Example.
+The next step is practice. The [Basics](https://junctions.js.org/docs/basics/Locations) section of the Guide will walk you through using the most important tools which Junctions provides, finishing with a full Example.
 
 ## Contributing
 
