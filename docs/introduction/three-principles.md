@@ -21,7 +21,7 @@ History.state
 
 Given that the state you need is already available, **creating and storing any new state is superfluous, at best**. At worst, any new state which the router provides to your application can introduce a dependency on the router itself.
 
-## Pass Routes Directly
+## No Intermediate Components
 
 In order to make the best design decisions, you need to understand how your application really works. But if your data passes through opaque third-party components, your task becomes a lot harder.
 
