@@ -43,7 +43,7 @@ Given that Facebook [recommends against](https://facebook.github.io/react/docs/c
 
 While adding a URL like `/invoices/${id}` to your component may seem innocent, this simple act actually involves one of two assumptions about your component's environment. In the case of a relative URL, you're assuming that your component will never be used in another location. And in the case of an absolute URL, you're assuming that your *entire application* will never be used in another location. Either way, you've made reuse difficult.
 
-Additionally, URL strings which point *within* a component have another issue; they assume that the component's environment allows for the URL to *change*. In some cases -- like when they component is rendered within a modal -- URLs are effectively constant.
+Additionally, URL strings which point *within* a component have another issue; they assume that the component's environment allows for the URL to *change*. In some cases -- like when the component is rendered within a modal -- URLs are effectively constant.
 
 But does this mean you shouldn't reference other parts of the application? Not at all! You just need to make sure to **represent Locations in a way that does not depend on the component's environment**. And to do so, Junctions uses a structure called a [Route](locations-routes-and-maps).
 
