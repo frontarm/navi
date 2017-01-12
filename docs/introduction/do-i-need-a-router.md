@@ -77,10 +77,10 @@ class Link extends React.component {
   render() {
     var props = Object.assign({}, this.props)
 
-    delete this.props.to
     
     props.onClick = this.handleClick
     props.href = this.props.to.pathname + (this.props.to.search || '')
+    delete this.props.to
 
     return <a {...props}>{props.children}</a>
   }
