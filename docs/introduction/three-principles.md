@@ -21,30 +21,41 @@ History.state
 
 Given that the state you need is already available, **creating and storing any new state is superfluous, at best**. At worst, any new state which the router provides to your application can introduce a dependency on the router itself.
 
-## No Intermediate Components
+## Components Must Compose
 
-In order to make the best design decisions, you need to understand how your application really works. But if your data passes through opaque third-party components, your task becomes a lot harder.
+React is a wonderful tool for making parts of your code reusable, owing in large part to its component system. But perhaps *because* React makes creating new components so easy, it can also be easy to forget that there are problems that components won't solve. In particular, components still have access to a shared environment -- and they can use that environment in a way which doesn't play well with others. Or in mathy jargon, **components are not guaranteed to compose*.
+
+The goal of Junctions is to allow you to write truly reusable components, and part of that is to be able to compose them whichever way you'd like. *But URLs are a shared resource*, and allowing components to take ownership of URLs willy-nilly can lead to chaos.
+
+To demonstrate, consider a component which renders two child components:
+
+- A component with tabs for the application's navigation
+- A component rendering a modal with your account's settings
+
+*IMAGE: dashboard/invoices/contacts, [account details, invoices, etc.]*
+
+These components *should be* completely independent -- in fact, the account details component could be reused across any number of applications! But because both components have navigation controls, they need to share the same URL space. And this can cause conflicts.
+
+In order to follow the principle that *Components Must Compose*, components which use Junctions for routing do not *need* to take ownership of any shared resources:
+
+- Components never access data through [React Context](https://facebook.github.io/react/docs/context.html#why-not-to-use-context)
+- Components don't choose their own URLs (but can still suggest them)
+
+Of course, there is no avoiding the fact that components still need access to shared resources. **The difference with Junctions is that URLs are allocated by your application - not by your components.**
+
+## Routes Are Just Data
+
+***
+# TODO REWRITE #
+
+- it should be possible to write your entire application as a pure function -- data in and data out
+- no context
+- no reliance on special functions
+***
+
+In order to make the best design decisions, you need to understand how your application really works. But if your data needs to pass through opaque third-party components, your task becomes a lot harder.
 
 To ensure data flow is clear, routing libraries should complete all required work *before* the data enters the application proper. Once the data enters the application, it should be structured in such a way that it flows naturally -- without the help of third party components.
 
 By requiring that routing data is passed directly between components as `props`, your application becomes easier to reason about. But more than that, it lets you **focus on creating components which fit the task at hand -- not the API of your routing library.**
-
-## Assume Nothing
-
-In order for a component to be reusable, it *cannot* make any assumptions about its environment. In practice, these assumptions come in two forms:
-
-### Context
-
-React allows any ancestor of a component to add data to that component's `context`. And while this would be OK if you could guarantee that you have control over *every* ancestor, the reality is that you usually don't. **Usage of context constitutes an assumption that no ancestor uses `shouldComponentUpdate()`, nor any third party library which you do not control.**
-
-Given that Facebook [recommends against](https://facebook.github.io/react/docs/context.html#why-not-to-use-context) using context *anyway*, this isn't a huge loss. But it is worth noting, because Junctions is unique in not requiring the use of context.
-
-### URL strings
-
-While adding a URL like `/invoices/${id}` to your component may seem innocent, this simple act actually involves one of two assumptions about your component's environment. In the case of a relative URL, you're assuming that your component will never be used in another location. And in the case of an absolute URL, you're assuming that your *entire application* will never be used in another location. Either way, you've made reuse difficult.
-
-Additionally, URL strings which point *within* a component have another issue; they assume that the component's environment allows for the URL to *change*. In some cases -- like when the component is rendered within a modal -- URLs are effectively constant.
-
-But does this mean you shouldn't reference other parts of the application? Not at all! You just need to make sure to **represent Locations in a way that does not depend on the component's environment**. And to do so, Junctions uses a structure called a [Route](locations-routes-and-maps).
-
 
