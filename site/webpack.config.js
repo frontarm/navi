@@ -60,7 +60,7 @@ module.exports = {
         loader: 'style!css!less'
       },
       { test: /\.md$/,
-        loader: 'sitepack?preload!html!markdown'
+        loader: 'sitepack?preload!img!markdown'
       },
       { test: /\.(gif|jpe?g|png|ico)$/,
         loader: 'url?limit=4000'

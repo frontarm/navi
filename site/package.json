@@ -12,7 +12,6 @@
     "file-loader": "^0.9.0",
     "front-matter": "^2.1.1",
     "history": "^4.5.0",
-    "html-loader": "^0.4.4",
     "html-webpack-plugin": "^2.22.0",
     "less": "^2.7.2",
     "less-loader": "^2.2.3",
@@ -27,5 +26,11 @@
     "url-loader": "^0.5.7",
     "webpack": "1.13.1",
     "webpack-dev-server": "1.14.1"
+  },
+  "dependencies": {
+    "es6-templates": "^0.2.3",
+    "fastparse": "^1.1.1",
+    "html-minifier": "^3.2.3",
+    "loader-utils": "^0.2.16"
   }
 }
