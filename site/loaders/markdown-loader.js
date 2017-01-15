@@ -42,5 +42,5 @@ module.exports = function markdownLoader(content) {
     body: md.render(meta.body),
     meta: meta.attributes,
   }
-  return `module.exports = ${JSON.stringify(this.value.body)}`
+  return this.value.body
 }

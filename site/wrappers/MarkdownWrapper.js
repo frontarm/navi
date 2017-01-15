@@ -2,6 +2,8 @@ import React from 'react'
 import MarkdownView from '../views/MarkdownView'
 
 export default function MarkdownWrapper({ page, navigateToPage }) {
+  console.log(page.content)
+
   return (
     <MarkdownView
       key={page.id}

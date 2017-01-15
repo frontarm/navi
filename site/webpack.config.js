@@ -60,10 +60,10 @@ module.exports = {
         loader: 'style!css!less'
       },
       { test: /\.md$/,
-        loader: 'sitepack?preload!markdown'
+        loader: 'sitepack?preload!html!markdown'
       },
       { test: /\.(gif|jpe?g|png|ico)$/,
-        loader: 'url?limit=10000'
+        loader: 'url?limit=4000'
       }
     ]
   },
