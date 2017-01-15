@@ -27,12 +27,13 @@ export default class MarkdownView extends Component {
   }
 
   componentDidMount() {
-    this.refs.html.querySelectorAll("a").forEach(node => {
+    const nodeList = this.refs.html.querySelectorAll("a")
+    for (let node of nodeList) {
       const href = node.attributes.href
       if (href && href.value.substr(0, 4) !== 'http' && /[\/a-zA-Z]/.test(href.value[0])) {
         node.onclick = this.handleClickLink
       }
-    })
+    }
   }
 
   render() {
