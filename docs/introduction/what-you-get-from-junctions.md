@@ -14,6 +14,8 @@ But what is it about Junctions that makes all of this possible? To answer this, 
 
 *What tools in particular will make your life easier?*
 
+This is easier to answer.
+
 1. A `Route` structure that represents routing information
 2. A `Converter` that converts URLs into `Route` objects
 3. A `Junction` structure that allows you to configure your `Converter`
