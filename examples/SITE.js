@@ -1,5 +1,6 @@
 module.exports = {
   title: 'About The Examples',
+  default: 'Raw',
   indexWrapper: 'MenuWrapper',
   index: [
     require('./Raw.example.js').set({

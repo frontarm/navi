@@ -26,7 +26,7 @@ export default class MarkdownView extends Component {
     this.props.onClickLink(e.target.attributes.href.value)
   }
 
-  componentDidMount() {
+  setupLinks() {
     const nodeList = this.refs.html.querySelectorAll("a")
     for (let node of nodeList) {
       const href = node.attributes.href
@@ -36,10 +36,18 @@ export default class MarkdownView extends Component {
     }
   }
 
+  componentDidMount() {
+    this.setupLinks()
+  }
+
+  componentDidUpdate() {
+    this.setupLinks()
+  }
+
   render() {
     return (
       <div className='MarkdownView' ref='html'>
-        <markdown dangerouslySetInnerHTML={{ __html: this.props.html }} />
+        <markdown dangerouslySetInnerHTML={{ __html: this.props.content }} />
       </div>
     )
   }

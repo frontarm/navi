@@ -16,7 +16,7 @@ export default class FakeBrowser extends Component {
 
     history: PropTypes.object.isRequired,
     view: PropTypes.element.isRequired,
-    busy: PropTypes.bool,
+    isLoading: PropTypes.bool,
   }
 
   static defaultProps = {
@@ -70,7 +70,7 @@ export default class FakeBrowser extends Component {
     return React.cloneElement(props.view, {
       className: props.className,
       style: props.style,
-      busy: props.busy,
+      isLoading: props.isLoading,
 
       backControl,
       forwardControl,

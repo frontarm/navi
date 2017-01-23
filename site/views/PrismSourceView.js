@@ -2,9 +2,9 @@ import './PrismSourceView.less'
 import React, { Component, PropTypes } from 'react'
 
 
-const PrismSourceView = ({ html, busy }) =>
+const PrismSourceView = ({ content, isLoading }) =>
   <pre style={{fontSize: "12px"}} className='PrismSourceView'>
-    <code dangerouslySetInnerHTML={{ __html: html }} />
+    <code dangerouslySetInnerHTML={{ __html: content }} />
   </pre>
 
 

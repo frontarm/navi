@@ -18,7 +18,7 @@ const BrowserInputView = ({ element }) =>
 const BrowserView = ({
   className,
   style,
-  busy,
+  isLoading,
 
   backControl,
   forwardControl,

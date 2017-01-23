@@ -22,7 +22,7 @@ At minimum, you'll need the junctions package
 npm install junctions --save
 ```
 
-If you want [&lt;Link&gt;](https://junctions.js.org/docs/api/react-junctions/Link) and [&lt;Router&gt;](https://junctions.js.org/docs/api/react-junctions/Router) components to help integrating with React, install `react-junctions`
+If you want [&lt;Link&gt;](https://junctions.js.org/api/react-junctions/Link) and [&lt;Router&gt;](https://junctions.js.org/api/react-junctions/Router) components to help integrating with React, install `react-junctions`
 
 ```bash
 npm install react-junctions --save
@@ -37,21 +37,21 @@ Alternatively, use plain-ol' script tags with unpkg.
 
 ## Getting Started
 
-But before starting, ask yourself -- do you really *need* a Router? The [Introduction](https://junctions.js.org/docs/introduction/do-i-need-a-router) covers this, before introducing the three main concepts you'll use with Junctions.
+But before starting, ask yourself -- do you really *need* a Router? The [Introduction](https://junctions.js.org/guide/introduction/do-i-need-a-router) covers this, before introducing the three main concepts you'll use with Junctions.
 
-The next step is practice. The [Basics](https://junctions.js.org/docs/basics/Locations) section of the Guide will walk you through using the most important tools which Junctions provides, finishing with a full Example.
+The next step is practice. The [Basics](https://junctions.js.org/guide/basics/Locations) section of the Guide will walk you through using the most important tools which Junctions provides, finishing with a full Example.
 
 ## Contributing
 
 Contributions are welcome, especially for the documentation.
 
-To get the documentation running locally, you'll need to run `npm install` in **both** the root directories and the site directory. This is because babel looks at the root `.babelrc` when compiling the example files.
-
-Once you've installed the dependencies, run `npm start` from the `site` directory, then open the browser at <http://localhost:8080>
+To get the documentation running locally, you'll need to make sure you have a link to the junctions package itself in your `node_modules` directory:
 
 ```bash
 npm install
-cd site
-npm install
-npm start
+npm link
+npm link junctions
+npm run docs:start
 ```
+
+Then open your browser to <http://localhost:4000>!

@@ -1,22 +1,22 @@
 import './ExampleWrapper.less'
 import React, { Component } from 'react'
+import { PageContentLoader } from 'sitepack'
 import createMemoryHistory from 'history/createMemoryHistory'
-import Loader from '../components/Loader'
 import FakeBrowser from '../controls/FakeBrowser'
 import PrismSourceView from '../views/PrismSourceView'
 
 
-function ExampleWrapperView({content, error, busy, history}) {
+function ExampleWrapperView({page, content, error, isLoading, history}) {
   return (
     error
       ? <div>ERROR: Page content could not be loaded</div>
       : <div className='ExampleWrapper'>
           <h2>Demo</h2>
-          <FakeBrowser history={history} busy={busy}>
+          <FakeBrowser history={history} isLoading={isLoading}>
             {content && React.createElement(content.module.default, { history })}
           </FakeBrowser>
           <h2>Source</h2>
-          <PrismSourceView html={content && content.source} busy={busy} />
+          <PrismSourceView content={content && content.source} isLoading={isLoading} />
         </div>
   )
 }
@@ -44,10 +44,9 @@ export default class ExampleWrapper extends Component {
 
   render() {
     return (
-      <Loader
-        key={this.props.page.id}
-        content={this.props.page.content}
-        view={<ExampleWrapperView history={this.history} />}
+      <PageContentLoader
+        page={this.props.page}
+        render={<ExampleWrapperView history={this.history} />}
       />
     )
   }

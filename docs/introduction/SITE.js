@@ -1,5 +1,6 @@
 module.exports = {
   title: 'Introduction',
+  default: 'do-i-need-a-router',
   index: [
     require('./do-i-need-a-router.md'),
     require('./motivation.md'),

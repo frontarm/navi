@@ -1,5 +1,6 @@
 module.exports = {
   title: 'junctions',
+  default: 'Converter',
   index: [
     require('./Converter.md'),
     require('./Junction.md'),

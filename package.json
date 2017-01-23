@@ -22,7 +22,13 @@
     "build": "npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min",
     "prepublish": "npm run clean && npm run build",
     "test": "npm run build:commonjs && mocha test/*.test.js",
-    "test:watch": "mocha --watch test/*.test.js"
+    "test:watch": "mocha --watch test/*.test.js",
+    "docs:start": "sitepack start -c site/sitepack.config.js",
+    "docs:clean": "rimraf site/build",
+    "docs:build": "npm run docs:clean && sitepack build -c site/sitepack.config.js -o site/build",
+    "docs:service-worker": "cp -R site/public/ site/build/ && sw-precache --root='site/build/' --static-file-globs='site/build/**/!(*map*)'",
+    "docs:publish": "npm run docs:build && cp ./CNAME site/build && cd site/build && git init && git commit --allow-empty -m 'update docs' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update docs' && git push git@github.com:jamesknelson/junctions gh-pages --force",
+    "docs:view": "sitepack view -d site/build"
   },
   "repository": {
     "type": "git",
@@ -41,13 +47,18 @@
     "babel-cli": "^6.14.0",
     "babel-core": "^6.14.0",
     "babel-loader": "^6.2.0",
-    "babel-preset-latest": "6.16.0",
-    "babel-preset-react": "^6.11.1",
     "babel-plugin-transform-class-properties": "6.16.0",
     "babel-plugin-transform-object-rest-spread": "6.19.0",
+    "babel-preset-latest": "6.16.0",
+    "babel-preset-react": "^6.11.1",
     "cross-env": "^1.0.7",
+    "history": "^4.5.0",
     "mocha": "^3.0.2",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "react-junctions": "^0.3.2",
     "rimraf": "^2.3.4",
-    "webpack": "^1.9.6"
+    "sitepack": "^0.2.1",
+    "webpack": "^1.14.0"
   }
 }
