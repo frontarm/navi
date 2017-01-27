@@ -4,7 +4,7 @@ title: routesMatch
 
 # `routesMatch(specific, partial, requireExact=true)`
 
-Compares two [Route](Route) objects.
+Compares two [Route](Route.md) objects.
 
 #### Exact match mode
 
@@ -20,8 +20,8 @@ Use this when you want to know if the active route is a child of some arbitrary 
 
 #### Arguments
 
-* `specific` (*[Route](Route)*)
-* `partial` (*[Route](Route)*)
+* `specific` (*[Route](Route.md)*)
+* `partial` (*[Route](Route.md)*)
 * `requireExact` (*bool*): If false, will also return true for partial matches
 
 #### Returns

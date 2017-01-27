@@ -1,5 +1,4 @@
 ---
-title: Glossary
 ---
 # Glossary
 

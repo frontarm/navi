@@ -1,5 +1,4 @@
 ---
-title: What You Get From Junctions
 ---
 
 # What You Get From Junctions
@@ -24,7 +23,7 @@ It turns out that these three tools are all you'll need to write a Junctions app
 
 ## Routes Ain't Locations
 
-The best way to understand a `Route` object is to compare it to the `Location` objects that we first encountered in [Do I Need A Router?](do-i-need-a-router). Recall that [Location](/api/junctions/Location) objects each hold a single URL and some arbitrary state:
+The best way to understand a `Route` object is to compare it to the `Location` objects that we first encountered in [Do I Need A Router?](do-i-need-a-router.md). Recall that [Location](../../api/junctions/Location.md) objects each hold a single URL and some arbitrary state:
 
 ```js
 {
@@ -41,7 +40,7 @@ The problem that we encountered with `Location` objects is that their structure 
 ![Flat and nested](./what-you-get-from-junctions/flat-vs-nested.png)
 *It is not immediately obvious how to pass a flat Location into a nested tree.*
 
-And even if you're fine with splitting up this information manually, you'll still face the problem of composability. As the [Haiku of Routing Principles](three-principles) states, *Components Compose* -- but URLs don't.
+And even if you're fine with splitting up this information manually, you'll still face the problem of composability. As the [Haiku of Routing Principles](three-principles.md) states, *Components Compose* -- but URLs don't.
 
 This is where Routes come in. Routes, like Locations, are a way of representing navigation state. But unlike Locations, `Route` objects are composable, and structured to match your component tree *perfectly*.
 

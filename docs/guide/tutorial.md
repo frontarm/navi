@@ -1,5 +1,4 @@
 ---
-title: Tutorial
 ---
 # Tutorial
 
@@ -90,7 +89,7 @@ Of course, writing this out for each link would be traumatic. And it wouldn't be
 
 The `<Link>` component provided by `react-junctions` takes two parameters:
 
-- `to`: A [Location](/api/junctions/Location) object specifying where the Link points top
+- `to`: A [Location](../api/junctions/Location.md) object specifying where the Link points top
 - `history`: An optional `history` object whose `push()` method should be called
 
 Let's replace the existing `<a>` tags with `<Link>` elements:
@@ -186,12 +185,12 @@ If the routing state in your app is only ever used by your top most component --
 
 But what if you have nested components which each need to access some part of your routing state? In this case, manually passing navigation state around is clumsy and error-prone.
 
-![Flat URLs don't match nested components](./introduction/what-you-get-from-junctions/flat-vs-nested.png)
+![Flat URLs don't match nested components](./what-you-get-from-junctions/flat-vs-nested.png)
 *It might not be impossible to get the information to the right component, but it certainly won't be any fun.*
 
 Instead, you're going to want a representation of your routing state which better matches the structure of your component tree. And that's where Junctions' `Route` structure comes in.
 
-![Flat URLs don't match nested components](./introduction/what-you-get-from-junctions/routes-vs-components.png)
+![Flat URLs don't match nested components](./what-you-get-from-junctions/routes-vs-components.png)
 *Route objects are designed to match the structure of your component tree perfectly.*
 
 ## Routes

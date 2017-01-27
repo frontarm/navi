@@ -4,12 +4,12 @@ title: locationsEqual
 
 # `locationsEqual(a, b)`
 
-Compares two [Location](Location) objects, returning `true` if they are equivalent.
+Compares two [Location](Location.md) objects, returning `true` if they are equivalent.
 
 #### Arguments
 
-* `a` (*[Location](Location)*)
-* `b` (*[Location](Location)*) 
+* `a` (*[Location](Location.md)*)
+* `b` (*[Location](Location.md)*) 
 
 #### Returns
 

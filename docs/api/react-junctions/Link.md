@@ -4,15 +4,15 @@ title: <Link>
 
 # `<Link to={location} [history={history}]>`
 
-Create a special `<a>` tag which accepts a [Location](Location) object, and handles clicks with `pushState` instead of standard navigation. 
+Create a special `<a>` tag which accepts a [Location](../junctions/Location.md) object, and handles clicks with `pushState` instead of standard navigation. 
 
 This component does not interact with the browser History API directly, but instead works through a [History](https://github.com/mjackson/history#properties) object -- allowing it to be used on both the server and the client. 
 
-To avoid passing `history` direcetly to every `<Link>` component, you can pass it through [context](https://facebook.github.io/react/docs/context.html) via the [&lt;HistoryContext&gt;](HistoryContext) or [&lt;Router&gt;](Router) components.
+To avoid passing `history` direcetly to every `<Link>` component, you can pass it through [context](https://facebook.github.io/react/docs/context.html) via the [&lt;HistoryContext&gt;](HistoryContext.md) or [&lt;Router&gt;](Router.md) components.
 
 #### Props
 
-* `to` (*[Location](/docs/api/junctions/Location)*): The location to navigate to.
+* `to` (*[Location](../junctions/Location.md)*): The location to navigate to.
 * `history` (*History*): A history object -- takes priority over any contextual history.
 * *All other props are passed to the rendered `<a>` element.*
 

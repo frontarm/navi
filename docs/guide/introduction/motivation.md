@@ -1,5 +1,4 @@
 ---
-title: Motivation
 ---
 
 # Motivation
@@ -55,7 +54,7 @@ Routable components have Links. Links point to URLs. And URLs cause components t
 
 But wait a minute. The great thing about React is that it lets you write reusable components. And the great thing about the web is that all its content has URLs. So wouldn't be ideal if you could have your cake and eat it too?
 
-This is the question that led to Junctions. And happily, it turns out that you *can* have your cake and eat it too! But in order to do so, your routing library needs to follow principles -- specifically, the first two lines of [The Principles Haiku](three-principles).
+This is the question that led to Junctions. And happily, it turns out that you *can* have your cake and eat it too! But in order to do so, your routing library needs to follow principles -- specifically, the first two lines of [The Principles Haiku](three-principles.md).
 
 
 

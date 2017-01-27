@@ -4,7 +4,7 @@ title: <Router>
 
 # `<Router>`
 
-Converts the [Location](/docs/api/junctions/Location) objects emitted by the supplied [History](https://github.com/mjackson/history#properties) into [Route](/docs/api/junctions/Route) objects, and passes these to the supplied renderer.
+Converts the [Location](../junctions/Location.md) objects emitted by the supplied [History](https://github.com/mjackson/history#properties) into [Route](../junctions/Route.md) objects, and passes these to the supplied renderer.
 
 The renderer is defined by the `render` prop, which should take one of these forms:
 
@@ -12,22 +12,22 @@ The renderer is defined by the `render` prop, which should take one of these for
 - A Component which accepts a `route` and `locate` props
 - A React Element which will have `route` and `locate` props added via [React.cloneElement](https://facebook.github.io/react/docs/react-api.html#cloneelement)
 
-This component works be internally creating and wrapping a [Converter](/docs/api/junctions/Converter) object, and passing any received `Location` objects to its [converter.route()](/docs/api/junctions/Converter#routelocation) method. The optional `baseLocation` prop behaves the same as the `baseLocation` argument on [createConverter](/docs/api/junctions/createConverter).
+This component works be internally creating and wrapping a [Converter](../junctions/Converter.md) object, and passing any received `Location` objects to its [converter.route()](../junctions/Converter.md#routelocation) method. The optional `baseLocation` prop behaves the same as the `baseLocation` argument on [createConverter](../junctions/createConverter.md).
 
 Use this component to reduce boilerplate. If you find you need more control, you can always revert to managing your own `Converter` instance later on.
 
 #### Props
 
 * `history` (*History*): A history object
-* `junction` (*[Junction](/docs/api/junctions/Junction)*): A map of possible routes
+* `junction` (*[Junction](../junctions/Junction.md)*): A map of possible routes
 * `render` (*function | Component | ReactElement*): A handler to render your current route
-* `baseLocation` *<small>optional</small>* (*[Location](/docs/api/junctions/Location)*): The parts of your URLs which must exist, but are ignored for routing purposes
+* `baseLocation` *<small>optional</small>* (*[Location](../junctions/Location.md)*): The parts of your URLs which must exist, but are ignored for routing purposes
 
 #### Child Context
 
 * `history` (*History*): A history object
 
-This component's context is managed by an internal [&lt;HistoryContext&gt;](HistoryContext) element.
+This component's context is managed by an internal [&lt;HistoryContext&gt;](HistoryContext.md) element.
 
 #### Example
 

@@ -6,11 +6,11 @@ title: Junction
 
 Junctions are objects which represents a number of possible *choices* -- for example, the choices on a tab bar, a navigation menu, or the choice between whether a modal is displayed or not.
 
-Within a `Junction` object, each *possibility* is represented by a *Branch* object. And within your application, a single *state* of a `Junction` is represent by a [Route](Route) object.
+Within a `Junction` object, each *possibility* is represented by a *Branch* object. And within your application, a single *state* of a `Junction` is represent by a [Route](Route.md) object.
 
-To create a `Junction`, use the [createJunction](createJunction) function. Once you have a Junction, use its [createRoute()](#createroutekey-params-next) method to create [Route](Route) objects which represent states of that Junction.
+To create a `Junction`, use the [createJunction](createJunction.md) function. Once you have a Junction, use its [createRoute()](#createroutekey-params-next) method to create [Route](Route.md) objects which represent states of that Junction.
 
-To learn more about what Junctions are and how they're used, read [Locations, Routes and Maps](/docs/introduction/locations-routes-and-maps) and [Junctions](/docs/basics/junctions) in the Junctions Guide.
+To learn more about what Junctions are and how they're used, read [Locations, Routes and Maps](../../introduction/locations-routes-and-maps.md) and [Junctions](../../basics/junctions.md) in the Junctions Guide.
 
 ### Component Junctions
 
@@ -128,13 +128,13 @@ Use this method when you need an arbitrary `Route` object. For example, when you
 
 * `key` (*string*): The key of the branch which this `Route` will follow
 * `params` *<small>optional</small>* (*object*): An object containing values of the created route's `params`
-* `...next` *<small>optional</small>* (*[Route](Route)]*): `Route` objects representing the state of the branch's `next` junctions
+* `...next` *<small>optional</small>* (*[Route](Route.md)]*): `Route` objects representing the state of the branch's `next` junctions
 
 *If you're familiar with [React.createElement()](https://facebook.github.io/react/docs/react-api.html#createelement), note that `createRoute()` uses exactly the same format. Theoretically, you could even create routes with JSX.*
 
 #### Returns
 
-(*[Route](Route)*)
+(*[Route](Route.md)*)
 
 #### Example
 

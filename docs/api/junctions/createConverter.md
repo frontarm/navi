@@ -4,22 +4,22 @@ title: createConverter
 
 # `createConverter(junction, [baseLocation])`
 
-Creates a [Converter](Converter) object to help convert between [Route](Route) and [Location](Location) objects.
+Creates a [Converter](Converter.md) object to help convert between [Route](Route.md) and [Location](Location.md) objects.
 
 #### Arguments
 
-* `junction` (*[Junction](Junction) | { [key]: [Junction](Junction) }*): The Junction or Junctions which specify the [map](/docs/introduction/locations-routes-and-maps) between Route and Location.
-* `baseLocation` *<small>optional</small>* (*[Location](Location)*): Location information which must be part of every `Location` object consumed and produced by this `Converter`.
+* `junction` (*[Junction](Junction.md) | { [key]: [Junction](Junction.md) }*): The Junction or Junctions which specify the [map](../../introduction/locations-routes-and-maps.md) between Route and Location.
+* `baseLocation` *<small>optional</small>* (*[Location](Location.md)*): Location information which must be part of every `Location` object consumed and produced by this `Converter`.
 
 #### Returns
 
-(*[Converter](Converter)*) A `Converter` object
+(*[Converter](Converter.md)*) A `Converter` object
 
 #### Examples
 
 ##### Typical Usage
 
-Pass a single [Junction](Junction), indicating that you expect [converter.route()](Converter#routelocation) to return a single `Route` for any input `Location`.
+Pass a single [Junction](Junction.md), indicating that you expect [converter.route()](Converter.md#routelocation) to return a single `Route` for any input `Location`.
 
 ```js
 // Create a Converter for a single Junction

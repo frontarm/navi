@@ -1,5 +1,4 @@
 ---
-title: The Haiku Of Routing Principles
 ---
 
 # The Haiku Of Routing Principles
@@ -74,5 +73,5 @@ Junctions avoids these issues by being completely agnostic as to how you use you
 
 But the best part? The conversion of your entire URL into `Route` objects can take place *outside* of any React component tree. This means that **Junctions will *never* get in the way of React.** Or Vue. Or Angular. Or whatever framework you choose to use it with.
 
-Now to be clear, this flexibility does come at a cost: out of the box, Junctions-based components are a tad more verbose than those written with competing routers. But to mitigate this, you get packages to integrate with frameworks, and docs which contain examples to follow. And even without these tools, *flexibility is less of a problem than you may think.* Because **Junctions gives you back control**. It lets you add your own sugar, so your routing is not too bland, not too sweet -- but just perfect for you. Which sounds great and all, but [how exactly does Junctions manage this?](what-you-get-from-junctions)
+Now to be clear, this flexibility does come at a cost: out of the box, Junctions-based components are a tad more verbose than those written with competing routers. But to mitigate this, you get packages to integrate with frameworks, and docs which contain examples to follow. And even without these tools, *flexibility is less of a problem than you may think.* Because **Junctions gives you back control**. It lets you add your own sugar, so your routing is not too bland, not too sweet -- but just perfect for you. Which sounds great and all, but [how exactly does Junctions manage this?](what-you-get-from-junctions.md)
 

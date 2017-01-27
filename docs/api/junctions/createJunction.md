@@ -4,7 +4,7 @@ title: createJunction
 
 # `createJunction(branches)`
 
-Creates a [Junction](Junction) object to specify the possible types of [Route](Route) which a component can handle. For more details on Junctions, see the [Locations, Routes and Maps](/docs/introduction/locations-routes-and-maps) or [Junctions](/docs/basics/junctions) articles in the Guide.
+Creates a [Junction](Junction.md) object to specify the possible types of [Route](Route.md) which a component can handle. For more details on Junctions, see the [Locations, Routes and Maps](../../introduction/locations-routes-and-maps.md) or [Junctions](../../basics/junctions.md) articles in the Guide.
 
 #### Arguments
 
@@ -28,9 +28,9 @@ Each `Branch` object contains configuration for one type of `Route`. It can incl
 
     If true, the Junction will default to this branch if no route is known. If a Junction does not specify a default, its state will default to `null`.
 
-*   `next` (*[Junction](Junction) | { [key]: [Junction](Junction) }*)
+*   `next` (*[Junction](Junction.md) | { [key]: [Junction](Junction.md) }*)
 
-    Specifies the subsequent types of routes which a route of this type can take. Like [createConverter](createConverter), specifying an object of Junctions will allow for one `Route` from each `Junction` to be active simultaneously.
+    Specifies the subsequent types of routes which a route of this type can take. Like [createConverter](createConverter.md), specifying an object of Junctions will allow for one `Route` from each `Junction` to be active simultaneously.
 
 *   `paramTypes` (*{ [key]: Param }*)
 

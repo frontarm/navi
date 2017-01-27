@@ -1,5 +1,4 @@
 ---
-title: Do I Need A Router?
 ---
 
 # Do I Need A Router?
