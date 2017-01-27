@@ -4,7 +4,7 @@ title: Converter
 
 # Converter
 
-Contains methods to convert between [Location](Location.md) and [Route](Route.md) objects. `Converter` objects are returned by the [createConverter](createConverter.md) function. 
+Contains methods to convert between [Location](Location) and [Route](Route.md) objects. `Converter` objects are returned by the [createConverter](createConverter.md) function. 
 
 You generally need exactly one `Converter` per application. This object will be in charge of turning the `Location` objects received from navigation events into `Route` objects.
 
