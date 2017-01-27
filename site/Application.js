@@ -23,7 +23,7 @@ function createSiteRoute(site, pageId) {
 }
 
 
-function Route({site, route, locate, navigateToPage}) {
+function Route({site, route, locate, navigateToPage, navigateToPath, currentLocation}) {
   const page = route.data.page
   const wrapperOptions = {
       root: site.root,
@@ -33,10 +33,17 @@ function Route({site, route, locate, navigateToPage}) {
   }
   let content
   if (route.next && route.next.data.page) {
-    content = <Route site={site} route={route.next} locate={route.locate} navigateToPage={navigateToPage} />
+    content = <Route
+      site={site}
+      route={route.next}
+      locate={route.locate}
+      navigateToPage={navigateToPage}
+      navigateToPath={navigateToPath}
+      currentLocation={currentLocation}
+    />
   }
   else {
-    content = React.createElement(page.contentWrapper, { page, navigateToPage })
+    content = React.createElement(page.contentWrapper, { currentLocation, page, navigateToPage, navigateToPath })
   }
 
   if (page != site.root && page.indexWrapper) {
@@ -78,13 +85,10 @@ export default class Application extends Component {
       <Router
         history={history}
         junction={site.root.junction}
-        render={({route, locate}) => {
-          //console.log("JUNCTIONS: Route changed to: ", route)
+        render={({route, converter}) => {
+          const currentLocation = history.location
 
-          function navigateToPage(url) {
-            const [pageId, hash] = url.split('#')
-            history.push(Object.assign({}, locate(createRoute(pageId)), { hash }))
-
+          function scrollToHash(hash) {
             const el = document.getElementById(hash)
             if (el) {
               el.scrollIntoView(true);
@@ -94,25 +98,55 @@ export default class Application extends Component {
             }
           }
 
+          function navigateToPage(url) {
+            const [pageId, hash] = url.split('#')
+            history.push(Object.assign({}, converter.locate(createRoute(pageId)), { hash }))
+            scrollToHash(hash)
+          }
+
+          function navigateToPath(url) {
+            const [path, hash] = url.split('#')
+            history.push({ pathname: path.replace(/\.[a-zA-Z]+$/, '') })
+            scrollToHash(hash)
+          }
+
           const content =
             route
-              ? <Route site={site} route={route} locate={locate} navigateToPage={navigateToPage} />
+              ? <Route
+                  site={site}
+                  route={route}
+                  locate={converter.locate}
+                  navigateToPage={navigateToPage}
+                  navigateToPath={navigateToPath}
+                  currentLocation={currentLocation}
+                />
               : (
                 route === null
-                  ? React.createElement(site.root.contentWrapper, { page: site.root, navigateToPage })
+                  ? React.createElement(site.root.contentWrapper, {
+                      page: site.root,
+                      navigateToPage,
+                      navigateToPath,
+                      currentLocation: currentLocation,
+                    })
                   : <h1>404 - Computer Says No</h1>
               )
           
           const wrappedContent = 
             site.root.indexWrapper
-              ? React.createElement(site.root.indexWrapper, { route, locate, root: site.root, page: site.root, children: content })
+              ? React.createElement(site.root.indexWrapper, {
+                  route,
+                  locate: converter.locate,
+                  root: site.root,
+                  page: site.root,
+                  children: content
+                })
               : content
 
           return (
             <Link.Context
               createRoute={createRoute}
               currentRoute={route}
-              locate={locate}>
+              converter={converter}>
               {wrappedContent}
             </Link.Context>
           )

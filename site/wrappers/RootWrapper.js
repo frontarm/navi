@@ -15,10 +15,10 @@ export default function RootWrapper({ root, page, route, locate, children }) {
     <div className='RootWrapper'>
       <div className='RootWrapper-header'>
         <div className='RootWrapper-header-inner'>
-          <Link page='/' className='RootWrapper-junctions'><div className='RootWrapper-junctions-logo' />Junctions</Link>
-          <Link page='/docs/introduction/do-i-need-a-router' view={<LinkView />}>Guide</Link>
-          <Link page='/examples/Raw' view={<LinkView />}>Examples</Link>
-          <Link page='/docs/api' view={<LinkView />}>API Reference</Link>
+          <Link href='/' className='RootWrapper-junctions'><div className='RootWrapper-junctions-logo' />Junctions</Link>
+          <Link href='/guide' view={<LinkView />}>Guide</Link>
+          <Link href='/examples' view={<LinkView />}>Examples</Link>
+          <Link href='/api' view={<LinkView />}>API Reference</Link>
           <a className='RootWrapper-link' href="https://github.com/jamesknelson/junctions">GitHub</a>
         </div>
       </div>

@@ -15,13 +15,13 @@ class LinkContext extends Component {
   static propTypes = {
     createRoute: PropTypes.func.isRequired,
     currentRoute: PropTypes.object,
-    locate: PropTypes.func.isRequired,
+    converter: PropTypes.object.isRequired,
   }
 
   static childContextTypes = {
     createRoute: PropTypes.func.isRequired,
     currentRoute: PropTypes.object,
-    locate: PropTypes.func.isRequired,
+    converter: PropTypes.object.isRequired,
   }
 
   getChildContext() {
@@ -29,7 +29,7 @@ class LinkContext extends Component {
     return {
       createRoute: props.createRoute,
       currentRoute: props.currentRoute,
-      locate: props.locate,
+      converter: props.converter,
     }
   }
 
@@ -50,7 +50,8 @@ class Link extends Component {
   static propTypes = {
     exact: PropTypes.bool,
     onClick: React.PropTypes.func,
-    page: PropTypes.string.isRequired,
+    page: PropTypes.string,
+    path: PropTypes.string,
     target: React.PropTypes.string,
     view: PropTypes.element.isRequired,
   }
@@ -58,7 +59,7 @@ class Link extends Component {
   static contextTypes = {
     createRoute: PropTypes.func.isRequired,
     currentRoute: PropTypes.object,
-    locate: PropTypes.func.isRequired,
+    converter: PropTypes.object.isRequired,
     history: PropTypes.object.isRequired,
   }
 
@@ -93,20 +94,36 @@ class Link extends Component {
 
     event.preventDefault()
 
-    const route = this.context.createRoute(this.props.page)
-    const location = this.context.locate(route)
+    let location
+    if (this.props.page) {
+      const route = this.context.createRoute(this.props.page)
+      location = this.context.converter.locate(route)
+    }
+    else if (this.props.href) {
+      location = { pathname: this.props.href }
+    }
 
     history.push(location)
   }
 
   render() {
-    const { history, page, view, exact, children, ...other } = this.props
-    
-    const route = this.context.createRoute(page)
-    const active = this.context.currentRoute && routesMatch(this.context.currentRoute, route, exact)
-    const location = this.context.locate(route)
-    const href = location.pathname + (location.search || '')
+    let { history, page, view, exact, children, ...other } = this.props
+    let href = this.props.href
+    let route
+    if (page) {
+      route = this.context.createRoute(page)
+      const location = this.context.converter.locate(route)
+      href = location.pathname + (location.search || '')
+    }
+    else if (href) {
+      route = this.context.converter.route({ pathname: href })
+    }
+    else {
+      console.warn('You have a <Link> with no `href` or `page` prop!')
+    }
 
+    const active = this.context.currentRoute && routesMatch(this.context.currentRoute, route, exact)
+    
     const element =
       <a
         {...other}

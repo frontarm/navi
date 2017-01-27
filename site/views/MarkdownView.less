@@ -5,30 +5,30 @@
 .MarkdownView {
   pre, code { font-family: Monaco, monospace; line-height: 1.5 }
   markdown { display: block; }
-  markdown pre { background: rgb(45, 45, 45); padding: 10px; border-radius: 3px; color: rgb(205, 205, 205); }
-  markdown pre code { font-size: 13px; white-space: pre-wrap; }
-  markdown code { font-size: 16px; }
-  markdown h1 { font-family: Monaco, monospace; margin: 40px 0 10px 0; font-size: 200%; }
-  markdown h2 { font-family: Monaco, monospace; margin: 30px 0 0 0; font-size: 150%; color: rgb(81, 81, 81); }
-  markdown h2 code { font-size: 100%; font-weight: 100; }
-  markdown h2 + p { margin-top: 10px; }
+  pre { background: rgb(45, 45, 45); padding: 10px; border-radius: 3px; color: rgb(205, 205, 205); }
+  pre code { font-size: 13px; white-space: pre-wrap; }
+  code { font-size: 16px; }
+  h1 { font-family: Monaco, monospace; margin: 40px 0 10px 0; font-size: 200%; }
+  h2 { font-family: Monaco, monospace; margin: 30px 0 0 0; font-size: 150%; color: rgb(81, 81, 81); }
+  h2 code { font-size: 100%; font-weight: 100; }
+  h2 + p { margin-top: 10px; }
 
-  markdown img + em {
+  img + em {
     display: block;
     text-align: center;
     font-size: 80%;
     margin-top: 10px;
   }
 
-  markdown li { margin: 4px 0; }
+  li { margin: 4px 0; }
 
-  markdown h1, h2, h3 { position: relative; }
-  markdown .header-anchor { position: absolute; left: -1em; top: 0.1em; color: #ccc; }
-  markdown .header-anchor:hover { color: rgb(45, 45, 45); }
+  h1, h2, h3 { position: relative; }
+  .header-anchor { position: absolute; left: -1em; top: 0.1em; color: #ccc; }
+  .header-anchor:hover { color: rgb(45, 45, 45); }
 
-  markdown p { margin: 1em 0; }
+  p { margin: 1em 0; }
 
-  markdown th {
+  th {
     border-bottom: 1px solid #f0f0f0;
     text-align: center;
     font-size: 80%;
@@ -36,14 +36,14 @@
     font-style: italic;
   }
 
-  markdown tr:nth-child(even) {
+  tr:nth-child(even) {
     background: #f0f0f0;
   }
 
-  markdown table td,
-  markdown table th {
+  table td,
+  table th {
     padding: 2px 4px;
   }
 
-  markdown a { color: @logo-color; text-decoration: none }
+  a { color: @logo-color; text-decoration: none }
 }

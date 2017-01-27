@@ -8,7 +8,7 @@ Creates a [Converter](Converter.md) object to help convert between [Route](Route
 
 #### Arguments
 
-* `junction` (*[Junction](Junction.md) | { [key]: [Junction](Junction.md) }*): The Junction or Junctions which specify the [map](../../introduction/locations-routes-and-maps.md) between Route and Location.
+* `junction` (*[Junction](Junction.md) | { [key]: [Junction](Junction.md) }*): The Junction or Junctions which specify the [map](../../guide/introduction/locations-routes-and-maps.md) between Route and Location.
 * `baseLocation` *<small>optional</small>* (*[Location](Location.md)*): Location information which must be part of every `Location` object consumed and produced by this `Converter`.
 
 #### Returns

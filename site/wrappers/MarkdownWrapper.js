@@ -1,23 +1,31 @@
-import React from 'react'
+import React, { Component } from 'react'
 import { PageContentLoader } from 'sitepack'
 import MarkdownView from '../views/MarkdownView'
+ 
 
+export default class MarkdownWrapper extends Component {
+  componentDidMount() {
+    document.title = this.props.page.title + ' - Junctions'
+  }
 
-export default function MarkdownWrapper({ page, navigateToPage }) {
-  return (
-    <PageContentLoader
-      page={page}
-      render={
-        <MarkdownView
-          onClickLink={(url) =>
-            navigateToPage(
-              url[0] == '/'
-                ? url
-                : [url].concat(page.id.split('/').reverse().slice(1)).reverse().join('/')
-            )
-          }
-        />
-      }
-    />
-  )
+  componentDidUpdate() {
+    document.title = this.props.page.title + ' - Junctions'  
+  }
+
+  render() {
+    const { currentLocation, page, navigateToPath } = this.props
+  
+    return (
+      <PageContentLoader
+        page={page}
+        render={
+          <MarkdownView
+            currentLocation={currentLocation}
+            title={page.title}
+            onClickLink={navigateToPath}
+          />
+        }
+      />
+    )
+  }
 }

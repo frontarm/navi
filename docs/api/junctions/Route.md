@@ -4,7 +4,7 @@ title: Route
 
 # Route
 
-Routes are objects which represent a single state of a [Junction](Junction.md). To learn more about what Routes are and how they're used, read [Locations, Routes and Maps](../../guide/introduction/locations-routes-and-maps.md) and [Routes](../../guide/basics/routes.md) in the Junctions Guide.
+Routes are objects which represent a single state of a [Junction](Junction.md). To learn more about what Routes are and how they're used, read [What You Get From Junctions](../../guide/introduction/what-you-get-from-junctions.md) and [Routes](../../guide/basics/routes.md) in the Junctions Guide.
 
 Route objects are most commonly used as props of your components. By checking a [Screen Component](../../guide/basics/the-screen-pattern.md)'s `route` prop, you can decide what content that screen should render.
 

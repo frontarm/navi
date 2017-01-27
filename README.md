@@ -12,7 +12,7 @@ Why use Junctions?
 
 The best way to understand Junctions is to see it in action. With that in mind, the [Junctions Website](https://junctions.js.org) uses Junctions underneath the hood -- and logs relevant details to the console as you navigate. If you're viewing the website right now, open your developer console to take a look.
 
-There are also a number of live demos with source. Take a look at the [Raw](https://junctions.js.org/examples/Raw) example to see how Junctions works without any React-specific helper components, or see [Basic](https://junctions.js.org/examples/Basic) for a typical example.
+There are also a number of live demos with source. Take a look at the [Raw](/examples/Raw) example to see how Junctions works without any React-specific helper components, or see [Basic](/examples/Basic) for a typical example.
 
 ## Installation
 
@@ -22,7 +22,7 @@ At minimum, you'll need the junctions package
 npm install junctions --save
 ```
 
-If you want [&lt;Link&gt;](https://junctions.js.org/api/react-junctions/Link) and [&lt;Router&gt;](https://junctions.js.org/api/react-junctions/Router) components to help integrating with React, install `react-junctions`
+If you want [&lt;Link&gt;](/api/react-junctions/Link) and [&lt;Router&gt;](/api/react-junctions/Router) components to help integrating with React, install `react-junctions`
 
 ```bash
 npm install react-junctions --save
@@ -37,9 +37,9 @@ Alternatively, use plain-ol' script tags with unpkg.
 
 ## Getting Started
 
-But before starting, ask yourself -- do you really *need* a Router? The [Introduction](https://junctions.js.org/guide/introduction/do-i-need-a-router) covers this, before introducing the three main concepts you'll use with Junctions.
+But before starting, ask yourself -- do you really *need* a Router? The [Introduction](/guide/introduction/do-i-need-a-router) covers this, before introducing the three main concepts you'll use with Junctions.
 
-The next step is practice. The [Basics](https://junctions.js.org/guide/basics/Locations) section of the Guide will walk you through using the most important tools which Junctions provides, finishing with a full Example.
+The next step is practice. The [Basics](/guide/basics/Locations) section of the Guide will walk you through using the most important tools which Junctions provides, finishing with a full Example.
 
 ## Contributing
 
