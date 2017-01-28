@@ -23,7 +23,7 @@ export function configurePage(page) {
     'Junctions.js - Composable routing build from the ground up for React'
   config.metaImage =
     page.metaImage ||
-    'https://junctions.js.org/logo.png'
+    'https://junctions.js.org/logo.png?1'
 
   if (page.contentWrapper) {
     config.contentWrapper = require('./wrappers/'+page.contentWrapper+'.js').default
