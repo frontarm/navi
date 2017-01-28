@@ -25,7 +25,14 @@ export default function RootWrapper({ root, page, route, locate, children }) {
         </div>
       </div>
       <div className='RootWrapper-body'>
-        <div>{children}</div>
+        <div>
+          { !route &&
+            <h1>
+              Junctions: Routing You Can Follow.
+            </h1>
+          }
+          {children}
+        </div>
       </div>
       <div className='RootWrapper-footer'>
         Copyright &copy; 2017 <a href="http://www.jamesknelson.com">James K Nelson</a>

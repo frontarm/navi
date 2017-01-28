@@ -12,6 +12,16 @@
   h2 code { font-size: 100%; font-weight: 100; }
   h2 + p { margin-top: 10px; }
 
+  @media @narrow-break {
+    &-title {
+      display: none;
+    }
+  }
+
+  img {
+    position: relative;
+    max-width: 100%;
+  }
   img + em {
     display: block;
     text-align: center;

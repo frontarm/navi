@@ -48,7 +48,7 @@ function Route({site, route, hash, locate, navigateToPage, navigateToPath}) {
     if (ExecutionEnvironment.canUseDOM) {
       document.title = page.htmlTitle
     }
-    content = React.createElement(page.contentWrapper, { page, hash, navigateToPage, navigateToPath })
+    content = React.createElement(page.contentWrapper, { page, hash, route, navigateToPage, navigateToPath })
   }
 
   if (page != site.root && page.indexWrapper) {
@@ -115,6 +115,7 @@ export default class Application extends Component {
                   ? React.createElement(site.root.contentWrapper, {
                       page: site.root,
                       hash: history.location.hash,
+                      route: route,
                       navigateToPage,
                       navigateToPath,
                     })
@@ -128,6 +129,7 @@ export default class Application extends Component {
                   locate: converter.locate,
                   root: site.root,
                   page: site.root,
+                  route: route,
                   children: content
                 })
               : content

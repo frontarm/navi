@@ -63,10 +63,6 @@ export default class MarkdownView extends Component {
   render() {
     return (
       <div className='MarkdownView' ref='html'>
-        <h1>
-          <a className="header-anchor" href="#top" aria-hidden="true">#</a>
-          {this.props.title}
-        </h1>
         <CommunicationStateView
           isLoading={this.props.isLoading}
           error={this.props.error}

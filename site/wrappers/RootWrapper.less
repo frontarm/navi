@@ -4,6 +4,19 @@
   min-height: 100%;
   background-color: desaturate(fade(@logo-color, 3%), 70%);
 
+  h1 {
+    font-size: 30px;
+    font-weight: 600;
+    font-family: Monaco, monospace;
+
+    @media @narrow-break {
+      margin-top: 20px;
+    }
+    @media @wide-break {
+      margin-top: 30px;
+    }
+  }
+
   &-header {
     position: absolute;
     top: 0;
@@ -117,13 +130,13 @@
   }
 
   &-body {
-    padding: 50px 10px;
+    padding: 50px 15px;
     max-width: 900px;
     min-height: 100%;
     margin: 0 auto;
     
     @media @narrow-break {
-      padding-top: 100px;
+      padding-top: 90px;
     }
   }
 
