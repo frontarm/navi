@@ -1,4 +1,4 @@
-@mobile-break: ~"only screen and (max-width: 510px)"; 
+@import (reference) "../theme.less";
 
 .ExampleWrapper {
   h2 {
@@ -7,7 +7,7 @@
     font-size: 16px;
 
     margin: 40px 0 10px;
-    @media @mobile-break {
+    @media @narrow-break {
       margin: 5px 0 10px;
     }
   }

@@ -1,12 +1,11 @@
-@logo-color: #10b068;
-@mobile-break: ~"only screen and (max-width: 700px)"; 
+@import (reference) "../theme.less";
 
 .MenuWrapper {
   &-sidebar {
     width: 250px;
     float: left;
 
-    @media @mobile-break {
+    @media @narrow-break {
       width: 100px;
       float: none;
       width: 100%;
@@ -19,7 +18,7 @@
     min-height: 100%;
     padding-top: 1px;
 
-    @media @mobile-break {
+    @media @narrow-break {
       margin-left:0;
       .header-anchor {
         display: none;
@@ -32,14 +31,14 @@
     margin: 50px 0 0 0;
     list-style: none;
 
-    @media @mobile-break {
+    @media @narrow-break {
       margin: 35px 0 0 0;
     }
 
     > li {
       margin-bottom: 10px;
 
-      @media @mobile-break {
+      @media @narrow-break {
         margin-bottom: 20px;
         display: inline-block;
         margin-right:10px;
@@ -53,14 +52,14 @@
     list-style: none;
     margin-bottom: 20px;
     
-    @media @mobile-break {
+    @media @narrow-break {
       display: block;
     }
 
     > li {
       margin: 5px 0;
 
-      @media @mobile-break {
+      @media @narrow-break {
         margin: 10px 0;
       }
     }

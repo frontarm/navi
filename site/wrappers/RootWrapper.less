@@ -1,5 +1,4 @@
-@logo-color: #10b068;
-@mobile-break: ~"only screen and (max-width: 510px)"; 
+@import (reference) "../theme.less";
 
 .RootWrapper {
   min-height: 100%;
@@ -15,13 +14,105 @@
     &-inner {
       max-width: 900px;
       margin: 0 auto;
-      text-align: right;
       line-height: 50px;
     
-      @media @mobile-break {
-        text-align: center;
+      @media @narrow-break {
+        display: block;
       }
+      @media @wide-break {
+        display: flex;
+      }
+    }
+  }
 
+  &-junctions {
+    &-logo {
+      display: block;
+      float: left;
+      background: url('../../media/logo-80x80.png') no-repeat;
+      vertical-align: middle;
+      width: 50px;
+      height: 50px;
+      background-size: 40px 40px;
+      background-position: 5px 7px;
+
+      @media @narrow-break {
+        background-size: 30px 30px;
+        background-position: 10px 10px;
+        width: 45px;
+      }
+    }
+
+    text-decoration: none;
+    line-height: 50px;
+    color: #333;
+    font-size: 24px;
+    font-weight: 500;
+    text-align: left;
+
+
+    @media @narrow-break {
+      font-size: 18px;
+    }
+    @media @wide-break {
+      order: 1;
+      flex-grow: 1;
+    }
+  }
+  &-links {
+    display: flex;
+    order: 2;
+
+    @media @narrow-break {
+      line-height: 40px;
+    }
+    @media @wide-break {
+      height: 50px;
+    }
+  }
+  &-link {
+    display: block;
+    flex-grow: 1;
+
+    text-align: center;
+    text-decoration: none;
+    color: #666;
+    font-weight: 400;
+
+    @media @narrow-break {
+      font-size: 14px;
+      flex-basis: 100px;
+    }
+    @media @wide-break {
+      padding: 0 10px;
+      font-size: 16px;
+    }
+
+    transition: color 50ms ease-out;
+    &-active {
+      border-bottom: 2px solid @logo-color;
+    }
+    &:hover {
+      color: black;
+    }
+  }
+  &-github {
+    text-decoration: none;
+    color: #666;
+    &:hover {
+      color: black;
+    }
+
+    @media @narrow-break {
+      float: right;
+      margin-right: 15px;
+      font-size: 14px;
+    }
+    @media @wide-break {
+      display: block;
+      order: 3;
+      margin: 0 15px;
+      font-size: 15px;
     }
   }
 
@@ -31,32 +122,8 @@
     min-height: 100%;
     margin: 0 auto;
     
-    @media @mobile-break {
+    @media @narrow-break {
       padding-top: 100px;
-    }
-  }
-
-  &-junctions {
-    &-logo {
-      display: inline-block;
-      background: url('../../media/logo-80x80.png') no-repeat;
-      background-size: 40px 40px;
-      background-position: 5px 5px;
-      width: 50px;
-      height: 50px;
-      vertical-align: middle;
-    }
-
-    text-decoration: none;
-    line-height: 50px;
-    color: #333;
-    font-size: 24px;
-    font-weight: 500;
-    float: left;
-
-    @media @mobile-break {
-        text-align:center;
-        width:100%;
     }
   }
 
@@ -70,24 +137,6 @@
 
     a {
       color: #888;
-    }
-  }
-
-  &-link {
-    display: inline-block;
-    text-decoration: none;
-    height: 50px;
-    color: #666;
-    font-size: 16px;
-    font-weight: 400;
-    padding: 0 10px;
-
-    transition: color 50ms ease-out;
-    &-active {
-      color: @logo-color;
-    }
-    &:hover {
-      color: @logo-color;
     }
   }
 }
