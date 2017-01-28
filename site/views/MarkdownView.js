@@ -48,28 +48,28 @@ export default class MarkdownView extends Component {
 
   render() {
     let html = this.props.content
-    if (html) {
-      let parts = html.split(/%SITEPACK_LINK|END_SITEPACK_LINK%/)
-      for (let i = 0; i < parts.length; i++) {
-        let part = parts[i]
-        if (part[0] == '%' && part[part.length - 1] == '%') {
-          part = part.substr(1, part.length-2)
-          if (part[0] === '#' || part.substr(0, 4) === 'http') {
-            parts[i] = part
-            continue
-          }
-          const [path, hash] = part.split('#')
-          let absolutePath =
-            path[0] === '/'
-              ? path
-              : resolve(this.props.currentLocation.pathname, '..', path)
-          absolutePath = absolutePath.replace(/\.[a-zA-Z]+$/, '')
-          if (hash) absolutePath += '#'+hash
-          parts[i] = absolutePath
-        }
-      }
-      html = parts.join('')
-    }
+    // if (html) {
+    //   let parts = html.split(/%SITEPACK_LINK|END_SITEPACK_LINK%/)
+    //   for (let i = 0; i < parts.length; i++) {
+    //     let part = parts[i]
+    //     if (part[0] == '%' && part[part.length - 1] == '%') {
+    //       part = part.substr(1, part.length-2)
+    //       if (part[0] === '#' || part.substr(0, 4) === 'http') {
+    //         parts[i] = part
+    //         continue
+    //       }
+    //       const [path, hash] = part.split('#')
+    //       let absolutePath =
+    //         path[0] === '/'
+    //           ? path
+    //           : resolve(this.props.currentLocation.pathname, '..', path)
+    //       absolutePath = absolutePath.replace(/\.[a-zA-Z]+$/, '')
+    //       if (hash) absolutePath += '#'+hash
+    //       parts[i] = absolutePath
+    //     }
+    //   }
+    //   html = parts.join('')
+    // }
 
     return (
       <div className='MarkdownView' ref='html'>
