@@ -1,6 +1,3 @@
----
----
-
 # What You Get From Junctions
 
 So far, we've covered what you get from Junctions in a rather general sense:
@@ -23,7 +20,7 @@ It turns out that these three tools are all you'll need to write a Junctions app
 
 ## Routes Ain't Locations
 
-The best way to understand a `Route` object is to compare it to the `Location` objects that we first encountered in [Do I Need A Router?](do-i-need-a-router.md). Recall that [Location](../../api/junctions/Location.md) objects each hold a single URL and some arbitrary state:
+The best way to understand a `Route` object is to compare it to the `Location` objects that we first encountered in [Do I Need A Router?](do-i-need-a-router.md). Recall that [Location](/docs/api/junctions/Location.md) objects each hold a single URL and some arbitrary state:
 
 ```js
 {

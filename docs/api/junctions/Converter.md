@@ -4,7 +4,7 @@ title: Converter
 
 # Converter
 
-Contains methods to convert between [Location](./Location.md) and [Route](Route.md) objects. `Converter` objects are returned by the [createConverter](createConverter.md) function. 
+Contains methods to convert between [Location](Location.md) and [Route](Route.md) objects. `Converter` objects are returned by the [createConverter](createConverter.md) function. 
 
 You generally need exactly one `Converter` per application. This object will be in charge of turning the `Location` objects received from navigation events into `Route` objects.
 
@@ -14,7 +14,7 @@ You generally need exactly one `Converter` per application. This object will be 
 
 Convert `Route` objects to a `Location` object.
 
-Use this method when you have a `Route` which you'd like to navigate, but you need a `Location` to actually perform this navigation. For example, this may occur when you want to call [history.push()](https://github.com/mjackson/history#navigation), or when you want to pass a route to a [&lt;Link&gt;](../../api/react-junctions/Link.md).
+Use this method when you have a `Route` which you'd like to navigate, but you need a `Location` to actually perform this navigation. For example, this may occur when you want to call [history.push()](https://github.com/mjackson/history#navigation), or when you want to pass a route to a [&lt;Link&gt;](/docs/api/react-junctions/Link.md).
 
 #### Arguments
 

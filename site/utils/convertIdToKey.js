@@ -3,5 +3,5 @@ function camelize(string) {
 }
 
 export default function convertIdToKey(id) {
-  return camelize(id.split('/').reverse()[0])
+  return camelize(id.replace(/\.[a-zA-Z\.]+$/, '').split('/').reverse()[0])
 }

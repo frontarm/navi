@@ -1,6 +1,3 @@
----
----
-
 # Do I Need A Router?
 
 So you've decided to build a new React app. And usually, your first step would be to add a routing library. *But do you really need one?*

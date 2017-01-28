@@ -1,9 +1,6 @@
----
----
-
 # Canonical Location
 
-Not every URL which your application receives is going to be valid. Similarly, not every URL which you *produce* is going to be exactly the same as where you end up. In particular, if your junction tree has default branches or default parameters, the [Route](../../api/junctions/Route.md) the converter produces may not match the [Location](../../api/junctions/Location.md) which it received.
+Not every URL which your application receives is going to be valid. Similarly, not every URL which you *produce* is going to be exactly the same as where you end up. In particular, if your junction tree has default branches or default parameters, the [Route](/docs/api/junctions/Route.md) the converter produces may not match the [Location](/docs/api/junctions/Location.md) which it received.
 
 To get around this, Junctions uses the concept of a **Canonical Location**. This is the single `Location` which will be *produced* by any `Route` when fed to `getLocation`, as opposed to the many `Location` objects which can be fed into `getRouteSet` to produce that same `Route`.
 

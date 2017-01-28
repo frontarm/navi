@@ -42,14 +42,6 @@ export default class ExampleWrapper extends Component {
     }
   }
 
-  componentDidMount() {
-    document.title = this.props.page.title + ' - Junctions'
-  }
-
-  componentDidUpdate() {
-    document.title = this.props.page.title + ' - Junctions'
-  }
-
   render() {
     return (
       <PageContentLoader

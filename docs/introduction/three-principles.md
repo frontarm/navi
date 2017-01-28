@@ -1,6 +1,3 @@
----
----
-
 # The Haiku Of Routing Principles
 
 Junctions was originally designed in response to the requirements of a real production application. And as it turns out, these same requirements can be summarised as a haiku.

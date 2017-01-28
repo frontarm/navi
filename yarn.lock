@@ -1956,6 +1956,10 @@ eventsource@^0.1.3:
   dependencies:
     original ">=0.0.5"
 
+exenv@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/exenv/-/exenv-1.2.1.tgz#75de1c8dee02e952b102aa17f8875973e0df14f9"
+
 expand-brackets@^0.1.4:
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/expand-brackets/-/expand-brackets-0.1.5.tgz#df07284e342a807cd733ac5af72411e581d1177b"
@@ -3806,11 +3810,7 @@ react-dom@^15.4.2:
     loose-envify "^1.1.0"
     object-assign "^4.1.0"
 
-react-junctions@^0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/react-junctions/-/react-junctions-0.3.2.tgz#53f5ba15f0aacc03c3f7b94397aa652029f6fd26"
-
-react-junctions@^0.3.3:
+react-junctions@^0.3.2, react-junctions@^0.3.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/react-junctions/-/react-junctions-0.3.3.tgz#0e1ff3f196c6572a8e4b6c776c31649052989b2f"
 

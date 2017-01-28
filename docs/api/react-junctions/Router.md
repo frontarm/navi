@@ -33,7 +33,7 @@ This component's context is managed by an internal [&lt;HistoryContext&gt;](Hist
 
 Most of this website's live examples use a `<Router>` component to handle routing.
 
-In particular, the [Base Location](/examples/BaseLocation.js) example includes a `<Router>` with `baseLocation`. View this page to see the `AppScreen` component which is used below.
+In particular, the [Base Location](/examples/BaseLocation.example.js) example includes a `<Router>` with `baseLocation`. View this page to see the `AppScreen` component which is used below.
 
 ```js
 // By providing a `baseLocation` prop with the '/mountpoint' pathname, we

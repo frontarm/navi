@@ -6,10 +6,10 @@ Junctions was designed to work great with React -- without being tied to it. To 
 
 The core package is called [junctions](https://github.com/jamesknelson/react). It contains the important parts. In particular:
 
-- [createJunction](/api/junctions/createJunction.md), used to define new [Junction](/api/junctions/Junction.md) objects
-- [createConverter](/api/junctions/createConverter.md), used to create your application-wide [Converter](/api/junctions/Converter.md) object
-- [routesMatch](/api/junctions/routesMatch.md), used to check if two [Route](/api/junctions/Route.md) objects are equivalent
-- [locationsEqual](/api/junctions/locationsEqual.md), used to check if two [Location](/api/junctions/Location.md) objects are exactly equal
+- [createJunction](./junctions/createJunction.md), used to define new [Junction](./junctions/Junction.md) objects
+- [createConverter](./junctions/createConverter.md), used to create your application-wide [Converter](./junctions/Converter.md) object
+- [routesMatch](./junctions/routesMatch.md), used to check if two [Route](./junctions/Route.md) objects are equivalent
+- [locationsEqual](./junctions/locationsEqual.md), used to check if two [Location](./junctions/Location.md) objects are exactly equal
 
 ## Integration packages
 

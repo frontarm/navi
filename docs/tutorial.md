@@ -1,5 +1,3 @@
----
----
 # Tutorial
 
 This guide will walk you through putting together a small React app from scratch using Junctions and [create-react-app](https://github.com/facebookincubator/create-react-app).
@@ -89,7 +87,7 @@ Of course, writing this out for each link would be traumatic. And it wouldn't be
 
 The `<Link>` component provided by `react-junctions` takes two parameters:
 
-- `to`: A [Location](../api/junctions/Location.md) object specifying where the Link points top
+- `to`: A [Location](./api/junctions/Location.md) object specifying where the Link points top
 - `history`: An optional `history` object whose `push()` method should be called
 
 Let's replace the existing `<a>` tags with `<Link>` elements:

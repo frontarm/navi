@@ -1,5 +1,6 @@
 module.exports = {
   title: 'Guide',
+  path: 'guide',
   indexWrapper: 'MenuWrapper',
   content: require('./tutorial.md'),
   index: [

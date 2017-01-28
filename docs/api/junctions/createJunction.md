@@ -4,7 +4,7 @@ title: createJunction
 
 # `createJunction(branches)`
 
-Creates a [Junction](Junction.md) object to specify the possible types of [Route](Route.md) which a component can handle. For more details on Junctions, see the [Locations, Routes and Maps](../../guide/introduction/locations-routes-and-maps.md) or [Junctions](../../guide/basics/junctions.md) articles in the Guide.
+Creates a [Junction](Junction.md) object to specify the possible types of [Route](Route.md) which a component can handle. For more details on Junctions, see the [What You Get From Junctions](/docs/introduction/what-you-get-from-junctions.md) or [Junctions](/docs/basics/junctions.md) articles in the Guide.
 
 #### Arguments
 

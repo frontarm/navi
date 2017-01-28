@@ -4,9 +4,9 @@ title: Route
 
 # Route
 
-Routes are objects which represent a single state of a [Junction](Junction.md). To learn more about what Routes are and how they're used, read [What You Get From Junctions](../../guide/introduction/what-you-get-from-junctions.md) and [Routes](../../guide/basics/routes.md) in the Junctions Guide.
+Routes are objects which represent a single state of a [Junction](Junction.md). To learn more about what Routes are and how they're used, read [What You Get From Junctions](/docs/introduction/what-you-get-from-junctions.md) and [Routes](/docs/basics/routes.md) in the Junctions Guide.
 
-Route objects are most commonly used as props of your components. By checking a [Screen Component](../../guide/basics/the-screen-pattern.md)'s `route` prop, you can decide what content that screen should render.
+Route objects are most commonly used as props of your components. By checking a [Screen Component](/docs/basics/the-screen-pattern.md)'s `route` prop, you can decide what content that screen should render.
 
 Routes are also used as a way of referring to arbitrary locations within your application. They can be used in combination with a `Converter` or `LocatedRoute` object's [locate()](#locateroutes) method to produce [Location](Location.md) objects used for navigating.
 
@@ -92,4 +92,4 @@ Create a new [Location](Location.md) from the Location of this [Route](Route.md)
 
 #### Example
 
-The `locate` method of a `LocatedRoute` is often passed to child components along with the route's `next` route. This allows child components to create `Location` objects linking within the component -- without knowing where in the application the component is mounted. For more details, read [The Screen Pattern](../../guide/basics/the-screen-pattern.md) in the Junctions Guide.
+The `locate` method of a `LocatedRoute` is often passed to child components along with the route's `next` route. This allows child components to create `Location` objects linking within the component -- without knowing where in the application the component is mounted. For more details, read [The Screen Pattern](/docs/basics/the-screen-pattern.md) in the Junctions Guide.

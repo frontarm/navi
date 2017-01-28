@@ -1,6 +1,3 @@
----
----
-
 # Motivation
 
 It was pretty normal day in Tokyo when I received a request from a client. "I'd like this application screen to be a React Component. And I want it to be reusable." 

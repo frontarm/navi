@@ -10,7 +10,7 @@ Within a `Junction` object, each *possibility* is represented by a *Branch* obje
 
 To create a `Junction`, use the [createJunction](createJunction.md) function. Once you have a Junction, use its [createRoute()](#createroutekey-params-next) method to create [Route](Route.md) objects which represent states of that Junction.
 
-To learn more about what Junctions are and how they're used, read [Locations, Routes and Maps](../../guide/introduction/locations-routes-and-maps.md) and [Junctions](../../guide/basics/junctions.md) in the Junctions Guide.
+To learn more about what Junctions are and how they're used, read [What You Get From Junctions](/docs/introduction/what-you-get-from-junctions.md) and [Junctions](/docs/basics/junctions.md) in the Junctions Guide.
 
 ### Component Junctions
 
@@ -34,7 +34,7 @@ class ApplicationScreen extends React.Component {
 }
 ```
 
-*See a similar in use at the [Raw](/examples/Raw.js) live example!*
+*See a similar in use at the [Raw](/examples/Raw.example.js) live example!*
 
 ### Composing Junctions
 

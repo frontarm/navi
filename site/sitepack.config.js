@@ -16,6 +16,8 @@ export function getRootSite() {
 export function configurePage(page) {
   const config = {}
 
+  config.htmlTitle = page.htmlTitle || (page.title + ' - Junctions')
+
   if (page.contentWrapper) {
     config.contentWrapper = require('./wrappers/'+page.contentWrapper+'.js').default
   }

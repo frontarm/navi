@@ -12,7 +12,7 @@ module.exports = (pattern) => {
     content: require('./README.md'),
     index: [
       require('./examples/SITE.js'),
-      require('./docs/guide/SITE.js'),
+      require('./docs/SITE.js'),
       require('./docs/api/SITE.js'),
     ]
   }

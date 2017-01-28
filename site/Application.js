@@ -1,4 +1,5 @@
 import React, { Component, PropTypes } from 'react'
+import ExecutionEnvironment from 'exenv'
 import Junctions from 'junctions'
 import ReactJunctions, { Router } from 'react-junctions'
 import convertIdToKey from './utils/convertIdToKey'
@@ -23,7 +24,7 @@ function createSiteRoute(site, pageId) {
 }
 
 
-function Route({site, route, locate, navigateToPage, navigateToPath, currentLocation}) {
+function Route({site, route, hash, locate, navigateToPage, navigateToPath}) {
   const page = route.data.page
   const wrapperOptions = {
       root: site.root,
@@ -33,17 +34,21 @@ function Route({site, route, locate, navigateToPage, navigateToPath, currentLoca
   }
   let content
   if (route.next && route.next.data.page) {
-    content = <Route
-      site={site}
-      route={route.next}
-      locate={route.locate}
-      navigateToPage={navigateToPage}
-      navigateToPath={navigateToPath}
-      currentLocation={currentLocation}
-    />
+    content =
+      <Route
+        site={site}
+        route={route.next}
+        hash={hash}
+        locate={route.locate}
+        navigateToPage={navigateToPage}
+        navigateToPath={navigateToPath}
+      />
   }
   else {
-    content = React.createElement(page.contentWrapper, { currentLocation, page, navigateToPage, navigateToPath })
+    if (ExecutionEnvironment.canUseDOM) {
+      document.title = page.htmlTitle
+    }
+    content = React.createElement(page.contentWrapper, { page, hash, navigateToPage, navigateToPath })
   }
 
   if (page != site.root && page.indexWrapper) {
@@ -53,7 +58,6 @@ function Route({site, route, locate, navigateToPage, navigateToPath, currentLoca
     return content
   }
 }
-
 
 export default class Application extends Component {
   componentDidMount() {
@@ -86,28 +90,14 @@ export default class Application extends Component {
         history={history}
         junction={site.root.junction}
         render={({route, converter}) => {
-          const currentLocation = history.location
-
-          function scrollToHash(hash) {
-            const el = document.getElementById(hash)
-            if (el) {
-              el.scrollIntoView(true);
-            }
-            else {
-              window.scroll(0, 0)
-            }
-          }
-
           function navigateToPage(url) {
             const [pageId, hash] = url.split('#')
             history.push(Object.assign({}, converter.locate(createRoute(pageId)), { hash }))
-            scrollToHash(hash)
           }
 
           function navigateToPath(url) {
             const [path, hash] = url.split('#')
-            history.push({ pathname: path.replace(/\.[a-zA-Z]+$/, '') })
-            scrollToHash(hash)
+            history.push({ pathname: path.replace(/\.[a-zA-Z]+$/, ''), hash })
           }
 
           const content =
@@ -115,18 +105,18 @@ export default class Application extends Component {
               ? <Route
                   site={site}
                   route={route}
+                  hash={history.location.hash}
                   locate={converter.locate}
                   navigateToPage={navigateToPage}
                   navigateToPath={navigateToPath}
-                  currentLocation={currentLocation}
                 />
               : (
                 route === null
                   ? React.createElement(site.root.contentWrapper, {
                       page: site.root,
+                      hash: history.location.hash,
                       navigateToPage,
                       navigateToPath,
-                      currentLocation: currentLocation,
                     })
                   : <h1>404 - Computer Says No</h1>
               )

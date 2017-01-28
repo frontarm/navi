@@ -32,7 +32,7 @@ export default class MarkdownView extends Component {
     const nodeList = this.refs.html.querySelectorAll("a")
     for (let node of nodeList) {
       const href = node.attributes.href
-      if (href && href.value.substr(0, 4) !== 'http' && /[\.\/a-zA-Z]/.test(href.value[0])) {
+      if (href && href.value.indexOf('://') === -1 && href[0] !== '#') {
         node.onclick = this.handleClickLink
       }
     }
@@ -42,35 +42,25 @@ export default class MarkdownView extends Component {
     this.setupLinks()
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
     this.setupLinks()
+
+    const hash = this.props.hash
+    if (hash &&
+        (prevProps.hash !== hash ||
+        prevProps.isLoading && !this.props.isLoading)) {
+
+      const el = document.getElementById(hash.slice(1))
+      if (el) {
+        el.scrollIntoView(true);
+      }
+      else {
+        window.scroll(0, 0)
+      }
+    }
   }
 
   render() {
-    let html = this.props.content
-    // if (html) {
-    //   let parts = html.split(/%SITEPACK_LINK|END_SITEPACK_LINK%/)
-    //   for (let i = 0; i < parts.length; i++) {
-    //     let part = parts[i]
-    //     if (part[0] == '%' && part[part.length - 1] == '%') {
-    //       part = part.substr(1, part.length-2)
-    //       if (part[0] === '#' || part.substr(0, 4) === 'http') {
-    //         parts[i] = part
-    //         continue
-    //       }
-    //       const [path, hash] = part.split('#')
-    //       let absolutePath =
-    //         path[0] === '/'
-    //           ? path
-    //           : resolve(this.props.currentLocation.pathname, '..', path)
-    //       absolutePath = absolutePath.replace(/\.[a-zA-Z]+$/, '')
-    //       if (hash) absolutePath += '#'+hash
-    //       parts[i] = absolutePath
-    //     }
-    //   }
-    //   html = parts.join('')
-    // }
-
     return (
       <div className='MarkdownView' ref='html'>
         <h1>
@@ -81,7 +71,7 @@ export default class MarkdownView extends Component {
           isLoading={this.props.isLoading}
           error={this.props.error}
         />
-        <markdown dangerouslySetInnerHTML={{ __html: html }} />
+        <markdown dangerouslySetInnerHTML={{ __html: this.props.content }} />
       </div>
     )
   }
