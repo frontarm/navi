@@ -40,6 +40,17 @@ export default class MarkdownView extends Component {
 
   componentDidMount() {
     this.setupLinks()
+
+    const hash = this.props.hash
+    if (hash && !this.props.isLoading) {
+      const el = document.getElementById(hash.slice(1))
+      if (el) {
+        el.scrollIntoView(true);
+      }
+    }
+    else {
+      window.scroll(0, 0)
+    }
   }
 
   componentDidUpdate(prevProps) {
