@@ -10,6 +10,8 @@ module.exports = (pattern) => {
     title: 'Junctions',
     indexWrapper: 'RootWrapper',
     content: require('./README.md'),
+    metaTitle: "Junctions.js",
+    metaDescription: "Composable routing build from the ground up for React",
     index: [
       require('./examples/SITE.js'),
       require('./docs/SITE.js'),

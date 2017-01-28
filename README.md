@@ -1,7 +1,3 @@
----
-metaTitle: Junctions.js
-metaDescription: Composable routing build from the ground up for React
----
 # Junctions: Routing You Can Follow.
 
 Junctions is a router built from the ground up for React.
