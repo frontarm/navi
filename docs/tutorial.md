@@ -1,3 +1,7 @@
+---
+metaTitle: Learn junctions.js with create-react-app
+metaDescription: A step-by-step tutorial that will teach you how to create a small app using Junctions and create-react-app.
+---
 # Tutorial
 
 This guide will walk you through putting together a small React app from scratch using Junctions and [create-react-app](https://github.com/facebookincubator/create-react-app).

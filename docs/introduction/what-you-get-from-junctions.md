@@ -1,3 +1,6 @@
+---
+metaDescription: Junctions.js gives you three tools that make your life as a React developer easier.
+---
 # What You Get From Junctions
 
 So far, we've covered what you get from Junctions in a rather general sense:

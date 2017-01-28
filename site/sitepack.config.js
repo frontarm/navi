@@ -17,6 +17,13 @@ export function configurePage(page) {
   const config = {}
 
   config.htmlTitle = page.htmlTitle || (page.title + ' - Junctions')
+  config.metaTitle = page.metaTitle || page.title
+  config.metaDescription =
+    page.metaDescription ||
+    'Junctions.js - Composable routing build from the ground up for React'
+  config.metaImage =
+    page.metaImage ||
+    'https://junctions.js.org/logo.png'
 
   if (page.contentWrapper) {
     config.contentWrapper = require('./wrappers/'+page.contentWrapper+'.js').default

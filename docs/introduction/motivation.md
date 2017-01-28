@@ -1,3 +1,7 @@
+---
+metaTitle: Why I Created Junctions.js
+metaDescription: React Apps are made of Components, and the web is made of URLs. But Components compose, and URLs don't. What if you want the best of both worlds?
+---
 # Motivation
 
 It was pretty normal day in Tokyo when I received a request from a client. "I'd like this application screen to be a React Component. And I want it to be reusable." 
