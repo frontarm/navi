@@ -1,18 +1,26 @@
 # Junctions: Routing You Can Follow.
 
-Built for React, using the excellent [history](https://github.com/mjackson/history) package.
+Junctions is a router built from the ground up for React.
 
-Why use Junctions?
+It lets you create *plain-old components with routes and links* that integrate seamlessly with the browser's forward and back buttons.
 
-- **It's reusable.** No hard-coded URLs means *truly* reusable components.
-- **It's simple.** Everything you need in only 4 functions and 4 methods.
-- **It's independent.** Works great with React, but doesn't rely on it.
+## Why use Junctions?
 
-## Demo
+- **Reusability.** Components you create with Junctions are reusable *anywhere*.
+- **User Experience.** The Back and Forward buttons work just as the user expects.
+- **Integration.** Junctions gets out of the way and lets React be React.
 
-The best way to understand Junctions is to see it in action. With that in mind, the [Junctions Website](https://junctions.js.org) uses Junctions underneath the hood -- and logs relevant details to the console as you navigate. If you're viewing the website right now, open your developer console to take a look.
+## Getting Started
 
-There are also a number of live demos with source. Take a look at the [Raw](/examples/Raw.example.js) example to see how Junctions works without any React-specific helper components, or see [Basic](/examples/Basic.example.js) for a typical example.
+The pitch for a super awesome routing library is a funny place to get asked "Do you actually need a router?" -- but it would be irresponsible to tell you how great Junctions is without telling you that *not using any router is often even better*. So ask yourself -- [do you really *need* a Router?](/docs/introduction/do-i-need-a-router.md)
+
+Once you've decided that Junctions fits your needs, its time to get started! And you're in luck, because Junctions is super simple. Everything you need is available from just 4 functions and 4 methods. In fact, Junctions is *so* simple that after following clicking this [Tutorial](/docs) link and following the instructions, you'll have the basics down pat. But then what should you do?
+
+## Demos
+
+This website hosts a number of live demos with source. Take a look at the [Raw](/examples/Raw.example.js) example to see how Junctions works without any React-specific helper components, or see [Basic](/examples/Basic.example.js) for a typical example.
+
+Also, the [Junctions Website](https://junctions.js.org) actually uses Junctions underneath the hood. If you're viewing the website right now, open your developer console to take a look!
 
 ## Installation
 
@@ -34,12 +42,6 @@ Alternatively, use plain-ol' script tags with unpkg.
 <script src="https://unpkg.com/junctions@0.3.0/dist/junctions.js"></script>
 <script src="https://unpkg.com/react-junctions@0.3.2/dist/index.js"></script>
 ```
-
-## Getting Started
-
-But before starting, ask yourself -- do you really *need* a Router? The [Introduction](/docs/introduction/do-i-need-a-router.md) covers this, before introducing the three main concepts you'll use with Junctions.
-
-The next step is practice. The [Basics](/docs/basics/locations.md) section of the Guide will walk you through using the most important tools which Junctions provides, finishing with a full Example.
 
 ## Contributing
 
