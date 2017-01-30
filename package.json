@@ -60,7 +60,7 @@
     "react-dom": "^15.4.2",
     "react-junctions": "^0.3.3",
     "rimraf": "^2.3.4",
-    "sitepack": "^0.2.2",
+    "sitepack": "^0.2.3",
     "webpack": "^1.14.0"
   }
 }

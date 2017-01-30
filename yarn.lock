@@ -4135,9 +4135,9 @@ signal-exit@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
 
-sitepack@^0.2.2:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/sitepack/-/sitepack-0.2.2.tgz#ef1d6f0c90d2f979c8e478208bce78fc257a2549"
+sitepack@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/sitepack/-/sitepack-0.2.3.tgz#256e55953f9d57cb6a6d826595e1ff91e006c075"
   dependencies:
     babel-core "^6.22.1"
     babel-loader "^6.2.10"

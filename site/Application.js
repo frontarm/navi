@@ -113,11 +113,15 @@ export default class Application extends Component {
               />
           }
           else if (route === undefined) {
-            document.title = '404 - junctions.js'
+            if (ExecutionEnvironment.canUseDOM) {
+              document.title = '404 - junctions.js'
+            }
             content = <h1>404 - Computer Says No</h1>
           }
           else {
-            document.title = site.root.htmlTitle
+            if (ExecutionEnvironment.canUseDOM) {
+              document.title = site.root.htmlTitle
+            }
             content = 
               React.createElement(site.root.contentWrapper, {
                 page: site.root,
