@@ -48,11 +48,7 @@ A project generated with `create-react-app` only has one component -- the `App` 
   }
 ```
 
-After saving your changes, you should see a very simple menu:
-
-IMAGE
-
-You can even click the links and see how the URL changes. This works because the server included with `create-react-app` will redirect any requests to your one `index.html` file. But it's behaviour isn't exactly what we'd like; every click will result in a flash and refresh of the page.
+After saving your changes, you should see a very simple menu. You can even click the links and see how the URL changes! This works because the server included with `create-react-app` will redirect any requests to your one `index.html` file. But it's behaviour isn't exactly what we'd like; every click will result in a flash and refresh of the page.
 
 ## History and `pushState`
 
@@ -418,7 +414,7 @@ class InvoicesScreen extends Component {
 }
 ```
 
-**This tutorial is still a WIP. The below points are an outline for what is to come. If you'd like to help expand on these points, [Pull Requests](github.com/jamesknelson/junctions/) are welcome!**
+**This tutorial is still a WIP. The below points are an outline for what is to come. If you'd like to help expand on these points, [Pull Requests](https://github.com/jamesknelson/junctions/) are welcome!**
 
 - While we haven't added any link tags yet, let's have a look at the structure
 - Notice how what we have is a list of links, and a block of content.
