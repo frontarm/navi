@@ -5,11 +5,11 @@ metaDescription: Junctions.js is a routing library for React that is designed ar
 
 Junctions was originally designed in response to the requirements of a real production application. And as it turns out, these same requirements can be summarised as a haiku.
 
-```
 > Components compose
+
 > Browsers show "Back" and "Forward"
+
 > Get outta' the way!
-```
 
 So why exactly are these three principles important enough to warrant a haiku? Let's take a look at each in turn to find out.
 

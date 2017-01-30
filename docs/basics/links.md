@@ -1,4 +1,4 @@
-**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
+**Note: The Guide is still only an outline. [Pull Requests](github.com/jamesknelson/junctions) would be greatly appreciated!**
 
 # Links
 
@@ -12,11 +12,11 @@
 - But if you'd prefer to use something which already exists, we provide a separate react-junctions package which contains a <Link> component.
 - This component assumes you're using the history package for navigation, and uses pushState to update that history with the Location you specify.
 
-Example
+**TODO: example**
 
 - And because passing a history to every link is less than ideal, the package also provides a HistoryContext component to make your history object available to Links throughout the application.
 
-Example
+**TODO: example**
 
 ## But how do I know what Location to pass?
 
@@ -28,3 +28,5 @@ Example
 - In this case, you can't specify a Location for your Link, because *you don't know what it will be*
 - But this doesn't change the fact that the *browser* needs a Location. Even if you can create a Route, the browser won't understand it.
 - In cases like this, you need a way to convert a relative Route into a Location which you can pass to links. Or in our terminology, we'll need a way to Locate Routes.
+
+

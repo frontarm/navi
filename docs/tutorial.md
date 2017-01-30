@@ -391,3 +391,189 @@ Keeping in mind that this parameter will only be available when the route `key` 
 And if you navigate to `/invoices/add`, you should now see the text "Invoice #add"!
 
 Which is great and all, but what if you actually want `/invoices/add` to display an "Add Invoice" form? And what if you want that add form to share a common layout with the "View Invoice" page?
+
+## Routable Components, aka Screens
+
+Trying to force all of your invoicing information into a single `Root` Component would be kind of claustrophobic, so let's create a new `InvoicesScreen` component. And since master-detail views are all the rage, something like this should put you on the path to creating the next unicorn:
+
+```js
+// InvoicesScreen.jsx
+
+import React, { Component } from 'react';
+
+class InvoicesScreen extends Component {
+    render() {
+        return (
+            <div>
+                <ul>
+                    <li>Invoice 1</li>
+                    <li>Invoice 2</li>
+                    <li><hr /></li>
+                    <li>Add Invoice</li>
+                </ul>
+                <div>new or existing invoice</div>
+            </div>
+        )
+    }
+}
+```
+
+**This tutorial is still a WIP. The below points are an outline for what is to come. If you'd like to help expand on these points, [Pull Requests](github.com/jamesknelson/junctions/) are welcome!**
+
+- While we haven't added any link tags yet, let's have a look at the structure
+- Notice how what we have is a list of links, and a block of content.
+- This is similar to the navbar and content in a standard layout.
+- In both cases, what we have a list of links acting as a *switch* for the content that should be displayed.
+- Wherever you see this pattern, you can represent the options of the switch with a Junction.
+
+```js
+static junction = createJunction({
+    Invoice: {
+        path: '/:id',
+        paramTypes: {
+            invoiceId: { required: true },
+        },
+    },
+    Add: {
+        path: '/add',
+    },
+})
+```
+
+- Note that our paths are *relative*.
+- This is because we don't know where our component will be mounted.
+- Components need to be reusable. And to enable this, Junctions will use these `path` arguments as *suggestions* when deciding what URL to assign to the component. But the actual URLs are decided by junctions -- not your component.
+
+- You may be worried how *junctions.js* will handle the '/add' URL. After all, it matches both paths.
+- When there is a conflict like this, Junctions will always use the *most specific* URL. In this case, `/add` is more specific than `/:id`, so it will be used.
+- Note that the order that the paths are specified is not important. Only the specificity.
+
+- Recall that a `Junction` object just specifies the types of routes which a component can render.
+- In this case, our `InvoicesScreen` component can render an `Invoice` route, or an `Add` route.
+- With this in mind, we can assume that wherever `InvoicesScreen` is mounted, it will receive a `route` prop whose key will either be `"Invoice"` or `"Add"`.
+- We also know that if the key is `"Invoice"`, the route object will contain a `params` object that contains the invoice id.
+
+- Let's add support for this to the component
+
+```js
+render() {
+    const route = this.props.route
+
+    <div>
+        <h2>Invoices</h2>
+        <ul>
+            <li>Invoice 1</li>
+            <li>Invoice 2</li>
+            <li className="divider" />
+            <li>Add Invoice</li>
+        </ul>
+        {route &&
+            <div>
+                {route.key == 'Add'
+                    ? <h3>New Invoice</h3>
+                    : <h3>Invoice {route.params.invoiceId}</h3>
+                }
+            </div>
+        }
+        </div>
+    </div>
+}
+```
+
+- Now that the component can handle the supplied route, all that is left is to pass the correct `route` prop into our `<InvoicesScreen>` element.
+- But where does the `route` prop come from?
+- It comes from the `<Router>`!
+- But doesn't the `route` that `<Router>` supplies correspond to the `App` component itself?
+- It actually corresponds to both. Just like a React element holds its own props as well as its children, a *junctions.js* route holds its own params as well as the routes for any child components.
+- These "child" routes are stored under the `next` prop.
+
+```js
+render() {
+    return (
+        <Router
+            history={history}
+            junction={App.junction}
+            render={({ route }) =>
+                route.key == 'Invoices'
+                    ? <InvoicesScreen route={route.next} />
+                    : <h1>{route.key}</h1>
+            }
+        />
+    )
+}
+```
+
+- But while this code is mostly correct, there is still one thing missing.
+- Currently, `route.next` will always be null.
+- Remember that the junction for the `InvoicesScreen` component only specified *relative* paths, not full URLs.
+- `<InvoicesScreen>` is a child of the `App` component that is rendered whenever the app's path is `/invoices`. Because of this, it is probably obvious to you that the paths of the `InvoicesScreen` junction should be relative to `/invoices`.
+- But Junctions doesn't know this unless you tell it. And to do so, you must specify the `next` Junction when the `Invoices` route is active:
+
+```js
+static junction = createJunction({
+    Dashboard: {
+        default: true,
+        path: '/dashboard'
+    },
+    Invoices: {
+        path: '/invoices',
+        next: InvoicesScreen.junction,
+    },
+})
+```
+
+- And there you have it. This should work if you type some locations in the address bar manually. For example, try `/invoices/0001` or `/invoices/add`.
+- All that is left is to add links to the `InvoicesScreen` component
+
+- But how do we choose what the value of `to` should be?
+- `InvoicesScreen` is a *component*. Even if we know where it'll be mounted within this example, we can't be sure that it will *always* be mounted under `/invoices`.
+- For example, what if we'd like to display a list of invoices within a page for a given customer? Or what if we'd like to display a list of invoices within a modal?
+
+- The problem is that `pathname` changes depending on the context that the component is used in.
+- This is in contrast to the component's `route` prop -- which only contains information specific to the component itself.
+- In fact, your component's `Junction` object actually provides a `createRoute()` method that lets you create `Route` objects that point within your component.
+- You can probably see where this is going. Route objects are relative. And ideally, we'd be able to specify a `<Link>` element's with something relative, like routes:
+
+```jsx
+// This won't work
+<Link to={junction.createRoute('Invoice', { invoiceId: 1 })}>Invoice 1</Link>
+<Link to={junction.createRoute('Invoice', { invoiceId: 2 })}>Invoice 2</Link>
+<Link to={junction.createRoute('Add')}>Add Invoice</Link>
+```
+
+- But this won't work, because `Link` components take `Location` objects. And since the browser History API doesn't understand routes, there is no way around this.
+- *If only there was some way to convert routes into locations.*
+- *Something like a `locate` function handily passed into our component.*
+
+```jsx
+// This will work, if `locate` exists
+<Link to={locate(junction.createRoute('Invoice', { invoiceId: 1 }))}>Invoice 1</Link>
+<Link to={locate(junction.createRoute('Invoice', { invoiceId: 2 }))}>Invoice 2</Link>
+<Link to={locate(junction.createRoute('Add'))}>Add Invoice</Link>
+```
+
+- And as you've probably guessed, `locate` does exist!
+- It just needs to be passed in from your component's parent:
+
+```jsx
+render() {
+    return (
+        <Router
+            history={history}
+            junction={App.junction}
+            render={({ route }) =>
+                route.key == 'Invoices'
+                    ? <InvoicesScreen
+                        route={route.next}
+                        locate={route.locate}
+                      />
+                    : <h1>{route.key}</h1>
+            }
+        />
+    )
+}
+```
+
+- This is a little verbose, but the beauty of *junctions.js* is it gives you freedom to write your own helpers.
+
+

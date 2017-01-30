@@ -1,11 +1,11 @@
-**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
+**Note: The Guide is still only an outline. [Pull Requests](github.com/jamesknelson/junctions) would be greatly appreciated!** 
 
 # Routes
 
 - A `Route` is an object which contains a portion of your app's Navigation state.
-- But where a `Location` describes the state of your entire application, a `Route` typically describes the portion of navigation state corresponds to one specific Screen Component within your application
+- But where a `Location` describes the state of your entire application, a `Route` typically describes the portion of navigation state corresponds to one specific component within your application
 
-- Example of screen which can render one of two routes, each with different keys
+**TODO: Example of screen which can render one of two routes, each with different keys**
 
 - You'll often render different types of components based on the key. But how can you pass other information to the component?
 - Route objects can also hold a **params** object with further details on the route
@@ -18,7 +18,7 @@
 - *The Route for the parent screen must contain the Route for the child screen.*
 - This is accomplished through the **children** property of a Route.
 
-- Example of a Route which holds another Route under its children property
+**TODO: Example of a Route which holds another Route under its children property**
 
 - One of the most important concepts to grasp about Junctions is that **Routes are relative**.
 - Routes only ever contain the information about their state and their children's state. But they don't know anything about their parents.
@@ -30,7 +30,7 @@
 
 - One way of visualising this is to think of Routes as onions.
 
-Image: Onion vs. Route
+**TODO: Image: Onion vs. Route**
 
 - Like an onion, Each Route can contain a number of layers, linked by `children` properties.
 - Also like an onion, you only have access to the outermost layer of an Route.
@@ -40,7 +40,7 @@ Image: Onion vs. Route
 
 - In fact, its not just Routes which are like onions. React components are like onions too.
 
-Image: React Component Block Diagram vs. Route Object block Diagram
+**TODO: Image: React Component Block Diagram vs. Route Object block Diagram**
 
 - It is this similarity that allows Junctions to meet its third principle: Pass your own props
 - Because the structures of React components and Route objects are so similar, manually passing the correct information to a child component is as simple as peeling off a layer and passing in the result.
@@ -58,3 +58,5 @@ Image: React Component Block Diagram vs. Route Object block Diagram
 - So what makes it absolute?
 - The thing which makes this route absolute isn't that it contains this information, but that you *know* there are no parent layers. And you know this because you'll have built this Route by converting a `Location`
 - You could do this conversion manually. But this package provides helpers to do it for you. And to do so, it'll need a Map. And that map is composed of `Junction` objects.
+
+

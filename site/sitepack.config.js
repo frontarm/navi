@@ -16,7 +16,7 @@ export function getRootSite() {
 export function configurePage(page) {
   const config = {}
 
-  config.htmlTitle = page.htmlTitle || (page.title + ' - Junctions')
+  config.htmlTitle = page.htmlTitle || (page.title + ' - junctions.js')
   config.metaTitle = page.metaTitle || page.title
   config.metaDescription =
     page.metaDescription ||

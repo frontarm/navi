@@ -1,7 +1,7 @@
 {
   "name": "junctions",
   "version": "0.3.0",
-  "description": "Declare junctions for your routes",
+  "description": "Composable Routing For React",
   "main": "lib/index.js",
   "module": "es/index.js",
   "jsnext:main": "es/index.js",
@@ -39,6 +39,7 @@
     "router",
     "route",
     "react",
+    "composable",
     "junction"
   ],
   "author": "James K Nelson <james@jamesknelson.com>",

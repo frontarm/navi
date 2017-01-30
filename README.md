@@ -1,26 +1,30 @@
-# Junctions: Routing You Can Follow.
+# Composable Routing For React
 
-Junctions is a router built from the ground up for React.
+Junctions.js is a router built from the ground up for component-based applications.
 
-It lets you create *plain-old components with routes and links* that integrate seamlessly with the browser's forward and back buttons.
+It equips you to create reusable React components that have routes and links, and integrate seamlessly with the browser [History API](https://developer.mozilla.org/en/docs/Web/API/History).
 
-## Why use Junctions?
+## Why use junctions.js?
 
-- **Reusability.** Components you create with Junctions are reusable *anywhere*.
-- **User Experience.** The Back and Forward buttons work just as the user expects.
-- **Integration.** Junctions gets out of the way and lets React be React.
+Because it has *principles*.
+
+- **Composability.** Reuse components anywhere. Even those with links and routes!
+- **No Surprises.** The Back and Forward buttons work just as the user expects.
+- **Flexibility.** Junctions doesn't make decisions for you. It let's React be React.
+
+These three principles are described in more (and less) detail in [The Haiku Of Routing Principles](/docs/introduction/three-principles.md).
 
 ## Getting Started
 
-The pitch for a super awesome routing library is a funny place to get asked "Do you actually need a router?" -- but it would be irresponsible to tell you how great Junctions is without telling you that *not using any router is often even better*. So ask yourself -- [do you really *need* a Router?](/docs/introduction/do-i-need-a-router.md)
+The pitch for a super awesome routing library is a funny place to get asked "Do you actually need a router?" -- but it would be irresponsible to tell you how great junctions.js is without telling you that *not using any router is often even better*. So ask yourself -- [do you really *need* a router?](/docs/introduction/do-i-need-a-router.md)
 
-Once you've decided that Junctions fits your needs, its time to get started! And you're in luck, because Junctions is super simple. Everything you need is available from just 4 functions and 4 methods. In fact, Junctions is *so* simple that after following clicking this [Tutorial](/docs) link and following the instructions, you'll have the basics down pat. But then what should you do?
+Once you've decided that junctions.js does fit your needs, the best way to get started is to try it. and the [Tutorial](/docs) makes this easy -- after following along, you'll have built a real app and have the experience to apply junctions.js to your own projects.
 
 ## Demos
 
 This website hosts a number of live demos with source. Take a look at the [Raw](/examples/Raw.example.js) example to see how Junctions works without any React-specific helper components, or see [Basic](/examples/Basic.example.js) for a typical example.
 
-Also, the [Junctions Website](https://junctions.js.org) actually uses Junctions underneath the hood. If you're viewing the website right now, open your developer console to take a look!
+Also, the [junctions.js website](https://junctions.js.org) eats its own dog food. When viewing the website, you can open your developer console to take a look!
 
 ## Installation
 

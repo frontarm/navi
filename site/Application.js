@@ -100,27 +100,33 @@ export default class Application extends Component {
             history.push({ pathname: path.replace(/\.[a-zA-Z]+$/, ''), hash })
           }
 
-          const content =
-            route
-              ? <Route
-                  site={site}
-                  route={route}
-                  hash={history.location.hash}
-                  locate={converter.locate}
-                  navigateToPage={navigateToPage}
-                  navigateToPath={navigateToPath}
-                />
-              : (
-                route === null
-                  ? React.createElement(site.root.contentWrapper, {
-                      page: site.root,
-                      hash: history.location.hash,
-                      route: route,
-                      navigateToPage,
-                      navigateToPath,
-                    })
-                  : <h1>404 - Computer Says No</h1>
-              )
+          let content
+          if (route) {
+            content =
+              <Route
+                site={site}
+                route={route}
+                hash={history.location.hash}
+                locate={converter.locate}
+                navigateToPage={navigateToPage}
+                navigateToPath={navigateToPath}
+              />
+          }
+          else if (route === undefined) {
+            document.title = '404 - junctions.js'
+            content = <h1>404 - Computer Says No</h1>
+          }
+          else {
+            document.title = site.root.htmlTitle
+            content = 
+              React.createElement(site.root.contentWrapper, {
+                page: site.root,
+                hash: history.location.hash,
+                route: route,
+                navigateToPage,
+                navigateToPath,
+              })
+          }
           
           const wrappedContent = 
             site.root.indexWrapper

@@ -1,4 +1,4 @@
-**Note: The Guide is still only an outline. PRs would be greatly appreciated -- just open an issue first to make sure there is no duplication of work.**
+**Note: The Guide is still only an outline. [Pull Requests](github.com/jamesknelson/junctions) would be greatly appreciated!** 
 
 # The Screen Pattern
 
@@ -14,7 +14,7 @@ So what do Screen components look like?
 
 For example:
 
-- Example
+**TODO: example**
 
 Let's go over this example one step at a time
 
@@ -24,7 +24,7 @@ Let's go over this example one step at a time
 - But unlike `propTypes`, it is actually used at runtime in production:
     - If this is the root screen, the converter will use it directly
     - If this is a nested screen, the parent screen's Junction needs to access it
-- Example
+**TODO: example**
 - Because we know that any screen component has a `junction` property, composing screens becomes simply a matter of passing that junction to our junction branch's `child` property
 
 ## The `route` prop
@@ -37,3 +37,5 @@ Let's go over this example one step at a time
 - If a Screen component's Junction specifies child Screens, then a Screen needs to handle the routes for child screens too.
 - To do so, the screen should pass its `route.child` through to the child Screen's `route` prop
 - `route.child` will differ based on which branch is currently active, so regardless of which child component you're rendering for the current route, *its* children will still be `route.child`
+
+

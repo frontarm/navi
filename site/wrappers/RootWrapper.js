@@ -27,9 +27,7 @@ export default function RootWrapper({ root, page, route, locate, children }) {
       <div className='RootWrapper-body'>
         <div>
           { !route &&
-            <h1>
-              Junctions: Routing You Can Follow.
-            </h1>
+            <h1>{page.title}</h1>
           }
           {children}
         </div>
