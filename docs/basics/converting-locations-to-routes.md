@@ -1,4 +1,4 @@
-**Note: The Guide is still only an outline. [Pull Requests](github.com/jamesknelson/junctions) would be greatly appreciated!**
+**Note: The Guide is still only an outline. [Pull Requests](https://github.com/jamesknelson/junctions) would be greatly appreciated!**
 
 # Converting Locations to Routes
 

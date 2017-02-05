@@ -8,7 +8,7 @@ module.exports = (pattern) => {
 
   return {
     indexWrapper: 'RootWrapper',
-    content: require('./site/Pitch.mdx'),
+    content: require('./README.md'),
     title: 'junctions.js',
     htmlTitle: "junctions.js",
     metaTitle: "junctions.js",
