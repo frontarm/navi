@@ -110,6 +110,10 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
   // TODO:
   // - memoize by object equality of the previous invocation (only need memory size of 1)
 
+  // TODO:
+  // - if junctionSet's main junction is a hostname junction, merge the hostname into the
+  //   beginning of the location path
+
   const basePath = baseLocation.pathname || ''
 
   const locationState = location.state || {}

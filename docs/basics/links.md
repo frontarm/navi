@@ -9,7 +9,7 @@
 - One solution to this is to roll your own Link.
 - Because link components only need to communicate with your browser -- not junctions itself -- you can expect that the API will be stable for a very very long time
 
-- But if you'd prefer to use something which already exists, we provide a separate react-junctions package which contains a <Link> component.
+- But if you'd prefer to use something which already exists, we provide a separate react-junctions package which contains a `<Link>` component.
 - This component assumes you're using the history package for navigation, and uses pushState to update that history with the Location you specify.
 
 **TODO: example**

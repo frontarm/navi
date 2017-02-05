@@ -14,32 +14,36 @@ You see, the thing about the *web* is that it is made of URLs. And the thing abo
 
 To demonstrate, imagine that you'd like to make a self contained `PaymentsScreen` component, like so:
 
-    class PaymentsScreen extends Component {
-        static propTypes = {
-            path: PropTypes.oneOf(['/new', '/list']),
-        }
-    
-        render() {
-            return (
-                <div>
-                    <nav>
-                        <a href='/new'>Add Payment</a>
-                        <a href='/list'>List</a>
-                    </nav>
-                    <div>
-                        Hi!
-                    </div>
-                </div>
-            )
-        }
+```jsx
+class PaymentsScreen extends Component {
+    static propTypes = {
+        path: PropTypes.oneOf(['/new', '/list']),
     }
+
+    render() {
+        return (
+            <div>
+                <nav>
+                    <a href='/new'>Add Payment</a>
+                    <a href='/list'>List</a>
+                </nav>
+                <div>
+                    Hi!
+                </div>
+            </div>
+        )
+    }
+}
+```
 
 Easy, right? Except -- what if you want to mount this component somewhere other than the application root? The `<a>` tags are going to break.
 
 But you've got you're head screwed on, so you know how to fix this. Just pass in a `basePath`.
 
-    <a href=`${basePath}/new`>Add Payment</a>
-    <a href=`${basePath}/list`>List</a>
+```jsx
+<a href=`${basePath}/new`>Add Payment</a>
+<a href=`${basePath}/list`>List</a>
+```
 
 And this works. Until you want to mount this component within a modal which doesn't *have* URLs. *Don't mount it in a modal, you say*. But your client insists. Now what?
 

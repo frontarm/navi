@@ -1,6 +1,7 @@
 import './MarkdownView.less'
 import React, { Component, PropTypes } from 'react'
 import CommunicationStateView from './CommunicationStateView'
+import Link from '../controls/Link'
 import { resolve } from 'path'
 
 
@@ -13,34 +14,7 @@ function isModifiedEvent(event) {
 
 
 export default class MarkdownView extends Component {
-  handleClickLink = (e) => {
-    if (
-      event.defaultPrevented ||
-      isModifiedEvent(event) ||
-      !isLeftClickEvent(event) ||
-      e.target.attributes.target ||
-      !this.props.onClickLink
-    ) {
-      return
-    }
-
-    e.preventDefault()
-    this.props.onClickLink(e.target.attributes.href.value)
-  }
-
-  setupLinks() {
-    const nodeList = this.refs.html.querySelectorAll("a")
-    for (let node of nodeList) {
-      const href = node.attributes.href
-      if (href && href.value.indexOf('://') === -1 && href[0] !== '#') {
-        node.onclick = this.handleClickLink
-      }
-    }
-  }
-
   componentDidMount() {
-    this.setupLinks()
-
     const hash = this.props.hash
     if (hash && !this.props.isLoading) {
       const el = document.getElementById(hash.slice(1))
@@ -54,8 +28,6 @@ export default class MarkdownView extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    this.setupLinks()
-
     const hash = this.props.hash
     if (hash &&
         (prevProps.hash !== hash ||
@@ -73,12 +45,18 @@ export default class MarkdownView extends Component {
 
   render() {
     return (
-      <div className='MarkdownView' ref='html'>
+      <div className='MarkdownView'>
         <CommunicationStateView
           isLoading={this.props.isLoading}
           error={this.props.error}
         />
-        <markdown dangerouslySetInnerHTML={{ __html: this.props.content }} />
+        {this.props.content
+          ? React.createElement(this.props.content, {
+              factories: {
+                a: React.createFactory(Link)
+              }
+            })
+          : <div />}
       </div>
     )
   }

@@ -6,8 +6,6 @@ metaDescription: So you've decided to build a new React app. And usually, your f
 
 So you've decided to build a new React app. And usually, your first step would be to add a routing library. *But do you really need one?*
 
-<!--more-->
-
 ## What Routers Do
 
 The first step to understand whether you need a routing library is to understand what routing libraries do. Which is something along the lines of:

@@ -57,12 +57,15 @@ describe("createJunction", function() {
     assert.equal(formattedPath, 'test-branch/a/b')
   })
 
-
   it("fails when given no branches", function() {
     assert.throws(() => {
       createJunction({})
     })
   })
+
+  it("fails when a next junction has a path starting with '//'")
+
+  it("fails if one path starts with '//' but another path does not")
 
   it("fails when given a param key with the non alphanumeric/underscore value 'a1-'", function() {
     assert.throws(() => {

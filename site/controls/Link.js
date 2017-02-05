@@ -77,7 +77,8 @@ class Link extends Component {
       return
     }
 
-    var history = this.props.history || this.context.history
+    const history = this.props.history || this.context.history
+    const href = this.props.href
 
     if (!history) {
       throw new Error('<Link> requires a history object to be passed in, either via props or via context.')
@@ -92,6 +93,10 @@ class Link extends Component {
       return
     }
 
+    if (href && href.indexOf('://') !== -1 || href[0] == '#') {
+      return;
+    };
+
     event.preventDefault()
 
     let location
@@ -99,8 +104,9 @@ class Link extends Component {
       const route = this.context.createRoute(this.props.page)
       location = this.context.converter.locate(route)
     }
-    else if (this.props.href) {
-      location = { pathname: this.props.href }
+    else if (href) {
+      const [path, hash] = href.split('#')
+      location = { pathname: path, hash }
     }
 
     history.push(location)
@@ -116,7 +122,10 @@ class Link extends Component {
       href = location.pathname + (location.search || '')
     }
     else if (href) {
-      route = this.context.converter.route({ pathname: href })
+      const [path, hash] = href.split('#')
+      if (path) {
+        route = this.context.converter.route({ pathname: path })
+      }
     }
     else {
       console.warn('You have a <Link> with no `href` or `page` prop!')

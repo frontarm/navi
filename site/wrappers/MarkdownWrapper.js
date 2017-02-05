@@ -3,14 +3,13 @@ import { PageContentLoader } from 'sitepack'
 import MarkdownView from '../views/MarkdownView'
  
 
-const MarkdownWrapper = ({ page, hash, navigateToPath }) => 
+const MarkdownWrapper = ({ page, hash }) => 
   <PageContentLoader
     page={page}
     render={
       <MarkdownView
         title={page.title}
         hash={hash}
-        onClickLink={navigateToPath}
       />
     }
   />

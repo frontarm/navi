@@ -129,10 +129,10 @@ If we pass this `Junction` to a `Converter`, **we're indicating that the `Conver
 
 So now that we have a `Junction`, let's answer the questions from the previous section:
 
-> **Q**: Does `add` represent a page with a form for adding new invoices, or an Invoice with the ID `"add"`?<br>
+> **Q**: Does `add` represent a page with a form for adding new invoices, or an Invoice with the ID `"add"`?<br />
 > ***A**: It represents neither!*
 
-> **Q**: Should this URL be represented as a single Route, or as two nested routes?<br>
+> **Q**: Should this URL be represented as a single Route, or as two nested routes?<br />
 > ***A**: It is `undefined`!*
 
 We probably don't actually want the `Converter` to return `undefined`, so let's fix the `Junction`. But how?
