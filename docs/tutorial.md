@@ -101,8 +101,8 @@ Let's replace the existing `<a>` tags with `<Link>` elements:
     </Link>
 </li>
 <li>
-    <Link 
-        history={history
+    <Link
+        history={history}
         to={{ pathname: "/invoices" }}>
         Invoices
     </Link>
@@ -132,14 +132,14 @@ The details on lifecycle methods and component state aren't really relevant to t
 ```js
 class App extends Component {
     constructor(props) {
-        super(props) 
-        
+        super(props)
+
         this.state = {
             // The initial location at page load is
             // available at history.location
             location: history.location
         }
-        
+
         history.listen(this.handleNavigation.bind(this))
     }
 
@@ -156,7 +156,7 @@ class App extends Component {
                         to={{ pathname: "/dashboard" }}>
                         Dashboard
                     </Link></li>
-                    <li><Link 
+                    <li><Link
                         history={history
                         to={{ pathname: "/invoices" }}>
                         Invoices
@@ -199,11 +199,11 @@ A `Route` is a data structure which holds information about the user's current L
 {
     // An name used to identify the *type* of route
     key: 'Invoice',
-    
+
     // Params extracted from the URL and query string
     params: { id: '12345' },
-    
-    // A property which can hold a *nested* route 
+
+    // A property which can hold a *nested* route
     next: null,
 }
 ```
@@ -362,7 +362,7 @@ static junction = createJunction({
     InvoiceDetails: {
         path: '/invoices/:id',
         paramTypes: {
-            id: { required: true }, 
+            id: { required: true },
         },
     },
 })
@@ -372,7 +372,7 @@ The `:` character in the path for `InvoiceDetails` is a way of telling Junctions
 
 Junctions does have one idiosyncrasy with regards to parameters; you need to specify a `paramTypes` configuration object for each parameter. This configuration can be the blank object `{}`, or can include things like default values and serialisation helpers -- check the API Reference if you'd like to know more.
 
-Now that you can access the current invoice id at `route.params.id`, you'll want to actually display it! 
+Now that you can access the current invoice id at `route.params.id`, you'll want to actually display it!
 
 Keeping in mind that this parameter will only be available when the route `key` is `"InvoiceDetails"`, you can display the current id by replacing your existing `<h1>` tag with something like this:
 
@@ -571,5 +571,3 @@ render() {
 ```
 
 - This is a little verbose, but the beauty of *junctions.js* is it gives you freedom to write your own helpers.
-
-
