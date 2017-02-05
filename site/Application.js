@@ -24,7 +24,7 @@ function createSiteRoute(site, pageId) {
 }
 
 
-function Route({site, route, hash, locate, navigateToPage, navigateToPath}) {
+function Route({site, route, hash, locate}) {
   const page = route.data.page
   const wrapperOptions = {
       root: site.root,
@@ -40,15 +40,13 @@ function Route({site, route, hash, locate, navigateToPage, navigateToPath}) {
         route={route.next}
         hash={hash}
         locate={route.locate}
-        navigateToPage={navigateToPage}
-        navigateToPath={navigateToPath}
       />
   }
   else {
     if (ExecutionEnvironment.canUseDOM) {
       document.title = page.htmlTitle
     }
-    content = React.createElement(page.contentWrapper, { page, hash, route, navigateToPage, navigateToPath })
+    content = React.createElement(page.contentWrapper, { page, hash, route })
   }
 
   if (page != site.root && page.indexWrapper) {
@@ -90,16 +88,6 @@ export default class Application extends Component {
         history={history}
         junction={site.root.junction}
         render={({route, converter}) => {
-          function navigateToPage(url) {
-            const [pageId, hash] = url.split('#')
-            history.push(Object.assign({}, converter.locate(createRoute(pageId)), { hash }))
-          }
-
-          function navigateToPath(url) {
-            const [path, hash] = url.split('#')
-            history.push({ pathname: path.replace(/\.[a-zA-Z]+$/, ''), hash })
-          }
-
           let content
           if (route) {
             content =
@@ -108,8 +96,6 @@ export default class Application extends Component {
                 route={route}
                 hash={history.location.hash}
                 locate={converter.locate}
-                navigateToPage={navigateToPage}
-                navigateToPath={navigateToPath}
               />
           }
           else if (route === undefined) {
@@ -127,8 +113,6 @@ export default class Application extends Component {
                 page: site.root,
                 hash: history.location.hash,
                 route: route,
-                navigateToPage,
-                navigateToPath,
               })
           }
           

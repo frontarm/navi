@@ -93,7 +93,7 @@ class Link extends Component {
       return
     }
 
-    if (href && href.indexOf('://') !== -1 || href[0] == '#') {
+    if (href && (href.indexOf('://') !== -1 || href[0] == '#')) {
       return;
     };
 
