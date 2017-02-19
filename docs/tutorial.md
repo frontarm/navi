@@ -157,7 +157,7 @@ class App extends Component {
                         Dashboard
                     </Link></li>
                     <li><Link
-                        history={history
+                        history={history}
                         to={{ pathname: "/invoices" }}>
                         Invoices
                     </Link></li>
