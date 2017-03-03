@@ -7,6 +7,38 @@ const JunctionSets = require('./fixtures/JunctionSets')
 const Serializers = require('./fixtures/Serializers')
 
 
+function getPathParser() {
+  const invoiceScreen = JunctionSet(createJunction({
+      details: {},
+    }))
+
+    const invoiceListScreen = JunctionSet({
+      main: createJunction({
+        invoice: {
+          path: '/:id',
+          paramTypes: {
+            id: { required: true },
+          },
+          next: invoiceScreen,
+        },
+      }),
+    })
+
+    const appScreen = JunctionSet(createJunction({
+      dashboard: { default: true },
+      invoices: {
+        intermediate: true,
+        paramTypes: {
+          page: { default: 1, serializer: Serializers.number },
+        },
+        next: invoiceListScreen,
+      },
+    }))
+
+    return createPathParser(appScreen)
+}
+
+
 describe('createPathParser', function() {
   it("returns a function given a JunctionSet", function() {
     const parsePath = createPathParser(JunctionSets.invoiceListScreen)
@@ -35,39 +67,19 @@ describe('parsePath', function() {
   })
 
   it("handles multiple parameters", function() {
-    const invoiceScreen = JunctionSet(createJunction({
-      details: {},
-    }))
-
-    const invoiceListScreen = JunctionSet({
-      main: createJunction({
-        invoice: {
-          path: '/:id',
-          paramTypes: {
-            id: { required: true },
-          },
-          next: invoiceScreen,
-        },
-      }),
-    })
-
-    const appScreen = JunctionSet(createJunction({
-      dashboard: { default: true },
-      invoices: {
-        paramTypes: {
-          page: { default: 1, serializer: Serializers.number },
-        },
-        next: invoiceListScreen,
-      },
-    }))
-
-    const parsePath = createPathParser(appScreen)
+    const parsePath = getPathParser()
 
     assert.deepEqual(parsePath('/invoices/1/abc123/details'), {
       'main': { branchKey: 'invoices', serializedParams: { page: '1' }, routePath: 'invoices/1', queryParts: {} },
       'main/main': { branchKey: 'invoice', serializedParams: { id: 'abc123' }, routePath: 'invoices/1/abc123', queryParts: {} },
       'main/main/main': { branchKey: 'details', serializedParams: {}, routePath: 'invoices/1/abc123/details', queryParts: {} },
     })
+  })
+
+  it("does not match intermediate paths", function() {
+    const parsePath = getPathParser()
+
+    assert.equal(undefined, parsePath('/invoices/1'))
   })
 
   it("ignores non-primary paths", function() {

@@ -54,9 +54,14 @@ export default function createJunction(branchOptions) {
 
     const pattern = options.path ? compilePattern(options.path, paramNames) : createDefaultPattern(key, paramTypes)
 
+    if (!!options.intermediate && !options.next) {
+      throw new Error('You cannot set a branch as intermediate without providing a `next` junction.')
+    }
+
     const branch = {
       next: options.next && JunctionSet(options.next),
       data: Object.freeze(options.data || {}),
+      intermediate: !!options.intermediate,
       default: !!options.default,
       key: key,
       paramTypes: paramTypes,

@@ -69,13 +69,11 @@ export function createPathParser(junctionSet) {
       const { branch, childNode, junctionPath } = node
       next = childNode
 
+      if ((!branch || branch.intermediate) && i === pathParts.length) {
+        return
+      }
       if (!branch) {
-        if (i === pathParts.length) {
-          return
-        }
-        else {
-          continue
-        }
+        continue
       }
 
       const paramNames = branch.pattern.paramNames
