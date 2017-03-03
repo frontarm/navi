@@ -37,7 +37,6 @@ export default function createJunction(branchOptions) {
     throw new Error('You cannot supply a branch named `createRoute` to `createJunction`, as it is a reserved name.')
   }
 
-  const patternIds = {}
   for (let i = 0, len = branchKeys.length; i < len; i++) {
     const key = branchKeys[i]
 
@@ -54,10 +53,6 @@ export default function createJunction(branchOptions) {
     }
 
     const pattern = options.path ? compilePattern(options.path, paramNames) : createDefaultPattern(key, paramTypes)
-    if (patternIds[pattern.id]) {
-      throw new Error(`Branch "${key}" uses a pattern with "${pattern.id}", but another pattern or alias already uses this identifier.`)
-    }
-    patternIds[pattern.id] = true
 
     const branch = {
       next: options.next && JunctionSet(options.next),
@@ -94,7 +89,15 @@ export default function createJunction(branchOptions) {
     
     branches[key] = Object.freeze(branch)
   }
-  
+
+  const patternIds =
+    branchKeys.map(key => branches[key].pattern.parts.map(part => part === null ? ':' : part).join('/')).sort()
+  for (let i = 1, len = patternIds.length; i < len; i++) {
+    if (patternIds[i].indexOf(patternIds[i - 1]) === 0) {
+      throw new Error(`Two branches have paths "${patternIds[i - 1].path}" and "${patternIds[i].path}" that match the same URLs!`)
+    }
+  }
+
   const junctionMeta = {
     branches: branches,
     branchKeys: branchKeys,

@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "clean": "rimraf lib dist es coverage",
-    "compile:watch": "babel --watch --source-maps=inline -d lib/ source/",
+    "build:watch": "babel --watch --source-maps=inline -d lib/ source/",
     "build:commonjs": "cross-env BABEL_ENV=commonjs babel source --out-dir lib",
     "build:es": "cross-env BABEL_ENV=es babel source --out-dir es",
     "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=development webpack source/index.js dist/junctions.js",

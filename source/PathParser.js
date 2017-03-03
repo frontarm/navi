@@ -11,9 +11,25 @@ export function createPathParser(junctionSet) {
 
       for (let i = 0, len = branchKeys.length; i < len; i++) {
         const branch = primaryJunction[branchKeys[i]]
-        const childNode = {}
+        const parts = branch.pattern.parts
+        const finalIndex = parts.length - 1
         const nextJunctionPath = junctionPath.concat(primaryJunctionKey)
-        treeNode[branch.pattern.id] = {
+        let intermediateNode = treeNode
+        for (let j = 0; j < finalIndex; j++) {
+          const part = parts[j] || ':'
+          if (!intermediateNode[part]) {
+            intermediateNode[part] = {
+              childNode: {},
+            }
+            intermediateNode = intermediateNode[part].childNode
+          }
+          else if (intermediateNode[part].branch) {
+            throw new Error('Conflicting paths')
+          }
+        }
+        const finalPart = parts[finalIndex] || ':'
+        const childNode = {}
+        intermediateNode[finalPart] = {
           branch,
           childNode,
           junctionPath: nextJunctionPath.join('/'),
@@ -33,57 +49,57 @@ export function createPathParser(junctionSet) {
       return
     }
 
+    let serializedParamValues = []
     let pathParts = strippedPath.split('/')
     let next = tree
     let i = 0
     while (i < pathParts.length) {
-      const pathPart = pathParts[i]
-      const node = next[pathPart] || next[':']
+      const pathPart = pathParts[i++]
+      let node = next[pathPart]
+
+      if (!node && next[':']) {
+        serializedParamValues.push(pathPart)
+        node = next[':']
+      }
 
       if (!node) {
         return
       }
-      else {
-        const { branch, childNode, junctionPath } = node
-        const patternParts = branch.pattern.parts
-        const paramNames = branch.pattern.paramNames.slice(0)
 
-        const serializedParams = {}
-        for (let j = 0, len = patternParts.length; j < len; j++) {
-          const patternPart = patternParts[j]
+      const { branch, childNode, junctionPath } = node
+      next = childNode
 
-          const pathPart = pathParts[i++]
-          if (i > pathParts.length) {
-            return
-          }
-          else if (patternPart) {
-            if (patternPart != pathPart) {
-              return
-            }
-          }
-          else {
-            serializedParams[paramNames.shift()] = pathPart
-          }
+      if (!branch) {
+        if (i === pathParts.length) {
+          return
         }
-
-        const queryParts = {}
-        for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
-          const queryKey = branch.queryKeys[i]
-          if (query[queryKey] !== undefined) {
-            const value = query[queryKey]
-            queryParts[queryKey] = value
-            serializedParams[queryKey] = value
-          }
+        else {
+          continue
         }
+      }
 
-        branches[junctionPath] = {
-          branchKey: branch.key,
-          serializedParams: serializedParams,
-          routePath: pathParts.slice(0, i).join('/'),
-          queryParts: queryParts,
+      const paramNames = branch.pattern.paramNames
+      const serializedParams = {}
+      for (let j = 0, len = paramNames.length; j < len; j++) {
+        serializedParams[paramNames[j]] = serializedParamValues[j]
+      }
+      serializedParamValues = []
+
+      const queryParts = {}
+      for (let i = 0, len = branch.queryKeys.length; i < len; i++) {
+        const queryKey = branch.queryKeys[i]
+        if (query[queryKey] !== undefined) {
+          const value = query[queryKey]
+          queryParts[queryKey] = value
+          serializedParams[queryKey] = value
         }
+      }
 
-        next = childNode
+      branches[junctionPath] = {
+        branchKey: branch.key,
+        serializedParams: serializedParams,
+        routePath: pathParts.slice(0, i).join('/'),
+        queryParts: queryParts,
       }
     }
 

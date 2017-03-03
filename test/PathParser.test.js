@@ -1,7 +1,10 @@
 const assert = require('assert')
 
 const { createPathParser } = require('../lib/PathParser')
+const JunctionSet = require('../lib/JunctionSet').default
+const { createJunction } = require('../lib')
 const JunctionSets = require('./fixtures/JunctionSets')
+const Serializers = require('./fixtures/Serializers')
 
 
 describe('createPathParser', function() {
@@ -28,6 +31,42 @@ describe('parsePath', function() {
     assert.deepEqual(parsePath('/invoice/test/details'), {
       'main': { branchKey: 'invoice', serializedParams: { id: 'test' }, routePath: 'invoice/test', queryParts: {} },
       'main/main': { branchKey: 'details', serializedParams: {}, routePath: 'invoice/test/details', queryParts: {} },
+    })
+  })
+
+  it("handles multiple parameters", function() {
+    const invoiceScreen = JunctionSet(createJunction({
+      details: {},
+    }))
+
+    const invoiceListScreen = JunctionSet({
+      main: createJunction({
+        invoice: {
+          path: '/:id',
+          paramTypes: {
+            id: { required: true },
+          },
+          next: invoiceScreen,
+        },
+      }),
+    })
+
+    const appScreen = JunctionSet(createJunction({
+      dashboard: { default: true },
+      invoices: {
+        paramTypes: {
+          page: { default: 1, serializer: Serializers.number },
+        },
+        next: invoiceListScreen,
+      },
+    }))
+
+    const parsePath = createPathParser(appScreen)
+
+    assert.deepEqual(parsePath('/invoices/1/abc123/details'), {
+      'main': { branchKey: 'invoices', serializedParams: { page: '1' }, routePath: 'invoices/1', queryParts: {} },
+      'main/main': { branchKey: 'invoice', serializedParams: { id: 'abc123' }, routePath: 'invoices/1/abc123', queryParts: {} },
+      'main/main/main': { branchKey: 'details', serializedParams: {}, routePath: 'invoices/1/abc123/details', queryParts: {} },
     })
   })
 

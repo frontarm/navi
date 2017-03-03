@@ -13,7 +13,6 @@ export function compilePattern(path, availableParamNames) {
   }
 
   const parts = path.split('/').slice(1)
-  const id = parts[0][0] == ':' ? ':' : parts[0]
   const paramNames =
     parts
       .map((part, i) => part[0] == ':' && part.substr(1))
@@ -26,7 +25,7 @@ export function compilePattern(path, availableParamNames) {
   }
 
   return {
-    id,
+    path,
     parts: parts.map(part => part[0] == ':' ? null : part),
     paramNames,
   }

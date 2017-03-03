@@ -5,12 +5,17 @@ const { compilePattern, formatPattern } = require('../lib/utils/PatternUtils')
 
 describe('compilePattern', function() {
   it('creates a pattern from a path', function() {
-    const pattern = compilePattern('/invoices/view/:invoiceId/attachments/:attachmentId', ['invoiceId', 'attachmentId', 'dummy'])
+    const pattern1 = compilePattern('/invoices/view/:invoiceId/attachments/:attachmentId', ['invoiceId', 'attachmentId', 'dummy'])
+    const pattern2 = compilePattern('/invoices/:page/:invoiceId/details', ['page', 'invoiceId'])
 
-    assert.equal(pattern.id, 'invoices')
-    assert.deepEqual(pattern.parts, ['invoices', 'view', null, 'attachments', null])
-    assert.deepEqual(pattern.paramNames, ['invoiceId', 'attachmentId'])
+    assert.deepEqual(pattern1.parts, ['invoices', 'view', null, 'attachments', null])
+    assert.deepEqual(pattern1.paramNames, ['invoiceId', 'attachmentId'])
+
+    assert.deepEqual(pattern2.parts, ['invoices', null, null, 'details'])
+    assert.deepEqual(pattern2.paramNames, ['page', 'invoiceId'])
   })
+
+
 
   it('throws when given an unrecognized param', function() {
     assert.throws(() => {
