@@ -40,6 +40,10 @@ export default function createJunction(branchOptions) {
   for (let i = 0, len = branchKeys.length; i < len; i++) {
     const key = branchKeys[i]
 
+    if (key.indexOf('#') !== -1) {
+      throw new Error(`Junction keys may not use the character '#', but key was named "${key}".`)
+    }
+
     const options = branchOptions[key] === true ? {} : branchOptions[key]
 
     const paramTypes = {}

@@ -80,7 +80,7 @@ describe('getRouteSetFromLocation', function() {
         state: {
           $$junctions: {
             'main': { branchKey: 'invoice', serializedParams: { id: 'test' } },
-            'main/main': { branchKey: 'details', serializedParams: {} },
+            'main#main': { branchKey: 'details', serializedParams: {} },
           }
         },
         query: {}
@@ -114,7 +114,7 @@ describe('getRouteSetFromLocation', function() {
       assert.equal(childRoute.baseLocation.pathname, '/some-other-path')
       assert.deepEqual(childRoute.baseLocation.state.$$junctions, {
         'main': { branchKey: 'invoice', serializedParams: { id: 'test' } },
-        'main/main': { branchKey: 'details', serializedParams: {} },
+        'main#main': { branchKey: 'details', serializedParams: {} },
       })
       assert.equal(childRoute.isRouteInPath, false)
       assert.deepEqual(childRoute.junctionPath, ['main', 'main'])

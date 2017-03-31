@@ -47,7 +47,7 @@ describe('getLocationFromRouteSet', function() {
     
     assert.equal(location.pathname, '/parent')
     assert.deepEqual(location.state.$$junctions, {
-      'parent/main': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
+      'parent#main': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
     })
   })
 

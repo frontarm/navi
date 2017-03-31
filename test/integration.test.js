@@ -56,7 +56,7 @@ describe('Integration: ', function() {
       pathname: '/mountpoint/invoices/1/abc123/details',
       state: {
         $$junctions: {
-          'main/addModal': { branchKey: 'open', serializedParams: {} },
+          'main#addModal': { branchKey: 'open', serializedParams: {} },
         },
       },
       query: {}

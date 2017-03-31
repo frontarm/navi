@@ -33,7 +33,7 @@ function getJunctionsLocation(isRouteInPath, parentJunctionPath, junctionSet, ro
         path = formatPattern(branch.pattern, serializedParams)
       }
       else {
-        state[junctionPath.join('/')] = {
+        state[junctionPath.join('#')] = {
           branchKey: branch.key,
           serializedParams: serializedParams,
         }

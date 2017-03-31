@@ -37,7 +37,7 @@ function getRouteBaseLocation(parentBaseLocation, isRouteInPath, junctionPath, b
       hash: parentBaseLocation.hash,
       state: Object.assign({}, baseState, {
         $$junctions: Object.assign({}, baseState.$$junctions, {
-          [junctionPath.join('/')]: {
+          [junctionPath.join('#')]: {
             branchKey: branch.key,
             serializedParams: serializeParams(branch.paramTypes, params),
           }
@@ -159,7 +159,7 @@ export default function getRouteSetFromLocation(parsePath, baseLocation, junctio
     return junctionSet.$$junctionSetMeta.isSingle ? (routeSet.main || null) : routeSet
   }
 
-  const junctionPaths = walkOrder.map(key => key.split('/'))
+  const junctionPaths = walkOrder.map(key => key.split('#'))
   for (let i = 0, len = walkOrder.length; i < len; i++) {
     const stateKey = walkOrder[i]
     const junctionPath = junctionPaths[i]

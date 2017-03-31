@@ -121,7 +121,7 @@ describe("LocatedRoute#getLocation", function() {
       assert.equal(location.pathname, '/mountpoint/something-else')
       assert.deepEqual(location.state.$$junctions, {
         'main': { branchKey: 'invoice', serializedParams: { id: 'test-id' } },
-        'main/main': { branchKey: 'details', serializedParams: {} },
+        'main#main': { branchKey: 'details', serializedParams: {} },
       })
     })
   })

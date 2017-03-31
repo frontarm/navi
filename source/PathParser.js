@@ -8,31 +8,29 @@ export function createPathParser(junctionSet) {
     if (primaryJunctionKey) {
       const primaryJunction = junctionSetMetaNode.junctions[primaryJunctionKey]
       const branchKeys = primaryJunction.$$junctionMeta.branchKeys
+      const nextJunctionPath = junctionPath.concat(primaryJunctionKey)
 
       for (let i = 0, len = branchKeys.length; i < len; i++) {
         const branch = primaryJunction[branchKeys[i]]
         const parts = branch.pattern.parts
         const finalIndex = parts.length - 1
-        const nextJunctionPath = junctionPath.concat(primaryJunctionKey)
         let intermediateNode = treeNode
         for (let j = 0; j < finalIndex; j++) {
           const part = parts[j] || ':'
           if (!intermediateNode[part]) {
-            intermediateNode[part] = {
-              childNode: {},
-            }
-            intermediateNode = intermediateNode[part].childNode
+            intermediateNode[part] = { childNode: {} }
           }
           else if (intermediateNode[part].branch) {
             throw new Error('Conflicting paths')
           }
+          intermediateNode = intermediateNode[part].childNode
         }
         const finalPart = parts[finalIndex] || ':'
         const childNode = {}
         intermediateNode[finalPart] = {
           branch,
           childNode,
-          junctionPath: nextJunctionPath.join('/'),
+          junctionPath: nextJunctionPath.join('#'),
         }
         if (branch.next) {
           queue.push([branch.next.$$junctionSetMeta, childNode, nextJunctionPath])

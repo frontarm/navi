@@ -62,7 +62,7 @@ describe('parsePath', function() {
 
     assert.deepEqual(parsePath('/invoice/test/details'), {
       'main': { branchKey: 'invoice', serializedParams: { id: 'test' }, routePath: 'invoice/test', queryParts: {} },
-      'main/main': { branchKey: 'details', serializedParams: {}, routePath: 'invoice/test/details', queryParts: {} },
+      'main#main': { branchKey: 'details', serializedParams: {}, routePath: 'invoice/test/details', queryParts: {} },
     })
   })
 
@@ -71,8 +71,27 @@ describe('parsePath', function() {
 
     assert.deepEqual(parsePath('/invoices/1/abc123/details'), {
       'main': { branchKey: 'invoices', serializedParams: { page: '1' }, routePath: 'invoices/1', queryParts: {} },
-      'main/main': { branchKey: 'invoice', serializedParams: { id: 'abc123' }, routePath: 'invoices/1/abc123', queryParts: {} },
-      'main/main/main': { branchKey: 'details', serializedParams: {}, routePath: 'invoices/1/abc123/details', queryParts: {} },
+      'main#main': { branchKey: 'invoice', serializedParams: { id: 'abc123' }, routePath: 'invoices/1/abc123', queryParts: {} },
+      'main#main#main': { branchKey: 'details', serializedParams: {}, routePath: 'invoices/1/abc123/details', queryParts: {} },
+    })
+  })
+
+  it("handles both siblings", function() {
+    const rootScreen = JunctionSet(createJunction({
+      '/examples/import.mdx': {
+        path: '/examples/import',
+      },
+      '/examples/tags.mdx': {
+        path: '/examples/tags',
+      },
+    }))
+    const parsePath = createPathParser(rootScreen)
+
+    assert.deepEqual(parsePath('/examples/import'), {
+      'main': { branchKey: '/examples/import.mdx', serializedParams: {}, routePath: 'examples/import', queryParts: {} },
+    })
+    assert.deepEqual(parsePath('/examples/tags'), {
+      'main': { branchKey: '/examples/tags.mdx', serializedParams: {}, routePath: 'examples/tags', queryParts: {} },
     })
   })
 
