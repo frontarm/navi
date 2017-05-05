@@ -1,9 +1,4 @@
----
-metaDescription: Junctions.js is a routing library for React that is designed around a haiku.
----
-# The Haiku Of Routing Principles
-
-Junctions was originally designed in response to the requirements of a real production application. And as it turns out, these same requirements can be summarised as a haiku.
+[The Junctions Router](https://junctions.js.org) was originally designed in response to the requirements of a  production React application. And as it turns out, these same requirements can be summarised as a haiku.
 
 > Components compose
 
@@ -24,7 +19,7 @@ To demonstrate, consider an application which renders two components:
 - A set of tabs for the application's navigation
 - A modal with the current user's account details
 
-![Parallel Routes Wireframe](./three-principles/parallel-routes-wireframe.png)
+![Parallel Routes Wireframe](http://jamesknelson.com/wp-content/uploads/2017/02/parallel-routes-wireframe.png)
 
 These components *should be* completely independent -- in fact, the account details modal component could be reused across any number of applications! But because both components have navigation controls, they need to share the same URL space. And this can cause conflicts.
 
@@ -39,7 +34,7 @@ Of course, there is no avoiding the fact that components still need access to sh
 
 If there is one constant over the short history of the web browser, it is that the "Back" and "Forward" buttons have been -- and always will be -- important.
 
-![Parallel Routes Wireframe](./three-principles/netscape-1.22.png)
+![Netscape 1.22](http://jamesknelson.com/wp-content/uploads/2017/02/netscape-1.22.png)
 <center><small>Netscape Navigator 1.22, with "Back" and "Forward"</small></center>
 
 These two simple buttons hold the distinction of being perhaps the most well understood pieces of web UI in existence. They're incredibly useful, uniquely ubiquitous, and with Javascript, frustratingly easy to break. And with this in mind, properly supporting "Back" and "Forward" was woven into Junctions' design from the beginning.
