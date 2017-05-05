@@ -102,7 +102,6 @@ export default function createJunction(branchOptions) {
   const patternIds =
     branchKeys.map(key => branches[key].pattern.parts.map(part => part === null ? ':' : part).concat('').join('/')).sort()
   for (let i = 1, len = patternIds.length; i < len; i++) {
-    console.log(patternIds[i])
     if (patternIds[i].indexOf(patternIds[i - 1]) === 0) {
       throw new Error(`Two branches have paths "${patternIds[i - 1]}" and "${patternIds[i]}" that match the same URLs!`)
     }
