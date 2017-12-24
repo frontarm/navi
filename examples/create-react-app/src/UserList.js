@@ -9,6 +9,7 @@ export default class UserList extends Component {
                 <ul>
                     <li><a href="/users/1">User 1</a></li>
                     <li><a href="/users/2">User 2</a></li>
+                    <li><a href="/users/new">New User</a></li>
                 </ul>
             </div>
         )

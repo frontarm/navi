@@ -12,7 +12,7 @@ npm install junctions-static
 
 To render your website, junctions-static needs two things:
 
-- A file which exports a `renderToString({ junction, location }) => string` function
+- A file which exports a `renderToString({ junction, location, dependencies, meta }) => string` function (which can be async)
 - Your site's public folder, which contains the built version of your app (without any HTML files)
 - The filename within your public directory that contains the "main" file, which should set two globals:
 

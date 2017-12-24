@@ -42,24 +42,34 @@ program.command('build')
   .description('Build HTML files for a junctions-based app.')
   .option('-p, --public [directory]', 'The path where files will be written, and where static assets are located.', 'build')
   .option('-m, --main [file]', 'The file that holds your main function and root junction.')
-  .option('-r, --render', 'The file that holds your render function.', 'src/renderToString.js')
+  .option('-r, --render [file]', 'The file that holds your render function.', 'src/renderToString.js')
   .action(function (command) {
-    process.env.NODE_ENV = process.env.NODE_ENV || 'production'
-
     var build = require('../lib/scripts/build').default
-    build(getConfig(command), function (err) {
-      if (err) {
-        throw err
-      } else {
-        console.log('Done')
-      }
+    var config = getConfig(command)
+
+    if (!config.main) {
+      console.error('You must specify a "main" file.')
+      process.exit(1)
+    }
+    if (!config.public) {
+      console.error('You must specify a "public" file.')
+      process.exit(1)
+    }
+    if (!config.render) {
+      console.error('You must specify a "render" file.')
+      process.exit(1)
+    }
+
+    build(config.main, config.public, config.render).catch(function(err) {
+      console.error(err)
+      process.exit(1)
     })
   })
 
 program.command('map')
   .description('Output a map of all statically-buildable URLs within your root junction.')
   .option('-p, --public [directory]', 'The path where static assets are located.', 'build')
-  .option('-m, --main [file', 'The file that holds your root junction.')
+  .option('-m, --main [file]', 'The file that holds your root junction.')
   .action(function (command) {
     var map = require('../lib/scripts/map').default
     var config = getConfig(command)
@@ -69,7 +79,7 @@ program.command('map')
       process.exit(1)
     }
 
-    map(command.main, command.public).catch(function(err) {
+    map(config.main, config.public).catch(function(err) {
       console.error(err)
       process.exit(1)
     })

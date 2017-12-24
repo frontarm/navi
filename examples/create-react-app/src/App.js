@@ -34,5 +34,8 @@ export default {
 
   children: {
     '/users': () => import('./Users').then(m => m.default),
+    '/old-users': {
+      getRedirectLocation: () => ({ pathname: '/users' })
+    }
   },
 }

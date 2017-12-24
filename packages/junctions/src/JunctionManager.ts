@@ -410,7 +410,7 @@ export class JunctionManager<J extends Junction<L>=any, L extends Junction.Locat
         // Parse the patterns for our children, and warn the user if any of
         // the patterns may result in unreachable code.
         let childPatterns = junction.children ? Object.keys(junction.children) : []
-        let childMounts = childPatterns.map(pattern => createChildMount(mount, pattern)).sort((x, y) => compareStrings(y.relativeKey, x.relativeKey))
+        let childMounts = childPatterns.map(pattern => createChildMount(mount, pattern)).sort((x, y) => compareStrings(x.relativeKey, y.relativeKey))
         validateChildMounts(childMounts)
 
         // Cache junction details

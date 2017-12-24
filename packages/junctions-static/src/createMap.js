@@ -48,8 +48,6 @@ export default async function createMap(mainFile, publicFolder) {
             return
         }
 
-        console.log(deepestState)
-
         if (deepestState.redirect) {
             map[pathname] = {
                 pathname: pathname,
@@ -69,7 +67,7 @@ export default async function createMap(mainFile, publicFolder) {
             Object.keys(junction.children)
                 .filter(pattern => pattern.indexOf(':') === -1)
                 .forEach(pattern => {
-                    queue.push(state.location.pathname + pattern)
+                    queue.push(deepestState.location.pathname + pattern)
                 })
         }
     }

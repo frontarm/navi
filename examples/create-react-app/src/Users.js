@@ -19,6 +19,13 @@ class Users extends Component {
 }
 
 
+class NewUser extends Component {
+    render() {
+        return <div><h2>New User</h2></div>
+    }
+}
+
+
 class UserDetails extends Component {
     render() {
         return <div><h2>User #{this.props.nav.params.id}</h2></div>
@@ -34,6 +41,14 @@ export default {
     getContent: () => import('./UserList').then(m => m.default),
 
     children: {
+        '/new': {
+            meta: {
+                title: 'New user',
+            },
+
+            getContent: () => NewUser,
+        },
+
         '/:id': Promise.resolve({
             meta: {
                 title: 'User details',
