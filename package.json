@@ -1,66 +1,30 @@
 {
-  "name": "junctions",
-  "version": "0.3.6",
-  "description": "Composable Routing For React",
-  "main": "lib/index.js",
-  "module": "es/index.js",
-  "jsnext:main": "es/index.js",
-  "files": [
-    "docs",
-    "dist",
-    "lib",
-    "es",
-    "source"
-  ],
-  "scripts": {
-    "clean": "rimraf lib dist es coverage",
-    "build:watch": "babel --watch --source-maps=inline -d lib/ source/",
-    "build:commonjs": "cross-env BABEL_ENV=commonjs babel source --out-dir lib",
-    "build:es": "cross-env BABEL_ENV=es babel source --out-dir es",
-    "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=development webpack source/index.js dist/junctions.js",
-    "build:umd:min": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack source/index.js dist/junctions.min.js",
-    "build": "npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min",
-    "prepublish": "npm run clean && npm run build",
-    "test": "npm run build:commonjs && mocha test/*.test.js",
-    "test:watch": "mocha --watch test/*.test.js",
-    "docs:start": "sitepack start -c site/sitepack.config.js",
-    "docs:clean": "rimraf site/build",
-    "docs:build": "npm run docs:clean && sitepack build -c site/sitepack.config.js -o site/build",
-    "docs:service-worker": "cp -R site/public/ site/build/ && sw-precache --root='site/build/' --static-file-globs='site/build/**/!(*map*)'",
-    "docs:publish": "npm run docs:build && cp ./CNAME site/build && cd site/build && git init && git commit --allow-empty -m 'update docs' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update docs' && git push git@github.com:jamesknelson/junctions gh-pages --force",
-    "docs:view": "sitepack view -d site/build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jamesknelson/junctions.git"
-  },
-  "keywords": [
-    "routing",
-    "router",
-    "route",
-    "react",
-    "composable",
-    "junction"
-  ],
-  "author": "James K Nelson <james@jamesknelson.com>",
-  "license": "MIT",
+  "private": true,
   "devDependencies": {
-    "babel-cli": "^6.14.0",
-    "babel-core": "^6.14.0",
-    "babel-loader": "^6.2.0",
-    "babel-plugin-transform-class-properties": "6.16.0",
-    "babel-plugin-transform-object-rest-spread": "6.19.0",
-    "babel-preset-latest": "6.16.0",
-    "babel-preset-react": "^6.11.1",
-    "cross-env": "^1.0.7",
-    "exenv": "^1.2.1",
-    "history": "^4.5.0",
-    "mocha": "^3.0.2",
-    "react": "^15.4.2",
-    "react-dom": "^15.4.2",
-    "react-junctions": "^0.3.3",
-    "rimraf": "^2.3.4",
-    "sitepack": "^0.3.0",
-    "webpack": "^1.14.0"
-  }
+    "cross-env": "^5.0.5",
+    "lerna": "^2.1.2",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.50.0",
+    "rollup-plugin-babel": "^3.0.2",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-replace": "^2.0.0",
+    "rollup-plugin-uglify": "^2.0.1",
+    "rollup-plugin-commonjs": "^8.0.2",
+    "typescript": "^2.6.2"
+  },
+  "scripts": {
+    "site:start": "cross-env BABEL_ENV=commonjs sitepack start -c site/config/sitepack.config.js",
+    "site:clean": "rimraf site/build",
+    "site:build": " cross-env NODE_ENV=production sitepack build -c site/config/sitepack.config.js -o site/build",
+    "site:publish": "npm run site:clean && npm run site:build && cp ./CNAME site/build && cd site/build && git init && git commit --allow-empty -m 'update docs' && git checkout -b gh-pages && touch .nojekyll && git add . && git commit -am 'update docs' && git push git@github.com:jamesknelson/junctions gh-pages --force",
+    "site:view": "sitepack view -d site/build",
+    "build": "lerna run --parallel build",
+    "build:watch": "lerna run --parallel build:watch",
+    "test": "lerna run --parallel test",
+    "test:watch": "lerna run --parallel test:watch"
+  },
+  "workspaces": [
+    "packages/*",
+    "site"
+  ]
 }

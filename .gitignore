@@ -1,7 +1,4 @@
-.DS_Store
-*.log
+.esm-cache
 node_modules
-dist
-lib
-es
 site/build
+*.log
