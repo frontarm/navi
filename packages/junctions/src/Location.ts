@@ -60,6 +60,9 @@ function joinQueryStrings(left, right, leadingCharacter='?'): string {
     return leadingCharacter+left.slice(1)+'&'+right.slice(1)
 }
 
+export function createHref(location: Location): string {
+    return location.pathname+(location.search || '')+(location.hash || '')
+}
 
 export function parseQuery(queryString?: string, leadingCharacter='?'): { [name: string]: any } {
     if (!queryString || queryString[0] != leadingCharacter) {

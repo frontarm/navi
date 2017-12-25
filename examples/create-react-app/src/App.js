@@ -15,6 +15,7 @@ class App extends Component {
         </header>
 
         <a href="/users">View users</a>
+        <a href="/old-users">Old page</a>
         
         {
           nav.child &&
@@ -28,14 +29,14 @@ class App extends Component {
 
 export default {
   meta: {
-    title: 'Junctions Example',
+    pageTitle: 'Junctions Example',
     wrapper: App,
   },
 
   children: {
     '/users': () => import('./Users').then(m => m.default),
     '/old-users': {
-      getRedirectLocation: () => ({ pathname: '/users' })
+      getRedirect: () => ({ pathname: '/users' })
     }
   },
 }

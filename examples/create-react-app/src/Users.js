@@ -34,7 +34,7 @@ class UserDetails extends Component {
 
 export default {
     meta: {
-        title: 'Users',
+        pageTitle: 'Users',
         wrapper: Users,
     },
 
@@ -43,7 +43,7 @@ export default {
     children: {
         '/new': {
             meta: {
-                title: 'New user',
+                pageTitle: 'New user',
             },
 
             getContent: () => NewUser,
@@ -51,7 +51,7 @@ export default {
 
         '/:id': Promise.resolve({
             meta: {
-                title: 'User details',
+                pageTitle: 'User details',
             },
 
             params: ['id'],

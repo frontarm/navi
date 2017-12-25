@@ -201,8 +201,9 @@ export class JunctionManager<J extends Junction<L>=any, L extends Junction.Locat
         if (!isFetchingChildren && !node.childStatus) {
             content = details.content
             contentStatus = details.contentStatus
-            if (junction.getRedirectLocation) {
-                redirect = junction.getRedirectLocation(details.locators, node.location)
+            if (junction.getRedirect) {
+                let redirectResult = junction.getRedirect(details.locators, node.location)
+                redirect = typeof redirectResult === 'string' ? { pathname: redirectResult } : redirectResult
             }
         }
 
@@ -390,18 +391,38 @@ export class JunctionManager<J extends Junction<L>=any, L extends Junction.Locat
         // Get the full mount object for this junction, including information
         // on any params that it consumes.
         let mount = addJunctionParamsToMount(bareMount, junction.params)
+
+        if (process.env.NODE_ENV !== 'production') {
+            let {
+                params,
+                children,
+                isIntermediate,
+                meta,
+                getContent,
+                getRedirect,
+                getLocators,
+                ...other
+            } = junction
+
+            let unknownKeys = Object.keys(other)
+            if (unknownKeys.length) {
+                console.warn(`The junction at "${mount.relativePattern}" contains unknown options ${unknownKeys.map(x => `"${x}"`).join(', ')}.`)
+            }
+
+            if (junction.getContent && junction.getRedirect) {
+                console.error(`The junction at "${mount.relativePattern}" defines both "getContent" and "getRedirect". You should only set one of these on any single junction.`)
+            }
+        }
         
         // Get the locators object that will be used for this junction
         let locators = parentLocators
         if (junction.getLocators) {
-            if (mount.params.length > 0) {
-                throw new Error("You can't use `getLocators` with a junction or key that accepts parameters.")
+            if (mount.params.length === 0) {
+                locators = junction.getLocators(parentLocators, { pathname: mount.key })
             }
-            locators = junction.getLocators(parentLocators, { pathname: mount.key })
-        }
-
-        if (junction.getContent && junction.getRedirectLocation) {
-            console.error(`The junction at "${mount.relativePattern}" defines both "getContent" and "getRedirectLocation". You should only set one of these on any single junction.`)
+            else if (process.env.NODE_ENV !== 'production') {
+                console.error(`Ignoring "getLocators" on junction at "${mount.relativePattern}"; you can't use "getLocators" with a junction or key that accepts parameters."`)
+            }
         }
 
         // Remove the junction from our unfetched list, if it is there
@@ -444,7 +465,7 @@ export class JunctionManager<J extends Junction<L>=any, L extends Junction.Locat
                 else if (child) {
                     this.registerJunction(childMount, child, locators)
                 }
-                else {
+                else if (process.env.NODE_ENV !== 'production') {
                     console.error(`No junction was provided for the pattern "${childMount.relativePattern}" (its value was "${String(child)}").`)
                 }
             }

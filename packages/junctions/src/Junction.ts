@@ -111,7 +111,7 @@ export interface Junction<
      * create a list of dependencies of each URL, which you can use to
      * prefetch any required data, for example by using HTTP/2 push.
      * 
-     * *This option is mutually exclusive with `getRedirectLocation`.*
+     * *This option is mutually exclusive with `getRedirect`.*
      */
     getContent?: Junction.Loader<Locators, any>,
 
@@ -128,7 +128,7 @@ export interface Junction<
      * 
      * This option is mutually exclusive with `getContent`.
      */
-    getRedirectLocation?: (locators: Locators, location: Location) => Location | undefined
+    getRedirect?: (locators: Locators, location: Location) => Location | string | undefined
 
     /**
      * Define a set of Locators, or functions that return a `Location`
