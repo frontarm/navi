@@ -4,16 +4,14 @@ import createMap from '../createMap'
 import createDOMFactory from '../createDOMFactory'
 
 
-export default async function build(mainFile, publicFolder, render) {
+export default async function build(mainFile, publicFolder, renderToString) {
     let cwd = process.cwd()
     let siteMap = await createMap(mainFile, publicFolder)
     let createDOM = createDOMFactory(mainFile, publicFolder)
     let dom = createDOM()
     let rootJunction = dom.window.rootJunction
     let pathnames = Object.keys(siteMap)
-    let renderToStringModule = require(path.resolve(cwd, render))
-    let renderToString = renderToStringModule.default || renderToStringModule.renderToString || renderToStringModule
-
+    
     await Promise.all(pathnames.map(async function(pathname) {
         let details = siteMap[pathname]
         let publicPath = pathname === '/' ? 'index.html' : pathname.slice(1) + '/index.html'

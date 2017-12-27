@@ -20,6 +20,8 @@ function getConfig(command) {
     // - get options from config file if possible
     // - expand globs where necessary
 
+    let cwd = process.cwd()
+    
     //   const configPath = path.resolve(packageRoot, command.config)
     //   const configModule = require(configPath)
     //   const config = typeof configModule === 'function' ? configModule : configModule.default
@@ -29,6 +31,9 @@ function getConfig(command) {
     //     siteRoot: path.dirname(configPath),
     //     config: config({ environment: process.env.NODE_ENV }),
     //   })
+
+    let renderToStringModule = require(path.resolve(cwd, command.render))
+    command.renderToString = renderToStringModule.default || renderToStringModule.renderToString || renderToStringModule
 
     return command
 }
@@ -55,12 +60,12 @@ program.command('build')
       console.error('You must specify a "public" file.')
       process.exit(1)
     }
-    if (!config.render) {
+    if (!config.renderToString) {
       console.error('You must specify a "render" file.')
       process.exit(1)
     }
 
-    build(config.main, config.public, config.render).catch(function(err) {
+    build(config.main, config.public, config.renderToString).catch(function(err) {
       console.error(err)
       process.exit(1)
     })
