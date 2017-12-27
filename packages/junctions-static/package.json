@@ -1,9 +1,9 @@
 {
   "name": "junctions-static",
   "engine": {
-    "node" : ">=8.0.0"
+    "node": ">=8.0.0"
   },
-  "version": "0.4.0-3",
+  "version": "0.4.0-4",
   "description": "Build static websites using Junctions.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
