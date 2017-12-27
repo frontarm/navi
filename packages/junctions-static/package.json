@@ -1,12 +1,13 @@
 {
   "name": "junctions-static",
-  "version": "0.4.0-2",
+  "version": "0.4.0-3",
   "description": "Build static websites using Junctions.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
   "bin": {
     "junctions-static": "./bin/junctions-static.js"
   },
+  "main": "lib/index.js",
   "scripts": {
     "clean": "rimraf lib",
     "build": "cross-env BABEL_ENV=commonjs babel src --out-dir lib",
