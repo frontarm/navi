@@ -1,5 +1,11 @@
 {
-    "presets": ["env"],
+    "presets": [
+      ["env", {
+        "targets": {
+          "node": "8.0"
+        }
+      }]
+    ],
     "plugins": ["syntax-dynamic-import", "dynamic-import-node", "transform-class-properties", "transform-object-rest-spread"]
   }
   
