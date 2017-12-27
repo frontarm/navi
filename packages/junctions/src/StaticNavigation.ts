@@ -11,13 +11,16 @@ export class StaticNavigation {
         rootJunction: Junction,
         initialLocation: Location,
     }) {
-
         this.waitingForInitialContent = new Deferred()
         this.manager = new JunctionManager(options)
 
         this.handleState = this.handleState.bind(this)
         this.handleState(this.manager.getState(), undefined, this.manager.isBusy())
         this.manager.subscribe(this.handleState)
+    }
+
+    getLocation(): Location {
+        return this.manager.getLocation()
     }
 
     getFirstCompleteState(): Promise<Junction.State | undefined> {
