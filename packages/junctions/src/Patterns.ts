@@ -1,25 +1,17 @@
-import { Junction } from './Junction'
 import { Location, parseQuery, stringifyQuery } from './Location'
+import { Mountable, AsyncMountable } from './Mounts'
 
 
-const KEY_WILDCARD = '\0'
-const KEY_WILDCARD_PATTERN = /\0/g
+export const KEY_WILDCARD = '\0'
+export const KEY_WILDCARD_PATTERN = /\0/g
 
 
-export interface Mount {
-    // The absolute path of the junction, with path parameters replaced with
-    // the null character `\0` (which I'll generally write as `*`)
-    key: string,
-
-    // The names of all params, both search and path params, that are used
-    // by this mount and its parents.
-    params: string[],
-    
+export interface CompiledPattern {
     // The relative path of a Junction to its parent, with wildcards
     // represented by a colon `:`, followed by the name of the param where
     // their value should be placed.
     relativePattern: string;
-
+    
     // Like `key`, but without the parents path parts.
     relativeKey: string,
 
@@ -30,53 +22,42 @@ export interface Mount {
     // The names of params that correspond to wildcards in the relative path.
     relativePathParams?: string[],
 
+    mountable: Mountable | AsyncMountable,
+}
+
+export interface MountedPattern extends CompiledPattern {
+    // The names of all params, both search and path params, that are used
+    // by this mount and its parents.
+    params: string[],
+    
     // Query parameters that are consumed regardless of their value,
     // where `true` indicates that they're required.
     relativeSearchParams?: { [name: string]: boolean },
 }
 
-
-export const emptyMount = {
-    key: '',
-    params: [],
-    relativePattern: '',
-    relativeKey: '',
-    relativeRegExp: new RegExp(''),
-}
-
-
-export function createChildMount(parentMount: Mount, pattern: string): Mount {
-    let compiledPattern = compilePattern(pattern)
-
-    if (process.env.NODE_ENV !== 'production') {
-        if (compiledPattern.relativePathParams) {        
-            let doubleParams = compiledPattern.relativePathParams.filter(param => parentMount.params.indexOf(param) !== -1)
-            if (doubleParams.length) {
-                console.error(`The pattern "${pattern}" uses the param names ${doubleParams.map(x => `"${x}"`).join(', ')}, which have already been used by a parent junction.`)
-            }
-        }
-    }
-
+export function createRootMountedPattern(mountable: Mountable): MountedPattern {
     return {
-        key: parentMount.key+'/'+compiledPattern.relativeKey,
-        params: parentMount.params.concat(compiledPattern.relativePathParams || []),
-        ...compiledPattern,
+        params: [],
+        relativePattern: '',
+        relativeKey: '',
+        relativeRegExp: new RegExp(''),
+        mountable: mountable,
     }
 }
 
-function compilePattern(pattern: string) {
+export function compilePattern(pattern: string, mountable: Mountable | AsyncMountable<Mountable>): CompiledPattern {
     let processedPattern = pattern
+    if (processedPattern.length > 1 && processedPattern.substr(-1) === '/') {
+        if (process.env.NODE_ENV !== 'production') {
+            console.warn(`The pattern "${pattern}" ends with the character '/', so it has been automatically removed. To avoid this warning, don't add a final "/" to Junction patterns.`)
+        }
+        processedPattern = processedPattern.substr(0, processedPattern.length - 1)
+    }
     if (processedPattern[0] !== '/') {
         if (process.env.NODE_ENV !== 'production') {
             console.warn(`The pattern "${pattern}" does not start with the character '/', so it has been automatically added. To avoid this warning, make sure to add the leading "/" to all Junction patterns.`)
         }
         processedPattern = '/'+processedPattern
-    }
-    if (processedPattern.substr(-1) === '/') {
-        if (process.env.NODE_ENV !== 'production') {
-            console.warn(`The pattern "${pattern}" ends with the character '/', so it has been automatically removed. To avoid this warning, don't add a final "/" to Junction patterns.`)
-        }
-        processedPattern = processedPattern.substr(0, processedPattern.length - 1)
     }
     if (/\/{2,}/.test(processedPattern)) {
         if (process.env.NODE_ENV !== 'production') {
@@ -89,9 +70,9 @@ function compilePattern(pattern: string) {
             console.warn(`The pattern "${pattern}" uses non-URL safe characters. The URL-safe characters are: A-Z a-z 0-9 $ - _ . + ! * ' ( ) ,`)
         }
     }
-
+    
     if (processedPattern.length === 0) {
-        throw new Error(`You cannot use an empty string or single "/" character as a Junction pattern!`)
+        throw new Error(`You cannot use an empty string "" as a Junction pattern!`)
     }
         
     let parts = processedPattern.split('/').slice(1)
@@ -115,33 +96,37 @@ function compilePattern(pattern: string) {
         relativePattern: processedPattern,
         relativeKey: keyParts.join('/'),
         relativePathParams: pathParams.length ? pathParams : undefined,
-        relativeRegExp: new RegExp(regExpParts.join('/'))
+        relativeRegExp: new RegExp(regExpParts.join('/')),
+        mountable: mountable,
     }
 }
 
-// From http://stackoverflow.com/a/5306111/106302
-// Originally from http://simonwillison.net/2006/Jan/20/escape/ (dead link)
-function escapeRegExp(value) {
-    return value.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
-}
 
-function createObjectOf(value: any, keys: string[]) {
-    let result = {}
-    for (let i = 0; i < keys.length; i++) {
-        result[keys[i]] = value
+export function createChildMountedPattern(parentPattern: MountedPattern, compiledPattern: CompiledPattern): MountedPattern {
+    if (process.env.NODE_ENV !== 'production') {
+        if (compiledPattern.relativePathParams) {        
+            let doubleParams = compiledPattern.relativePathParams.filter(param => parentPattern.params.indexOf(param) !== -1)
+            if (doubleParams.length) {
+                console.error(`The pattern "${compiledPattern.relativePattern}" uses the param names ${doubleParams.map(x => `"${x}"`).join(', ')}, which have already been used by a parent junction.`)
+            }
+        }
     }
-    return result
+
+    return {
+        params: parentPattern.params.concat(compiledPattern.relativePathParams || []),
+        ...compiledPattern,
+    }
 }
 
-export function addJunctionParamsToMount(mount: Mount, junctionParams?: Junction['params']): Mount {
-    let relativeSearchParams =
-        junctionParams ? (Array.isArray(junctionParams) ? createObjectOf(false, junctionParams) : junctionParams) : {}
+
+export function addParamsToMountedPattern(pattern: MountedPattern, params?: { [name: string]: boolean }): MountedPattern {
+    let relativeSearchParams = params || {}
     
     // Ensure that any params in the mount's path are also specified by the
     // mounted junction's "params" config.
-    if (mount.relativePathParams) {
-        for (let i = mount.relativePathParams.length - 1; i >= 0; i--) {
-            let pathParam = mount.relativePathParams[i]
+    if (pattern.relativePathParams) {
+        for (let i = pattern.relativePathParams.length - 1; i >= 0; i--) {
+            let pathParam = pattern.relativePathParams[i]
             let required = relativeSearchParams[pathParam]
             if (required === undefined) {
                 if (process.env.NODE_ENV !== 'production') {
@@ -157,25 +142,25 @@ export function addJunctionParamsToMount(mount: Mount, junctionParams?: Junction
     // If there are no search params, the mount won't change.
     let searchParamKeys = Object.keys(relativeSearchParams)
     if (searchParamKeys.length === 0) {
-        return mount
+        return pattern
     }
     
     // Ensure that none of our search param names are already used by parent
     // junctions.
     if (process.env.NODE_ENV !== 'production') {
-        let doubleParams = searchParamKeys.filter(param => mount.params.indexOf(param) !== -1)
+        let doubleParams = searchParamKeys.filter(param => pattern.params.indexOf(param) !== -1)
         if (doubleParams.length) {
-            console.error(`The junction mounted at "${mount.relativePattern}" uses the param names ${doubleParams.map(x => `"${x}"`).join(', ')}, which have already been used by a parent junction.`)
+            console.error(`The junction mounted at "${pattern.relativePattern}" uses the param names ${doubleParams.map(x => `"${x}"`).join(', ')}, which have already been used by a parent junction.`)
         }
     }
     
     return {
-        ...mount,
+        ...pattern,
         relativeSearchParams: searchParamKeys.length ? relativeSearchParams : undefined,
     }
 }
 
-type MountMatch = {
+export type PatternMatch = {
     params: { [name: string]: any },
 
     // The part of the location that was matched, including path and search params.
@@ -186,8 +171,8 @@ type MountMatch = {
 }
 
 
-export function matchMountAgainstLocation(mount: Mount, location: Location): MountMatch | undefined {
-    let match = mount.relativeRegExp.exec(location.pathname)
+export function matchMountedPatternAgainstLocation(pattern: MountedPattern, location: Location): PatternMatch | undefined {
+    let match = pattern.relativeRegExp.exec(location.pathname)
     let params = {}
 
     if (!match) {
@@ -195,21 +180,21 @@ export function matchMountAgainstLocation(mount: Mount, location: Location): Mou
     }
 
     // Set path params using RegExp match
-    if (mount.relativePathParams) {
-        for (let i = 0; i < mount.relativePathParams.length; i++) {
-            let paramName = mount.relativePathParams[i]
+    if (pattern.relativePathParams) {
+        for (let i = 0; i < pattern.relativePathParams.length; i++) {
+            let paramName = pattern.relativePathParams[i]
             params[paramName] = match[i+1]
         }
     }
 
     let matchedQueryParts = {}
     let remainingQueryParts = {}
-    if (mount.relativeSearchParams) {
+    if (pattern.relativeSearchParams) {
         let query = parseQuery(location.search)
-        let keys = Object.keys(mount.relativeSearchParams)
+        let keys = Object.keys(pattern.relativeSearchParams)
         for (let i = 0; i < keys.length; i++) {
             let paramName = keys[i]
-            let isRequired = mount.relativeSearchParams[paramName]
+            let isRequired = pattern.relativeSearchParams[paramName]
 
             if (query[name] === undefined) {
                 // If the parameter is required but not present, then this is not
@@ -246,30 +231,9 @@ export function matchMountAgainstLocation(mount: Mount, location: Location): Mou
 }
     
 
-export function validateChildMounts(childMounts: Mount[]) {
-    if (process.env.NODE_ENV !== 'production') {
-        if (childMounts.length < 2) {
-            return
-        }
 
-        // Note that the patterns are reverse ordered by keys, and the wildcard character
-        // is the null character `\0`, so wildcards always appear after any
-        // specific alternatives.
-        let len = childMounts.length
-        let previousMount = childMounts[len - 1]
-        for (let i = len - 2; i >= 0; i--) {
-            let mount = childMounts[i]
-
-            // If previous pattern matches this one, and doesn't completely
-            // replace it, then there could be a conflict
-            let replacedKey = mount.relativeKey.replace(previousMount.relativeRegExp, '')
-            if (replacedKey !== mount.relativeKey && replacedKey.length > 0) {
-                console.warn(`A junction defines children at both "${previousMount.relativePattern}" and "${mount.relativePattern}", but this may lead to multiple junctions sharing the same URL.`)
-            }
-
-            previousMount = mount
-        }
-    }
+// From http://stackoverflow.com/a/5306111/106302
+// Originally from http://simonwillison.net/2006/Jan/20/escape/ (dead link)
+function escapeRegExp(value) {
+    return value.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&")
 }
-
-

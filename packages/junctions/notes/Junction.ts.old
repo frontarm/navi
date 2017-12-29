@@ -174,13 +174,17 @@ export namespace Junction {
     export interface State<J extends Junction=any> {
         location: Location,
         params?: { [name: string]: any },
-        child?: { pattern: keyof J['children'] } & State<J['children'][keyof J['children']]>,
-        childStatus?: 'fetched' | 'fetching' | 'fetchable' | 'error' | 'notfound',
 
         redirect?: Location,
 
         locators: Locators,        
         meta?: any,
+
+        // NOTE: can only have child or content, but not both!
+
+        child?: { pattern: keyof J['children'] } & State,
+        childStatus?: 'fetched' | 'fetching' | 'fetchable' | 'error' | 'notfound',
+
         content?: any,
         contentStatus?: 'fetched' | 'fetching' | 'fetchable' | 'error',
     }
