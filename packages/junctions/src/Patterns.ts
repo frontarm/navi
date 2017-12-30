@@ -35,13 +35,24 @@ export interface MountedPattern extends CompiledPattern {
     relativeSearchParams?: { [name: string]: boolean },
 }
 
-export function createRootMountedPattern(mountable: Mountable): MountedPattern {
+export function createRootMountedPattern(mountable: Mountable, relativePath?: string): MountedPattern {
+    let rootPattern: CompiledPattern =
+        relativePath
+            ? compilePattern(relativePath, mountable)
+            : {
+                relativePattern: relativePath || '',
+                relativeKey: '',
+                relativeRegExp: new RegExp(''),
+                mountable
+            }
+        
+    if (this.rootPattern.relativePathParams.length > 0) {
+        throw new Error("Your root path may not contain parameters")
+    }
+
     return {
+        ...rootPattern,
         params: [],
-        relativePattern: '',
-        relativeKey: '',
-        relativeRegExp: new RegExp(''),
-        mountable: mountable,
     }
 }
 

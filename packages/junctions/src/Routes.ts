@@ -12,6 +12,19 @@ export type Route<ParentJunction extends Junction=any> =
     RedirectRoute<ParentJunction> |
     NotFoundRoute
 
+export type RootRoute<RootJunction extends Junction<any, any, any>> =
+    JunctionRoute<any, RootJunction['component'], RootJunction['payload'], RootJunction> |
+
+    // If the junction is matched exactly and it has no default path, the route
+    // is considered not found.
+    NotFoundRoute |
+
+    // If the junction is matched exactly and it has a default path, the route
+    // will be a redirect.
+    RedirectRoute<any> |
+
+    // If the base path is not matched, the route is undefined.
+    undefined
 
 /**
  * All routes extend this interface. It includes all information that can be
@@ -100,7 +113,7 @@ export type JunctionChildRoute<J extends Junction<any, any, any>> = {
  */
 export interface JunctionDescendentsRoutes<J extends Junction<any, any, any>> extends Array<JunctionChildRoute<any>> {
     0: JunctionChildRoute<J>;
-    [i: number]: JunctionChildRoute<any>;
+    [i: number]: Route;
 }
 
 
@@ -129,7 +142,7 @@ export interface PageRoute<ParentJunction extends Junction, Component=any, Conte
  */
 export interface RedirectRoute<ParentJunction extends Junction> extends RouteBase<ParentJunction> {
     type: 'RedirectRoute'
-    status: 'ready',
+    status: 'redirect',
     component: never,
     to: Location,
 }

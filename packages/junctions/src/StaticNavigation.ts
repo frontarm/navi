@@ -1,54 +1,40 @@
 import { Location } from './Location'
-import { Junction } from './Junction'
+import { Junction } from './Mounts'
 import { JunctionManager } from './JunctionManager'
+import { RootRoute } from './Routes'
 
 
-export class StaticNavigation {
-    private manager: JunctionManager
-    private waitingForInitialContent?: Deferred<Junction.State | undefined>
+export class StaticNavigation<RootJunction extends Junction<any, any, any>> {
+    private manager: JunctionManager<RootJunction>
+    private finalRootRouteDeferred: Deferred<RootRoute<RootJunction>>
     
     constructor(options: {
-        rootJunction: Junction,
+        rootJunction: RootJunction,
         initialLocation: Location,
     }) {
-        this.waitingForInitialContent = new Deferred()
         this.manager = new JunctionManager(options)
+        this.finalRootRouteDeferred = new Deferred()
 
-        this.handleState = this.handleState.bind(this)
-        this.handleState(this.manager.getState(), undefined, this.manager.isBusy())
-        this.manager.subscribe(this.handleState)
+        if (this.manager.isBusy()) {
+            this.handleRouteChange = this.handleRouteChange.bind(this)
+            this.manager.subscribe(this.handleRouteChange)
+        }
+        else {
+            this.finalRootRouteDeferred.resolve(this.manager.getRootRoute())
+        }
     }
 
     getLocation(): Location {
         return this.manager.getLocation()
     }
 
-    getFirstCompleteState(): Promise<Junction.State | undefined> {
-        if (!this.waitingForInitialContent) {
-            return Promise.resolve(this.manager.getState())
-        }
-        else {
-            return this.waitingForInitialContent.promise
-        }
+    getFinalRootRoute(): Promise<RootRoute<RootJunction>> {
+        return this.finalRootRouteDeferred.promise
     }
 
-    private handleState(newState: Junction.State | undefined, oldState: Junction.State | undefined, isBusy: boolean) {
-        if (!newState && this.waitingForInitialContent) {
-            this.waitingForInitialContent.resolve(undefined)
-            this.waitingForInitialContent = undefined
-            return
-        }
-
-        if (!isBusy && newState) {
-            let deepestChild = newState
-            while (deepestChild.child) {
-                deepestChild = deepestChild.child
-            }
-
-            if (!deepestChild.childStatus && this.waitingForInitialContent) {
-                this.waitingForInitialContent.resolve(newState)
-                this.waitingForInitialContent = undefined
-            }
+    private handleRouteChange() {
+        if (!this.manager.isBusy()) {
+            this.finalRootRouteDeferred.resolve(this.manager.getRootRoute())
         }
     }
 }

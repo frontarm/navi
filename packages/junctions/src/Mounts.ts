@@ -1,6 +1,7 @@
 import { Location, concatLocations } from './Location'
 import { CompiledPattern, MountedPattern, PatternMatch, createChildMountedPattern, matchMountedPatternAgainstLocation, addParamsToMountedPattern } from './Patterns'
 import { MountableRoute, JunctionRoute, JunctionChildRoute, JunctionDescendentsRoutes, PageRoute, RedirectRoute, NotFoundRoute, Route } from './Routes'
+import { JunctionManager } from './JunctionManager'
 
 
 export type Mountable = Junction<any, any, any> | Page<any, any, any> | Redirect
@@ -172,6 +173,7 @@ abstract class BaseMount {
                         ...event,
                         type: event['type'] + 'End',
                     })
+                    this.handleRouteChange()
                 })
         }
     }
@@ -313,7 +315,7 @@ export class JunctionMount<
             // so redirect to it.
             return {
                 type: 'RedirectRoute',
-                status: 'ready',
+                status: 'redirect',
                 pattern: this.mountedPattern.relativePattern,
                 params: {},
                 location: this.routeLocation,
@@ -494,7 +496,7 @@ export class RedirectMount extends BaseMount {
     getRoute(): RedirectRoute<any> {
         return {
             type: 'RedirectRoute',
-            status: 'ready',
+            status: 'redirect',
             pattern: this.mountedPattern.relativePattern,
             params: {},
             location: this.routeLocation,

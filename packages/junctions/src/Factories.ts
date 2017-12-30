@@ -4,6 +4,7 @@ import {
     Page, PageMount, AsyncContent,
     Redirect, RedirectMount,
 } from './Mounts'
+import { JunctionManager } from './JunctionManager'
 import { PageRoute } from './Routes'
 import { compilePattern } from './Patterns'
 
@@ -172,7 +173,7 @@ export function createPage<
     title: string,
     component?: Component,
     meta?: Meta,
-    getContent?: (getPageRoutes: PageRoutesGetter) => Content | Promise<Content>
+    getContent?: (getPageRoutes: JunctionManager['getPageRoutes']) => Content | Promise<Content>
 }): Page<Component, Content, Meta> {
     let getter: (junctionManager: JunctionManager) => Content | Promise<Content>
     if (options.getContent) {
@@ -243,8 +244,6 @@ export function createRedirect(to: Location | string): Redirect {
 type Helpers = {
     split: typeof split,
 }
-
-type PageRoutesGetter = <Locations extends { [name: string]: Location }>(locations: Locations) => Promise<{ [K in keyof Locations]: PageRoute<any> }> | { [K in keyof Locations]: PageRoute<any> }
 
 function split<M extends Mountable>(getter: () => Promise<M> | M): AsyncMountable<M> {
     return {

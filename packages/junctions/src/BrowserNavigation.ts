@@ -1,14 +1,15 @@
 import { Location, createHref } from './Location'
-import { Junction } from './Junction'
+import { Junction } from './Mounts'
 import { JunctionManager } from './JunctionManager'
+import { RootRoute } from './Routes'
 
 
-type BrowserNavigationOptions = {
+type BrowserNavigationOptions<RootJunction extends Junction<any, any, any>> = {
     /**
      * The root junction that defines the available URLs, and how to render
      * them.
      */
-    rootJunction: Junction,
+    rootJunction: RootJunction,
 
     /**
      * Causes the navigation to follow any redirects in junctions.
@@ -26,7 +27,7 @@ type BrowserNavigationOptions = {
      * 
      * Defaults to `true`.
      */
-    announceTitle?: boolean | ((pageTitle?: string) => string),
+    announceTitle?: boolean | ((pageTitle: string | null) => string),
 
     /**
      * Sets `document.title` to the value of the
@@ -37,23 +38,23 @@ type BrowserNavigationOptions = {
      * 
      * Defaults to `true`.
      */
-    setDocumentTitle?: boolean | ((pageTitle?: string) => string),
+    setDocumentTitle?: boolean | ((pageTitle: string | null) => string),
 }
 
 
-export class BrowserNavigation {
-    private announceTitle?: (pageTitle?: string) => string
+export class BrowserNavigation<RootJunction extends Junction<any, any, any>> {
+    private announceTitle?: (pageTitle: string | null) => string
     private followRedirects: boolean
-    private manager: JunctionManager
-    private setDocumentTitle: (pageTitle?: string) => string
+    private manager: JunctionManager<RootJunction>
+    private setDocumentTitle: (pageTitle: string | null) => string
     private subscribers: {
         callback: () => void,
         waitForInitialContent: boolean,
     }[]
     private waitingForInitialContent: boolean
     
-    constructor(options: BrowserNavigationOptions) {
-        this.handleState = this.handleState.bind(this)
+    constructor(options: BrowserNavigationOptions<RootJunction>) {
+        this.handleRouteChange = this.handleRouteChange.bind(this)
         this.handlePopState = this.handlePopState.bind(this)
 
         if (options.announceTitle !== false) {
@@ -75,8 +76,8 @@ export class BrowserNavigation {
             rootJunction: options.rootJunction,
         })
 
-        this.handleState(this.manager.getState(), undefined, this.manager.isBusy())
-        this.manager.subscribe(this.handleState)
+        this.handleRouteChange()
+        this.manager.subscribe(this.handleRouteChange)
         window.addEventListener("popstate", this.handlePopState)
     }
     
@@ -105,12 +106,8 @@ export class BrowserNavigation {
         return this.manager.isBusy()
     }
     
-    getState(): Junction.State | undefined {
-        return this.manager.getState()
-    }
-    
-    getJunction(location: Location): Promise<Junction> | Junction | undefined {
-        return this.manager.getJunction(location)
+    getRootRoute(): RootRoute<RootJunction> {
+        return this.manager.getRootRoute()
     }
 
     getLocation(): Location {
@@ -127,31 +124,48 @@ export class BrowserNavigation {
         this.manager.setLocation(location)
     }
 
-    private handleState(newState: Junction.State | undefined, oldState: Junction.State | undefined, isBusy: boolean) {
-        if (!isBusy && newState) {
-            let deepestChild = newState
-            while (deepestChild.child) {
-                deepestChild = deepestChild.child
+    private handleRouteChange() {
+        let isBusy = this.manager.isBusy()
+        let rootRoute = this.manager.getRootRoute()
+
+        let redirectTo: Location | undefined
+        let title: string | null | undefined
+
+        if (!isBusy && rootRoute) {
+            if (rootRoute.status === "ready") {
+                let deepestRoute = rootRoute.descendents[rootRoute.descendents.length - 1]
+                if (deepestRoute.status === "redirect") {
+                    redirectTo = deepestRoute.to
+                }
+                if (deepestRoute.status !== "busy") {
+                    this.waitingForInitialContent = false
+                }
+                if (deepestRoute.status === "ready" && deepestRoute.type === "PageRoute") {
+                    title = deepestRoute.title
+                }
+                else if (deepestRoute.status !== "busy") {
+                    title = null
+                }
             }
-
-            if (!deepestChild.childStatus) {
-                if (this.followRedirects && deepestChild.redirect) {
-                    this.replaceLocation(deepestChild.redirect)
-                    return
-                }
-
-                let title = (deepestChild.meta && deepestChild.meta.pageTitle) || undefined
-                if (this.announceTitle && !this.waitingForInitialContent) {
-                    announce(this.announceTitle(title))
-                }
-                if (this.setDocumentTitle) {
-                    document.title = this.setDocumentTitle(title)
-                }
-
-                this.waitingForInitialContent = false
+            else if (rootRoute.status === "redirect") {
+                redirectTo = rootRoute.to
             }
         }
 
+        if (this.followRedirects && redirectTo) {
+            this.replaceLocation(redirectTo)
+            return
+        }
+
+        if (title !== undefined) {
+            if (this.announceTitle) {
+                announce(this.announceTitle(title))
+            }
+            if (this.setDocumentTitle) {
+                document.title = this.setDocumentTitle(title)
+            }    
+        }
+        
         for (let subscriber of this.subscribers) {
             if (!isBusy || !subscriber.waitForInitialContent || !this.waitingForInitialContent) {
                 subscriber.callback()
