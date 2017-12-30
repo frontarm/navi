@@ -70,7 +70,7 @@ export default async function createMap(mainFile, publicFolder) {
             console.warn(`Could not load the junction associated with path "${pathname}".`)
         }
         
-        if (deepestRoute.source.mountableType === 'Junction')
+        if (deepestRoute.source.mountableType === 'Junction') {
             addJunctionChildrenToQueue(deepestRoute.source, deepestRoute.location.pathname)
         }
     }
