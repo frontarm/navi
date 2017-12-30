@@ -17,6 +17,8 @@ export class StaticNavigation<RootJunction extends Junction<any, any, any>> {
         this.manager = new JunctionManager(options)
         this.finalRootRouteDeferred = new Deferred()
 
+        this.getPageRoutes = this.manager.getPageRoutes.bind(this.manager)
+
         if (this.manager.isBusy()) {
             this.handleRouteChange = this.handleRouteChange.bind(this)
             this.manager.subscribe(this.handleRouteChange)
@@ -29,6 +31,8 @@ export class StaticNavigation<RootJunction extends Junction<any, any, any>> {
     getLocation(): Location {
         return this.manager.getLocation()
     }
+
+    getPageRoutes: JunctionManager['getPageRoutes']
 
     getFinalRootRoute(): Promise<RootRoute<RootJunction>> {
         return this.finalRootRouteDeferred.promise

@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import path from 'path'
 import fs from 'fs-extra'
 import createMap from '../createMap'
@@ -11,6 +12,8 @@ export default async function build(mainFile, publicFolder, renderToString) {
     let dom = createDOM()
     let rootJunction = dom.window.rootJunction
     let pathnames = Object.keys(siteMap)
+
+    console.log('\nCreating static files...\n')
     
     await Promise.all(pathnames.map(async function(pathname) {
         let details = siteMap[pathname]
@@ -19,9 +22,14 @@ export default async function build(mainFile, publicFolder, renderToString) {
 
         if (details.redirect) {
             await fs.ensureDir(path.dirname(filesystemPath))
+
+            console.log(chalk.yellow("[redirect] ")+publicPath+chalk.grey(" -> "+details.redirect))
+
             return fs.writeFile(filesystemPath+'.headers', "x-amz-website-redirect-location: "+details.redirect)
         }
         else {
+            console.log(chalk.blueBright("[html]     ")+publicPath)
+
             let html = await renderToString({
                 junction: rootJunction,
                 location: { pathname },
@@ -34,4 +42,6 @@ export default async function build(mainFile, publicFolder, renderToString) {
             return fs.writeFile(filesystemPath, html)
         }
     }))
+
+    console.log('')
 }

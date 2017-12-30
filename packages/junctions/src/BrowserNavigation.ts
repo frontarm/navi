@@ -76,6 +76,8 @@ export class BrowserNavigation<RootJunction extends Junction<any, any, any>> {
             rootJunction: options.rootJunction,
         })
 
+        this.getPageRoutes = this.manager.getPageRoutes.bind(this.manager)
+
         // Make sure to add listeners for route changes before handling the
         // initial route, as the initial route may synchronously emit more
         // changes due to redirects.
@@ -116,6 +118,8 @@ export class BrowserNavigation<RootJunction extends Junction<any, any, any>> {
     getLocation(): Location {
         return this.manager.getLocation()
     }
+
+    getPageRoutes: JunctionManager['getPageRoutes'];
 
     replaceLocation(location: Location): void {
         window.history.replaceState(location.state, <any>null, createHref(location))

@@ -15,6 +15,7 @@ export default function createDOMFactory(mainFile, publicFolder) {
 
     let factory = (onLoad) => {
         let doc = jsdom.jsdom('', {
+            virtualConsole: jsdom.createVirtualConsole().sendTo(console),
             resourceLoader: function (resource, callback) {
                 var pathname = resource.url.pathname
 
