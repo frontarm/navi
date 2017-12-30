@@ -147,12 +147,7 @@ export function createJunction<
         static component = options.component as Component
         static defaultPath = options.defaultPath || null
 
-        static childCompiledPatterns = compiledPatterns        
-
-        // Share a single cache object across all mounted instances of this
-        // Junction, so that split mountables only need to be fetched once.
-        // TODO: do we even need this if childCompiledPatterns contains async mountables?
-        static cache = {}
+        static childCompiledPatterns = compiledPatterns
 
         constructor(mountOptions: MountOptions) {
             super({

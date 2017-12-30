@@ -14,12 +14,12 @@ export default async function build(mainFile, publicFolder, renderToString) {
     
     await Promise.all(pathnames.map(async function(pathname) {
         let details = siteMap[pathname]
-        let publicPath = pathname === '/' ? 'index.html' : pathname.slice(1) + '/index.html'
+        let publicPath = pathname === '/' ? 'index.html' : path.join(pathname.slice(1), 'index.html')
         let filesystemPath = path.resolve(cwd, publicFolder, publicPath)
 
         if (details.redirect) {
             await fs.ensureDir(path.dirname(filesystemPath))
-            return fs.writeFile(filesystemPath+'.headers', "x-amz-website-redirect-location: "+details.redirect.pathname)
+            return fs.writeFile(filesystemPath+'.headers', "x-amz-website-redirect-location: "+details.redirect)
         }
         else {
             let html = await renderToString({

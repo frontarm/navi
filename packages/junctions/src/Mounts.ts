@@ -203,8 +203,6 @@ export interface JunctionOptions<
     component: Component;
     payload: Payload;
     defaultPath: keyof Children | null,
-
-    cache: any,
     childCompiledPatterns: CompiledPattern[],
 }
 
@@ -424,16 +422,28 @@ export class PageMount<
 
     content?: Content;
     contentStatus: 'ready' | 'busy' | 'error';
+    requiresSlash?: true;
     
     constructor(options: BaseMountOptions, pageOptions: PageOptions<Component, Content, Meta>) {
         super(options)
 
-        if (!this.match || this.match.remainingLocation) {
-            // A page route only matches exact locations; if the match
-            // isn't exact, remove it and return a NotFoundRoute.
+        if (!this.match) {
+            return this
+        }
+
+        let remainingLocation = this.match.remainingLocation
+        
+        if (!remainingLocation && this.routeLocation.pathname.slice(-1) !== '/') {
+            // The path doesn't end in "/", so we want to redirect to the
+            // canonical path.
+            this.requiresSlash = true
+            return this
+        }
+        else if (remainingLocation && remainingLocation.pathname !== "/") {
+            // We don't understand the remaining part of the path.
             delete this.match
         }
-        else {
+        else if (this.match) {
             this.options = pageOptions
 
             this.watchAsync(
@@ -447,9 +457,22 @@ export class PageMount<
         }
     }
 
-    getRoute(): PageRoute<any, any, any> | NotFoundRoute {
+    getRoute(): PageRoute<any, any, any> | RedirectRoute<any> | NotFoundRoute {
         if (!this.match) {
             return this.createNotFoundRoute()
+        }
+
+        if (this.requiresSlash) {
+            return {
+                type: 'RedirectRoute',
+                status: 'redirect',
+                pattern: this.mountedPattern.relativePattern,
+                params: {},
+                location: this.routeLocation,
+                to: concatLocations(this.routeLocation, { pathname: '/' }),
+                component: <never>undefined,
+                source: <any>this.constructor,
+            }
         }
 
         return {
@@ -499,7 +522,11 @@ export class RedirectMount extends BaseMount {
         this.options = redirectOptions
     }
 
-    getRoute(): RedirectRoute<any> {
+    getRoute(): RedirectRoute<any> | NotFoundRoute {
+        if (!this.match || (this.match.remainingLocation && this.match.remainingLocation.pathname !== '/')) {
+            return this.createNotFoundRoute()
+        }
+
         return {
             type: 'RedirectRoute',
             status: 'redirect',

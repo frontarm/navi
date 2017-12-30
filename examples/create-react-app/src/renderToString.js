@@ -43,11 +43,11 @@ export default async function renderToString({ junction, location, dependencies,
     initialLocation: location,
     rootJunction: junction,
   })
-  let navState = await nav.getFirstCompleteState()
+  let rootRoute = await nav.getFinalRootRoute()
 
   // Render the page content using React
   let content = ReactDOMServer.renderToString(
-    React.createElement(navState.meta.wrapper, { nav: navState }),
+    React.createElement(rootRoute.component, { route: rootRoute }),
   )
 
   // Inject main css file

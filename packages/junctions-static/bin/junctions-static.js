@@ -32,8 +32,10 @@ function getConfig(command) {
     //     config: config({ environment: process.env.NODE_ENV }),
     //   })
 
-    let renderToStringModule = require(path.resolve(cwd, command.render))
-    command.renderToString = renderToStringModule.default || renderToStringModule.renderToString || renderToStringModule
+    if (command.render) {
+      let renderToStringModule = require(path.resolve(cwd, command.render))
+      command.renderToString = renderToStringModule.default || renderToStringModule.renderToString || renderToStringModule
+    }
 
     return command
 }

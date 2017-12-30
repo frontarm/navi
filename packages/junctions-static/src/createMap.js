@@ -3,8 +3,22 @@ import { StaticNavigation } from 'junctions'
 
 export default async function createMap(mainFile, publicFolder) {
     let createDOM = createDOMFactory(mainFile, publicFolder)
-    let queue = ['']
+    let queue = []
     let map = {}
+
+    function addJunctionChildrenToQueue(junction, base='') {
+        Object.keys(junction.children)
+            .filter(pattern => pattern.indexOf(':') === -1)
+            .forEach(pattern => {
+                let pathname = base + pattern
+                if (!map[pathname]) {
+                    queue.push(pathname)
+                }
+            })
+    }
+
+    let dom = createDOM()
+    addJunctionChildrenToQueue(dom.window.rootJunction)
 
     async function processURL(pathname) {
         let dependencies = []
@@ -24,14 +38,21 @@ export default async function createMap(mainFile, publicFolder) {
         })
 
         let rootRoute = await navigation.getFinalRootRoute()
-        let deepestRoute = rootRoute.descendents[rootRoute.descendents.length - 1]
+        let deepestRoute = rootRoute.descendents && rootRoute.descendents[rootRoute.descendents.length - 1]
+
+        if (!deepestRoute) {
+            console.warn(`Could not load the junction associated with path "${pathname}".`)
+            return
+        }
 
         if (deepestRoute.type === 'RedirectRoute') {
             let redirectPath = deepestRoute.to.pathname
-            map[pathname] = {
-                pathname: pathname,
-                dependencies: dependencies,
-                redirect: redirectPath,
+            if (redirectPath !== pathname+'/') {
+                map[pathname] = {
+                    pathname: pathname,
+                    dependencies: dependencies,
+                    redirect: redirectPath,
+                }
             }
             if (!map[redirectPath]) {
                 queue.push(redirectPath)
@@ -41,7 +62,8 @@ export default async function createMap(mainFile, publicFolder) {
             map[pathname] = {
                 pathname: pathname,
                 dependencies: dependencies,
-                meta: deepestState.meta,
+                title: deepestRoute.title,
+                meta: deepestRoute.meta,
             }
         }
         else {
@@ -49,16 +71,8 @@ export default async function createMap(mainFile, publicFolder) {
             return
         }
 
-        if (deepestRoute.source instanceof Junction) {
-            let junction = deepestRoute.source
-            Object.keys(junction.children)
-                .filter(pattern => pattern.indexOf(':') === -1)
-                .forEach(pattern => {
-                    let pathname = deepestRoute.location.pathname + pattern
-                    if (!map[pathname]) {
-                        queue.push(pathname)
-                    }
-                })
+        if (deepestRoute.source.mountableType === 'Junction') {
+            addJunctionChildrenToQueue(deepestRoute.source, deepestRoute.location.pathname)
         }
     }
 
