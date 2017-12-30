@@ -25,6 +25,7 @@ export default async function build(mainFile, publicFolder, renderToString) {
             let html = await renderToString({
                 junction: rootJunction,
                 location: { pathname },
+                title: details.title,
                 meta: details.meta,
                 dependencies: details.dependencies,
             })
