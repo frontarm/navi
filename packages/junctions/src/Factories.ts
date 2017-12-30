@@ -34,7 +34,7 @@ export function createJunction<
     }
     if (!options.children) {
         if (process.env.NODE_ENV !== 'production') {
-            console.warn(`createJunction() was called without a "patterns" option, but a junction without patterns doesn't make any sense!`)
+            console.warn(`createJunction() was called without a "children" option, but a junction without children doesn't make any sense!`)
         }
         options.children = {} as any
     }
@@ -68,7 +68,7 @@ export function createJunction<
         }
 
         if (compiledPatterns.length === 0) {
-            console.warn(`createJunction() was called with an empty object {} for "patterns". This doesn't make any sense.`)
+            console.warn(`createJunction() was called with an empty object {} for "children". This doesn't make any sense.`)
         }
 
         // Check to make sure that none of the junction supplied as patterns
