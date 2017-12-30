@@ -177,10 +177,34 @@ export function createPage<
     let getter: (junctionManager: JunctionManager) => Content | Promise<Content>
     if (options.getContent) {
         let getContent = options.getContent
-        getter = (junctionManager: JunctionManager) => getContent(junctionManager.getPageRoutes)
+        getter = (junctionManager: JunctionManager) => getContent(junctionManager.getPageRoutes.bind(junctionManager))
     }
     else {
         getter = (() => {}) as any
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+        let {
+            params,
+            title,
+            component,
+            meta,
+            getContent,
+            ...other
+        } = options
+
+        if (!('component' in options)) {
+            console.warn(`createPage() was called without a "component" option, where you'll usually need to provide one. If you're sure you don't need a component, pass a value of "null".`)
+        }
+
+        let unknownKeys = Object.keys(other)
+        if (unknownKeys.length) {
+            console.warn(`createPage() received unknown options ${unknownKeys.map(x => `"${x}"`).join(', ')}.`)
+        }
+
+        if (title === undefined) {
+            console.warn(`createPage() must be supplied a "title" option. If you don't want to give your page a title, pass "null' as the title.`)
+        }
     }
 
     let asyncContent: AsyncContent<Content> = {
