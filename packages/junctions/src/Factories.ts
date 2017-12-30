@@ -62,6 +62,10 @@ export function createJunction<
             ...other
         } = options
 
+        if (!('component' in options)) {
+            console.warn(`createJunction() was called without a "component" option, where you'll usually need to provide one. If you're sure you don't need a component, pass a value of "null".`)
+        }
+
         let unknownKeys = Object.keys(other)
         if (unknownKeys.length) {
             console.warn(`createJunction() received unknown options ${unknownKeys.map(x => `"${x}"`).join(', ')}.`)
