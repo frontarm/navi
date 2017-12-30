@@ -1,9 +1,9 @@
 import createDOMFactory from './createDOMFactory'
-import { JunctionManager } from 'junctions'
+import { StaticNavigation } from 'junctions'
 
 export default async function createMap(mainFile, publicFolder) {
     let createDOM = createDOMFactory(mainFile, publicFolder)
-    let queue = ['/']
+    let queue = ['']
     let map = {}
 
     async function processURL(pathname) {
@@ -13,7 +13,7 @@ export default async function createMap(mainFile, publicFolder) {
         })
         let rootJunction = dom.window.rootJunction
 
-        let manager = new JunctionManager({
+        let navigation = new StaticNavigation({
             initialLocation: { pathname },
             rootJunction,
             onEvent: (eventType, location) => {
@@ -23,51 +23,41 @@ export default async function createMap(mainFile, publicFolder) {
             }
         })
 
-        let state = manager.getState()
+        let rootRoute = await navigation.getFinalRootRoute()
+        let deepestRoute = rootRoute.descendents[rootRoute.descendents.length - 1]
 
-        if (manager.isBusy()) {
-            await new Promise((resolve, reject) =>
-                manager.subscribe((newState, oldState, isBusy) => {
-                    state = newState
-                    if (!isBusy) {
-                        resolve()
-                    }
-                })
-            )
-        }
-        
-        let junction = await manager.getJunction({ pathname })
-        
-        let deepestState = state
-        while (deepestState.child) {
-            deepestState = deepestState.child
-        }
-
-        if (deepestState.childStatus) {
-            console.warn(`Could not load the junction associated with path "${pathname}".`)
-            return
-        }
-
-        if (deepestState.redirect) {
+        if (deepestRoute.type === 'RedirectRoute') {
+            let redirectPath = deepestRoute.to.pathname
             map[pathname] = {
                 pathname: pathname,
                 dependencies: dependencies,
-                redirect: deepestState.redirect,
+                redirect: redirectPath,
+            }
+            if (!map[redirectPath]) {
+                queue.push(redirectPath)
             }
         }
-        else {
+        else if (deepestRoute.type === 'PageRoute' && (!deepestRoute.contentStatus || deepestRoute.contentStatus === 'ready')) {
             map[pathname] = {
                 pathname: pathname,
                 dependencies: dependencies,
                 meta: deepestState.meta,
             }
         }
+        else {
+            console.warn(`Could not load the junction associated with path "${pathname}".`)
+            return
+        }
 
-        if (junction.children) {
+        if (deepestRoute.source instanceof Junction) {
+            let junction = deepestRoute.source
             Object.keys(junction.children)
                 .filter(pattern => pattern.indexOf(':') === -1)
                 .forEach(pattern => {
-                    queue.push(deepestState.location.pathname + pattern)
+                    let pathname = deepestRoute.location.pathname + pattern
+                    if (!map[pathname]) {
+                        queue.push(pathname)
+                    }
                 })
         }
     }

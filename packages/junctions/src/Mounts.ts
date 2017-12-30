@@ -76,7 +76,7 @@ abstract class BaseMount {
     unmounted: boolean
     private onRouteChange: () => void;
 
-    junctionManager: any;
+    junctionManager: JunctionManager;
 
     constructor(options: BaseMountOptions) {
         let { 
@@ -86,6 +86,8 @@ abstract class BaseMount {
             params,
         } = options
 
+        this.handleRouteChange = this.handleRouteChange.bind(this)
+
         // Get the full mount object for this junction, including information
         // on any params that it consumes.
         this.mountedPattern = addParamsToMountedPattern(patternWithoutSearchParams, params)
@@ -93,6 +95,7 @@ abstract class BaseMount {
         this.waitingForWatch = false
         this.unmounted = false
         this.onRouteChange = options.onRouteChange
+        this.junctionManager = options.junctionManager
 
         // Note that we'll have already matched the *path* part of the location
         // in the parent function. However, we may not have matched params that
@@ -106,8 +109,8 @@ abstract class BaseMount {
         this.unmounted = true
     }
 
-    isBusy() {
-        return this.waitingForWatch
+    isBusy(): boolean {
+        return !!this.waitingForWatch
     }
 
     // Get the route object given the current state.
@@ -118,8 +121,9 @@ abstract class BaseMount {
             type: 'NotFoundRoute',
             status: 'notfound',
             location: this.matchableLocationPart,
-            pattern: this.mountedPattern.relativePattern,
+            pattern: undefined,
             params: {},
+            source: <any>this.constructor,
         }
     }
 
@@ -135,7 +139,7 @@ abstract class BaseMount {
 
             // Not all promise libraries use the ES6 `Promise` constructor,
             // so there isn't a better way to check if it's a promise :-(
-            if (result.then) {
+            if (result && result.then) {
                 async.promise = result
                 async.status = 'busy'
             }
@@ -153,7 +157,7 @@ abstract class BaseMount {
             this.junctionManager.onEvent({
                 ...event,
                 type: event['type'] + 'Start',
-            })
+            } as any)
             async.promise
                 .then(
                     (value) => {
@@ -172,7 +176,7 @@ abstract class BaseMount {
                     this.junctionManager.onEvent({
                         ...event,
                         type: event['type'] + 'End',
-                    })
+                    } as any)
                     this.handleRouteChange()
                 })
         }
@@ -226,11 +230,7 @@ export class JunctionMount<
             this.options = junctionOptions
 
             if (!this.match.remainingLocation) {
-                if (junctionOptions.defaultPath === null) {
-                    // You can't navigate to a junction without a default path
-                    delete this.match
-                }
-                else {
+                if (junctionOptions.defaultPath !== null) {
                     // If we do have a default path, treat this junctiona s a
                     // redirect to that path.
                     this.redirectTo = concatLocations(this.routeLocation, { pathname: junctionOptions.defaultPath })
@@ -300,8 +300,8 @@ export class JunctionMount<
         super.willUnmount()
     }
 
-    isBusy() {
-        return this.waitingForWatch || (this.childMount && this.childMount.isBusy())
+    isBusy(): boolean {
+        return !!this.waitingForWatch || !!(this.childMount && this.childMount.isBusy())
     }
 
     getRoute(): JunctionRoute<any, any, any> | RedirectRoute<any> | NotFoundRoute {
@@ -321,52 +321,56 @@ export class JunctionMount<
                 location: this.routeLocation,
                 to: this.redirectTo,
                 component: <never>undefined,
+                source: <any>this.constructor,
             }
         }
         else {
-            let child: JunctionChildRoute<any>
-            let descendents: JunctionDescendentsRoutes<any>
+            let child: Route | undefined
+            let descendents: JunctionDescendentsRoutes<any> | undefined
 
-            let base = {
-                type: 'JunctionRoute' as 'JunctionRoute',
-                pattern: this.mountedPattern.relativePattern,
-                params: this.match.params,
-                location: this.routeLocation,
-            }
-
-            if (!this.childMountedPattern) {
+            if (!this.childMountedPattern && this.match.remainingLocation) {
                 // This junction was matched, but we couldn't figure out what to do
                 // with the remaining location part.
                 child = {
                     type: 'NotFoundRoute',
                     status: 'notfound',
-                    location: concatLocations(this.routeLocation, this.match.remainingLocation as Location),
-                    pattern: undefined,
+                    location: concatLocations(this.routeLocation, this.match.remainingLocation),
                     params: {},
+                    source: <any>this.constructor,
                 }
                 descendents = [child]
             }
-            else {
-                if (this.childStatus === 'ready') {
-                    child = (this.childMount as Mount).getRoute()
-                    descendents = getDescendents(child)
+            else if (this.childStatus === 'ready') {
+                child = (this.childMount as Mount).getRoute()
+                descendents = getDescendents(child)
+            }
+            else if (this.childMountedPattern) {
+                // If `childMountedPattern` exists, we know that
+                // `this.match.remainingLocation` is not undefined.
+                let remainingLocation = this.match.remainingLocation as Location
+
+                child = {
+                    type: 'AsyncRoute',
+                    status: this.childStatus,
+                    location: concatLocations(this.routeLocation, remainingLocation),
+                    pattern: this.childMountedPattern.relativePattern,
+                    params: {},
+                    source: <any>this.constructor,
                 }
-                else {
-                    child = {
-                        ...base,
-                        status: this.childStatus
-                    }
-                    descendents = [child]
-                }
+                descendents = [child]
             }
 
             return {
-                ...base,
+                type: 'JunctionRoute' as 'JunctionRoute',
                 status: 'ready',
+                pattern: this.mountedPattern.relativePattern,
+                params: this.match.params,
+                location: this.routeLocation,
                 component: this.options.component,
                 payload: this.options.payload,
                 child: child,
                 descendents: descendents,
+                source: this.constructor,
             }
         }
     }
@@ -461,6 +465,8 @@ export class PageMount<
 
             content: this.content,
             contentStatus: this.contentStatus,
+
+            source: <any>this.constructor,
         }
     }
 }
@@ -504,6 +510,8 @@ export class RedirectMount extends BaseMount {
             to: this.options.to,
 
             component: <never>undefined,
+
+            source: <any>this.constructor,
         }
     }
 }

@@ -1,16 +1,17 @@
 import React, { Component } from 'react'
+import { createJunction, createPage } from 'junctions'
 import './Users.css'
 
 class Users extends Component {
     render() {
-        let nav = this.props.nav
+        let route = this.props.route
 
         return (
             <div className="Users">
                 <div className="Users-content">
-                    {   nav.child
-                        ? (nav.child.content && React.createElement(nav.child.content, { nav: nav.child }))
-                        : (nav.content && React.createElement(nav.content, { nav: nav.child }))
+                    {
+                        route.child.component &&
+                        React.createElement(route.child.component, { route: route.child })
                     }
                 </div>
             </div>
@@ -28,35 +29,37 @@ class NewUser extends Component {
 
 class UserDetails extends Component {
     render() {
-        return <div><h2>User #{this.props.nav.params.id}</h2></div>
+        return <div><h2>User #{this.props.route.params.id}</h2></div>
     }
 }
 
-export default {
-    meta: {
-        pageTitle: 'Users',
-        wrapper: Users,
-    },
-
-    getContent: () => import('./UserList').then(m => m.default),
+export default createJunction(({ split }) => ({
+    component: Users,
 
     children: {
-        '/new': {
-            meta: {
-                pageTitle: 'New user',
-            },
-
-            getContent: () => NewUser,
-        },
-
-        '/:id': Promise.resolve({
-            meta: {
-                pageTitle: 'User details',
-            },
-
-            params: ['id'],
-
-            getContent: () => Promise.resolve(UserDetails),
+        '/': createPage({
+            title: 'Users',
+            component: ContentRenderer,
+            getContent: () => import('./UserList').then(m => m.default),
         }),
+
+        '/new': createPage({
+            title: 'New user',
+            component: NewUser,
+        }),
+
+        '/:id': split(() => Promise.resolve(createPage({
+            title: 'User details',
+            params: ['id'],
+            component: ContentRenderer,
+            getContent: () => Promise.resolve(UserDetails),
+        }))),
     },
+}))
+
+
+function ContentRenderer({ route }) {
+    return route.content
+        ? React.createElement(route.content, { route })
+        : null
 }

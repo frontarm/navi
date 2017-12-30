@@ -15,8 +15,7 @@ export type Route<ParentJunction extends Junction=any> =
 export type RootRoute<RootJunction extends Junction<any, any, any>> =
     JunctionRoute<any, RootJunction['component'], RootJunction['payload'], RootJunction> |
 
-    // If the junction is matched exactly and it has no default path, the route
-    // is considered not found.
+    // If the root route has required params and they're missing
     NotFoundRoute |
 
     // If the junction is matched exactly and it has a default path, the route
@@ -31,7 +30,6 @@ export type RootRoute<RootJunction extends Junction<any, any, any>> =
  * inferred from just a pattern string and a location.
  */
 interface RouteBase<ParentJunction extends Junction> {
-    pattern: keyof ParentJunction['children'], // '' for root junction
     params: { [name: string]: any },
     location: Location,
 }
@@ -51,6 +49,12 @@ export type MountableRoute<M extends Mountable=Mountable, ParentJunction extends
 export interface AsyncRoute<ParentJunction extends Junction<any, any, any>> extends RouteBase<ParentJunction> {
     type: 'AsyncRoute',
     status: 'busy' | 'error',
+    pattern: keyof ParentJunction['children'],
+
+    /**
+     * The mountable object from which this Route originated.
+     */
+    source: Junction<any, any, any>,
 }
 
 /**
@@ -59,6 +63,12 @@ export interface AsyncRoute<ParentJunction extends Junction<any, any, any>> exte
 export interface NotFoundRoute extends RouteBase<any> {
     type: 'NotFoundRoute',
     status: 'notfound',
+    pattern?: undefined,
+
+    /**
+     * The mountable object from which this Route originated.
+     */
+    source: Mountable,
 }
 
 /**
@@ -90,8 +100,14 @@ export interface JunctionRoute<ParentJunction extends Junction, Component=undefi
     type: 'JunctionRoute',
     component: Component,
     payload: Payload,
-    child: JunctionChildRoute<J>,
-    descendents: JunctionDescendentsRoutes<J>,
+    child?: JunctionChildRoute<J>,
+    descendents?: JunctionDescendentsRoutes<J>,
+    pattern: keyof ParentJunction['children'],
+
+    /**
+     * The mountable object from which this Route originated.
+     */
+    source: J,
 }
 
 /**
@@ -111,7 +127,7 @@ export type JunctionChildRoute<J extends Junction<any, any, any>> = {
  * An array of all Routes for URL segments that come after this junction's
  * segment.
  */
-export interface JunctionDescendentsRoutes<J extends Junction<any, any, any>> extends Array<JunctionChildRoute<any>> {
+export interface JunctionDescendentsRoutes<J extends Junction<any, any, any>> extends Array<Route> {
     0: JunctionChildRoute<J>;
     [i: number]: Route;
 }
@@ -129,6 +145,12 @@ export interface PageRoute<ParentJunction extends Junction, Component=any, Conte
     content?: Content,
     contentStatus?: 'ready' | 'busy' | 'error',
     meta: Meta,
+    pattern: keyof ParentJunction['children'],
+
+    /**
+     * The mountable object from which this Route originated.
+     */
+    source: Page<Component, Content, Meta>,
 }
 
 
@@ -145,4 +167,10 @@ export interface RedirectRoute<ParentJunction extends Junction> extends RouteBas
     status: 'redirect',
     component: never,
     to: Location,
+    pattern: keyof ParentJunction['children'],
+
+    /**
+     * The mountable object from which this Route originated.
+     */
+    source: Redirect | Junction<any, any, any>,
 }

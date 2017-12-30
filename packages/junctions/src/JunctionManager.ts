@@ -1,3 +1,4 @@
+import { Deferred } from './Deferred'
 import { Location, concatLocations } from './Location'
 import { Mount, Junction, JunctionMount } from './Mounts'
 import { MountedPattern, createRootMountedPattern, matchMountedPatternAgainstLocation } from './Patterns'

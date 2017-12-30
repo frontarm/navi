@@ -76,8 +76,11 @@ export class BrowserNavigation<RootJunction extends Junction<any, any, any>> {
             rootJunction: options.rootJunction,
         })
 
-        this.handleRouteChange()
+        // Make sure to add listeners for route changes before handling the
+        // initial route, as the initial route may synchronously emit more
+        // changes due to redirects.
         this.manager.subscribe(this.handleRouteChange)
+        this.handleRouteChange()
         window.addEventListener("popstate", this.handlePopState)
     }
     
@@ -132,7 +135,7 @@ export class BrowserNavigation<RootJunction extends Junction<any, any, any>> {
         let title: string | null | undefined
 
         if (!isBusy && rootRoute) {
-            if (rootRoute.status === "ready") {
+            if (rootRoute.status === "ready" && rootRoute.descendents) {
                 let deepestRoute = rootRoute.descendents[rootRoute.descendents.length - 1]
                 if (deepestRoute.status === "redirect") {
                     redirectTo = deepestRoute.to

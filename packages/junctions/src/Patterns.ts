@@ -46,7 +46,7 @@ export function createRootMountedPattern(mountable: Mountable, relativePath?: st
                 mountable
             }
         
-    if (this.rootPattern.relativePathParams.length > 0) {
+    if (rootPattern.relativePathParams && rootPattern.relativePathParams.length > 0) {
         throw new Error("Your root path may not contain parameters")
     }
 
@@ -237,7 +237,7 @@ export function matchMountedPatternAgainstLocation(pattern: MountedPattern, loca
     return {
         params: params,
         matchedLocation: matchedLocation,
-        remainingLocation: !(remainingLocation.pathname === '' || remainingLocation.pathname === '/') || remainingLocation.search !== '' ? remainingLocation : undefined
+        remainingLocation: remainingLocation.pathname !== '' || remainingLocation.search !== '' ? remainingLocation : undefined
     }
 }
     

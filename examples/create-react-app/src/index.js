@@ -13,9 +13,9 @@ window.main = function main({ isStatic }) {
     })
 
     function renderApp() {
-        let navState = nav.getState()
+        let rootRoute = nav.getRootRoute()
         ReactDOM.render(
-            React.createElement(navState.meta.wrapper, { nav: navState }),
+            React.createElement(rootRoute.component, { route: rootRoute }),
             document.getElementById('root')
         )
     }
