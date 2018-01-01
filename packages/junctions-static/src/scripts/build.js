@@ -15,7 +15,9 @@ export default async function build(mainFile, publicFolder, renderToString) {
 
     console.log('\nCreating static files...\n')
     
-    await Promise.all(pathnames.map(async function(pathname) {
+    // Await each path in sequence so that error messages are output in order
+    // with the filenames that caused them.
+    for (let pathname of pathnames) {
         let details = siteMap[pathname]
         let publicPath = pathname === '/' ? 'index.html' : path.join(pathname.slice(1), 'index.html')
         let filesystemPath = path.resolve(cwd, publicFolder, publicPath)
@@ -25,10 +27,10 @@ export default async function build(mainFile, publicFolder, renderToString) {
 
             console.log(chalk.yellow("[redirect] ")+publicPath+chalk.grey(" -> "+details.redirect))
 
-            return fs.writeFile(filesystemPath+'.headers', "x-amz-website-redirect-location: "+details.redirect)
+            await fs.writeFile(filesystemPath+'.headers', "x-amz-website-redirect-location: "+details.redirect)
         }
         else {
-            console.log(chalk.blueBright("[html]     ")+publicPath)
+            console.log(chalk.blue("[html]     ")+publicPath)
 
             let html = await renderToString({
                 junction: rootJunction,
@@ -39,9 +41,9 @@ export default async function build(mainFile, publicFolder, renderToString) {
             })
 
             await fs.ensureDir(path.dirname(filesystemPath))
-            return fs.writeFile(filesystemPath, html)
+            await fs.writeFile(filesystemPath, html)
         }
-    }))
+    }
 
     console.log('')
 }
