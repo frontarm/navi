@@ -1,7 +1,9 @@
 import React from 'react'
 import { 
-    PageComponentRoute,
-    JunctionComponentRoute,
+    PageRoute,
+    JunctionRoute,
+
+    Page,
 
     createPage,
     createJunction,
@@ -9,8 +11,10 @@ import {
 } from '../src/index'
 
 
-function ArticleComponent(props: { route: PageComponentRoute<any> }) {
-    
+function ArticleComponent(props: { route: PageRoute<typeof Landing> }) {
+    let { route } = props
+    props.route.status === "ready" && props.route.component
+    return null
 }
 
 
@@ -49,7 +53,7 @@ let ArticlesJunction = createJunction(({ split }) => ({
     component: class ArticlesComponent {
         props: {
             env: any,
-            route: JunctionComponentRoute<typeof ArticlesJunction>,
+            route: JunctionRoute<typeof ArticlesJunction>,
         }
     
         render() {
@@ -75,7 +79,7 @@ let AppJunction = createJunction(({ split }) => ({
     component: class AppComponent {
         props: {
             env: any,
-            route: JunctionComponentRoute<typeof AppJunction>,
+            route: JunctionRoute<typeof AppJunction>,
         }
     
         render() {

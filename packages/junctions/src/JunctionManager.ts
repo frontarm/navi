@@ -2,7 +2,7 @@ import { Deferred } from './Deferred'
 import { Location, concatLocations } from './Location'
 import { Mount, Junction, JunctionMount } from './Mounts'
 import { MountedPattern, createRootMountedPattern, matchMountedPatternAgainstLocation } from './Patterns'
-import { JunctionComponentRoute, JunctionRoute, NotFoundRoute, PageRoute, RedirectRoute, RootRoute } from './Routes'
+import { Sync, RootRoute, PageRoute } from './Routes'
 
 
 type Listener = () => void
@@ -51,7 +51,7 @@ export class JunctionManager<RootJunction extends Junction<any, any, any>=any> {
     
     getRootRoute(): RootRoute<RootJunction> {
         if (this.rootMount) {
-            return (this.rootMount as JunctionMount).getRoute()
+            return (this.rootMount as JunctionMount<any, any, any>).getRoute()
         }
     }
 
@@ -108,21 +108,21 @@ export class JunctionManager<RootJunction extends Junction<any, any, any>=any> {
         }
     }
 
-    getPageRoutes<Pathnames extends { [name: string]: string }>(pathnames: Pathnames): Promise<{ [K in keyof Pathnames]: PageRoute<any> | undefined }>
-    getPageRoutes(pathname: string): Promise<PageRoute<any> | undefined>;
+    getPageRoutes<Pathnames extends { [name: string]: string }>(pathnames: Pathnames): Promise<{ [K in keyof Pathnames]: PageRoute | undefined }>
+    getPageRoutes(pathname: string): Promise<PageRoute | undefined>;
     getPageRoutes<Pathnames extends { [name: string]: string } | string>(pathnames: Pathnames): any {
         if (typeof pathnames === 'string') {
             return this.getPageRoute({ pathname: pathnames })
         }
         else {
             let keys = Object.keys(pathnames)
-            let promises: Promise<PageRoute<any> | undefined>[] = []
+            let promises: Promise<PageRoute | undefined>[] = []
             for (let i = 0; i < keys.length; i++) {
                 let key = keys[i]
                 promises.push(this.getPageRoute({ pathname: pathnames[key] }))
             }
             return Promise.all(promises).then(values => {
-                let result: { [K in keyof Pathnames]: PageRoute<any> | undefined } = {} as any
+                let result: { [K in keyof Pathnames]: PageRoute | undefined } = {} as any
                 for (let i = 0; i < keys.length; i++) {
                     let key = keys[i]
                     result[key] = values[i]
@@ -132,17 +132,18 @@ export class JunctionManager<RootJunction extends Junction<any, any, any>=any> {
         }
     }
 
-    private getPageRoute(location: Location): Promise<PageRoute<any> | undefined> {
+    private getPageRoute(location: Location): Promise<PageRoute | undefined> {
         let match = matchMountedPatternAgainstLocation(this.rootMountedPattern, location)
         if (!match) {
             return Promise.resolve(undefined)
         }
         else {
-            let deferred = new Deferred<PageRoute<any> | undefined>()
+            let deferred = new Deferred<PageRoute | undefined>()
 
             const handleRouteChange = () => {
                 if (!rootMount.isBusy()) {
-                    let rootRoute = rootMount.getRoute() as JunctionRoute<any, any, any>
+                    // The root route will always be synchronous.
+                    let rootRoute = rootMount.getRoute() as Sync.JunctionRoute<any, any, any, any>
                     if (!rootRoute.descendents) {
                         return deferred.resolve(undefined)
                     }

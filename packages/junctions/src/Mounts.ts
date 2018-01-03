@@ -1,6 +1,6 @@
 import { Location, concatLocations } from './Location'
 import { CompiledPattern, MountedPattern, PatternMatch, createChildMountedPattern, matchMountedPatternAgainstLocation, addParamsToMountedPattern } from './Patterns'
-import { MountableRoute, JunctionRoute, JunctionChildRoute, JunctionDescendentsRoutes, PageRoute, RedirectRoute, NotFoundRoute, Route } from './Routes'
+import { Sync, JunctionRoute, PageRoute, NotFoundRoute, AnyRoute } from './Routes'
 import { JunctionManager } from './JunctionManager'
 
 
@@ -114,7 +114,7 @@ abstract class BaseMount {
     }
 
     // Get the route object given the current state.
-    abstract getRoute(): MountableRoute | NotFoundRoute;
+    abstract getRoute(): Sync.Route | NotFoundRoute;
 
     protected createNotFoundRoute(): NotFoundRoute {
         return {
@@ -186,8 +186,8 @@ abstract class BaseMount {
 
 export interface Junction<
     Children extends { [pattern: string]: Mountable | AsyncMountable } = any,
-    Component = undefined,
-    Payload = undefined
+    Component = any,
+    Payload = any
 > extends BaseMountable, JunctionOptions<Children, Component, Payload> {
     mountableType: 'Junction'
 
@@ -207,9 +207,9 @@ export interface JunctionOptions<
 }
 
 export class JunctionMount<
-    Children extends { [pattern: string]: Mountable | AsyncMountable } = any,
-    Component = undefined,
-    Payload = undefined
+    Children extends { [pattern: string]: Mountable | AsyncMountable },
+    Component,
+    Payload
 > extends BaseMount {
     mountType: 'Junction' = 'Junction';
 
@@ -302,7 +302,7 @@ export class JunctionMount<
         return !!this.waitingForWatch || !!(this.childMount && this.childMount.isBusy())
     }
 
-    getRoute(): JunctionRoute<any, any, any> | RedirectRoute<any> | NotFoundRoute {
+    getRoute(): Sync.JunctionRoute<any, any, any, any> | Sync.RedirectRoute<any> | NotFoundRoute {
         if (!this.match) {
             // This junction couldn't be matched due to missing required
             // params, or a non-exact match without a default path.
@@ -323,8 +323,8 @@ export class JunctionMount<
             }
         }
         else {
-            let child: Route | undefined
-            let descendents: JunctionDescendentsRoutes<any> | undefined
+            let child: AnyRoute | undefined
+            let descendents: Sync.JunctionDescendentsRoutes<any> | undefined
 
             if (!this.childMountedPattern && this.match.remainingLocation) {
                 // This junction was matched, but we couldn't figure out what to do
@@ -374,9 +374,9 @@ export class JunctionMount<
     }
 }
 
-function getDescendents(child: JunctionChildRoute<any>) {
-    let descendents = [child] as JunctionDescendentsRoutes<any>
-    let nextChild: Route | undefined = child
+function getDescendents(child: Sync.JunctionChildRoute<any>) {
+    let descendents = [child] as Sync.JunctionDescendentsRoutes<any>
+    let nextChild: AnyRoute | undefined = child
     while (nextChild && nextChild.type === "JunctionRoute") {
         nextChild = nextChild.child
         if (nextChild) {
@@ -392,9 +392,9 @@ function getDescendents(child: JunctionChildRoute<any>) {
 //
 
 export interface Page<
-    Component = undefined,
-    Content = undefined,
-    Meta = undefined
+    Component = any,
+    Content = any,
+    Meta = any
 > extends BaseMountable, PageOptions<Component, Content, Meta> {
     mountableType: 'Page'
     
@@ -413,9 +413,9 @@ export interface PageOptions<
 }
 
 export class PageMount<
-    Component = undefined,
-    Content = undefined,
-    Meta = undefined
+    Component,
+    Content,
+    Meta
 > extends BaseMount {
     mountType: 'Page' = 'Page';
     options: PageOptions<Component, Content, Meta>;
@@ -457,7 +457,7 @@ export class PageMount<
         }
     }
 
-    getRoute(): PageRoute<any, any, any> | RedirectRoute<any> | NotFoundRoute {
+    getRoute(): Sync.PageRoute<any, any, any> | Sync.RedirectRoute<any> | NotFoundRoute {
         if (!this.match) {
             return this.createNotFoundRoute()
         }
@@ -522,7 +522,7 @@ export class RedirectMount extends BaseMount {
         this.options = redirectOptions
     }
 
-    getRoute(): RedirectRoute<any> | NotFoundRoute {
+    getRoute(): Sync.RedirectRoute<any> | NotFoundRoute {
         if (!this.match || (this.match.remainingLocation && this.match.remainingLocation.pathname !== '/')) {
             return this.createNotFoundRoute()
         }
