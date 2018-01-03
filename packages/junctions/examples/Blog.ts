@@ -1,46 +1,44 @@
 import React from 'react'
 import { 
-    PageRoute,
-    JunctionRoute,
-
     Page,
+    Junction,
 
-    createPage,
-    createJunction,
-    createRedirect
+    definePage,
+    defineJunction,
+    defineRedirect
 } from '../src/index'
 
 
-function ArticleComponent(props: { route: PageRoute<typeof Landing> }) {
-    let { route } = props
-    props.route.status === "ready" && props.route.component
+function ArticleComponent(props: { page: Page<typeof Landing> }) {
+    let { page } = props
+    props.page.status === "ready" && props.page.component
     return null
 }
 
 
-let Landing = createPage({
+let Landing = definePage({
     title: "React Armory",
     component: ArticleComponent,
 })
-let Latest = createPage({
+let Latest = definePage({
     title: "Latest",
     component: ArticleComponent,
 })
 
 
 
-let Article1 = createPage({
+let Article1 = definePage({
     title: "Article 1",
     component: ArticleComponent,
 })
-let Article2 = createPage({
+let Article2 = definePage({
     title: "Article 2",
     component: ArticleComponent,
 })
 
 
 
-let ArticlesJunction = createJunction(({ split }) => ({
+let ArticlesJunction = defineJunction(({ split }) => ({
     children: {
         '/1': split(() => Promise.resolve(Article1)),
         '/2': split(() => Promise.resolve(Article2)),
@@ -53,15 +51,15 @@ let ArticlesJunction = createJunction(({ split }) => ({
     component: class ArticlesComponent {
         props: {
             env: any,
-            route: JunctionRoute<typeof ArticlesJunction>,
+            junction: Junction<typeof ArticlesJunction>,
         }
     
         render() {
-            let { env, route } = this.props
+            let { env, junction } = this.props
             
             return (
-                route.child.status === "ready"
-                    ? React.createElement(route.child.component, { env, route: route.child })
+                junction.activeChild.status === "ready"
+                    ? React.createElement(junction.activeChild.component, { env, page: junction.activeChild })
                     : null
             )
         }
@@ -69,7 +67,7 @@ let ArticlesJunction = createJunction(({ split }) => ({
 }))
 
 
-let AppJunction = createJunction(({ split }) => ({
+let AppJunction = defineJunction(({ split }) => ({
     children: {
         '/': Landing,
         '/latest': Latest,
@@ -79,15 +77,20 @@ let AppJunction = createJunction(({ split }) => ({
     component: class AppComponent {
         props: {
             env: any,
-            route: JunctionRoute<typeof AppJunction>,
+            junction: Junction<typeof AppJunction>,
         }
     
         render() {
-            let { env, route } = this.props
+            let { env, junction } = this.props
+
+            // junction.activeChild.status === "ready" && junction.activeChild.type === "page" && junction.activeChild.component
 
             return (
-                route.child.status === "ready"
-                    ? React.createElement(route.child.component, { env, route: route.child })
+                junction.activeChild.status === "ready"
+                    ? React.createElement(junction.activeChild.component, {
+                        env,
+                        [junction.activeChild.type]: junction.activeChild
+                      })
                     : null
             )
         }

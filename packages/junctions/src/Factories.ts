@@ -1,16 +1,15 @@
 import {
-    Mountable, AsyncMountable, MountOptions, 
-    Junction, JunctionMount,
-    Page, PageMount, AsyncContent,
-    Redirect, RedirectMount,
+    Definition, AsyncDefinition, MountOptions, 
+    JunctionDefinition, JunctionMount,
+    PageDefinition, PageMount, AsyncContent,
+    RedirectDefinition, RedirectMount,
 } from './Mounts'
 import { JunctionManager } from './JunctionManager'
-import { PageRoute } from './Routes'
 import { compilePattern } from './Patterns'
 
 
-export function createJunction<
-    Children extends { [pattern: string]: Mountable | AsyncMountable },
+export function defineJunction<
+    Children extends { [pattern: string]: Definition | AsyncDefinition },
     Component = undefined,
     Payload = undefined
 >(getOptions: {
@@ -25,8 +24,8 @@ export function createJunction<
     payload?: Payload,
     params?: ParamsDefinition,
     component?: Component,
-})): Junction<Children, Component, Payload> {
-    let helpers = { split: split, getPageRoutes: <any>undefined }
+})): JunctionDefinition<Children, Component, Payload> {
+    let helpers = { split: split }
     let options = typeof getOptions === 'function' ? getOptions(helpers) : getOptions
 
     if (!options) {
@@ -163,7 +162,7 @@ export function createJunction<
 }
 
 
-export function createPage<
+export function definePage<
     Component = undefined,
     Content = undefined,
     Meta = undefined
@@ -172,12 +171,19 @@ export function createPage<
     title: string,
     component?: Component,
     meta?: Meta,
-    getContent?: (getPageRoutes: JunctionManager['getPageRoutes']) => Content | Promise<Content>
-}): Page<Component, Content, Meta> {
+    getContent?: (helpers: {
+        getPages: JunctionManager['getPages'],
+        getJunctionPages: JunctionManager['getJunctionPages']
+    }) => Content | Promise<Content>
+}): PageDefinition<Component, Content, Meta> {
     let getter: (junctionManager: JunctionManager) => Content | Promise<Content>
     if (options.getContent) {
         let getContent = options.getContent
-        getter = (junctionManager: JunctionManager) => getContent(junctionManager.getPageRoutes.bind(junctionManager))
+        getter = (junctionManager: JunctionManager) =>
+            getContent({
+                getPages: junctionManager.getPages.bind(junctionManager),
+                getJunctionPages: junctionManager.getJunctionPages.bind(junctionManager),
+            })
     }
     else {
         getter = (() => {}) as any
@@ -234,7 +240,7 @@ export function createPage<
 }
 
 
-export function createRedirect(to: Location | string): Redirect {
+export function defineRedirect(to: Location | string): RedirectDefinition {
     let toLocation =
         typeof to === 'string'
             ? { pathname: to }
@@ -268,7 +274,7 @@ type Helpers = {
     split: typeof split,
 }
 
-function split<M extends Mountable>(getter: () => Promise<M> | M): AsyncMountable<M> {
+function split<M extends Definition>(getter: () => Promise<M> | M): AsyncDefinition<M> {
     return {
         type: 'Async',
         status: undefined,

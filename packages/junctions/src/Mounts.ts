@@ -1,12 +1,12 @@
 import { Location, concatLocations } from './Location'
 import { CompiledPattern, MountedPattern, PatternMatch, createChildMountedPattern, matchMountedPatternAgainstLocation, addParamsToMountedPattern } from './Patterns'
-import { Sync, JunctionRoute, PageRoute, NotFoundRoute, AnyRoute } from './Routes'
+import { SyncNodes, SyncNode, NotFoundNode, Node } from './Nodes'
 import { JunctionManager } from './JunctionManager'
 
 
-export type Mountable = Junction<any, any, any> | Page<any, any, any> | Redirect
+export type Definition = JunctionDefinition<any, any, any> | PageDefinition<any, any, any> | RedirectDefinition
 
-export type AsyncMountable<M extends Mountable = Mountable> = AsyncObject<M>
+export type AsyncDefinition<M extends Definition = Definition> = AsyncObject<M>
 export type AsyncContent<Content> = AsyncObject<Content>
 
 type AsyncObject<T> = {
@@ -14,6 +14,7 @@ type AsyncObject<T> = {
     status?: 'ready' | 'busy' | 'error',
     getter: (junctionManager: JunctionManager) => Promise<T> | T,
     promise?: Promise<T>,
+    error?: any,
 
     // Note that this value may actually be undefined, but I've left the
     // undefined type out as it allows us to access the type using TypeScript
@@ -47,6 +48,9 @@ interface BaseMountOptions {
 
     // Functions that may be used within configuration getters.
     junctionManager: JunctionManager,
+
+    // Whether we should fetch content if we encounter it.
+    shouldFetchContent: boolean;
 }
 
 // The user-created Mountable classes need to supply some of the base
@@ -56,7 +60,8 @@ export type MountOptions = Pick<BaseMountOptions,
     'matchableLocationPart' |
     'mountedPattern' |
     'onRouteChange' |
-    'junctionManager'
+    'junctionManager' |
+    'shouldFetchContent'
 >
 
 interface BaseMountable {
@@ -71,6 +76,8 @@ abstract class BaseMount {
     match: PatternMatch | undefined;
     routeLocation: Location;
     matchableLocationPart: Location;
+
+    shouldFetchContent: boolean
 
     waitingForWatch: boolean
     unmounted: boolean
@@ -96,6 +103,7 @@ abstract class BaseMount {
         this.unmounted = false
         this.onRouteChange = options.onRouteChange
         this.junctionManager = options.junctionManager
+        this.shouldFetchContent = options.shouldFetchContent
 
         // Note that we'll have already matched the *path* part of the location
         // in the parent function. However, we may not have matched params that
@@ -114,16 +122,14 @@ abstract class BaseMount {
     }
 
     // Get the route object given the current state.
-    abstract getRoute(): Sync.Route | NotFoundRoute;
+    abstract getRoute(): SyncNode | NotFoundNode;
 
-    protected createNotFoundRoute(): NotFoundRoute {
+    protected createNotFoundRoute(): NotFoundNode {
         return {
-            type: 'NotFoundRoute',
+            type: 'notfound',
             status: 'notfound',
             location: this.matchableLocationPart,
-            pattern: undefined,
             params: {},
-            source: <any>this.constructor,
         }
     }
 
@@ -133,7 +139,7 @@ abstract class BaseMount {
         }
     }
 
-    protected watchAsync<AO extends AsyncObject<any>>(async: AO, event: object, callback: (status: 'ready' | 'busy' | 'error', value?: AO['value']) => void): void {
+    protected watchAsync<AO extends AsyncObject<any>>(async: AO, event: object, callback: (status: 'ready' | 'busy' | 'error', value?: AO['value'], error?: any) => void): void {
         if (!async.status || async.status == 'ready') {
             let result = async.getter(this.junctionManager)
 
@@ -168,7 +174,9 @@ abstract class BaseMount {
                     (error) => {
                         async.status = 'error'
                         async.promise = undefined
-                        callback('error')
+                        async.error = error
+                        console.error(error)
+                        callback('error', undefined, error)
                     }
                 )
                 .then(() => {
@@ -184,8 +192,8 @@ abstract class BaseMount {
 }
 
 
-export interface Junction<
-    Children extends { [pattern: string]: Mountable | AsyncMountable } = any,
+export interface JunctionDefinition<
+    Children extends { [pattern: string]: Definition | AsyncDefinition } = any,
     Component = any,
     Payload = any
 > extends BaseMountable, JunctionOptions<Children, Component, Payload> {
@@ -195,7 +203,7 @@ export interface Junction<
 }
 
 export interface JunctionOptions<
-    Children extends { [pattern: string]: Mountable | AsyncMountable } = any,
+    Children extends { [pattern: string]: Definition | AsyncDefinition } = any,
     Component = undefined,
     Payload = undefined
 > {
@@ -207,7 +215,7 @@ export interface JunctionOptions<
 }
 
 export class JunctionMount<
-    Children extends { [pattern: string]: Mountable | AsyncMountable },
+    Children extends { [pattern: string]: Definition | AsyncDefinition },
     Component,
     Payload
 > extends BaseMount {
@@ -220,6 +228,7 @@ export class JunctionMount<
     childMountedPattern?: MountedPattern;
     childMount?: Mount;
     childStatus: 'ready' | 'busy' | 'error';
+    childError?: any;
 
     constructor(options: BaseMountOptions, junctionOptions: JunctionOptions<Children, Component, Payload>) {
         super(options)
@@ -253,6 +262,7 @@ export class JunctionMount<
                             mountedPattern: this.childMountedPattern,
                             onRouteChange: this.handleRouteChange,
                             junctionManager: this.junctionManager,
+                            shouldFetchContent: this.shouldFetchContent,
                         }
 
                         if (childMountedPattern.mountable.type === 'Mountable') {
@@ -272,11 +282,12 @@ export class JunctionMount<
                                     type: 'junctionChild',
                                     location: concatLocations(this.routeLocation, match.matchedLocation),
                                 },
-                                (status, value) => {
+                                (status, value, error) => {
                                     if (value) {
                                         this.childMount = new value(childMountOptions)
                                     }
                                     this.childStatus = status
+                                    this.childError= error
                                 }
                             )
                         }
@@ -302,7 +313,7 @@ export class JunctionMount<
         return !!this.waitingForWatch || !!(this.childMount && this.childMount.isBusy())
     }
 
-    getRoute(): Sync.JunctionRoute<any, any, any, any> | Sync.RedirectRoute<any> | NotFoundRoute {
+    getRoute(): SyncNodes.Junction<any, any, any> | SyncNodes.Redirect | NotFoundNode {
         if (!this.match) {
             // This junction couldn't be matched due to missing required
             // params, or a non-exact match without a default path.
@@ -312,31 +323,30 @@ export class JunctionMount<
             // This junction was matched exactly, and we have a default path,
             // so redirect to it.
             return {
-                type: 'RedirectRoute',
+                type: 'redirect',
                 status: 'redirect',
-                pattern: this.mountedPattern.relativePattern,
                 params: {},
                 location: this.routeLocation,
                 to: this.redirectTo,
                 component: <never>undefined,
-                source: <any>this.constructor,
+                definition: <any>this.constructor,
             }
         }
         else {
-            let child: AnyRoute | undefined
-            let descendents: Sync.JunctionDescendentsRoutes<any> | undefined
+            let child: Node | undefined
+            let descendents: SyncNodes.JunctionDescendentsNodes<any> | undefined
 
             if (!this.childMountedPattern && this.match.remainingLocation) {
                 // This junction was matched, but we couldn't figure out what to do
                 // with the remaining location part.
                 child = {
-                    type: 'NotFoundRoute',
+                    type: 'notfound',
                     status: 'notfound',
                     location: concatLocations(this.routeLocation, this.match.remainingLocation),
                     params: {},
-                    source: <any>this.constructor,
+                    definition: <any>this.constructor,
                 }
-                descendents = [child]
+                descendents = [child as NotFoundNode]
             }
             else if (this.childStatus === 'ready') {
                 child = (this.childMount as Mount).getRoute()
@@ -346,39 +356,51 @@ export class JunctionMount<
                 // If `childMountedPattern` exists, we know that
                 // `this.match.remainingLocation` is not undefined.
                 let remainingLocation = this.match.remainingLocation as Location
+                let childLocation = concatLocations(this.routeLocation, remainingLocation)
 
-                child = {
-                    type: 'AsyncRoute',
-                    status: this.childStatus,
-                    location: concatLocations(this.routeLocation, remainingLocation),
-                    pattern: this.childMountedPattern.relativePattern,
-                    params: {},
-                    source: <any>this.constructor,
+                if (this.childStatus === 'busy') {
+                    child = {
+                        type: 'busy',
+                        status: 'busy',
+                        location: childLocation,
+                    }
+                }
+                else {
+                    child = {
+                        type: 'error',
+                        status: 'error',
+                        location: childLocation,
+                        error: this.childError,
+                    }
                 }
                 descendents = [child]
             }
 
             return {
-                type: 'JunctionRoute' as 'JunctionRoute',
+                type: 'junction',
                 status: 'ready',
-                pattern: this.mountedPattern.relativePattern,
                 params: this.match.params,
                 location: this.routeLocation,
                 component: this.options.component,
                 payload: this.options.payload,
-                child: child,
-                descendents: descendents,
-                source: this.constructor,
+                children: this.options.children,
+                defaultPath: this.options.defaultPath,
+
+                activeChild: child,
+                activeChildPattern: this.mountedPattern.relativePattern,
+                activeDescendents: descendents,
+
+                definition: this.constructor,
             }
         }
     }
 }
 
-function getDescendents(child: Sync.JunctionChildRoute<any>) {
-    let descendents = [child] as Sync.JunctionDescendentsRoutes<any>
-    let nextChild: AnyRoute | undefined = child
-    while (nextChild && nextChild.type === "JunctionRoute") {
-        nextChild = nextChild.child
+function getDescendents(child: SyncNodes.JunctionChildNode<any>) {
+    let descendents = [child] as SyncNodes.JunctionDescendentsNodes<any>
+    let nextChild: Node | undefined = child
+    while (nextChild && nextChild.type === "junction") {
+        nextChild = nextChild.activeChild
         if (nextChild) {
             descendents.push(nextChild)
         }
@@ -391,7 +413,7 @@ function getDescendents(child: Sync.JunctionChildRoute<any>) {
 // Page
 //
 
-export interface Page<
+export interface PageDefinition<
     Component = any,
     Content = any,
     Meta = any
@@ -422,6 +444,7 @@ export class PageMount<
 
     content?: Content;
     contentStatus: 'ready' | 'busy' | 'error';
+    contentError?: any;
     requiresSlash?: true;
     
     constructor(options: BaseMountOptions, pageOptions: PageOptions<Component, Content, Meta>) {
@@ -446,39 +469,40 @@ export class PageMount<
         else if (this.match) {
             this.options = pageOptions
 
-            this.watchAsync(
-                pageOptions.asyncContent,
-                { type: 'content', location: this.routeLocation },
-                (status, value) => {
-                    this.content = value
-                    this.contentStatus = status
-                }
-            )
+            if (this.shouldFetchContent) {
+                this.watchAsync(
+                    pageOptions.asyncContent,
+                    { type: 'content', location: this.routeLocation },
+                    (status, value, error?) => {
+                        this.content = value
+                        this.contentStatus = status
+                        this.contentError = error
+                    }
+                )
+            }
         }
     }
 
-    getRoute(): Sync.PageRoute<any, any, any> | Sync.RedirectRoute<any> | NotFoundRoute {
+    getRoute(): SyncNodes.Page<any, any, any> | SyncNodes.Redirect | NotFoundNode {
         if (!this.match) {
             return this.createNotFoundRoute()
         }
 
         if (this.requiresSlash) {
             return {
-                type: 'RedirectRoute',
+                type: 'redirect',
                 status: 'redirect',
-                pattern: this.mountedPattern.relativePattern,
                 params: {},
                 location: this.routeLocation,
                 to: concatLocations(this.routeLocation, { pathname: '/' }),
                 component: <never>undefined,
-                source: <any>this.constructor,
+                definition: <any>this.constructor,
             }
         }
 
         return {
-            type: 'PageRoute',
+            type: 'page',
             status: 'ready',
-            pattern: this.mountedPattern.relativePattern,
             params: this.match.params,
             location: this.routeLocation,
             
@@ -488,8 +512,9 @@ export class PageMount<
 
             content: this.content,
             contentStatus: this.contentStatus,
+            contentError: this.contentError,
 
-            source: <any>this.constructor,
+            definition: <any>this.constructor,
         }
     }
 }
@@ -499,7 +524,7 @@ export class PageMount<
 // Redirect
 //
 
-export interface Redirect extends BaseMountable, RedirectOptions {
+export interface RedirectDefinition extends BaseMountable, RedirectOptions {
     mountableType: 'Redirect'
 
     new(options: BaseMountOptions, redirectOptions: RedirectOptions): RedirectMount;
@@ -522,15 +547,14 @@ export class RedirectMount extends BaseMount {
         this.options = redirectOptions
     }
 
-    getRoute(): Sync.RedirectRoute<any> | NotFoundRoute {
+    getRoute(): SyncNodes.Redirect | NotFoundNode {
         if (!this.match || (this.match.remainingLocation && this.match.remainingLocation.pathname !== '/')) {
             return this.createNotFoundRoute()
         }
 
         return {
-            type: 'RedirectRoute',
+            type: 'redirect',
             status: 'redirect',
-            pattern: this.mountedPattern.relativePattern,
             params: {},
             location: this.routeLocation,
 
@@ -538,7 +562,7 @@ export class RedirectMount extends BaseMount {
 
             component: <never>undefined,
 
-            source: <any>this.constructor,
+            definition: <any>this.constructor,
         }
     }
 }

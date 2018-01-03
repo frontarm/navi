@@ -1,10 +1,10 @@
 import { Location, createHref } from './Location'
-import { Junction } from './Mounts'
+import { JunctionDefinition } from './Mounts'
 import { JunctionManager } from './JunctionManager'
-import { RootRoute } from './Routes'
+import { RootNode } from './Nodes'
 
 
-type BrowserNavigationOptions<RootJunction extends Junction<any, any, any>> = {
+type BrowserNavigationOptions<RootJunction extends JunctionDefinition<any, any, any>> = {
     /**
      * The root junction that defines the available URLs, and how to render
      * them.
@@ -42,7 +42,7 @@ type BrowserNavigationOptions<RootJunction extends Junction<any, any, any>> = {
 }
 
 
-export class BrowserNavigation<RootJunction extends Junction<any, any, any>> {
+export class BrowserNavigation<RootJunction extends JunctionDefinition<any, any, any>> {
     private announceTitle?: (pageTitle: string | null) => string
     private followRedirects: boolean
     private manager: JunctionManager<RootJunction>
@@ -76,7 +76,7 @@ export class BrowserNavigation<RootJunction extends Junction<any, any, any>> {
             rootJunction: options.rootJunction,
         })
 
-        this.getPageRoutes = this.manager.getPageRoutes.bind(this.manager)
+        this.getPages = this.manager.getPages.bind(this.manager)
 
         // Make sure to add listeners for route changes before handling the
         // initial route, as the initial route may synchronously emit more
@@ -111,15 +111,15 @@ export class BrowserNavigation<RootJunction extends Junction<any, any, any>> {
         return this.manager.isBusy()
     }
     
-    getRootRoute(): RootRoute<RootJunction> {
-        return this.manager.getRootRoute()
+    getState(): RootNode<RootJunction> {
+        return this.manager.getState()
     }
 
     getLocation(): Location {
         return this.manager.getLocation()
     }
 
-    getPageRoutes: JunctionManager['getPageRoutes'];
+    getPages: JunctionManager['getPages'];
 
     replaceLocation(location: Location): void {
         window.history.replaceState(location.state, <any>null, createHref(location))
@@ -133,21 +133,21 @@ export class BrowserNavigation<RootJunction extends Junction<any, any, any>> {
 
     private handleRouteChange() {
         let isBusy = this.manager.isBusy()
-        let rootRoute = this.manager.getRootRoute()
+        let rootRoute = this.manager.getState()
 
         let redirectTo: Location | undefined
         let title: string | null | undefined
 
         if (!isBusy && rootRoute) {
-            if (rootRoute.status === "ready" && rootRoute.descendents) {
-                let deepestRoute = rootRoute.descendents[rootRoute.descendents.length - 1]
+            if (rootRoute.status === "ready" && rootRoute.activeDescendents) {
+                let deepestRoute = rootRoute.activeDescendents[rootRoute.activeDescendents.length - 1]
                 if (deepestRoute.status === "redirect") {
                     redirectTo = deepestRoute.to
                 }
                 if (deepestRoute.status !== "busy") {
                     this.waitingForInitialContent = false
                 }
-                if (deepestRoute.status === "ready" && deepestRoute.type === "PageRoute") {
+                if (deepestRoute.status === "ready" && deepestRoute.type === "page") {
                     title = deepestRoute.title
                 }
                 else if (deepestRoute.status !== "busy") {
@@ -181,10 +181,6 @@ export class BrowserNavigation<RootJunction extends Junction<any, any, any>> {
     }
 
     private handlePopState(event) {
-        if (isExtraneousPopstateEvent(event)) {
-            return
-        }
-        
         let location = getWindowLocation(event.state)
         
         this.manager.setLocation(location)
@@ -239,17 +235,6 @@ function getWindowLocation(historyState?): Location {
         hash,
         state: historyState || getHistoryState(),
     }
-}
-
-/**
- * Returns true if a given popstate event is an extraneous WebKit event.
- * Accounts for the fact that Chrome on iOS fires real popstate events
- * containing undefined state when pressing the back button.
- * Taken from ReactTraining/history
- * Copyright (c) 2016-2017 React Training, under MIT license
- */
-function isExtraneousPopstateEvent(event) {
-    return event.state === undefined && navigator.userAgent.indexOf("CriOS") === -1
 }
 
 /**

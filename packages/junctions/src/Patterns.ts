@@ -1,5 +1,5 @@
 import { Location, parseQuery, stringifyQuery } from './Location'
-import { Mountable, AsyncMountable } from './Mounts'
+import { Definition, AsyncDefinition } from './Mounts'
 
 
 export const KEY_WILDCARD = '\0'
@@ -22,7 +22,7 @@ export interface CompiledPattern {
     // The names of params that correspond to wildcards in the relative path.
     relativePathParams?: string[],
 
-    mountable: Mountable | AsyncMountable,
+    mountable: Definition | AsyncDefinition,
 }
 
 export interface MountedPattern extends CompiledPattern {
@@ -35,7 +35,7 @@ export interface MountedPattern extends CompiledPattern {
     relativeSearchParams?: { [name: string]: boolean },
 }
 
-export function createRootMountedPattern(mountable: Mountable, relativePath?: string): MountedPattern {
+export function createRootMountedPattern(mountable: Definition, relativePath?: string): MountedPattern {
     let rootPattern: CompiledPattern =
         relativePath
             ? compilePattern(relativePath, mountable)
@@ -56,7 +56,7 @@ export function createRootMountedPattern(mountable: Mountable, relativePath?: st
     }
 }
 
-export function compilePattern(pattern: string, mountable: Mountable | AsyncMountable<Mountable>): CompiledPattern {
+export function compilePattern(pattern: string, mountable: Definition | AsyncDefinition<Definition>): CompiledPattern {
     let processedPattern = pattern
     if (processedPattern.length > 1 && processedPattern.substr(-1) === '/') {
         if (process.env.NODE_ENV !== 'production') {

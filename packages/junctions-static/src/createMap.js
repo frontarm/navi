@@ -37,16 +37,16 @@ export default async function createMap(mainFile, publicFolder) {
             }
         })
 
-        let rootRoute = await navigation.getFinalRootRoute()
-        let deepestRoute = rootRoute.descendents && rootRoute.descendents[rootRoute.descendents.length - 1]
+        let rootNode = await navigation.getFinalState()
+        let deepestNode = rootNode.activeDescendents && rootNode.activeDescendents[rootNode.activeDescendents.length - 1]
 
-        if (!deepestRoute) {
+        if (!deepestNode) {
             console.warn(`Could not load the junction associated with path "${pathname}".`)
             return
         }
 
-        if (deepestRoute.type === 'RedirectRoute') {
-            let redirectPath = deepestRoute.to.pathname
+        if (deepestNode.type === 'redirect') {
+            let redirectPath = deepestNode.to.pathname
             if (redirectPath !== pathname+'/') {
                 map[pathname] = {
                     pathname: pathname,
@@ -58,20 +58,20 @@ export default async function createMap(mainFile, publicFolder) {
                 queue.push(redirectPath)
             }
         }
-        else if (deepestRoute.type === 'PageRoute' && (!deepestRoute.contentStatus || deepestRoute.contentStatus === 'ready')) {
+        else if (deepestNode.type === 'page' && (!deepestNode.contentStatus || deepestNode.contentStatus === 'ready')) {
             map[pathname] = {
                 pathname: pathname,
                 dependencies: dependencies,
-                title: deepestRoute.title,
-                meta: deepestRoute.meta,
+                title: deepestNode.title,
+                meta: deepestNode.meta,
             }
         }
-        else if (deepestRoute.source.mountableType !== 'Junction') {
+        else if (deepestNode.definition.mountableType !== 'Junction') {
             console.warn(`Could not load the junction associated with path "${pathname}".`)
         }
         
-        if (deepestRoute.source.mountableType === 'Junction') {
-            addJunctionChildrenToQueue(deepestRoute.source, deepestRoute.location.pathname)
+        if (deepestNode.definition.mountableType === 'Junction') {
+            addJunctionChildrenToQueue(deepestNode.definition, deepestNode.location.pathname)
         }
     }
 

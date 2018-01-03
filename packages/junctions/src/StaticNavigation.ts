@@ -1,13 +1,13 @@
 import { Location } from './Location'
-import { Junction } from './Mounts'
+import { JunctionDefinition } from './Mounts'
 import { JunctionManager } from './JunctionManager'
-import { RootRoute } from './Routes'
+import { RootNode } from './Nodes'
 import { Deferred } from './Deferred'
 
 
-export class StaticNavigation<RootJunction extends Junction<any, any, any>> {
+export class StaticNavigation<RootJunction extends JunctionDefinition<any, any, any>> {
     private manager: JunctionManager<RootJunction>
-    private finalRootRouteDeferred: Deferred<RootRoute<RootJunction>>
+    private finalRootRouteDeferred: Deferred<RootNode<RootJunction>>
     
     constructor(options: {
         rootJunction: RootJunction,
@@ -17,14 +17,14 @@ export class StaticNavigation<RootJunction extends Junction<any, any, any>> {
         this.manager = new JunctionManager(options)
         this.finalRootRouteDeferred = new Deferred()
 
-        this.getPageRoutes = this.manager.getPageRoutes.bind(this.manager)
+        this.getPages = this.manager.getPages.bind(this.manager)
 
         if (this.manager.isBusy()) {
             this.handleRouteChange = this.handleRouteChange.bind(this)
             this.manager.subscribe(this.handleRouteChange)
         }
         else {
-            this.finalRootRouteDeferred.resolve(this.manager.getRootRoute())
+            this.finalRootRouteDeferred.resolve(this.manager.getState())
         }
     }
 
@@ -32,15 +32,15 @@ export class StaticNavigation<RootJunction extends Junction<any, any, any>> {
         return this.manager.getLocation()
     }
 
-    getPageRoutes: JunctionManager['getPageRoutes']
+    getPages: JunctionManager['getPages']
 
-    getFinalRootRoute(): Promise<RootRoute<RootJunction>> {
+    getFinalState(): Promise<RootNode<RootJunction>> {
         return this.finalRootRouteDeferred.promise
     }
 
     private handleRouteChange() {
         if (!this.manager.isBusy()) {
-            this.finalRootRouteDeferred.resolve(this.manager.getRootRoute())
+            this.finalRootRouteDeferred.resolve(this.manager.getState())
         }
     }
 }

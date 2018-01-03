@@ -1,8 +1,8 @@
 import { Deferred } from './Deferred'
 import { Location, concatLocations } from './Location'
-import { Mount, Junction, JunctionMount } from './Mounts'
+import { Mount, JunctionDefinition, JunctionMount, Definition, AsyncDefinition } from './Mounts'
 import { MountedPattern, createRootMountedPattern, matchMountedPatternAgainstLocation } from './Patterns'
-import { Sync, RootRoute, PageRoute } from './Routes'
+import { SyncNodes, RootNode, PageNode } from './Nodes'
 
 
 type Listener = () => void
@@ -13,7 +13,7 @@ type Unsubscriber = () => void
 // navigation in the case of redirects, it doesn't expose methods to change
 // history, etc. Instead, the sugar can be left to whatever package is used
 // for integration with something else, e.g. React or Sitepack.
-export class JunctionManager<RootJunction extends Junction<any, any, any>=any> {
+export class JunctionManager<RootJunction extends JunctionDefinition<any, any, any>=any> {
     private location: Location;
     private rootMountedPattern: MountedPattern;
     private rootJunction: RootJunction;
@@ -49,7 +49,7 @@ export class JunctionManager<RootJunction extends Junction<any, any, any>=any> {
         this.setLocation(options.initialLocation)
     }
     
-    getRootRoute(): RootRoute<RootJunction> {
+    getState(): RootNode<RootJunction> {
         if (this.rootMount) {
             return (this.rootMount as JunctionMount<any, any, any>).getRoute()
         }
@@ -103,26 +103,27 @@ export class JunctionManager<RootJunction extends Junction<any, any, any>=any> {
                 mountedPattern: this.rootMountedPattern,
                 onRouteChange: this.notifyListeners,
                 junctionManager: this,
+                shouldFetchContent: true,
             })
             this.notifyListeners()
         }
     }
 
-    getPageRoutes<Pathnames extends { [name: string]: string }>(pathnames: Pathnames): Promise<{ [K in keyof Pathnames]: PageRoute | undefined }>
-    getPageRoutes(pathname: string): Promise<PageRoute | undefined>;
-    getPageRoutes<Pathnames extends { [name: string]: string } | string>(pathnames: Pathnames): any {
+    getPages<Pathnames extends { [name: string]: string }>(pathnames: Pathnames): Promise<{ [K in keyof Pathnames]: PageNode | undefined }>
+    getPages(pathname: string): Promise<PageNode | undefined>;
+    getPages<Pathnames extends { [name: string]: string } | string>(pathnames: Pathnames): any {
         if (typeof pathnames === 'string') {
-            return this.getPageRoute({ pathname: pathnames })
+            return this.getPageNode({ pathname: pathnames })
         }
         else {
             let keys = Object.keys(pathnames)
-            let promises: Promise<PageRoute | undefined>[] = []
+            let promises: Promise<PageNode | undefined>[] = []
             for (let i = 0; i < keys.length; i++) {
                 let key = keys[i]
-                promises.push(this.getPageRoute({ pathname: pathnames[key] }))
+                promises.push(this.getPageNode({ pathname: pathnames[key] }))
             }
             return Promise.all(promises).then(values => {
-                let result: { [K in keyof Pathnames]: PageRoute | undefined } = {} as any
+                let result: { [K in keyof Pathnames]: PageNode | undefined } = {} as any
                 for (let i = 0; i < keys.length; i++) {
                     let key = keys[i]
                     result[key] = values[i]
@@ -132,31 +133,90 @@ export class JunctionManager<RootJunction extends Junction<any, any, any>=any> {
         }
     }
 
-    private getPageRoute(location: Location): Promise<PageRoute | undefined> {
+    /**
+     * Return an array of PageNode objects for each child Page of the junction
+     * denoted by the given path. Redirects and junctions will be excluded.
+     * 
+     * TODO: extend this with limit/offset options to facilitate pagination.
+     */
+    getJunctionPages(pathname: string): Promise<PageNode[] | undefined> {
+        let deferred = new Deferred<PageNode[] | undefined>()
+        this.processFinalNodeWithoutContent({ pathname }, (node?: RootNode<RootJunction>) => {
+            if (!node || node.type !== 'junction') {
+                deferred.resolve(undefined)
+            }
+            else {
+                if (!node.activeDescendents) {
+                    return deferred.resolve(undefined)
+                }
+                let deepestNode = node.activeDescendents[node.activeDescendents.length - 1]
+                let definition: JunctionDefinition
+                if (deepestNode.type === "redirect" && deepestNode.definition.mountableType === "Junction") {
+                    definition = deepestNode.definition
+                }
+                else if (deepestNode.type === "junction") {
+                    definition = deepestNode.definition
+                }
+                else {
+                    return deferred.resolve(undefined)
+                }
+                let children = Object.entries(definition.children) as [string, Definition | AsyncDefinition][]
+                let possiblePagePromises = [] as Promise<PageNode | undefined>[]
+                for (let [path, page] of children) {
+                    if (page.type !== "Mountable" || page.mountableType === "Page") {
+                        possiblePagePromises.push(this.getPageNode(concatLocations({ pathname }, { pathname: path })))
+                    }
+                }
+                Promise.all(possiblePagePromises).then(
+                    possiblePages => {
+                        deferred.resolve(possiblePages.filter(page => !!page) as PageNode[])
+                    },
+                    error => {
+                        deferred.resolve(undefined)
+                    }
+                )
+            }
+        })
+        return deferred.promise
+    }
+
+    private getPageNode(location: Location): Promise<PageNode | undefined> {
+        let deferred = new Deferred<PageNode | undefined>()
+        this.processFinalNodeWithoutContent(location, (node?: RootNode<RootJunction>) => {
+            if (!node || node.type !== 'junction') {
+                deferred.resolve(undefined)
+            }
+            else {
+                if (!node.activeDescendents) {
+                    return deferred.resolve(undefined)
+                }
+                let deepestNode = node.activeDescendents[node.activeDescendents.length - 1]
+                if (deepestNode.type === "page") {
+                    return deferred.resolve(deepestNode)
+                }
+                else if (deepestNode.type === "redirect") {
+                    this.getPageNode(deepestNode.to).then(deferred.resolve)
+                }
+                else {
+                    return deferred.resolve(undefined)
+                }
+            }
+        })
+        return deferred.promise
+    }
+
+    private processFinalNodeWithoutContent(location: Location, callback: (node?: RootNode<RootJunction>) => void) {
         let match = matchMountedPatternAgainstLocation(this.rootMountedPattern, location)
         if (!match) {
-            return Promise.resolve(undefined)
+            callback()
         }
         else {
-            let deferred = new Deferred<PageRoute | undefined>()
+            let deferred = new Deferred<PageNode | undefined>()
 
             const handleRouteChange = () => {
                 if (!rootMount.isBusy()) {
-                    // The root route will always be synchronous.
-                    let rootRoute = rootMount.getRoute() as Sync.JunctionRoute<any, any, any, any>
-                    if (!rootRoute.descendents) {
-                        return deferred.resolve(undefined)
-                    }
-                    let deepestRoute = rootRoute.descendents[rootRoute.descendents.length - 1]
-                    if (deepestRoute.type === "PageRoute") {
-                        return deferred.resolve(deepestRoute)
-                    }
-                    else if (deepestRoute.type === "RedirectRoute") {
-                        this.getPageRoute(deepestRoute.to).then(deferred.resolve)
-                    }
-                    else {
-                        return deferred.resolve(undefined)
-                    }
+                    callback(rootMount.getRoute() as RootNode<RootJunction>)
+                    rootMount.willUnmount()
                 }
             }
 
@@ -166,14 +226,10 @@ export class JunctionManager<RootJunction extends Junction<any, any, any>=any> {
                 mountedPattern: this.rootMountedPattern,
                 onRouteChange: handleRouteChange,
                 junctionManager: this,
+                shouldFetchContent: false,
             })
 
             handleRouteChange()
-
-            return deferred.promise.then(route => {
-                rootMount.willUnmount()
-                return route
-            })
         }
     }
 
