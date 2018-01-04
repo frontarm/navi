@@ -66,6 +66,10 @@ export default async function createMap(mainFile, publicFolder) {
                 meta: deepestNode.meta,
             }
         }
+        else if (deepestNode.type === 'notfound') {
+            console.warn(`The path ${rootNode.pathname} was referenced from a junction, but it doesn't exist! Skipping.`)
+            return
+        }
         else if (deepestNode.definition.mountableType !== 'Junction') {
             console.warn(`Could not load the junction associated with path "${pathname}".`)
         }

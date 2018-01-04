@@ -1,3 +1,4 @@
+import { Location } from './Location'
 import {
     Definition, AsyncDefinition, MountOptions, 
     JunctionDefinition, JunctionMount,
@@ -10,8 +11,8 @@ import { compilePattern } from './Patterns'
 
 export function defineJunction<
     Children extends { [pattern: string]: Definition | AsyncDefinition },
-    Component = undefined,
-    Payload = undefined
+    Component,
+    Payload
 >(getOptions: {
     children: Children,
     defaultPath?: keyof Children | null,
@@ -163,9 +164,9 @@ export function defineJunction<
 
 
 export function definePage<
-    Component = undefined,
-    Content = undefined,
-    Meta = undefined
+    Component,
+    Content,
+    Meta
 >(options: {
     params?: ParamsDefinition,
     title: string,
@@ -240,7 +241,7 @@ export function definePage<
 }
 
 
-export function defineRedirect(to: Location | string): RedirectDefinition {
+export function defineRedirect(to: Location | string | ((location: Location) => Location)): RedirectDefinition {
     let toLocation =
         typeof to === 'string'
             ? { pathname: to }

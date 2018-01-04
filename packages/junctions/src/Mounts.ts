@@ -140,7 +140,7 @@ abstract class BaseMount {
     }
 
     protected watchAsync<AO extends AsyncObject<any>>(async: AO, event: object, callback: (status: 'ready' | 'busy' | 'error', value?: AO['value'], error?: any) => void): void {
-        if (!async.status || async.status == 'ready') {
+        if (!async.status || async.status !== 'ready') {
             let result = async.getter(this.junctionManager)
 
             // Not all promise libraries use the ES6 `Promise` constructor,
@@ -535,7 +535,7 @@ export interface RedirectDefinition extends BaseMountable, RedirectOptions {
 }
 
 export interface RedirectOptions {
-    to: Location
+    to: Location | ((location: Location) => Location),
 }
 
 export class RedirectMount extends BaseMount {
@@ -552,13 +552,15 @@ export class RedirectMount extends BaseMount {
             return this.createNotFoundRoute()
         }
 
+        let toLocation = typeof this.options.to === 'function' ? this.options.to(this.routeLocation) : this.options.to
+
         return {
             type: 'redirect',
             status: 'redirect',
             params: {},
             location: this.routeLocation,
 
-            to: this.options.to,
+            to: toLocation,
 
             component: <never>undefined,
 

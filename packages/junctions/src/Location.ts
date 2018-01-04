@@ -10,18 +10,21 @@ export type Location = {
 }
 
 
-export function concatLocations(left: Location, rightLocationOrString: Location | string): Location {
-    let right: Location =
-        typeof rightLocationOrString === 'string'
-            ? parseLocationString(rightLocationOrString)
-            : rightLocationOrString
-    
-    return {
-        pathname: joinPaths(left.pathname, right.pathname),
-        search: joinQueryStrings(left.search, right.search, '?'),
-        hash: joinQueryStrings(left.hash, right.hash, '#'),
-        state: left.state || right.state ? Object.assign({}, left.state, right.state) : undefined,
+export function concatLocations(...locations: (Location | string)[]): Location {
+    let result = { pathname: '' } as Location
+    for (let i = 0; i < locations.length; i++) {
+        let location = locations[i]
+        if (typeof location === 'string') {
+            location = parseLocationString(location)
+        }
+        result = {
+            pathname: joinPaths(result.pathname, location.pathname),
+            search: joinQueryStrings(result.search, location.search, '?'),
+            hash: joinQueryStrings(result.hash, location.hash, '#'),
+            state: result.state || location.state ? Object.assign({}, result.state, location.state) : undefined,
+        }
     }
+    return result
 }
     
 const parsePattern = /^((((\/?(?:[^\/\?#]+\/+)*)([^\?#]*)))?(\?[^#]+)?)(#.*)?/
