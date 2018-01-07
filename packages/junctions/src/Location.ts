@@ -9,15 +9,23 @@ export type Location = {
     state?: object,
 }
 
+export type Query = {
+    [name: string]: any
+}
 
-export function concatLocations(...locations: (Location | string)[]): Location {
-    let result = { pathname: '' } as Location
+export function concatLocations(firstLocation: Location | string, ...locations: (Location | string)[]): Location {
+    let result = 
+        typeof firstLocation === 'string'
+            ? { pathname: firstLocation } as Location
+            : firstLocation
+
     for (let i = 0; i < locations.length; i++) {
         let location = locations[i]
         if (typeof location === 'string') {
             location = parseLocationString(location)
         }
         result = {
+            ...result,
             pathname: joinPaths(result.pathname, location.pathname),
             search: joinQueryStrings(result.search, location.search, '?'),
             hash: joinQueryStrings(result.hash, location.hash, '#'),
@@ -67,7 +75,7 @@ export function createHref(location: Location): string {
     return location.pathname+(location.search || '')+(location.hash || '')
 }
 
-export function parseQuery(queryString?: string, leadingCharacter='?'): { [name: string]: any } {
+export function parseQuery(queryString?: string, leadingCharacter='?'): Query {
     if (!queryString || queryString[0] != leadingCharacter) {
         return {}
     }

@@ -1,7 +1,14 @@
 export { BrowserNavigation } from './BrowserNavigation'
-export { JunctionManager } from './JunctionManager'
+export { ContentHelpers } from './ContentHelpers'
+export { Router } from './Router'
 export { Location, concatLocations } from './Location'
 export { StaticNavigation } from './StaticNavigation'
-export { JunctionDefinition, PageDefinition, RedirectDefinition } from './Mounts'
-export { defineJunction, definePage, defineRedirect } from './Factories'
-export { Node, RootNode as Root, JunctionNode as Junction, PageNode as Page } from './Nodes'
+export { createJunctionTemplate, JunctionTemplate } from './JunctionTemplate'
+export { createPageTemplate, PageTemplate } from './PageTemplate'
+export { createRedirectTemplate, RedirectTemplate } from './RedirectTemplate'
+export {
+    RouteSegment,
+    JunctionRoute as RootRoute,
+    Junction,
+    Page,
+} from './Route'

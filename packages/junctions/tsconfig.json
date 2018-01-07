@@ -17,9 +17,9 @@
         ]
     },
     "exclude": [
-        "notes",
-        "examples",
         "dist",
-        "node_modules"
+        "examples",
+        "node_modules",
+        "notes"
     ]
 }

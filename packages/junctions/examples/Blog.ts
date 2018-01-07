@@ -1,44 +1,43 @@
 import React from 'react'
 import { 
+    createPageTemplate,
+    createJunctionTemplate,
+    createRedirectTemplate,
+
     Page,
     Junction,
-
-    definePage,
-    defineJunction,
-    defineRedirect
 } from '../src/index'
 
 
 function ArticleComponent(props: { page: Page<typeof Landing> }) {
     let { page } = props
-    props.page.status === "ready" && props.page.component
     return null
 }
 
 
-let Landing = definePage({
+let Landing = createPageTemplate({
     title: "React Armory",
     component: ArticleComponent,
 })
-let Latest = definePage({
+let Latest = createPageTemplate({
     title: "Latest",
     component: ArticleComponent,
 })
 
 
 
-let Article1 = definePage({
+let Article1 = createPageTemplate({
     title: "Article 1",
     component: ArticleComponent,
 })
-let Article2 = definePage({
+let Article2 = createPageTemplate({
     title: "Article 2",
     component: ArticleComponent,
 })
 
 
 
-let ArticlesJunction = defineJunction(({ split }) => ({
+let ArticlesJunction = createJunctionTemplate(({ split }) => ({
     children: {
         '/1': split(() => Promise.resolve(Article1)),
         '/2': split(() => Promise.resolve(Article2)),
@@ -56,9 +55,9 @@ let ArticlesJunction = defineJunction(({ split }) => ({
     
         render() {
             let { env, junction } = this.props
-            
+
             return (
-                junction.activeChild.status === "ready"
+                junction.activeChild
                     ? React.createElement(junction.activeChild.component, { env, page: junction.activeChild })
                     : null
             )
@@ -67,7 +66,7 @@ let ArticlesJunction = defineJunction(({ split }) => ({
 }))
 
 
-let AppJunction = defineJunction(({ split }) => ({
+let AppJunction = createJunctionTemplate(({ split }) => ({
     children: {
         '/': Landing,
         '/latest': Latest,
@@ -83,15 +82,13 @@ let AppJunction = defineJunction(({ split }) => ({
         render() {
             let { env, junction } = this.props
 
-            // junction.activeChild.status === "ready" && junction.activeChild.type === "page" && junction.activeChild.component
-
             return (
-                junction.activeChild.status === "ready"
+                junction.activeChild
                     ? React.createElement(junction.activeChild.component, {
                         env,
                         [junction.activeChild.type]: junction.activeChild
                       })
-                    : null
+                    : React.createElement('div', {}, junction.status)
             )
         }
     },

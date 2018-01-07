@@ -1,15 +1,18 @@
 import { Location, createHref } from './Location'
-import { JunctionDefinition } from './Mounts'
-import { JunctionManager } from './JunctionManager'
-import { RootNode } from './Nodes'
+import { Template } from './Template'
+import { JunctionTemplate, JunctionMatcher } from './JunctionTemplate'
+import { Router } from './Router'
+import { RouterConfig, createRouterConfig } from './RouterConfig'
+import { ContentHelpers, createContentHelpers } from './ContentHelpers'
+import { JunctionRoute } from './Route'
 
 
-type BrowserNavigationOptions<RootJunction extends JunctionDefinition<any, any, any>> = {
+type BrowserNavigationOptions<RootJunctionTemplate extends JunctionTemplate = JunctionTemplate> = {
     /**
      * The root junction that defines the available URLs, and how to render
      * them.
      */
-    rootJunction: RootJunction,
+    junctionTemplate: RootJunctionTemplate,
 
     /**
      * Causes the navigation to follow any redirects in junctions.
@@ -42,18 +45,22 @@ type BrowserNavigationOptions<RootJunction extends JunctionDefinition<any, any, 
 }
 
 
-export class BrowserNavigation<RootJunction extends JunctionDefinition<any, any, any>> {
+export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
     private announceTitle?: (pageTitle: string | null) => string
     private followRedirects: boolean
-    private manager: JunctionManager<RootJunction>
+    private router: Router<RootJunctionTemplate>
+    private location: Location
     private setDocumentTitle: (pageTitle: string | null) => string
     private subscribers: {
         callback: () => void,
         waitForInitialContent: boolean,
     }[]
     private waitingForInitialContent: boolean
+
+    getPages: ContentHelpers['getPages']
+    getJunctionPages: ContentHelpers['getJunctionPages']
     
-    constructor(options: BrowserNavigationOptions<RootJunction>) {
+    constructor(options: BrowserNavigationOptions<RootJunctionTemplate>) {
         this.handleRouteChange = this.handleRouteChange.bind(this)
         this.handlePopState = this.handlePopState.bind(this)
 
@@ -71,18 +78,17 @@ export class BrowserNavigation<RootJunction extends JunctionDefinition<any, any,
         this.subscribers = []
         this.waitingForInitialContent = true
 
-        this.manager = new JunctionManager({
-            initialLocation: getWindowLocation(),
-            rootJunction: options.rootJunction,
+        let routerConfig = createRouterConfig({
+            junctionTemplate: options.junctionTemplate
         })
 
-        this.getPages = this.manager.getPages.bind(this.manager)
+        this.router = new Router(routerConfig)
+        this.router.subscribe(this.handleRouteChange)
 
-        // Make sure to add listeners for route changes before handling the
-        // initial route, as the initial route may synchronously emit more
-        // changes due to redirects.
-        this.manager.subscribe(this.handleRouteChange)
-        this.handleRouteChange()
+        Object.assign(this, createContentHelpers(routerConfig))
+        
+        this.setLocation(getWindowLocation())
+
         window.addEventListener("popstate", this.handlePopState)
     }
     
@@ -108,54 +114,56 @@ export class BrowserNavigation<RootJunction extends JunctionDefinition<any, any,
     }
 
     isBusy(): boolean {
-        return this.manager.isBusy()
+        return this.router.isBusy()
     }
     
-    getState(): RootNode<RootJunction> {
-        return this.manager.getState()
+    getRoute(): JunctionRoute<RootJunctionTemplate> | undefined {
+        return this.router.getRoute()
     }
 
     getLocation(): Location {
-        return this.manager.getLocation()
+        return this.location
     }
-
-    getPages: JunctionManager['getPages'];
 
     replaceLocation(location: Location): void {
         window.history.replaceState(location.state, <any>null, createHref(location))
-        this.manager.setLocation(location)
+        this.setLocation(location)
     }
 
     pushLocation(location: Location): void {
         window.history.pushState(location.state, <any>null, createHref(location))
-        this.manager.setLocation(location)
+        this.setLocation(location)
+    }
+
+    private setLocation(location: Location): void {
+        this.location = location
+        this.router.setLocation(location)
     }
 
     private handleRouteChange() {
-        let isBusy = this.manager.isBusy()
-        let rootRoute = this.manager.getState()
+        let isBusy = this.router.isBusy()
+        let route = this.router.getRoute()
+        let lastSegment = route && route[route.length - 1]
 
         let redirectTo: Location | undefined
         let title: string | null | undefined
 
-        if (!isBusy && rootRoute) {
-            if (rootRoute.status === "ready" && rootRoute.activeDescendents) {
-                let deepestRoute = rootRoute.activeDescendents[rootRoute.activeDescendents.length - 1]
-                if (deepestRoute.status === "redirect") {
-                    redirectTo = deepestRoute.to
-                }
-                if (deepestRoute.status !== "busy") {
+        if (!isBusy && lastSegment) {
+            // TODO: handle lack of trailing '/' on matched route with
+            // redirect.
+
+            title = null
+            if (lastSegment.type === "redirect") {
+                redirectTo = lastSegment.to
+            }
+            else if (lastSegment.type === "page") {
+                if (lastSegment.contentStatus !== "busy") {
                     this.waitingForInitialContent = false
                 }
-                if (deepestRoute.status === "ready" && deepestRoute.type === "page") {
-                    title = deepestRoute.title
-                }
-                else if (deepestRoute.status !== "busy") {
-                    title = null
-                }
+                title = lastSegment.title
             }
-            else if (rootRoute.status === "redirect") {
-                redirectTo = rootRoute.to
+            else if (lastSegment.status !== "busy") {
+                this.waitingForInitialContent = false
             }
         }
 
@@ -183,7 +191,7 @@ export class BrowserNavigation<RootJunction extends JunctionDefinition<any, any,
     private handlePopState(event) {
         let location = getWindowLocation(event.state)
         
-        this.manager.setLocation(location)
+        this.router.setLocation(location)
     }
 }
 
@@ -250,6 +258,17 @@ function getHistoryState() {
         return {}
     }
 }
+
+/**
+ * Returns true if browser fires popstate on hash change.
+ * IE10 and IE11 do not.
+ * 
+ * Taken from ReactTraining/history
+ * Copyright (c) 2016-2017 React Training, under MIT license
+ */
+export const supportsPopStateOnHashChange = () =>
+  window.navigator.userAgent.indexOf("Trident") === -1
+
 
 
 type Unsubscriber = () => void

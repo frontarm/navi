@@ -1,5 +1,5 @@
 import { Location, parseQuery, stringifyQuery } from './Location'
-import { Definition, AsyncDefinition } from './Mounts'
+import { Template, AsyncTemplate } from './Template'
 
 
 export const KEY_WILDCARD = '\0'
@@ -22,7 +22,7 @@ export interface CompiledPattern {
     // The names of params that correspond to wildcards in the relative path.
     relativePathParams?: string[],
 
-    mountable: Definition | AsyncDefinition,
+    template: Template | AsyncTemplate,
 }
 
 export interface MountedPattern extends CompiledPattern {
@@ -32,18 +32,18 @@ export interface MountedPattern extends CompiledPattern {
     
     // Query parameters that are consumed regardless of their value,
     // where `true` indicates that they're required.
-    relativeSearchParams?: { [name: string]: boolean },
+    relativeSearchParams?: string[],
 }
 
-export function createRootMountedPattern(mountable: Definition, relativePath?: string): MountedPattern {
+export function createRootMountedPattern(template: Template, relativePath?: string): MountedPattern {
     let rootPattern: CompiledPattern =
         relativePath
-            ? compilePattern(relativePath, mountable)
+            ? compilePattern(relativePath, template)
             : {
                 relativePattern: relativePath || '',
                 relativeKey: '',
                 relativeRegExp: new RegExp(''),
-                mountable
+                template
             }
         
     if (rootPattern.relativePathParams && rootPattern.relativePathParams.length > 0) {
@@ -56,7 +56,7 @@ export function createRootMountedPattern(mountable: Definition, relativePath?: s
     }
 }
 
-export function compilePattern(pattern: string, mountable: Definition | AsyncDefinition<Definition>): CompiledPattern {
+export function compilePattern(pattern: string, template: Template | AsyncTemplate): CompiledPattern {
     let processedPattern = pattern
     if (processedPattern.length > 1 && processedPattern.substr(-1) === '/') {
         if (process.env.NODE_ENV !== 'production') {
@@ -108,7 +108,7 @@ export function compilePattern(pattern: string, mountable: Definition | AsyncDef
         relativeKey: keyParts.join('/'),
         relativePathParams: pathParams.length ? pathParams : undefined,
         relativeRegExp: new RegExp(regExpParts.join('/')),
-        mountable: mountable,
+        template: template,
     }
 }
 
@@ -130,36 +130,35 @@ export function createChildMountedPattern(parentPattern: MountedPattern, compile
 }
 
 
-export function addParamsToMountedPattern(pattern: MountedPattern, params?: { [name: string]: boolean }): MountedPattern {
-    let relativeSearchParams = params || {}
+export function addParamsToMountedPattern(pattern: MountedPattern, params: string[]): MountedPattern {
+    let relativeSearchParams = params || []
     
     // Ensure that any params in the mount's path are also specified by the
     // mounted junction's "params" config.
     if (pattern.relativePathParams) {
         for (let i = pattern.relativePathParams.length - 1; i >= 0; i--) {
             let pathParam = pattern.relativePathParams[i]
-            let required = relativeSearchParams[pathParam]
-            if (required === undefined) {
+            let index = relativeSearchParams.indexOf(pathParam)
+            if (index === -1) {
                 if (process.env.NODE_ENV !== 'production') {
                     console.warn(`The path parameter ":${pathParam}" was not specified in its associated junctions' "params" configuration option. To avoid this warning, always specify your junctions' "params" object.`)
                 }
             }
             else {
-                delete relativeSearchParams[pathParam]
+                relativeSearchParams.splice(index, 1)
             }
         }    
     }
 
-    // If there are no search params, the mount won't change.
-    let searchParamKeys = Object.keys(relativeSearchParams)
-    if (searchParamKeys.length === 0) {
+    // If there are no search params, the mount won't chang
+    if (relativeSearchParams.length === 0) {
         return pattern
     }
     
     // Ensure that none of our search param names are already used by parent
     // junctions.
     if (process.env.NODE_ENV !== 'production') {
-        let doubleParams = searchParamKeys.filter(param => pattern.params.indexOf(param) !== -1)
+        let doubleParams = relativeSearchParams.filter(param => pattern.params.indexOf(param) !== -1)
         if (doubleParams.length) {
             console.error(`The junction mounted at "${pattern.relativePattern}" uses the param names ${doubleParams.map(x => `"${x}"`).join(', ')}, which have already been used by a parent junction.`)
         }
@@ -167,7 +166,7 @@ export function addParamsToMountedPattern(pattern: MountedPattern, params?: { [n
     
     return {
         ...pattern,
-        relativeSearchParams: searchParamKeys.length ? relativeSearchParams : undefined,
+        relativeSearchParams: relativeSearchParams.length ? relativeSearchParams : undefined,
     }
 }
 
@@ -202,19 +201,9 @@ export function matchMountedPatternAgainstLocation(pattern: MountedPattern, loca
     let remainingQueryParts = {}
     if (pattern.relativeSearchParams) {
         let query = parseQuery(location.search)
-        let keys = Object.keys(pattern.relativeSearchParams)
-        for (let i = 0; i < keys.length; i++) {
-            let paramName = keys[i]
-            let isRequired = pattern.relativeSearchParams[paramName]
-
-            if (query[name] === undefined) {
-                // If the parameter is required but not present, then this is not
-                // a match.
-                if (isRequired) {
-                    return
-                }
-            }
-            else {
+        for (let i = 0; i < pattern.relativeSearchParams.length; i++) {
+            let paramName = pattern.relativeSearchParams[i]
+            if (query[name] !== undefined) {
                 params[paramName] = query[name]
                 matchedQueryParts[paramName] = query[name]
                 delete query[name]
