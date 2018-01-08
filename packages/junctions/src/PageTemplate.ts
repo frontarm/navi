@@ -81,14 +81,6 @@ export class PageMatcher<
 }
 
 
-export interface ContentHelpers {
-    getPages<Pathnames extends { [name: string]: string }>(pathnames: Pathnames): Promise<{ [K in keyof Pathnames]: Page | undefined }>
-    getPages(pathname: string): Promise<Page | undefined>;
-
-    getJunctionPages(pathname: string): Promise<Page[] | undefined>
-}
-
-
 export function createPageTemplate<
     Meta,
     Component,

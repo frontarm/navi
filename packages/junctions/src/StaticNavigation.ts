@@ -5,9 +5,10 @@ import { ContentHelpers, createContentHelpers } from './ContentHelpers'
 import { Deferred } from './Deferred'
 import { JunctionRoute } from './Route'
 import { createRouterConfig } from './RouterConfig';
+import { Navigation } from './Navigation';
 
 
-export class StaticNavigation<RootJunctionTemplate extends JunctionTemplate = JunctionTemplate> {
+export class StaticNavigation<RootJunctionTemplate extends JunctionTemplate = JunctionTemplate> implements Navigation {
     private location: Location
     private router: Router<RootJunctionTemplate>
     private finalRootRouteDeferred: Deferred<JunctionRoute<RootJunctionTemplate> | undefined>
@@ -31,12 +32,20 @@ export class StaticNavigation<RootJunctionTemplate extends JunctionTemplate = Ju
 
     getPages: ContentHelpers['getPages']
 
+    getFinalRoute(): Promise<JunctionRoute<RootJunctionTemplate> | undefined> {
+        return this.finalRootRouteDeferred.promise
+    }
+
     getLocation(): Location {
         return this.location
     }
 
-    getFinalRoute(): Promise<JunctionRoute<RootJunctionTemplate> | undefined> {
-        return this.finalRootRouteDeferred.promise
+    replaceLocation(x: any, y?: any) {
+        throw new Error("You can't change the location of a StaticNavigation instance.")
+    }
+
+    pushLocation(x: any, y?: any) {
+        throw new Error("You can't change the location of a StaticNavigation instance.")
     }
 
     private handleRouteChange = () => {

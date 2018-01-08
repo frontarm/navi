@@ -90,11 +90,6 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
             this.setDocumentTitle = typeof options.setDocumentTitle === 'function' ? options.setDocumentTitle : ((x) => x || 'Untitled Page')
         }
 
-        // if ('scrollRestoration' in window.history) {
-        //     // Prevent the browser from automatically scrolling on popState.
-        //     window.history.scrollRestoration = 'manual'
-        // }
-
         this.autoscroll = options.autoscroll !== undefined ? options.autoscroll : true
         this.followRedirects = options.followRedirects !== undefined ? options.followRedirects : true
         this.subscribers = []
@@ -161,12 +156,14 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
     replaceLocation(location: Location);
     replaceLocation(path: string, state?: any);
     replaceLocation(location: any, state?): void {
+        // TODO: if handle scrolling here
         this.history.replace(location, state)
     }
 
     pushLocation(location: Location);
     pushLocation(path: string, state?: any);
     pushLocation(location: any, state?: any): void {
+        // TODO: if handle scrolling here
         this.history.push(location, state)
     }
 
