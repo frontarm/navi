@@ -1,17 +1,17 @@
 import React, { Component } from 'react'
-import { createJunction, createPage } from 'junctions'
+import { createJunctionTemplate, createPageTemplate } from 'junctions'
 import './Users.css'
 
 class Users extends Component {
     render() {
-        let route = this.props.route
+        let segment = this.props.segment
 
         return (
             <div className="Users">
                 <div className="Users-content">
                     {
-                        route.child.component &&
-                        React.createElement(route.child.component, { route: route.child })
+                        segment.activeChild.component &&
+                        React.createElement(segment.activeChild.component, { segment: segment.activeChild })
                     }
                 </div>
             </div>
@@ -29,26 +29,26 @@ class NewUser extends Component {
 
 class UserDetails extends Component {
     render() {
-        return <div><h2>User #{this.props.route.params.id}</h2></div>
+        return <div><h2>User #{this.props.segment.params.id}</h2></div>
     }
 }
 
-export default createJunction(({ split }) => ({
+export default createJunctionTemplate(({ split }) => ({
     component: Users,
 
     children: {
-        '/': createPage({
+        '/': createPageTemplate({
             title: 'Users',
             component: ContentRenderer,
             getContent: () => import('./UserList').then(m => m.default),
         }),
 
-        '/new': createPage({
+        '/new': createPageTemplate({
             title: 'New user',
             component: NewUser,
         }),
 
-        '/:id': split(() => Promise.resolve(createPage({
+        '/:id': split(() => Promise.resolve(createPageTemplate({
             title: 'User details',
             params: ['id'],
             component: ContentRenderer,
@@ -58,8 +58,8 @@ export default createJunction(({ split }) => ({
 }))
 
 
-function ContentRenderer({ route }) {
-    return route.content
-        ? React.createElement(route.content, { route })
+function ContentRenderer({ segment }) {
+    return segment.content
+        ? React.createElement(segment.content, { segment })
         : null
 }

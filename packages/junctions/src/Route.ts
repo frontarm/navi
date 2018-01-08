@@ -98,6 +98,7 @@ export interface Junction<J extends JunctionTemplate = JunctionTemplate> extends
 
     meta: J['meta'],
     component: J['component'],
+    children: J['children'],
 
     /**
      * The pattern that was matched (with param placeholders if applicable).

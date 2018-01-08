@@ -66,7 +66,6 @@ export class Router<RootJunctionTemplate extends JunctionTemplate=any> {
 
         this.location = location
 
-        // if the root pattern matches
         let match = location && matchMountedPatternAgainstLocation(this.config.rootMountedPattern, location)
         if (!match && this.rootMatcher) {
             this.rootMatcher.willUnmount()

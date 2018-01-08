@@ -3,79 +3,84 @@ import { StaticNavigation } from 'junctions'
 
 export default async function createMap(mainFile, publicFolder) {
     let createDOM = createDOMFactory(mainFile, publicFolder)
-    let queue = []
+
+    let queue = ['']
+    let processedJunctions = []
     let map = {}
 
-    function addJunctionChildrenToQueue(junction, base='') {
-        Object.keys(junction.children)
-            .filter(pattern => pattern.indexOf(':') === -1)
-            .forEach(pattern => {
-                let pathname = base + pattern
-                if (!map[pathname]) {
-                    queue.push(pathname)
-                }
-            })
+    function addPathToQueue(pathname) {
+        if (!map[pathname]) {
+            queue.push(pathname)
+        }
+    }
+
+    function getCanonicalPathname(pathname) {
+        return pathname.substr(-1) === '/' ? pathname : pathname + '/'
+    }
+
+    function addJunctionChildrenToQueue(junction, pathname) {
+        if (junction) {
+            let canonicalPathname = getCanonicalPathname(pathname)
+            if (!processedJunctions.includes(canonicalPathname)) {
+                processedJunctions.push(canonicalPathname)
+                Object.keys(junction.children)
+                    .filter(pattern => pattern.indexOf(':') === -1)
+                    .forEach(pattern => addPathToQueue(canonicalPathname + pattern.substr(1)))
+            }
+        }
     }
 
     let dom = createDOM()
-    addJunctionChildrenToQueue(dom.window.rootJunction)
 
     async function processURL(pathname) {
+        let canonicalPathname = getCanonicalPathname(pathname)
+
         let dependencies = []
-        let dom = createDOM(pathname => {
-            dependencies.push(pathname)
+        let dom = createDOM(dependencyPathname => {
+            dependencies.push(dependencyPathname)
         })
-        let rootJunction = dom.window.rootJunction
+        let rootJunctionTemplate = dom.window.ReactApp.rootJunctionTemplate
 
         let navigation = new StaticNavigation({
-            initialLocation: { pathname },
-            rootJunction,
-            onEvent: (eventType, location) => {
-                // TODO: can use this to build a map of dependencies for each chunk,
-                // as opposed to dependencies for each URL. Then can build a list of
-                // files to push with HTTP/2 each time somebody requests a chunk
-            }
+            location: { pathname: canonicalPathname },
+            rootJunctionTemplate
         })
 
-        let rootNode = await navigation.getFinalState()
-        let deepestNode = rootNode.activeDescendents && rootNode.activeDescendents[rootNode.activeDescendents.length - 1]
+        let route = await navigation.getFinalRoute()
+        let finalSegment = route && route[route.length - 1]
 
-        if (!deepestNode) {
-            console.warn(`Could not load the junction associated with path "${pathname}".`)
-            return
-        }
-
-        if (deepestNode.type === 'redirect') {
-            let redirectPath = deepestNode.to.pathname
-            if (redirectPath !== pathname+'/') {
-                map[pathname] = {
-                    pathname: pathname,
-                    dependencies: dependencies,
-                    redirect: redirectPath,
-                }
-            }
-            if (!map[redirectPath]) {
-                queue.push(redirectPath)
-            }
-        }
-        else if (deepestNode.type === 'page' && (!deepestNode.contentStatus || deepestNode.contentStatus === 'ready')) {
-            map[pathname] = {
-                pathname: pathname,
+        if (finalSegment.type === 'redirect') {
+            let redirectPath = finalSegment.to.pathname
+            map[canonicalPathname] = {
+                pathname: canonicalPathname,
                 dependencies: dependencies,
-                title: deepestNode.title,
-                meta: deepestNode.meta,
+                redirect: redirectPath,
             }
+            addPathToQueue(redirectPath)
+
+            let finalJunction = route[route.length - 2]
+            addJunctionChildrenToQueue(finalJunction, finalJunction.location.pathname)
         }
-        else if (deepestNode.type === 'notfound') {
-            console.warn(`The path ${rootNode.pathname} was referenced from a junction, but it doesn't exist! Skipping.`)
-            return
+        else if (finalSegment.type === 'page') {
+            map[canonicalPathname] = {
+                pathname: canonicalPathname,
+                dependencies: dependencies,
+                title: finalSegment.title,
+                meta: finalSegment.meta,
+            }
+
+            let finalJunction = route[route.length - 2]
+            addJunctionChildrenToQueue(finalJunction, finalJunction.location.pathname)
         }
-        else if (deepestNode.definition.mountableType !== 'Junction') {
-            console.warn(`Could not load the junction associated with path "${pathname}".`)
-        }
-        
-        if (deepestNode.definition.mountableType === 'Junction') {
-            addJunctionChildrenToQueue(deepestNode.definition, deepestNode.location.pathname)
+        else {
+            // if the last segment is a junction, but its path is shorter than
+            // the request path, then it means we couldn't find the requested path.
+            if (finalSegment.location.pathname.length < pathname.length) {
+                console.warn(`The path ${pathname} was referenced from a junction, but it doesn't exist! Skipping.`)
+            }
+            else {
+                addJunctionChildrenToQueue(finalSegment, pathname)
+            }
         }
     }
 

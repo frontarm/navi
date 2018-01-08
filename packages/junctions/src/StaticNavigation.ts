@@ -1,47 +1,47 @@
 import { Location } from './Location'
-export const StaticNavigation = null
-// import { JunctionDefinition } from './Mounts'
-// import { JunctionManager } from './JunctionTemplateManager'
-// import { RootNode } from './Nodes'
-// import { Deferred } from './Deferred'
+import { JunctionTemplate } from './JunctionTemplate'
+import { Router } from './Router'
+import { ContentHelpers, createContentHelpers } from './ContentHelpers'
+import { Deferred } from './Deferred'
+import { JunctionRoute } from './Route'
+import { createRouterConfig } from './RouterConfig';
 
 
-// export class StaticNavigation<RootJunction extends JunctionDefinition<any, any, any>> {
-//     private manager: JunctionManager<RootJunction>
-//     private finalRootRouteDeferred: Deferred<RootNode<RootJunction>>
+export class StaticNavigation<RootJunctionTemplate extends JunctionTemplate = JunctionTemplate> {
+    private location: Location
+    private router: Router<RootJunctionTemplate>
+    private finalRootRouteDeferred: Deferred<JunctionRoute<RootJunctionTemplate> | undefined>
     
-//     constructor(options: {
-//         rootJunction: RootJunction,
-//         initialLocation: Location,
-//         onEvent?: JunctionManager['onEvent'],
-//     }) {
-//         this.manager = new JunctionManager(options)
-//         this.finalRootRouteDeferred = new Deferred()
+    constructor(options: {
+        rootJunctionTemplate: RootJunctionTemplate,
+        location: Location,
+    }) {
+        let config = createRouterConfig({
+            rootJunctionTemplate: options.rootJunctionTemplate,
+        })
 
-//         this.getPages = this.manager.getPages.bind(this.manager)
+        Object.assign(this, createContentHelpers(config))
+        
+        this.location = options.location
+        this.finalRootRouteDeferred = new Deferred()
+        this.router = new Router(config)
+        this.router.subscribe(this.handleRouteChange)
+        this.router.setLocation(options.location)
+    }
 
-//         if (this.manager.isBusy()) {
-//             this.handleRouteChange = this.handleRouteChange.bind(this)
-//             this.manager.subscribe(this.handleRouteChange)
-//         }
-//         else {
-//             this.finalRootRouteDeferred.resolve(this.manager.getState())
-//         }
-//     }
+    getPages: ContentHelpers['getPages']
 
-//     getLocation(): Location {
-//         return this.manager.getLocation()
-//     }
+    getLocation(): Location {
+        return this.location
+    }
 
-//     getPages: JunctionManager['getPages']
+    getFinalRoute(): Promise<JunctionRoute<RootJunctionTemplate> | undefined> {
+        return this.finalRootRouteDeferred.promise
+    }
 
-//     getFinalState(): Promise<RootNode<RootJunction>> {
-//         return this.finalRootRouteDeferred.promise
-//     }
-
-//     private handleRouteChange() {
-//         if (!this.manager.isBusy()) {
-//             this.finalRootRouteDeferred.resolve(this.manager.getState())
-//         }
-//     }
-// }
+    private handleRouteChange = () => {
+        if (!this.router.isBusy()) {
+            this.finalRootRouteDeferred.resolve(this.router.getRoute())
+        }
+    }
+}

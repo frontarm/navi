@@ -1,4 +1,5 @@
-import { Location, createHref } from './Location'
+import { createBrowserHistory, History } from 'history'
+import { Location, createHref, concatLocations } from './Location'
 import { Template } from './Template'
 import { JunctionTemplate, JunctionMatcher } from './JunctionTemplate'
 import { Router } from './Router'
@@ -12,14 +13,30 @@ type BrowserNavigationOptions<RootJunctionTemplate extends JunctionTemplate = Ju
      * The root junction that defines the available URLs, and how to render
      * them.
      */
-    junctionTemplate: RootJunctionTemplate,
+    rootJunctionTemplate: RootJunctionTemplate,
 
     /**
-     * Causes the navigation to follow any redirects in junctions.
+     * Whether to follow any redirects in the current route.
      * 
      * Defaults to `true`.
      */
     followRedirects?: boolean,
+
+    /**
+     * Causes changes in the location's hash or pathname to scroll page to the
+     * new hash, or to the top.
+     * 
+     * Defaults to `true`.
+     */
+    autoscroll?: boolean,
+
+    /**
+     * You can supply a History object, as produced by the `history` package.
+     * 
+     * This is useful for integrating Junctions-based components within a
+     * react-router based app.
+     */
+    history?: History,
 
     /**
      * Adds a title announcer div for accessibility, and
@@ -47,9 +64,11 @@ type BrowserNavigationOptions<RootJunctionTemplate extends JunctionTemplate = Ju
 
 export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
     private announceTitle?: (pageTitle: string | null) => string
+    private autoscroll: boolean
     private followRedirects: boolean
     private router: Router<RootJunctionTemplate>
     private location: Location
+    private history: History
     private setDocumentTitle: (pageTitle: string | null) => string
     private subscribers: {
         callback: () => void,
@@ -61,9 +80,6 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
     getJunctionPages: ContentHelpers['getJunctionPages']
     
     constructor(options: BrowserNavigationOptions<RootJunctionTemplate>) {
-        this.handleRouteChange = this.handleRouteChange.bind(this)
-        this.handlePopState = this.handlePopState.bind(this)
-
         if (options.announceTitle !== false) {
             this.announceTitle = typeof options.announceTitle === 'function' ? options.announceTitle : ((x) => x || 'Untitled Page')
 
@@ -74,12 +90,24 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
             this.setDocumentTitle = typeof options.setDocumentTitle === 'function' ? options.setDocumentTitle : ((x) => x || 'Untitled Page')
         }
 
+        // if ('scrollRestoration' in window.history) {
+        //     // Prevent the browser from automatically scrolling on popState.
+        //     window.history.scrollRestoration = 'manual'
+        // }
+
+        this.autoscroll = options.autoscroll !== undefined ? options.autoscroll : true
         this.followRedirects = options.followRedirects !== undefined ? options.followRedirects : true
         this.subscribers = []
         this.waitingForInitialContent = true
 
+        this.history = options.history || createBrowserHistory()
+        this.history.listen(this.handleHistoryChange)
+
+        // Store the previous location, so we can see if the hash has changed
+        this.location = this.history.location
+
         let routerConfig = createRouterConfig({
-            junctionTemplate: options.junctionTemplate
+            rootJunctionTemplate: options.rootJunctionTemplate
         })
 
         this.router = new Router(routerConfig)
@@ -87,9 +115,7 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
 
         Object.assign(this, createContentHelpers(routerConfig))
         
-        this.setLocation(getWindowLocation())
-
-        window.addEventListener("popstate", this.handlePopState)
+        this.router.setLocation(this.history.location)
     }
     
     /**
@@ -97,7 +123,7 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
      * @callback onChange - called when state changes
      * @argument waitForInitialContent - if try, will not be called until the initial location's content has loaded
      */
-    subscribe(onChange: () => void, options: { waitForInitialContent?: boolean }={}): Unsubscriber {
+    subscribe(onChange: () => void, options: { waitForInitialContent?: boolean }={}): UnsubscribeCallback {
         let subscriber = {
             callback: onChange,
             waitForInitialContent: !!options.waitForInitialContent,
@@ -121,26 +147,46 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
         return this.router.getRoute()
     }
 
+    /**
+     * Returns the current location on the internal `history` object.
+     * 
+     * Use this over calling `history.location` directly to make it
+     * clearer that the location can change, without warning when
+     * the `navigation` object is passed as a prop.
+     */
     getLocation(): Location {
-        return this.location
+        return this.history.location
     }
 
-    replaceLocation(location: Location): void {
-        window.history.replaceState(location.state, <any>null, createHref(location))
-        this.setLocation(location)
+    replaceLocation(location: Location);
+    replaceLocation(path: string, state?: any);
+    replaceLocation(location: any, state?): void {
+        this.history.replace(location, state)
     }
 
-    pushLocation(location: Location): void {
-        window.history.pushState(location.state, <any>null, createHref(location))
-        this.setLocation(location)
+    pushLocation(location: Location);
+    pushLocation(path: string, state?: any);
+    pushLocation(location: any, state?: any): void {
+        this.history.push(location, state)
     }
 
-    private setLocation(location: Location): void {
+    scrollToHash(hash) {
+        console.log('scrollToHash', hash)
+    }
+
+    private handleHistoryChange = (location) => {
+        let previousLocation = this.location
         this.location = location
         this.router.setLocation(location)
+        if (!this.router.isBusy() && 
+            (previousLocation.hash !== this.location.hash ||
+            (!this.location.hash && previousLocation.pathname !== this.location.pathname))
+        ) {
+            this.scrollToHash(this.location.hash)
+        }
     }
 
-    private handleRouteChange() {
+    private handleRouteChange = () => {
         let isBusy = this.router.isBusy()
         let route = this.router.getRoute()
         let lastSegment = route && route[route.length - 1]
@@ -149,8 +195,9 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
         let title: string | null | undefined
 
         if (!isBusy && lastSegment) {
-            // TODO: handle lack of trailing '/' on matched route with
-            // redirect.
+            if (lastSegment.type === "page" && this.history.location.pathname.substr(-1) !== '/') {
+                redirectTo = concatLocations(this.history.location, { pathname: '/' })
+            }
 
             title = null
             if (lastSegment.type === "redirect") {
@@ -186,12 +233,6 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
                 subscriber.callback()
             }
         }
-    }
-
-    private handlePopState(event) {
-        let location = getWindowLocation(event.state)
-        
-        this.router.setLocation(location)
     }
 }
 
@@ -235,40 +276,4 @@ function createAnnouncerDiv() {
 }
 
 
-function getWindowLocation(historyState?): Location {
-    let { pathname, search, hash } = window.location
-    return {
-        pathname,
-        search,
-        hash,
-        state: historyState || getHistoryState(),
-    }
-}
-
-/**
- * Taken from ReactTraining/history
- * Copyright (c) 2016-2017 React Training, under MIT license
- */
-function getHistoryState() {
-    try {
-        return window.history.state || {}
-    } catch (e) {
-        // IE 11 sometimes throws when accessing window.history.state
-        // See https://github.com/ReactTraining/history/pull/289
-        return {}
-    }
-}
-
-/**
- * Returns true if browser fires popstate on hash change.
- * IE10 and IE11 do not.
- * 
- * Taken from ReactTraining/history
- * Copyright (c) 2016-2017 React Training, under MIT license
- */
-export const supportsPopStateOnHashChange = () =>
-  window.navigator.userAgent.indexOf("Trident") === -1
-
-
-
-type Unsubscriber = () => void
+type UnsubscribeCallback = () => void

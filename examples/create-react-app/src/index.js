@@ -4,18 +4,17 @@ import './index.css'
 import App from './App'
 import { BrowserNavigation } from 'junctions'
 
-window.rootJunction = App
-
-window.main = function main({ isStatic }) {
+function main() {
     let nav = new BrowserNavigation({
-        rootJunction: App,
+        rootJunctionTemplate: App,
         waitForInitialContent: true,
     })
 
     function renderApp() {
-        let rootRoute = nav.getRootRoute()
+        let route = nav.getRoute()
+        let junction = route[0]
         ReactDOM.render(
-            React.createElement(rootRoute.component, { route: rootRoute }),
+            React.createElement(junction.component, { junction }),
             document.getElementById('root')
         )
     }
@@ -28,5 +27,10 @@ window.main = function main({ isStatic }) {
 }
 
 if (!process.env.REACT_APP_STATIC) {
-    window.main({ isStatic: false })
+    main()
+}
+
+window.ReactApp = {
+    rootJunctionTemplate: App,
+    main: main
 }

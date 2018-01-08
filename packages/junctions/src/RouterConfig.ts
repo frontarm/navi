@@ -23,13 +23,13 @@ export interface RouterConfig<RootJunctionTemplate extends JunctionTemplate = Ju
 }
 
 export function createRouterConfig<RootJunctionTemplate extends JunctionTemplate = JunctionTemplate>(options: {
-    junctionTemplate: RootJunctionTemplate,
+    rootJunctionTemplate: RootJunctionTemplate,
     rootPath?: string,
     onEvent?: (event: RouterEvent) => void, 
 }): RouterConfig<RootJunctionTemplate> {
     return {
-        rootJunctionTemplate: options.junctionTemplate,
-        rootMountedPattern: createRootMountedPattern(options.junctionTemplate, options.rootPath),
+        rootJunctionTemplate: options.rootJunctionTemplate,
+        rootMountedPattern: createRootMountedPattern(options.rootJunctionTemplate, options.rootPath),
         onEvent: options.onEvent || (() => {})
     }
 }

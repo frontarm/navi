@@ -29,7 +29,7 @@ export function createContentHelpers(routerConfig: RouterConfig) {
             let promises: Promise<Page | undefined>[] = []
             for (let i = 0; i < keys.length; i++) {
                 let key = keys[i]
-                promises.push(this.getPageNode({ pathname: pathnames[key] }))
+                promises.push(getPageNode({ pathname: pathnames[key] }))
             }
             return Promise.all(promises).then(values => {
                 let result = {} as { [K in keyof Pathnames]: Page }
@@ -53,7 +53,7 @@ export function createContentHelpers(routerConfig: RouterConfig) {
      */
     function getJunctionPages(pathname: string): Promise<Page[]> {
         let deferred = new Deferred<Page[]>()
-        this.processFinalNodeWithoutContent({ pathname }, (route?: JunctionRoute) => {
+        processFinalNodeWithoutContent({ pathname }, (route?: JunctionRoute) => {
             if (!route) {
                 deferred.reject(undefined)
             }
@@ -77,7 +77,7 @@ export function createContentHelpers(routerConfig: RouterConfig) {
                 let possiblePagePromises = [] as Promise<Page | undefined>[]
                 for (let [path, page] of children) {
                     if (page.type !== "Template" || page.templateType === "Page") {
-                        possiblePagePromises.push(this.getPageNode(concatLocations({ pathname }, { pathname: path+'/' })))
+                        possiblePagePromises.push(getPageNode(concatLocations({ pathname }, { pathname: path+'/' })))
                     }
                 }
                 Promise.all(possiblePagePromises).then(
@@ -95,7 +95,7 @@ export function createContentHelpers(routerConfig: RouterConfig) {
 
     function getPageNode(location: Location): Promise<Page | undefined> {
         let deferred = new Deferred<Page | undefined>()
-        this.processFinalNodeWithoutContent(location, (route?: JunctionRoute) => {
+        processFinalNodeWithoutContent(location, (route?: JunctionRoute) => {
             let lastSegment = route && route[route.length - 1]
             if (!lastSegment || lastSegment.type === 'junction') {
                 deferred.resolve(undefined)
@@ -104,14 +104,14 @@ export function createContentHelpers(routerConfig: RouterConfig) {
                 return deferred.resolve(lastSegment)
             }
             else {
-                this.getPageNode(lastSegment.to).then(deferred.resolve)
+                getPageNode(lastSegment.to).then(deferred.resolve)
             }
         })
         return deferred.promise
     }
 
     function processFinalNodeWithoutContent(location: Location, callback: (route?: JunctionRoute) => void) {
-        let match = matchMountedPatternAgainstLocation(this.rootMountedPattern, location)
+        let match = matchMountedPatternAgainstLocation(routerConfig.rootMountedPattern, location)
         if (!match) {
             callback()
         }
@@ -130,7 +130,7 @@ export function createContentHelpers(routerConfig: RouterConfig) {
                 matchableLocationPart: location,
                 mountedPattern: routerConfig.rootMountedPattern,
                 onChange: handleRouteChange,
-                routerConfig: this,
+                routerConfig: routerConfig,
                 shouldFetchContent: false,
             })
 

@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
-import { createJunction, createPage, createRedirect } from 'junctions'
+import { createJunctionTemplate, createPageTemplate, createRedirectTemplate } from 'junctions'
 import logo from './logo.svg'
 import './App.css'
 
 
 class App extends Component {
   render() {
-    let route = this.props.route
+    let junction = this.props.junction
 
     return (
       <div className="App">
@@ -19,8 +19,8 @@ class App extends Component {
         <a href="/old-users/">Old page</a>
 
         {
-          route.child.component &&
-          React.createElement(route.child.component, { route: route.child })
+          junction.activeChild.component &&
+          React.createElement(junction.activeChild.component, { segment: junction.activeChild })
         }
       </div>
     );
@@ -28,13 +28,13 @@ class App extends Component {
 }
 
 
-export default createJunction(({ split }) => ({
+export default createJunctionTemplate(({ split }) => ({
   component: App,
 
   children: {
     '/users': split(() => import('./Users').then(m => m.default)),
-    '/old-users': createRedirect('/users/'),
-    '/': createPage({
+    '/old-users': createRedirectTemplate('/users/'),
+    '/': createPageTemplate({
       title: 'Junctions Example',
     }) 
   },

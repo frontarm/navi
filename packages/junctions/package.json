@@ -26,9 +26,12 @@
     "cross-env": "^5.0.5",
     "rimraf": "^2.6.2",
     "rollup": "^0.50.0",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-resolve": "^3.0.0",
     "typescript": "^2.6.2"
   },
   "dependencies": {
+    "@types/history": "^4.6.2",
     "history": "^4.7.2"
   }
 }

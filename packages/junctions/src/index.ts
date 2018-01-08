@@ -1,7 +1,7 @@
 export { BrowserNavigation } from './BrowserNavigation'
 export { ContentHelpers } from './ContentHelpers'
 export { Router } from './Router'
-export { Location, concatLocations } from './Location'
+export { Location, concatLocations, createHref } from './Location'
 export { StaticNavigation } from './StaticNavigation'
 export { createJunctionTemplate, JunctionTemplate } from './JunctionTemplate'
 export { createPageTemplate, PageTemplate } from './PageTemplate'

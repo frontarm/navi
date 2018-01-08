@@ -4,6 +4,7 @@
  */
 
 import nodeResolve from 'rollup-plugin-node-resolve'
+import commonjs from 'rollup-plugin-commonjs'
 import replace from 'rollup-plugin-replace'
 import uglify from 'rollup-plugin-uglify'
 
@@ -18,8 +19,12 @@ if (env === 'development' || env === 'production') {
   config.name = 'Junctions'
   config.plugins.push(
     nodeResolve({
-      jsnext: true
+      jsnext: true,
+      main: true
     }),
+
+    commonjs(),
+
     replace({
       'process.env.NODE_ENV': JSON.stringify(env)
     })

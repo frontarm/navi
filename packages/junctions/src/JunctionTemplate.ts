@@ -139,6 +139,7 @@ export class JunctionMatcher<J extends JunctionTemplate = JunctionTemplate> exte
                 status,
                 component: this.constructor.component,
                 meta: this.constructor.meta,
+                children: this.constructor.children,
                 activePattern: this.childMountedPattern && this.childMountedPattern.relativePattern,
                 activeChild: descendents[0] || false,
                 activeRoute: descendents,
