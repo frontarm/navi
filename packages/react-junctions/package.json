@@ -1,15 +1,46 @@
 {
   "name": "react-junctions",
-  "version": "0.4.0-0",
+  "version": "0.4.0-18",
   "description": "Junction-based routing for React.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
-  "scripts": {},
+  "main": "dist/commonjs/index.js",
+  "module": "dist/es/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build:commonjs": "tsc --pretty --module commonjs --outDir dist/commonjs",
+    "build:es": "tsc --pretty --module es2015 --outDir dist/es",
+    "build:umd": "tsc --pretty --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/react-junctions.js && rimraf dist/umd-intermediate",
+    "build:umd:min": "tsc --pretty --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/react-junctions.min.js && rimraf dist/umd-intermediate",
+    "build": "npm run build:es && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
+    "build:watch": "npm run clean && npm run build:es -- --watch",
+    "prepublish": "npm run clean && npm run build"
+  },
   "keywords": [
     "router",
     "routing",
     "junctions",
     "static",
+    "navigation",
     "react"
-  ]
+  ],
+  "peerDependencies": {
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
+  },
+  "devDependencies": {
+    "cross-env": "^5.0.5",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.50.0",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "typescript": "^2.6.2"
+  },
+  "dependencies": {
+    "@types/history": "^4.6.2",
+    "@types/react": "^16.0.33",
+    "@types/react-dom": "^16.0.3",
+    "history": "^4.7.2"
+  }
 }
