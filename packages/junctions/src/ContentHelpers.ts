@@ -1,5 +1,5 @@
 import { JunctionTemplate, JunctionMatcher } from './JunctionTemplate'
-import { Page, JunctionRoute, Junction } from './Route'
+import { RouteSegment, Page, JunctionRoute, Junction, Route } from './Route'
 import { MountedPattern, matchMountedPatternAgainstLocation } from './Patterns'
 import { Deferred } from './Deferred';
 import { Template, AsyncTemplate } from './Template'
@@ -11,11 +11,22 @@ export interface ContentHelpers {
     getPages<Pathnames extends { [name: string]: string }>(pathnames: Pathnames): Promise<{ [K in keyof Pathnames]: Page }>
     getPages(pathname: string): Promise<Page>;
 
-    getJunctionPages(pathname: string): Promise<Page[]>
+    getRouteSegment(pathname: string): Promise<RouteSegment>;
+
+    // TODO: add option to follow redirects
+    getPageMap(junction: Junction, predicate?: JunctionMapPredicate): Promise<PageMap>;
+}
+
+export default interface PageMap {
+    [path: string]: Page;
 }
 
 
-export function createContentHelpers(routerConfig: RouterConfig) {
+type JunctionMapPredicate = (segment: Page | Junction) => boolean
+const defaultPredicate = (segment: Page | Junction) => true
+
+
+export function createContentHelpers(routerConfig: RouterConfig): ContentHelpers {
     function getPages<Pathnames extends { [name: string]: string }>(pathnames: Pathnames): Promise<{ [K in keyof Pathnames]: Page }>;
     function getPages(pathname: string): Promise<Page>;
     function getPages<Pathnames extends { [name: string]: string } | string>(pathnames: Pathnames): any {
@@ -46,51 +57,61 @@ export function createContentHelpers(routerConfig: RouterConfig) {
     }
 
     /**
-     * Return an array of PageNode objects for each child Page of the junction
-     * denoted by the given path. Redirects and junctions will be excluded.
-     * 
-     * TODO: extend this with limit/offset options to facilitate pagination.
+     * Return a promise to a RouteSemgent that corresponds to the given
+     * pathname, or reject the promise if a corresponding segment can't be
+     * found.
      */
-    function getJunctionPages(pathname: string): Promise<Page[]> {
-        let deferred = new Deferred<Page[]>()
-        processFinalNodeWithoutContent({ pathname }, (route?: JunctionRoute) => {
-            if (!route) {
-                deferred.reject(undefined)
-            }
-            else {
-                let junction: Junction | undefined
-                let lastRoute = route[route.length - 1]
-                if (lastRoute.location.pathname === pathname) {
-                    junction = lastRoute as Junction
+    function getRouteSegment(pathname: string): Promise<RouteSegment> {
+        let deferred = new Deferred<RouteSegment>()
+        let searchLocation = {
+            // Add a trailing slash, in case the pathname corresponds directly
+            // to a junction with no '/' child -- otherwise no match will be
+            // found.
+            pathname: pathname.substr(-1) === '/' ? pathname : pathname + '/'
+        }
+        processFinalNodeWithoutContent(searchLocation, (route?: Route) => {
+            if (route) {
+                let lastSegment = route[route.length - 1]
+                if (lastSegment.location.pathname === pathname) {
+                    deferred.resolve(lastSegment)
                 }
-                else if (lastRoute.location.pathname === pathname+'/') {
-                    junction = route[route.length - 2] as Junction
-                }
-
-                if (!junction || junction.type !== 'junction') {
-                    deferred.reject(undefined)
-                    return
-                }
-
-                let template = junction.template as JunctionTemplate
-                let children = Object.entries(template.children) as [string, Template | AsyncTemplate][]
-                let possiblePagePromises = [] as Promise<Page | undefined>[]
-                for (let [path, page] of children) {
-                    if (page.type !== "Template" || page.templateType === "Page") {
-                        possiblePagePromises.push(getPageNode(concatLocations({ pathname }, { pathname: path+'/' })))
+                else if (lastSegment.location.pathname === pathname+'/') {
+                    // If the user requested a segment without a trailing
+                    // slash, but we found one *with* a trailing slash, then
+                    // we've found a child of a requested junction.
+                    let lastJunction = route[route.length - 2]
+                    if (lastJunction) {
+                        deferred.resolve(lastJunction)
                     }
                 }
-                Promise.all(possiblePagePromises).then(
-                    possiblePages => {
-                        deferred.resolve(possiblePages.filter(page => !!page) as Page[])
-                    },
-                    error => {
-                        deferred.reject(undefined)
-                    }
-                )
             }
+            deferred.reject(undefined)
         })
         return deferred.promise
+    }
+
+    async function getPageMap(junction: Junction, predicate: JunctionMapPredicate = defaultPredicate): Promise<PageMap> {
+        let map = {} as PageMap
+        let template = junction.template as JunctionTemplate
+        let children = Object.entries(template.children) as [string, Template | AsyncTemplate][]
+        let possiblePromises = [] as Promise<RouteSegment | undefined>[]
+        let queue = [junction]
+        while (queue.length) {
+            let junction = queue.shift() as Junction
+            for (let [pattern, template] of children) {
+                let path = junction.location.pathname + pattern
+                let segment = await getRouteSegment(path)
+                if (segment.type !== 'redirect' && predicate(segment)) {
+                    if (segment.type === 'junction') {
+                        queue.push(junction)
+                    }
+                    else {
+                        map[path] = segment
+                    }
+                }
+            }
+        }
+        return map
     }
 
     function getPageNode(location: Location): Promise<Page | undefined> {
@@ -140,6 +161,7 @@ export function createContentHelpers(routerConfig: RouterConfig) {
 
     return {
         getPages,
-        getJunctionPages,
+        getRouteSegment,
+        getPageMap,
     }
 }

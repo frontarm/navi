@@ -84,7 +84,8 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
     private waitingForInitialContent: boolean
 
     getPages: ContentHelpers['getPages']
-    getJunctionPages: ContentHelpers['getJunctionPages']
+    getRouteSegment: ContentHelpers['getRouteSegment']
+    getPageMap: ContentHelpers['getPageMap']
     
     constructor(options: BrowserNavigationOptions<RootJunctionTemplate>) {
         if (options.announceTitle !== false) {
