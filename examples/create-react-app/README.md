@@ -225,7 +225,7 @@ import { JunctionComponent } from 'react-junctions'
 
 createJunctionTemplate(({ split }) => {
   children: {
-    '/': split(() => import('./landing/LandingPage).then(x => x.defaut)),
+    '/': split(() => import('./landing/LandingPage').then(x => x.defaut)),
 
     '/articles': split(() => import('./articles/ArticlesJunction').then(x => x.default)),
 
