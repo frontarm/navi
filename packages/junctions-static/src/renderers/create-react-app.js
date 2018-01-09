@@ -73,7 +73,7 @@ export default async function renderToString({ rootJunctionTemplate, location, d
   let scriptTags = scriptPaths.map(path => `<script src="${path}"></script>`).join('')
 
   // Once all the dependencies have loaded, call `main`
-  html = html.replace('</body>', `${scriptTags}<script>window.ReactApp.main()</script>`)
+  html = html.replace('</body>', `${scriptTags}<script>window.JunctionsStaticApp.main()</script>`)
 
   return html
 }

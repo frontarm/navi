@@ -51,14 +51,14 @@ export default function createDOMFactory(mainFile, publicFolder) {
     }
 
     let testDOM = factory()
-    let App = testDOM.window.ReactApp
+    let App = testDOM.window.JunctionsStaticApp
     if (!App) {
-        console.error(`The file "${mainFile}" was found, but doesn't assign an "ReactApp" property to the window object. Junctions-static requires that your apps exports are available on this property.'`)
+        console.error(`The file "${mainFile}" was found, but doesn't assign an "JunctionsStaticApp" property to the window object. Junctions-static requires that your apps exports are available on this property.'`)
         process.exit(1)
     }
-    else if (!App.rootJunctionTemplate) {
+    else if (!App.root) {
         console.log(App)
-        console.error(`Your app must export a "rootJunctionTemplate" property.`)
+        console.error(`Your "JunctionsStaticApp" object must have a "root" property.`)
         process.exit(1)
     }
     

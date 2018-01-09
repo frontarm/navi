@@ -1,6 +1,5 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import * as PropTypes from 'prop-types'
 import { History, createBrowserHistory } from 'history'
 import { BrowserNavigation, JunctionRoute, JunctionTemplate, Location } from 'junctions'
 import { NavigationProvider } from './NavigationProvider'

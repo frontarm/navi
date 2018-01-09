@@ -39,7 +39,7 @@ export default async function createMap(mainFile, publicFolder) {
         let dom = createDOM(dependencyPathname => {
             dependencies.push(dependencyPathname)
         })
-        let rootJunctionTemplate = dom.window.ReactApp.rootJunctionTemplate
+        let rootJunctionTemplate = dom.window.JunctionsStaticApp.root
 
         let navigation = new StaticNavigation({
             location: { pathname: canonicalPathname },

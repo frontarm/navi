@@ -10,7 +10,7 @@ export default async function build(mainFile, publicFolder, renderToString) {
     let siteMap = await createMap(mainFile, publicFolder)
     let createDOM = createDOMFactory(mainFile, publicFolder)
     let dom = createDOM()
-    let rootJunctionTemplate = dom.window.ReactApp.rootJunctionTemplate
+    let rootJunctionTemplate = dom.window.JunctionsStaticApp.root
     let pathnames = Object.keys(siteMap)
 
     console.log('\nCreating static files...\n')
