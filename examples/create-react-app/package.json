@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "junctions-static": "../../packages/junctions-static/",
+    "junctions": "0.4.0-23",
+    "junctions-static": "0.4.0-23",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-junctions": "0.4.0-23",
     "react-scripts": "1.0.17"
   },
   "scripts": {
