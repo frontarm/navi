@@ -1,4 +1,4 @@
-import { createBrowserHistory, History } from 'history'
+import { createBrowserHistory, History, UnregisterCallback } from 'history'
 import { Location, createHref, concatLocations } from './Location'
 import { Template } from './Template'
 import { JunctionTemplate, JunctionMatcher } from './JunctionTemplate'
@@ -6,6 +6,7 @@ import { Router } from './Router'
 import { RouterConfig, createRouterConfig } from './RouterConfig'
 import { ContentHelpers, createContentHelpers } from './ContentHelpers'
 import { JunctionRoute } from './Route'
+import { Navigation } from './Navigation'
 
 
 type BrowserNavigationOptions<RootJunctionTemplate extends JunctionTemplate = JunctionTemplate> = {
@@ -68,7 +69,7 @@ type BrowserNavigationOptions<RootJunctionTemplate extends JunctionTemplate = Ju
 }
 
 
-export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
+export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> implements Navigation {
     private announceTitle?: (pageTitle: string | null) => string
     private autoscroll: boolean
     private followRedirects: boolean
@@ -139,6 +140,10 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
                 this.subscribers.splice(index, 1)
             }
         }
+    }
+
+    block(message: string): UnregisterCallback {
+        return this.history.block(message)
     }
 
     isBusy(): boolean {

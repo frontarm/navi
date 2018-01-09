@@ -5,6 +5,8 @@ export interface Navigation {
     getPages: ContentHelpers['getPages']
     getLocation(): Location;
 
+    block(message: string): () => void;
+
     replaceLocation(location: Location);
     replaceLocation(path: string, state?: any);
 

@@ -40,6 +40,10 @@ export class StaticNavigation<RootJunctionTemplate extends JunctionTemplate = Ju
         return this.location
     }
 
+    block(message: string): () => void {
+        throw new Error("block() is not implemented in StaticNavigation.")
+    }
+
     replaceLocation(x: any, y?: any) {
         throw new Error("You can't change the location of a StaticNavigation instance.")
     }
