@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as PropTypes from 'prop-types'
 import { createHref, Location, Navigation } from 'junctions'
 
 
@@ -49,33 +50,41 @@ export interface LinkRendererProps {
 
 
 export class Link extends React.Component<LinkProps> {
+  navigation: Navigation
+
   static defaultProps = {
     render: (props: LinkRendererProps) =>
       <AnchorLink {...props} />
   }
 
-  constructor(props) {
-    super(props)
+  static contextTypes = {
+    navigation: PropTypes.object,
+  }
+
+  constructor(props, context) {
+    super(props, context)
+
+    this.navigation = this.props.env ? this.props.env.navigation : context.navigation
 
     // NOTE: I may want to enable this even outside of productino at some
     // point, as it can be used to pre-cache linked pages.
     if (process.env.NODE_ENV !== 'production') {
+      if (!this.navigation && this.getLocation()) {
+        console.warn(
+          `A <Link> was created without access to a "navigation" object. `+
+          `You can provide a Navigation object through an "env" prop, or via `+
+          `React Context.`
+        )
+      }
+      
       let location = this.getLocation() as Location
       if (location && location.pathname) {
-        this.props.env.navigation.getPages(location.pathname).catch(() => {
+        this.navigation.getPages(location.pathname).catch(() => {
           console.warn(
             `A <Link> referred to href "${location.pathname}", but the` +
             `router could not find this path.`
           )
         })
-      }
-
-      if (!props.env && this.getLocation()) {
-        console.warn(
-          `A <Link> was created without an "env" prop. The link will still` +
-          `work, but it will cause full page reloads. To improve navigation` +
-          `performance, make sure to supply an "env" prop.`
-        )
       }
     }
   }
@@ -116,7 +125,7 @@ export class Link extends React.Component<LinkProps> {
     let location = this.getLocation()
     if (location) {
       event.preventDefault()
-      this.props.env.navigation.pushLocation(location)
+      this.navigation.pushLocation(location)
     }
   }
   
@@ -130,7 +139,7 @@ export class Link extends React.Component<LinkProps> {
     } = this.props
 
     let linkLocation = this.getLocation()
-    let navigationLocation = env.navigation.getLocation()
+    let navigationLocation = this.navigation.getLocation()
     let active =
       env && linkLocation &&
       (exact
@@ -139,7 +148,7 @@ export class Link extends React.Component<LinkProps> {
 
     return render({
       active: !!active,
-      href: linkLocation ? createHref(linkLocation) : '',
+      href: linkLocation ? createHref(linkLocation) : href as string,
 
       ...other,
       

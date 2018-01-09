@@ -2,33 +2,31 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import './index.css'
 import App from './App'
-import { BrowserNavigation } from 'junctions'
+import { JunctionNavigation } from 'react-junctions'
+
 
 function main() {
-    let nav = new BrowserNavigation({
-        rootJunctionTemplate: App,
-        waitForInitialContent: true,
-    })
-
-    function renderApp() {
-        let route = nav.getRoute()
-        let junction = route[0]
-        ReactDOM.render(
-            React.createElement(junction.component, { junction }),
-            document.getElementById('root')
-        )
+    let node = document.getElementById('root')
+    let content = 
+        <JunctionNavigation
+            id='app'
+            root={App}
+            waitForInitialContent
+        />
+    
+    if (process.env.NODE_ENV === 'production') {
+        ReactDOM.hydrate(content, node)
     }
-
-    // Wait until the navigation has loaded all required files
-    if (!nav.isBusy()) {
-        renderApp()
+    else {
+        ReactDOM.render(content, node)
     }
-    nav.subscribe(renderApp, { waitForInitialContent: true })
 }
+
 
 if (!process.env.REACT_APP_STATIC) {
     main()
 }
+
 
 window.ReactApp = {
     rootJunctionTemplate: App,

@@ -59,6 +59,12 @@ type BrowserNavigationOptions<RootJunctionTemplate extends JunctionTemplate = Ju
      * Defaults to `true`.
      */
     setDocumentTitle?: boolean | ((pageTitle: string | null) => string),
+
+    /**
+     * If `true`, this will not scroll the user when navigating between
+     * pages.
+     */
+    disableScrollHandling?: boolean
 }
 
 
@@ -67,11 +73,12 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
     private autoscroll: boolean
     private followRedirects: boolean
     private router: Router<RootJunctionTemplate>
-    private location: Location
+    private disableScrollHandling: boolean
+    private location: Location | undefined
     private history: History
     private setDocumentTitle: (pageTitle: string | null) => string
     private subscribers: {
-        callback: () => void,
+        callback: ListenCallback,
         waitForInitialContent: boolean,
     }[]
     private waitingForInitialContent: boolean
@@ -95,11 +102,10 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
         this.subscribers = []
         this.waitingForInitialContent = true
 
+        this.disableScrollHandling = !!options.disableScrollHandling
+
         this.history = options.history || createBrowserHistory()
         this.history.listen(this.handleHistoryChange)
-
-        // Store the previous location, so we can see if the hash has changed
-        this.location = this.history.location
 
         let routerConfig = createRouterConfig({
             rootJunctionTemplate: options.rootJunctionTemplate
@@ -118,7 +124,7 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
      * @callback onChange - called when state changes
      * @argument waitForInitialContent - if try, will not be called until the initial location's content has loaded
      */
-    subscribe(onChange: () => void, options: { waitForInitialContent?: boolean }={}): UnsubscribeCallback {
+    subscribe(onChange: ListenCallback, options: { waitForInitialContent?: boolean }={}): UnsubscribeCallback {
         let subscriber = {
             callback: onChange,
             waitForInitialContent: !!options.waitForInitialContent,
@@ -168,18 +174,53 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
     }
 
     scrollToHash(hash) {
-        console.log('scrollToHash', hash)
+        if (hash) {
+            let id = document.getElementById(hash.slice(1))
+            if (id) {
+                id.scrollIntoView({
+                    behavior: 'instant',
+                    block: 'start'
+                })
+
+                // Focus the element, as default behavior is cancelled.
+                // https://css-tricks.com/snippets/jquery/smooth-scrolling/
+                id.focus()
+            }
+            else {
+                console.log('no id')
+            }
+        }
+        else {
+            window.scroll({
+                top: 0, 
+                left: 0, 
+                behavior: 'instant' 
+            })
+        }
     }
 
     private handleHistoryChange = (location) => {
-        let previousLocation = this.location
-        this.location = location
         this.router.setLocation(location)
-        if (!this.router.isBusy() && 
-            (previousLocation.hash !== this.location.hash ||
-            (!this.location.hash && previousLocation.pathname !== this.location.pathname))
+    }
+
+    private handleLocationChange = (previousLocation: Location | undefined, nextLocation) => {
+        if (previousLocation === nextLocation) {
+            return
+        }
+
+        if (!this.disableScrollHandling &&
+            (!previousLocation ||
+            previousLocation.hash !== nextLocation.hash ||
+            (!nextLocation.hash && previousLocation.pathname !== nextLocation.pathname))
         ) {
-            this.scrollToHash(this.location.hash)
+            this.location = nextLocation
+            if (previousLocation) {
+                // Probably:
+                // - this may be called before a render completes, however
+                //   if we delay with `setTimeout`, we break browser
+                //   scrolling.
+                this.scrollToHash(nextLocation.hash)
+            }
         }
     }
 
@@ -225,10 +266,29 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> {
             }    
         }
         
+        // Wait until all subscribers have finished handling the changes
+        // before emitting `handleLocationChange`.
+        let waitCount = 0
+        let decreaseWaitCount = () => {
+            if (--waitCount <= 0) {
+                if (!isBusy) {
+                    this.handleLocationChange(this.location, this.history.location)
+                }
+            }
+        }
         for (let subscriber of this.subscribers) {
             if (!isBusy || !subscriber.waitForInitialContent || !this.waitingForInitialContent) {
-                subscriber.callback()
+                if (subscriber.callback.length > 0) {
+                    waitCount++
+                    subscriber.callback(decreaseWaitCount as any)
+                }
+                else {
+                    subscriber.callback()
+                }
             }
+        }
+        if (waitCount === 0) {
+            decreaseWaitCount()
         }
     }
 }
@@ -274,3 +334,4 @@ function createAnnouncerDiv() {
 
 
 type UnsubscribeCallback = () => void
+type ListenCallback = (done?: () => {}) => void

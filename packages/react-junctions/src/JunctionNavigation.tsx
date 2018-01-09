@@ -1,7 +1,9 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+import * as PropTypes from 'prop-types'
 import { History, createBrowserHistory } from 'history'
 import { BrowserNavigation, JunctionRoute, JunctionTemplate, Location } from 'junctions'
+import { NavigationProvider } from './NavigationProvider'
 
 
 let renderToString: any
@@ -14,12 +16,26 @@ try {
 catch(e) {}
 
 
-export interface NavigationProps {
+const defaultRender = (
+  route: JunctionRoute,
+  navigation: BrowserNavigation<any>,
+  location: Location
+) =>
+  React.createElement(route[0].component, {
+    junction: route[0],
+    env: {
+      navigation,
+      location
+    },
+  })
+
+
+export interface JunctionNavigationProps {
   /**
    * The JunctionTemplate object that will be used to produce the root
    * junction.
    */
-  rootJunctionTemplate: JunctionTemplate,
+  root: JunctionTemplate,
 
   /**
    * You may want to render a JunctionWrapper here. You'll probbly also want
@@ -28,7 +44,7 @@ export interface NavigationProps {
    * but it does mean that PureComponents may not be re-rendered on route
    * changes)
    */
-  render: (
+  render?: (
     route: JunctionRoute | undefined,
     navigation: BrowserNavigation<any>,
     location: Location,
@@ -76,6 +92,13 @@ export interface NavigationProps {
    */
   setDocumentTitle?: boolean | ((pageTitle: string | null) => string),
 
+  /**
+   * Adds a `navigation` object to child components' context.
+   * 
+   * Defaults to `true`, but I recommend setting to `false` if possible.
+   */
+  addToContext?: boolean,
+
   // Standard DOM properties that will be added to the wrapper div.
   id?: string
   className?: string,
@@ -86,37 +109,44 @@ export interface NavigationProps {
 let navigationIdCounter = 1
 
 
-export class Navigation<
+export class JunctionNavigation<
   RootJunctionTemplate extends JunctionTemplate = JunctionTemplate
-> extends React.Component<NavigationProps, any> {
+> extends React.Component<JunctionNavigationProps, any> {
 
   navigation: BrowserNavigation<RootJunctionTemplate>
   serverRenderedHTML: string
   containerNode: any
   shouldHydrate?: boolean
+  addToContext?: boolean
+  renderCompleteCallback?: () => {}
 
-  constructor(props: NavigationProps) {
+  constructor(props: JunctionNavigationProps) {
     super(props)
 
     let {
-      rootJunctionTemplate,
+      root,
       history,
       followRedirects,
       announceTitle,
       setDocumentTitle,
       waitForInitialContent,
+      addToContext = true,
       id,
     } = props
 
+    this.addToContext = addToContext
+
     this.navigation = new BrowserNavigation({
-      rootJunctionTemplate,
+      rootJunctionTemplate: root,
       history,
       followRedirects,
       announceTitle,
       setDocumentTitle,
     })
 
-    this.navigation.subscribe(this.handleRouteChange, {waitForInitialContent})
+    this.navigation.subscribe(this.handleRouteChange, {
+      waitForInitialContent
+    })
 
     if (!waitForInitialContent || !this.navigation.isBusy()) {
       this.state = {
@@ -179,26 +209,50 @@ export class Navigation<
   }
 
   getElementToRender() {
-    return this.props.render(
+    let render = this.props.render || defaultRender
+    let content = render(
       this.state.route,
       this.navigation,
       this.navigation.getLocation()
     )
+    if (this.addToContext) {
+      return (
+        <NavigationProvider navigation={this.navigation}>
+          {content}
+        </NavigationProvider>
+      )
+    }
+    else {
+      return content
+    }
   }
 
   renderChildren() {
-    let renderer = this.shouldHydrate ? ReactDOM.hydrate : ReactDOM.render
-    renderer(
-      this.getElementToRender(),
-      this.containerNode
-    )
+    if (!this.state.waitingForInitialContent) {
+      let renderer = this.shouldHydrate ? ReactDOM.hydrate : ReactDOM.render
+      renderer(
+        this.getElementToRender(),
+        this.containerNode,
+        this.handleRenderComplete
+      )
+    }
+  }
+
+  // We need to let the `BrowserNavigation` instance know when rnedering has
+  // complete, as we need to wait to scroll to any #hash.
+  handleRenderComplete = () => {
+    if (this.renderCompleteCallback) {
+      this.renderCompleteCallback()
+      delete this.renderCompleteCallback
+    }
   }
 
   setContainer = (node) => {
     this.containerNode = node
   }
 
-  handleRouteChange = () => {
+  handleRouteChange = (done: () => {}) => {
+    this.renderCompleteCallback = done
     this.setState({
       route: this.navigation.getRoute(),
       waitingForInitialContent: false,

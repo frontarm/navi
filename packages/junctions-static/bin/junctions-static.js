@@ -33,7 +33,19 @@ function getConfig(command) {
     //   })
 
     if (command.render) {
-      let renderToStringModule = require(path.resolve(cwd, command.render))
+      let maybeFile = path.resolve(cwd, command.render)
+      let renderToStringModule
+      if (fs.existsSync(maybeFile)) {
+        renderToStringModule = require(maybeFile)
+      }
+      else if (command.render === 'create-react-app') {
+        renderToStringModule = require('../lib/renderers/create-react-app')
+      }
+      else {
+        console.error(`Could not find renderer "${command.render}".`)
+        process.exit(1)
+      }
+
       command.renderToString = renderToStringModule.default || renderToStringModule.renderToString || renderToStringModule
     }
 

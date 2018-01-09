@@ -61,6 +61,7 @@ export class Router<RootJunctionTemplate extends JunctionTemplate=any> {
         // The router only looks at path and search, so if they haven't
         // changed, nothing else will change either.
         if (!(pathHasChanged || searchHasChanged || locationExistenceHasChanged)) {
+            this.notifyListeners()
             return
         }
 

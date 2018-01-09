@@ -1,18 +1,15 @@
 import React, { Component } from 'react'
 import { createJunctionTemplate, createPageTemplate } from 'junctions'
+import { JunctionComponent } from 'react-junctions'
 import './Users.css'
+
 
 class Users extends Component {
     render() {
-        let segment = this.props.segment
-
         return (
             <div className="Users">
                 <div className="Users-content">
-                    {
-                        segment.activeChild.component &&
-                        React.createElement(segment.activeChild.component, { segment: segment.activeChild })
-                    }
+                    <JunctionComponent junction={this.props.junction} />
                 </div>
             </div>
         );
@@ -29,9 +26,10 @@ class NewUser extends Component {
 
 class UserDetails extends Component {
     render() {
-        return <div><h2>User #{this.props.segment.params.id}</h2></div>
+        return <div><h2>User #{this.props.page.params.id}</h2></div>
     }
 }
+
 
 export default createJunctionTemplate(({ split }) => ({
     component: Users,
@@ -58,8 +56,8 @@ export default createJunctionTemplate(({ split }) => ({
 }))
 
 
-function ContentRenderer({ segment }) {
-    return segment.content
-        ? React.createElement(segment.content, { segment })
+function ContentRenderer({ page }) {
+    return page.content
+        ? React.createElement(page.content, { page })
         : null
 }
