@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import { 
     createPageTemplate,
     createJunctionTemplate,
@@ -47,12 +47,7 @@ let ArticlesJunction = createJunctionTemplate(({ split }) => ({
         bob: 'your uncle'
     },
 
-    component: class ArticlesComponent {
-        props: {
-            env: any,
-            junction: Junction<typeof ArticlesJunction>,
-        }
-    
+    component: class ArticlesComponent extends React.Component<{ env, junction: Junction<typeof ArticlesJunction>, }, any> {
         render() {
             let { env, junction } = this.props
 
@@ -73,12 +68,7 @@ let AppJunction = createJunctionTemplate(({ split }) => ({
         '/articles': split(() => Promise.resolve(ArticlesJunction)),
     },
 
-    component: class AppComponent {
-        props: {
-            env: any,
-            junction: Junction<typeof AppJunction>,
-        }
-    
+    component: class AppComponent extends React.Component<{ env, junction: Junction<typeof AppJunction> }> {
         render() {
             let { env, junction } = this.props
 

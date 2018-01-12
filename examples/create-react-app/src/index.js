@@ -7,7 +7,7 @@ import './index.css'
 
 function main() {
     // The `<JunctionNavigation>` component re-renders the app each time
-    // the browser's location changes. 
+    // the browser's location changes.
     //
     // It renders the `component` property of the template defined in App.js,
     // passing in two props:
@@ -16,13 +16,13 @@ function main() {
     //          to the different parts of the current URL)
     // - env:   an object containing "location" and "navigation" objects, by
     //          which you can access and change the current location.
-    let content = 
+    let content =
         <JunctionNavigation
             id='navigation'
             root={App}
             waitForInitialContent
         />
-    
+
     // React requires us to call "hydrate" if the content already exists in
     // the DOM, which is the case for statically rendered pages.
     let node = document.getElementById('root')
