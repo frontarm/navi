@@ -99,7 +99,6 @@ export interface JunctionNavigationProps {
   addToContext?: boolean,
 
   // Standard DOM properties that will be added to the wrapper div.
-  id?: string
   className?: string,
   style?: object,
 }
@@ -130,7 +129,6 @@ export class JunctionNavigation<
       setDocumentTitle,
       waitForInitialContent,
       addToContext = true,
-      id,
     } = props
 
     this.addToContext = addToContext
@@ -153,17 +151,8 @@ export class JunctionNavigation<
       }
     }
     else {
-      if (!id) {
-        id = '_JUNCTIONS_REACT_NAVIGATION_'+(navigationIdCounter++)
-        console.warn(
-          `The <Navigation> component requires an "id" prop when the ` +
-          `"waitForInitialContent" flag is set. Falling back to an ` +
-          `automatically generated id ("${id}").`
-        )
-      }
-
       try {
-        this.serverRenderedHTML = (document as any).getElementById(id).innerHTML
+        this.serverRenderedHTML = (document as any).getElementById('JUNCTIONS_STATIC').innerHTML
         this.shouldHydrate = true
       }
       catch (e) {
@@ -189,7 +178,6 @@ export class JunctionNavigation<
         ref={this.setContainer}
         className={this.props.className}
         style={this.props.style}
-        id={this.props.id}
 
         // Because this element's props never changes, React will never
         // re-render this string to the DOM, even if the corresponding DOM
