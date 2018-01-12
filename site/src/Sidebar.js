@@ -44,6 +44,7 @@ export const Sidebar = ({ className='', env }) =>
           href="/api-reference/#ExitPrompt"
           name='ExitPrompt'
           props={[
+            ['env', 'env?: { navigation }'],
             ['message-string', 'message: string'],
             ['message-func', 'message: func'],
             ['when', 'when?: bool'],
@@ -67,15 +68,26 @@ export const Sidebar = ({ className='', env }) =>
           href="/api-reference/#JunctionNavigation"
           name='JunctionNavigation'
           props={[
+            ['announceTitle', 'announceTitle?: func'],
+            ['setDocumentTitle', 'setDocumentTitle?: func'],
+            ['followRedirects', 'followRedirects?: bool'],
+            ['history', 'history?: History'],
+            ['render', 'render?: func'],
             ['root', 'root: JunctionTemplate'],
+            ['waitForInitialContent', 'waitForInitialContent?: bool'],
           ]}
         />
 
-        <Link
+        <ComponentLink
           env={env}
           href="/api-reference/#Link"
           name='Link'
           props={[
+            ['active', 'active?: bool'],
+            ['activeClassName', 'activeClassName?: string'],
+            ['activeStyle', 'activeStyle?: object'],
+            ['env', 'env?: { navigation }'],
+            ['exact', 'exact?: string'],
             ['href', 'href: string'],
           ]}
         />
@@ -112,6 +124,12 @@ const ComponentLink = ({ env, href, name, props }) =>
   <div className='Sidebar-ComponentLink'>
     <HashLink env={env} href={href}>&lt;{name}&gt;</HashLink>
     {props.map(([id, label]) => 
-      <HashLink key={id} env={env} href={href+'-'+id} className="Sidebar-nav-prop">{label}</HashLink>    
+      <HashLink
+        key={id}
+        env={env}
+        href={href+'-'+id}
+        className="Sidebar-nav-prop">
+        {label}
+      </HashLink>    
     )}
   </div>
