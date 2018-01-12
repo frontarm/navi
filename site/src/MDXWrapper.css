@@ -1,0 +1,63 @@
+.MDXWrapper-ready {
+  margin: 2rem;
+  max-width: 550px;
+}
+
+pre, code { font-family: Inconsolata, monospace; line-height: 1.5 }
+markdown { display: block; }
+pre { background: rgb(45, 45, 45); padding: 0.5rem; border-radius: 3px; color: rgb(205, 205, 205); }
+pre code { font-size: 0.8rem; white-space: pre-wrap; }
+code { font-size: 1rem; }
+h1 { font-family: Inconsolata, monospace; line-height: 2rem; margin: 2rem 0 1rem 0; font-size: 200%; }
+h2 { font-family: Lato, sans-serif; margin: 2rem 0 0 0; font-size: 125%; color: rgb(81, 81, 81); }
+h3 {
+  display: inline-block;
+  padding: 0.25rem 0;
+  font-family: Inconsolata, monospace;
+  margin: 1.5rem 0 0 0;
+  font-size: 125%;
+  color: rgb(40, 40, 40);
+  background-color: rgba(83, 100, 97, 0.07);
+}
+h2 code { font-size: 100%; font-weight: 100; }
+
+img {
+  position: relative;
+  max-width: 100%;
+}
+img + em {
+  display: block;
+  text-align: center;
+  font-size: 80%;
+  margin-top: 10px;
+}
+
+li { margin: 4px 0; }
+
+h1, h2, h3 { position: relative; }
+.header-anchor { position: absolute; left: -1em; top: 0.1em; color: #ccc; }
+.header-anchor:hover { color: rgb(45, 45, 45); }
+
+p { margin: 1em 0; }
+
+th {
+  border-bottom: 1px solid #f0f0f0;
+  text-align: center;
+  font-size: 80%;
+  font-weight: normal;
+  font-style: italic;
+}
+
+tr:nth-child(even) {
+  background: #f0f0f0;
+}
+
+table td,
+table th {
+  padding: 2px 4px;
+}
+
+a {
+  color: #10b068;
+  text-decoration: none;
+}

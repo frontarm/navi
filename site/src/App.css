@@ -1,0 +1,13 @@
+.App {
+  min-height: 100%;
+  margin-left: 200px;
+}
+
+.App-sidebar {
+  position: fixed;
+  width: 220px;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  overflow: auto;
+}
