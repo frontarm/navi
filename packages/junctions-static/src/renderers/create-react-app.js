@@ -50,13 +50,15 @@ export default async function renderToString({ rootJunctionTemplate, location, d
   // Render the page content using React
   let content = ReactDOMServer.renderToString(
     React.createElement(NavigationProvider, { navigation: navigation },
-      React.createElement(route[0].component, {
-        junction: route[0],
-        env: {
-          navigation: navigation,
-          location: location,
-        }
-      })
+      React.createElement('div', { id: 'JUNCTIONS_STATIC' },
+        React.createElement(route[0].component, {
+          junction: route[0],
+          env: {
+            navigation: navigation,
+            location: location,
+          }
+        })
+      )
     )
   )
 
