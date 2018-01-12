@@ -1,6 +1,6 @@
 {
   "name": "react-junctions",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Junction-based routing for React.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",

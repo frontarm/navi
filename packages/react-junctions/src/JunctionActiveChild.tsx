@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Junction, Page, RouteSegment } from 'junctions'
 
 
-export interface JunctionComponentProps {
+export interface JunctionActiveChildProps {
   /**
    * The Junction object to render
    */
@@ -21,7 +21,7 @@ export interface JunctionComponentProps {
    * prop that is passed the active child, and an `env` prop if one is
    * passed to the wrapper.
    */
-  render?: (props: JunctionComponentRendererProps) => React.ReactElement<any>,
+  render?: (props: JunctionActiveChildRendererProps) => React.ReactElement<any>,
 
   /**
    * An optional element to render if the junction doesn't know how to
@@ -44,28 +44,28 @@ export interface JunctionComponentProps {
 }
 
 
-export interface JunctionComponentRendererProps {
+export interface JunctionActiveChildRendererProps {
   Component: React.ComponentType<any>,
   child: Junction | Page,
   env: any,
 }
 
 
-export const defaultJunctionComponentRenderer = ({ Component, child, env }: JunctionComponentRendererProps) =>
+export const defaultJunctionActiveChildRenderer = ({ Component, child, env }: JunctionActiveChildRendererProps) =>
   React.createElement(Component, {
     [child.type]: child,
     env: env,
   })
 
 
-export function JunctionComponent({
+export function JunctionActiveChild({
     junction,
     env,
-    render = defaultJunctionComponentRenderer,
+    render = defaultJunctionActiveChildRenderer,
     notFoundElement = null,
     busyElement = null,
     errorElement = null
-}: JunctionComponentProps) {
+}: JunctionActiveChildProps) {
   let child = junction.activeChild as RouteSegment | undefined
   if (child && child.type !== "redirect") {
     return render({
