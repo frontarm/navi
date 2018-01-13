@@ -20,7 +20,7 @@ Features
 Junctions' focus on the web means that it provides a number of features that the more general react-router doesn't or can't:<sup>*</sup>
 
 <div style={{fontSize: '80%'}}>
-<p><strong>*</strong> From the <a href="https://reacttraining.com/react-router/web/guides/code-splitting">react-router docs</a>: <em>"Godspeed those who attempt the server-rendered, code-split apps."</em> But Junctions provides statically-rendered code-split apps out of the box. 🙃</p>
+<p><strong>*</strong> From the <a href="https://reacttraining.com/react-router/web/guides/code-splitting">react-router docs</a>: <em>"Godspeed those who attempt the server-rendered, code-split apps."</em></p><p>Junctions provides statically-rendered code-split apps out of the box. 🙃</p>
 </div>
 
 <table className='features-table'>
@@ -49,11 +49,6 @@ Junctions' focus on the web means that it provides a number of features that the
 <th>Ready-made native components</th>
 <td></td>
 <td className="yes"></td>
-</tr>
-<tr>
-<th>Build static websites</th>
-<td className="yes"></td>
-<td></td>
 </tr>
 </tbody>
 </table>

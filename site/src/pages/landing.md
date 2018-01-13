@@ -3,18 +3,16 @@ Junctions
 
 **A batteries-included router for React.**
 
-[![npm version](https://img.shields.io/npm/v/junctions.svg)](https://www.npmjs.com/package/junctions)
-
 *[But react-router already exists, so why another router?](/why-another-router)*
 
 Out of the box, you'll get a great experience for both users *and* developers, with:
 
-- Scroll management
+- Scroll management that just works
 - Page `<title>` management (with a title announcer for accessibility)
 - Console warnings when a `<Link>` points to a 404
-- TypeScript support
+- Great TypeScript support
 - Code splitting via ESNext's `import()` proposal
-- A tool to build static websites for create-react-app projects
+- Set `<meta>` tags for Twitter and Facebook with static builds
 
 And the best part? Junctions is *fast*. It combines code splitting and static site generation to give users *immediate* access to content, then seamlessly adds features as your app loads.
 
