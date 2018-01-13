@@ -81,6 +81,12 @@ a {
   opacity: 0;
 }
 
+@media only screen and (max-width: 767px) {
+  .MDXWrapper-LoadingIndicator {
+    left: 0 !important;
+  }
+}
+
 .MDXWrapper-LoadingIndicator-loading {
   transform: translateY(0);
   opacity: 1;

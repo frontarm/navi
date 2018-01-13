@@ -32,8 +32,7 @@ export class App extends React.Component {
           />
           <button
             className='App-nav-hamburger'
-            onClick={this.handleToggleMenu}
-            onTouchStart={this.handleToggleMenu}>
+            onClick={this.handleToggleMenu}>
             <div className='App-nav-hamburger-icon' />
           </button>
         </div>
