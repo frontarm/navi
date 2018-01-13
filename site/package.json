@@ -1,15 +1,15 @@
 {
   "name": "site",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "private": true,
   "dependencies": {
-    "junctions": "^0.4.2",
-    "junctions-static": "^0.4.2",
+    "junctions": "^0.4.3",
+    "junctions-static": "^0.4.3",
     "mdx-loader": "^1.0.0-beta.3",
     "mdxc": "^1.0.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
-    "react-junctions": "^0.4.2",
+    "react-junctions": "^0.4.3",
     "react-scripts": "1.0.17",
     "rimraf": "^2.6.2"
   },
