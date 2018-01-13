@@ -336,6 +336,8 @@ function createAnnouncerDiv() {
     style.width = '1px'
     style.height = '1px'
     style.overflow = 'hidden'
+
+    document.body.appendChild(announcerDiv)
 }
 
 
