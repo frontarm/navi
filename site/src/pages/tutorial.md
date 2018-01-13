@@ -1,5 +1,5 @@
-Junctions Tutorial
-==================
+Junctions Tutorial: Make This Site
+==================================
 
 This tutorial will walk you through creating a small documentation website using create-react-app and react-junctions. In fact, it'll actually walk you through creating *this* website. Pretty meta, huh?
 

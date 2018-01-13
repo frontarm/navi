@@ -28,31 +28,32 @@ export class MDXWrapper extends React.Component {
   render() {
     let { env, page } = this.props
 
-    if (page.contentStatus === 'busy') {
-        return (
-            <div className='MDXWrapper-busy'>
-                <p>Reticulating splines...</p>
-            </div>
-        )
-    }
-
-    if (page.contentStatus === 'error') {
-        return (
-            <div className='MDXWrapper-error'>
-                <h1>Gosh darn it.</h1>
-                <p>Something went wrong.</p>
-            </div>
-        )
-    }
-
     return (
-        <div className='MDXWrapper-ready'>
-            {React.createElement(page.content.default, {
-                factories: this.factories,
-                page: page,
-                env: env,
-            })}
+        <div className='MDXWrapper'>
+            <LoadingIndicator isLoading={page.contentStatus === 'busy'} />
+
+            {   page.contentStatus === 'ready' &&
+                <div className='MDXWrapper-ready'>
+                    {React.createElement(page.content.default, {
+                        factories: this.factories,
+                        page: page,
+                        env: env,
+                    })}
+                </div>
+            }
+            {   page.contentStatus === 'error' &&
+                <div className='MDXWrapper-error'>
+                    <h1>Gosh darn it.</h1>
+                    <p>Something went wrong while loading the page.</p>
+                </div>
+            }
         </div>
     )
   }
 }
+
+const LoadingIndicator = ({ isLoading }) =>
+  <div className={`
+    MDXWrapper-LoadingIndicator
+    MDXWrapper-LoadingIndicator-${isLoading ? 'loading' : 'done'}
+  `} />
