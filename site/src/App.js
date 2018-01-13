@@ -5,21 +5,53 @@ import { Sidebar } from './Sidebar'
 import './App.css'
 
 
-export const App = ({ env, junction }) =>
-  <div className="App">
-    <Sidebar env={env} className="App-sidebar" />    
+export class App extends React.Component {
+  state = {
+    open: false,
+  }
 
-    <main className="App-content">
-      <JunctionActiveChild
-        junction={junction}
-        notFoundElement={
-          <div className='App-notfound'>
-            <h1>404</h1>
-          </div>
-        }
-      />
-    </main>
-  </div>
+  handleToggleMenu = () => {
+    this.setState({ open: !this.state.open })
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.junction !== this.props.junction) {
+      this.setState({ open: false })
+    }
+  }
+
+  render() {
+    let { env, junction } = this.props
+
+    return (
+      <div className="App">
+        <div className={`App-nav ${this.state.open ? 'App-nav-open' : ''}`}>
+          <Sidebar
+            env={env}
+            className='App-nav-sidebar'
+          />
+          <button
+            className='App-nav-hamburger'
+            onClick={this.handleToggleMenu}
+            onTouchStart={this.handleToggleMenu}>
+            <div className='App-nav-hamburger-icon' />
+          </button>
+        </div>
+
+        <main className="App-content">
+          <JunctionActiveChild
+            junction={junction}
+            notFoundElement={
+              <div className='App-notfound'>
+                <h1>404</h1>
+              </div>
+            }
+          />
+        </main>
+      </div>
+    )
+  }
+}
 
 
 export const AppJunctionTemplate = createJunctionTemplate({
@@ -49,8 +81,8 @@ export const AppJunctionTemplate = createJunctionTemplate({
       component: MDXWrapper,
       getContent: () => import('!babel-loader!mdx-loader!./pages/static-sites-with-create-react-app.md'),
       meta: {
-        socialTitle: 'Static rendering for create-react-app, with Junctions',
-        socialDescription: "With only four small changes, you can add static rendering to a create-react-app project. And you don't even need to eject!",
+        socialTitle: 'Static rendering for create-react-app',
+        socialDescription: "Build static HTML files for your create-react-app project, in just five steps!",
       },
     }),
 

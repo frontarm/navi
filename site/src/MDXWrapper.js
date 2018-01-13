@@ -3,7 +3,7 @@ import { Link } from 'react-junctions'
 import './MDXWrapper.css'
 
 // Change MDX's heading ids by removing anything in parens, and removing
-// any <> characters.
+// any <> characters. This simplifies the API reference navbar.
 function createHeadingFactory(type) {
     return ({ id, ...other }, ...children) =>
         React.createElement(type, {
