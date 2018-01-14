@@ -124,7 +124,6 @@ function main() {
     // passing in a `junction` prop with the app's navigatin state.
     let content =
         <JunctionNavigation
-            id='navigation'
             root={AppJunctionTemplate}
             waitForInitialContent
         />

@@ -13,7 +13,6 @@ code { font-size: 1rem; }
 h1 { font-family: Inconsolata, monospace; line-height: 2rem; margin: 2rem 0 1rem 0; font-size: 200%; }
 h2 { font-family: Lato, sans-serif; margin: 2.5rem 0 2rem 0; font-size: 125%; color: rgb(81, 81, 81); }
 h3 {
-  display: inline-block;
   padding: 0.25rem 0;
   font-family: Inconsolata, monospace;
   margin: 2rem 0 0 0;
@@ -25,6 +24,14 @@ h3 > code {
   font-size: 100%;
 }
 h2 code { font-size: 100%; font-weight: 100; }
+
+hr {
+  margin: 0 auto;
+  width: 25%;
+  border: 1px solid #10b068;
+  border-radius: 2px;
+  opacity: 0.5;
+}
 
 blockquote {
   color: #555;
@@ -105,7 +112,17 @@ a {
   color: #10b068;
   text-decoration: none;
 }
+a:hover {
+  text-decoration: underline;
+}
 
+.MDXWrapper-heading-link {
+  display: none;
+}
+.MDXWrapper-heading:hover .MDXWrapper-heading-link {
+  display: inline-block;
+  padding: 0 0.5rem;
+}
 
 .MDXWrapper-LoadingIndicator {
   position: absolute;
