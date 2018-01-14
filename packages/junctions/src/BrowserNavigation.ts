@@ -206,7 +206,15 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> im
     }
 
     private handleHistoryChange = (location) => {
-        this.router.setLocation(location)
+        if (this.location &&
+            location.pathname === this.location.pathname &&
+            location.hash === this.location.hash &&
+            location.search === this.location.search) {
+            this.scrollToHash(location.hash)
+        }
+        else {
+            this.router.setLocation(location)
+        }
     }
 
     private handleLocationChange = (previousLocation: Location | undefined, nextLocation) => {
