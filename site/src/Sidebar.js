@@ -17,14 +17,26 @@ export const Sidebar = ({ className='', env }) =>
         <NavLink env={env} href="/why-another-router/">Why another router?</NavLink>
         <NavLink env={env} href="/why-another-static-site-generator/">Why another static generator?</NavLink>
       </section>
+
+      <section>
+        <NavLink env={env} href="/tutorial" className="Sidebar-nav-heading">Tutorial</NavLink>
+        <HashLink env={env} href="/tutorial/#Creating-a-react-app">Creating a React app</HashLink>
+        <HashLink env={env} href="/tutorial/#Templates">Templates</HashLink>
+        <HashLink env={env} href="/tutorial/#The-JunctionNavigation-Component">The JunctionNavigation component</HashLink>
+        <HashLink env={env} href="/tutorial/#Junctions-and-Pages">Junctions and Pages</HashLink>
+        <HashLink env={env} href="/tutorial/#Rendering-Content">Rendering content</HashLink>
+        <HashLink env={env} href="/tutorial/#Links">Links</HashLink>
+        <HashLink env={env} href="/tutorial/#Markdown-Components">Markdown components</HashLink>
+        <HashLink env={env} href="/tutorial/#Split-Content">Split content</HashLink>
+        <HashLink env={env} href="/tutorial/#Static-Builds">Static builds</HashLink>
+      </section>
       
       <section>
         <div className="Sidebar-nav-heading">Guides</div>
-        <NavLink env={env} href="/tutorial/">Tutorial: Make this site</NavLink>
         <NavLink env={env} href="/static-sites-with-create-react-app/">Static builds with create-react-app</NavLink>
       </section>
 
-      <section>
+      <section className="Sidebar-api">
         <NavLink env={env} href="/api-reference/" className="Sidebar-nav-heading">API Reference</NavLink>
         
         <div className="Sidebar-nav-subheading">Templates</div>

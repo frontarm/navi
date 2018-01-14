@@ -70,8 +70,10 @@ a.Sidebar-nav-heading {
 }
 
 .Sidebar-HashLink {
-  font-family: Inconsolata, sans-serif;
   text-decoration: none;
+}
+.Sidebar-api .Sidebar-HashLink {
+  font-family: Inconsolata, sans-serif;
 }
 
 .Sidebar-ComponentLink > .Sidebar-HashLink {

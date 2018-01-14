@@ -59,8 +59,8 @@ In particular, Junctions makes it ridiculously easy to add code splits, even wit
 
 This is invaluable for large web apps and websites:
 
-- Without code splitting, you'll soon run into problems with huge JavaScript bundles, slowing initial response times and severly degrading mobile user's experience.
-- Without static rendering, your app's JavaScript needs to be downloaded and parsed before your users see anything, and you'll have no control over how your pages appear when shared via sociali media.
+- Without code splitting, you'll soon run into problems with huge JavaScript bundles, slowing initial response times and severely degrading mobile user's experience.
+- Without static rendering, your app's JavaScript needs to be downloaded and parsed before your users see anything, and you'll have no control over how your pages appear when shared via social media.
 
 React-router's [documentation](https://reacttraining.com/react-router/web/guides/code-splitting) makes a point of saying it won't support both of these:
 

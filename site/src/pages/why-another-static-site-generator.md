@@ -14,7 +14,7 @@ Gatsby is incredible, and it is *fast*. It is also enormous. It has:
 - A GraphQL-based system for pulling content from anywhere.
 - Countless starter projects to choose from.
 
-In constrast, Junctions is *just as fast* as Gatsby. But it is simple. It:
+In contrast, Junctions is *just as fast* as Gatsby. But it is simple. It:
 
 - Has only [3 packages](https://github.com/jamesknelson/junctions/tree/master/packages).
 - Uses create-react-app for zero-configuration builds.

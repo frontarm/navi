@@ -205,7 +205,7 @@ The Junctions library takes a batteries-included approach, so this component als
 
 - Scrolls to `#hash` links when appropriate
 - Sets the document title to the matched page's title
-- Announces changes in the document title to screenreaders
+- Announces changes in the document title to screen readers
 
 These features can be configured or disabled via props if required.
 
@@ -213,7 +213,7 @@ These features can be configured or disabled via props if required.
 
 ##### `annonceTitle: func | false` <small>(optional)</small>
 
-Allows you to provide a `(title: string) => string` function that will be used to decide what to announce to screenreaders on page changes.
+Allows you to provide a `(title: string) => string` function that will be used to decide what to announce to screen readers on page changes.
 
 Alternatively, you can set a value of `false` to disable the default announcer.
 
@@ -239,7 +239,7 @@ type Renderer = (
   route: (Junction | Page)[],
 
   // An object that can be used to access the current location, navigate
-  // programatically, or find routes for arbirtrary locations.
+  // programatically, or find routes for arbitrary locations.
   navigation: ()
 
   // The current location
@@ -280,7 +280,7 @@ By default, `<Link>` will look for a `Navigation` object in its React Context. H
 
 > If you want your application to be stable, don’t use context. It is an experimental API and it is likely to break in future releases of React.
 
-Instead of using context, you can also pass your `<Link>` components an `env` prop, as output from the `<JunctionNavigation>` components's default renderer, and as used by the `<JunctionActiveChild>` component.
+Instead of using context, you can also pass your `<Link>` components an `env` prop, as output from the `<JunctionNavigation>` component's default renderer, and as used by the `<JunctionActiveChild>` component.
 
 Explicitly passing `env` has another advantage; if an `env` prop changes, the component will re-render -- even if the component is a `PureComponent`, or has a `shouldComponentUpdate` prop. Because of this, the `<Link>` component only supports styling props like `activeClassName` and `activeStyle` when used with an `env` prop, or when used with an explicit `active` prop.
 

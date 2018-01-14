@@ -80,7 +80,7 @@ working:
 
     The `<JunctionNavigation>` component takes the junction template from
     `App.js`, and uses it to create the `junction` prop that contains your
-    app's current navigatin state.
+    app's current navigation state.
 
     This component also keeps the page title up to date, handles scrolling,
     loads split bundles when required, and follows any redirects it encounters.
@@ -97,7 +97,7 @@ working:
     Junctions keeps track of the dependencies of each of your site's pages, and
     only starts the app once those dependencies have been loaded.
 
-    Because of this, you'll need to move your app's boostrap code into a `main()`
+    Because of this, you'll need to move your app's bootstrap code into a `main()`
     function, and only call it directly when in create-react-app's development
     environment.
 
@@ -121,7 +121,7 @@ function main() {
     // the browser's location changes.
     //
     // It renders the `component` property of the template defined in App.js,
-    // passing in a `junction` prop with the app's navigatin state.
+    // passing in a `junction` prop with the app's navigation state.
     let content =
         <JunctionNavigation
             root={AppJunctionTemplate}

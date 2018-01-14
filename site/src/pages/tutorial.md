@@ -354,13 +354,13 @@ const IndexDocumentWrapper = () =>
 
 By using `IndexDocumentWrapper` as your index page `component`, you'll ensure that the page's links are just as snappy as any other links within your application.
 
-You can also use MDX factories to configure other behaviours. For example, you could use factories to add `#hash` links to each of your document's headings.
+You can also use MDX factories to configure other behaviors. For example, you could use factories to add `#hash` links to each of your document's headings.
 
 But while factories give you flexibility, they're also rather verbose. Creating a new wrapper component for each page would quickly get tiresome. But luckily, you don't have to!
 
 
-Page Content
-------------
+Split Content
+-------------
 
 Up until now, this tutorial has only used a subset of the available options for page templates. In fact, you can configure more than just a `title` and a `component`; you can see the full suite of options in the [API Reference](/api-reference/#createPageTemplate).
 
