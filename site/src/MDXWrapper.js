@@ -37,6 +37,9 @@ export class MDXWrapper extends React.Component {
     h1: createHeadingFactory('h1'),
     h2: createHeadingFactory('h2'),
     h3: createHeadingFactory('h3'),
+    h4: createHeadingFactory('h4'),
+    h5: createHeadingFactory('h5'),
+    h6: createHeadingFactory('h6'),
   }
  
   render() {

@@ -207,6 +207,7 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> im
 
     private handleHistoryChange = (location) => {
         if (this.location &&
+            !!this.disableScrollHandling &&
             location.pathname === this.location.pathname &&
             location.hash === this.location.hash &&
             location.search === this.location.search) {
@@ -229,10 +230,6 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> im
         ) {
             this.location = nextLocation
             if (previousLocation) {
-                // Probably:
-                // - this may be called before a render completes, however
-                //   if we delay with `setTimeout`, we break browser
-                //   scrolling.
                 this.scrollToHash(nextLocation.hash)
             }
         }

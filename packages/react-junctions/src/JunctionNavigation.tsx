@@ -55,6 +55,12 @@ export interface JunctionNavigationProps {
   history?: History,
 
   /**
+   * If true, changes in URL pathname, search and hash will not result in
+   * automatic scrolling, allowing you to take care of scrolling manually.
+   */
+  disableScrollHandling?: boolean,
+
+  /**
    * Useful on statically rendered sites, so the initially received HTML
    * can be displayed until the content is ready to be rendered.
    * If you don't pass `id` with `waitForInitialContent`, a tentative id will
@@ -128,6 +134,7 @@ export class JunctionNavigation<
       announceTitle,
       setDocumentTitle,
       waitForInitialContent,
+      disableScrollHandling,
       addToContext = true,
     } = props
 
@@ -139,6 +146,7 @@ export class JunctionNavigation<
       followRedirects,
       announceTitle,
       setDocumentTitle,
+      disableScrollHandling,
     })
 
     this.navigation.subscribe(this.handleRouteChange, {
