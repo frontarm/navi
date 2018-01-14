@@ -101,7 +101,7 @@ export const AppJunctionTemplate = createJunctionTemplate({
       getContent: () => import('!babel-loader!mdx-loader!./pages/why-another-router.md'),
       meta: {
         socialTitle: 'react-router vs. Junctions',
-        socialDescription: "While react-router gives you the flexibility to work with native apps, Junctions aims to be the best router for the web.",
+        socialDescription: "While react-router gives you the flexibility to work with native apps, Junctions is laser-focused on routing for websites and web apps.",
       },
     }),
 

@@ -3,16 +3,16 @@ Junctions
 
 **A batteries-included router for React.**
 
-*[But react-router already exists, so why another router?](/why-another-router)*
+*[&raquo; But react-router already exists, so why another router?](/why-another-router)*
 
-Out of the box, you'll get a great experience for both users *and* developers, with:
+Junctions gives you a great user experience right out of the box, with:
 
 - Scroll management that just works
 - Page `<title>` management (with a title announcer for accessibility)
+- A static site generator that works with create-react-app
+- Code splitting via ESNext's `import()` proposal
 - Console warnings when a `<Link>` points to a 404
 - Great TypeScript support
-- Code splitting via ESNext's `import()` proposal
-- Set `<meta>` tags for Twitter and Facebook with static builds
 
 And the best part? Junctions is *fast*. It combines code splitting and static site generation to give users *immediate* access to content, then seamlessly adds features as your app loads.
 
@@ -23,7 +23,7 @@ Documentation
 -------------
 
 - [The Tutorial](/tutorial) walks you through building a small documentation website with create-react-app.
-- [Building with create-react-app](/static-sites-with-create-react-app) covers adding static rendering to a create-react-app project.
+- [Static builds with create-react-app](/static-sites-with-create-react-app) covers adding static rendering to a create-react-app project.
 - [API Reference](/api-reference)
 
 
@@ -31,11 +31,11 @@ Installation
 ------------
 
 ```bash
-# Everything you need is exported from `react-junctions`
-npm install react-junctions
+# For defining your route structure, and adding routes to a React app
+npm install --dev junctions react-junctions
 
-# The build tool is in `junctions-static`
-npm install --dev junctions-static
+# For static site generation
+npm install --save-dev junctions-static
 ```
 
 

@@ -20,12 +20,8 @@ export const Sidebar = ({ className='', env }) =>
       
       <section>
         <div className="Sidebar-nav-heading">Guides</div>
-        <NavLink env={env} href="/tutorial/">Tutorial</NavLink>
-        <NavLink env={env} href="/static-sites-with-create-react-app/">Building with create-react-app</NavLink>
-      </section>
-
-      <section>
-        <NavLink env={env} href="https://github.com/jamesknelson/junctions" className="Sidebar-nav-heading">GitHub</NavLink>
+        <NavLink env={env} href="/tutorial/">Tutorial: Make this site</NavLink>
+        <NavLink env={env} href="/static-sites-with-create-react-app/">Static builds with create-react-app</NavLink>
       </section>
 
       <section>
@@ -39,7 +35,7 @@ export const Sidebar = ({ className='', env }) =>
 
         <div className="Sidebar-nav-subheading">Components</div>
 
-        <ComponentLink
+        {/*<ComponentLink
           env={env}
           href="/api-reference/#ExitPrompt"
           name='ExitPrompt'
@@ -49,9 +45,9 @@ export const Sidebar = ({ className='', env }) =>
             ['message-func', 'message: func'],
             ['when', 'when?: bool'],
           ]}
-        />
+        />*/}
 
-        <ComponentLink
+        {<ComponentLink
           env={env}
           href="/api-reference/#JunctionActiveChild"
           name='JunctionActiveChild'
@@ -61,7 +57,7 @@ export const Sidebar = ({ className='', env }) =>
             ['junction', 'junction: Junction'],
             ['notFoundElement', 'notFoundElement?: ReactElement'],
           ]}
-        />
+        />}
 
         <ComponentLink
           env={env}
@@ -97,6 +93,10 @@ export const Sidebar = ({ className='', env }) =>
         <HashLink env={env} href="/api-reference/#Junction">Junction</HashLink>
         <HashLink env={env} href="/api-reference/#Page">Page</HashLink>
       </section>
+
+      <section>
+        <NavLink env={env} href="https://github.com/jamesknelson/junctions" className="Sidebar-nav-heading">GitHub &raquo;</NavLink>
+      </section>
     </nav>
   </div>
 
@@ -123,7 +123,7 @@ const HashLink = ({ children, className='', env, href }) =>
 const ComponentLink = ({ env, href, name, props }) =>
   <div className='Sidebar-ComponentLink'>
     <HashLink env={env} href={href}>&lt;{name}&gt;</HashLink>
-    {props.map(([id, label]) => 
+    {/*props.map(([id, label]) => 
       <HashLink
         key={id}
         env={env}
@@ -131,5 +131,5 @@ const ComponentLink = ({ env, href, name, props }) =>
         className="Sidebar-nav-prop">
         {label}
       </HashLink>    
-    )}
+    )*/}
   </div>

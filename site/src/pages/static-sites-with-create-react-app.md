@@ -1,7 +1,13 @@
-Building static sites with create-react-app
-===========================================
+Static builds with create-react-app
+===================================
 
-You only need to make a few changes to add static rendering to a create-react-app project:
+This article will guide you through adding static builds to a fresh create-react-app project.
+
+Before getting started, make sure you've installed the dependencies:
+
+```bash
+npm install --save junctions react-junctions junctions-static
+```
 
 
 ## 1. Export a Junction from `App.js`

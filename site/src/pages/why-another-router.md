@@ -9,7 +9,7 @@ Junctions is a router for React. But of course, [react-router](https://reacttrai
 A difference in philosophy
 --------------------------
 
-Junctions was designed to provide fast, accessible routing for large web applications with publicly accessible content -- for sites like [React Armory](https://reactarmory.com). As a result, Junctions is laser-focused on providing the best routing experience *for the web*.
+Junctions is laser-focused on providing the best routing experience *for the web*. It was designed to provide fast, accessible routing for large web applications with publicly accessible content. This philosophy stems from its use as the build system for [React Armory](https://reactarmory.com).
 
 In comparison, react-router is focused on providing routing *for any React application*. These applications may be web apps, native apps, or even VR apps. As a result, react-router is more limited in its web-focused features, but does provide better support for Android and iPhone apps.
 
@@ -17,11 +17,9 @@ In comparison, react-router is focused on providing routing *for any React appli
 Features
 --------
 
-Junctions' focus on the web means that it provides a number of features that the more general react-router doesn't or can't:<sup>*</sup>
+If you're building a web app, Junctions provides a number of features that you'd need to implement manually with react-router.
 
-<div style={{fontSize: '80%'}}>
-<p><strong>*</strong> From the <a href="https://reacttraining.com/react-router/web/guides/code-splitting">react-router docs</a>: <em>"Godspeed those who attempt the server-rendered, code-split apps."</em></p><p>... Junctions provides statically-rendered code-splits out of the box. 🙃</p>
-</div>
+If you're building an iPhone or Android app, you can still use Junctions; but react-router gives you more of a head start.
 
 <table className='features-table'>
 <tbody>
@@ -53,4 +51,45 @@ Junctions' focus on the web means that it provides a number of features that the
 </tbody>
 </table>
 
-Of course, Gatsby already exists. So [what point is there in Junctions building static websites](/why-another-static-site-generator)?
+
+Static rendering with code splitting
+------------------------------------
+
+In particular, Junctions makes it ridiculously easy to add code splits, even with static or server-side rendering.
+
+This is invaluable for large web apps and websites:
+
+- Without code splitting, you'll soon run into problems with huge JavaScript bundles, slowing initial response times and severly degrading mobile user's experience.
+- Without static rendering, your app's JavaScript needs to be downloaded and parsed before your users see anything, and you'll have no control over how your pages appear when shared via sociali media.
+
+React-router's [documentation](https://reacttraining.com/react-router/web/guides/code-splitting) makes a point of saying it won't support both of these:
+
+> We determined that google was indexing our sites well enough for our needs without server rendering, so we dropped it in favor of code-splitting + service worker caching. Godspeed those who attempt the server-rendered, code-split apps.
+
+With Junctions, all it takes to statically render code splits is a `create-react-app` project, and the ESNext `import()` proposal.
+
+In fact, the page you're reading now uses static rendering with code splitting. Here's what it looks like:
+
+```jsx
+export const AppJunctionTemplate = createJunctionTemplate({
+    children: {
+        '/why-another-router': createPageTemplate({
+            title: 'Why another Router?',
+            component: MDXWrapper,
+            getContent: () =>
+                import('!babel-loader!mdx-loader!./pages/why-another-router.md'),
+            meta: {
+                socialTitle: 'react-router vs. Junctions',
+                socialDescription:
+                    "While react-router gives you the flexibility to work with "+
+                    "native apps, Junctions is laser-focused on routing for "+
+                    "websites and web apps.",
+            },
+        }),
+    }
+})
+```
+
+Neat. But why build websites with Junction when you could use Gatsby?
+
+[Do we really need another static site generator? &raquo;](/why-another-static-site-generator)
