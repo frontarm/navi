@@ -19,7 +19,7 @@ export const Sidebar = ({ className='', env }) =>
       </section>
 
       <section>
-        <NavLink env={env} href="/tutorial" className="Sidebar-nav-heading">Tutorial</NavLink>
+        <NavLink env={env} href="/tutorial/" className="Sidebar-nav-heading">Tutorial</NavLink>
         <HashLink env={env} href="/tutorial/#Creating-a-react-app">Creating a React app</HashLink>
         <HashLink env={env} href="/tutorial/#Templates">Templates</HashLink>
         <HashLink env={env} href="/tutorial/#The-JunctionNavigation-Component">The JunctionNavigation component</HashLink>

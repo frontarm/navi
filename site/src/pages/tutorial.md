@@ -5,6 +5,7 @@ Junctions Tutorial: Make this site
 
 This tutorial will walk you through creating a small documentation website using create-react-app, react-junctions, and Markdown. In fact, it'll actually walk you through creating *this* website. Cool, huh?
 
+*You can see the end result of this tutorial at its [companion repository](https://github.com/jamesknelson/junctions-tutorial). If you get stuck, try comparing your code to this repo.*
 
 Creating a react app
 --------------------
@@ -60,6 +61,8 @@ At the root of every app, you'll need a `JunctionTemplate` that maps URLs to con
 You'll want to add it to `App.js`; the root React component lives there, so it makes sense that the root `JunctionTemplate` will too.
 
 ```js
+import { createJunctionTemplate, createPageTemplate } from 'junctions'
+
 export const AppJunctionTemplate = createJunctionTemplate({
   children: {
     '/': createPageTemplate({
@@ -93,7 +96,7 @@ This junction template says a few things:
 <markdown>
 #### Why call them "templates", and not just "pages" or "junctions"?
 
-Each time the browser's location changes, your templates are used to create new [Page](/api-reference/#Page) and [Junction](/api-reference/#Junction) objects. These contain information that can't be added to the templates, including a Page's current URL, or a Junction's active child.
+Each time the browser's location changes, your templates are used to create new [Page](/api-reference/#Page) and [Junction](/api-reference/#Junction) objects. These contain information that can't be set ahead of time in the templates, including a Page's current URL, or a Junction's active child.
 </markdown>
 </aside>
 
@@ -112,15 +115,13 @@ If you're familiar with react-router, this is a bit like the `<Router>` <small>(
 By default, create-react-app starts the app by rendering an `<App>` element in `index.js`:
 
 ```jsx
-ReactDOM.render(
-  <App />,
-  document.getElementById('root')
-)
+ReactDOM.render(<App />, document.getElementById('root'))
 ```
 
 You'll want to replace this `<App>` element with a `<JunctionNavigation>` element, passing in `AppJunctionTemplate` from the previous step as its `root` prop:
 
 ```jsx
+import { JunctionNavigation } from 'react-junctions'
 import { AppJunctionTemplate } from './App'
 
 // Instead of rendering `<App>` directly, it will be rendered by
@@ -190,8 +191,8 @@ class App extends React.Component {
     // If there is a currently selected page, get its component.
     // Use an uppercase `C` so the variable can be used in a JSX element.
     let Component =
-      this.props.activeChild && 
-      this.props.activeChild.component
+      this.props.junction.activeChild && 
+      this.props.junction.activeChild.component
     
     if (!Component) {
       // If the user enters an unknown URL, there will be no active child,
@@ -201,7 +202,7 @@ class App extends React.Component {
     else {
       // Render the page's component, passing in the active Page object
       // as a prop.
-      return <Component page={this.props.activeChild} />
+      return <Component page={this.props.junction.activeChild} />
     }
   }
 
@@ -246,6 +247,7 @@ The navbar on the left of this page is chock-full of links. So let's test out th
 
 ```jsx
 // src/Navbar.jsx
+import React from 'react'
 import { Link } from 'react-junctions'
 
 export const Navbar = () =>
@@ -260,6 +262,8 @@ Where should this `<Navbar>` element be rendered from? One possibility would be 
 Instead, it makes sense to render the `<Navbar>` element from the `<App>` component, along with the current page. Here's an example:
 
 ```jsx
+import { Navbar } from './Navbar'
+
 render() {
   return (
     <div className='App'>
@@ -302,7 +306,7 @@ You'll also need to add this `.babelrc` to the root directory of your project:
 
 ```json
 {
-    "presets": ["babel-preset-react-app"]
+  "presets": ["babel-preset-react-app"]
 }
 ```
 
@@ -325,8 +329,11 @@ Junctions
 
 You can then import the document as a React component by prefixing the filename with `!babel-loader!mdx-loader!`. This tells Webpack to run `index.md` through MDX, and then Babel, before importing the resulting JavaScript.
 
+You'll also need to tell eslint that it is ok to use the Webpack `!` syntax; make sure that the following comment goes at the very top of your file!
+
 ```jsx
-import IndexDocument from '!babel-loader!mdx-loader!./content/index.md`
+/* eslint-disable import/no-webpack-loader-syntax */
+import IndexDocument from '!babel-loader!mdx-loader!./content/index.md'
 ```
 
 Finally, set your index page's `component` property to `IndexDocument` and refresh the page; you should see the contents of your new Markdown file!
@@ -479,7 +486,7 @@ This package includes a command-line tool that loads the output of CRA's `build`
 
 You can call the command line tool manually, by I recommend adding it to the end of the `build` script in `package.json`. Here's what the resulting line will look like:
 
-```
+```json
 "build": "react-scripts build && junctions-static build -m build/static/js/main.*.js -r create-react-app",
 ```
 
@@ -507,6 +514,7 @@ function main() {
 
 if (process.env.NODE_ENV !== 'production') {
   main()
+  registerServiceWorker()
 }
 
 window.JunctionsStaticApp = {
@@ -524,6 +532,7 @@ To solve this, I recommend moving the contents of `index.js` into a `main()` fun
 ```js
 if (process.env.NODE_ENV !== 'production') {
   main()
+  registerServiceWorker()
 }
 ```
 
@@ -565,7 +574,7 @@ This prop tells Junctions to wait for your initial page's content promise to res
 With these changes, your build should now work! To test it out, just run:
 
 ```bash
-npm run start
+npm run build
 ```
 
 And then follow CRA's instructions to start a build server!
