@@ -198,18 +198,16 @@ export function matchMountedPatternAgainstLocation(pattern: MountedPattern, loca
     }
 
     let matchedQueryParts = {}
-    let remainingQueryParts = {}
+    let remainingQueryParts = parseQuery(location.search)
     if (pattern.relativeSearchParams) {
-        let query = parseQuery(location.search)
         for (let i = 0; i < pattern.relativeSearchParams.length; i++) {
             let paramName = pattern.relativeSearchParams[i]
-            if (query[name] !== undefined) {
-                params[paramName] = query[name]
-                matchedQueryParts[paramName] = query[name]
-                delete query[name]
+            if (remainingQueryParts[paramName] !== undefined) {
+                params[paramName] = remainingQueryParts[paramName]
+                matchedQueryParts[paramName] = remainingQueryParts[paramName]
+                delete remainingQueryParts[paramName]
             }
         }
-        remainingQueryParts = query
     }
 
     let matchedLocation = {

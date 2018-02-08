@@ -10,7 +10,7 @@
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^2.0.0",
     "rollup-plugin-uglify": "^2.0.1",
-    "typescript": "^2.6.2"
+    "typescript": "2.6.2"
   },
   "scripts": {
     "build": "lerna run --parallel build",
@@ -19,7 +19,6 @@
     "test:watch": "lerna run --parallel test:watch"
   },
   "workspaces": [
-    "packages/*",
-    "site"
+    "packages/*"
   ]
 }

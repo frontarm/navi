@@ -20,6 +20,7 @@
         "dist",
         "examples",
         "node_modules",
-        "notes"
+        "notes",
+        "test"
     ]
 }
