@@ -41,7 +41,7 @@ export class MDXWrapper extends React.Component {
     h5: createHeadingFactory('h5'),
     h6: createHeadingFactory('h6'),
   }
- 
+
   render() {
     let { env, page } = this.props
 

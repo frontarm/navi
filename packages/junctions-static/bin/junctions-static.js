@@ -1,8 +1,4 @@
 #!/usr/bin/env node
-
-require('babel-register');
-require('babel-polyfill');
-
 var packageJSON = require('../package.json')
 var program = require('commander')
 var path = require('path')

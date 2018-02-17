@@ -3,8 +3,8 @@
   "version": "0.4.4",
   "private": true,
   "dependencies": {
-    "junctions": "^0.4.4",
-    "junctions-static": "^0.4.3",
+    "junctions": "../packages/junctions",
+    "junctions-static": "../packages/junctions-static",
     "mdx-loader": "^1.0.0-beta.3",
     "mdxc": "^1.0.0",
     "react": "^16.2.0",

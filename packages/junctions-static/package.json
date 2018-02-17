@@ -18,15 +18,6 @@
     "prepublish": "npm run clean && npm run build"
   },
   "dependencies": {
-    "babel-core": "^6.24.0",
-    "babel-plugin-dynamic-import-node": "^1.2.0",
-    "babel-plugin-syntax-dynamic-import": "^6.18.0",
-    "babel-plugin-transform-class-properties": "^6.24.0",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.0",
-    "babel-plugin-transform-object-rest-spread": "^6.23.0",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.6.0",
-    "babel-register": "^6.24.0",
     "chalk": "^2.3.0",
     "commander": "^2.9.0",
     "escape-string-regexp": "^1.0.5",
@@ -36,6 +27,12 @@
     "serve-static": "^1.11.2"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-plugin-transform-class-properties": "^6.24.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.0",
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-preset-env": "^1.6.0",
     "cross-env": "^5.0.5",
     "rimraf": "^2.5.4"
   },

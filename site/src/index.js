@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { JunctionNavigation } from 'react-junctions'
 import { AppJunctionTemplate } from './App'
-// import registerServiceWorker from './registerServiceWorker'
 import './index.css'
 
 
@@ -27,8 +26,6 @@ function main() {
     else {
         ReactDOM.render(content, node)
     }
-
-    // registerServiceWorker()
 }
 
 

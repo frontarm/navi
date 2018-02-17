@@ -3,8 +3,7 @@
   "useWorkspaces": true,
   "lerna": "2.1.2",
   "packages": [
-    "packages/*",
-    "site"
+    "packages/*"
   ],
   "version": "0.4.5"
 }
