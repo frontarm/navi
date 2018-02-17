@@ -16,7 +16,7 @@ describe("page under '/test' with 'redirectTo' param", () => {
         })
     }
 
-    test("is passed correctly", async () => {
+    test("is parsed correctly", async () => {
         let nav = new StaticNavigation({
             rootJunctionTemplate: root(),
             location: {
