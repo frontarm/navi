@@ -21,7 +21,7 @@ export interface JunctionTemplate<
 }
 
 
-export class JunctionMatcher<J extends JunctionTemplate = JunctionTemplate> extends Matcher {
+export class JunctionMatcher<J extends JunctionTemplate<any, any, { [pattern: string]: Template | AsyncTemplate }> = JunctionTemplate> extends Matcher {
     static type: 'Template' = 'Template'
     static templateType: 'Junction' = 'Junction'
 
@@ -124,7 +124,7 @@ export class JunctionMatcher<J extends JunctionTemplate = JunctionTemplate> exte
             else if (this.childStatus === 'ready') {
                 let childRoute = (this.childMatcher as Matcher).getRoute()
                 if (childRoute) {
-                    descendents = childRoute
+                    descendents = childRoute as any
                     status = 'ready'
                 }
                 else {

@@ -1,5 +1,5 @@
 import { Location } from './Location'
-import { Template } from './Template'
+import { AsyncTemplate, Template } from './Template'
 import { PageTemplate, PageMatcher } from './PageTemplate'
 import { RedirectTemplate, RedirectMatcher } from './RedirectTemplate'
 import { JunctionTemplate, JunctionMatcher } from './JunctionTemplate'
@@ -123,14 +123,25 @@ export interface Junction<J extends JunctionTemplate = JunctionTemplate> extends
     activeRoute: JunctionDescendentSegments<J>,
 }
 
-export type JunctionChildSegment<J extends JunctionTemplate> = 
+// export type JunctionChildSegment<J extends JunctionTemplate<any, any, { [pattern: string]: Template | AsyncTemplate }>> = 
+//     {
+//         [K in keyof J['children']]: {
+//             // While the route initially needed to be loaded, it might have
+//             // already been loaded by the time this Segment object is produced.
+//             AsyncObjectContainer: TemplateChildSegment<J['children'][K]['value']> | undefined,
+//             Template: TemplateChildSegment<J['children'][K]>
+//         }[J['children'][K]['type']]
+//     }[keyof J['children']]
+
+type TemplateWrapper<T extends Template> = T
+export type JunctionChildSegment<J extends JunctionTemplate<any, any, { [pattern: string]: Template | AsyncTemplate }>> = 
     {
-        [K in keyof J['children']]: {
+        [K in keyof J['children']]:
             // While the route initially needed to be loaded, it might have
             // already been loaded by the time this Segment object is produced.
-            AsyncObjectContainer: TemplateChildSegment<J['children'][K]['value']> | undefined,
-            Template: TemplateChildSegment<J['children'][K]>
-        }[J['children'][K]['type']]
+            J['children'][K] extends AsyncTemplate<infer T> ? TemplateChildSegment<T> :
+            J['children'][K] extends TemplateWrapper<infer T> ? TemplateChildSegment<T> :
+            never
     }[keyof J['children']]
 
 /**
