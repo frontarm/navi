@@ -1,6 +1,6 @@
 {
   "name": "junctions",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Junction-based routing for JavaScript.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
