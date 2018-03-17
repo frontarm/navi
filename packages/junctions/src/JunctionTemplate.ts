@@ -141,7 +141,7 @@ export class JunctionMatcher<J extends JunctionTemplate<any, any, { [pattern: st
                 meta: this.constructor.meta,
                 children: this.constructor.children,
                 activePattern: this.childMountedPattern && this.childMountedPattern.relativePattern,
-                activeChild: descendents[0] || false,
+                activeChild: descendents[0] || undefined,
                 activeRoute: descendents,
             })]
 
