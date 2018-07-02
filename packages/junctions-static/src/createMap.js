@@ -1,8 +1,8 @@
 import createDOMFactory from './createDOMFactory'
 import { StaticNavigation } from 'junctions'
 
-export default async function createMap(mainFile, publicFolder) {
-    let createDOM = createDOMFactory(mainFile, publicFolder)
+export default async function createMap(source, publicFolder) {
+    let createDOM = createDOMFactory(source, publicFolder)
 
     let queue = ['']
     let processedJunctions = []

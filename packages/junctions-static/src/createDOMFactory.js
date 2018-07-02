@@ -4,9 +4,8 @@ import vm from 'vm'
 const jsdom = require('jsdom/lib/old-api.js')
 
 
-export default function createDOMFactory(mainFile, publicFolder) {
+export default function createDOMFactory(source, publicFolder) {
     let cwd = process.cwd()
-    let source = fs.readFileSync(path.resolve(cwd, mainFile))
     let script = new vm.Script(source, {
         displayErrors: true,
         filename: 'main.js',
@@ -53,7 +52,7 @@ export default function createDOMFactory(mainFile, publicFolder) {
     let testDOM = factory()
     let App = testDOM.window.JunctionsStaticApp
     if (!App) {
-        console.error(`The file "${mainFile}" was found, but doesn't assign an "JunctionsStaticApp" property to the window object. Junctions-static requires that your apps exports are available on this property.'`)
+        console.error(`Your main script doesn't assign an "JunctionsStaticApp" property to the window object. Junctions-static requires that your apps exports are available on this property.'`)
         process.exit(1)
     }
     else if (!App.root) {

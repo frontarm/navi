@@ -75,7 +75,9 @@ program.command('build')
       process.exit(1)
     }
 
-    build(config.main, config.public, config.renderToString).catch(function(err) {
+    let source = fs.readFileSync(path.resolve(config.public, config.main))
+
+    build(source, config.public, config.renderToString).catch(function(err) {
       console.error(err)
       process.exit(1)
     })
@@ -94,7 +96,9 @@ program.command('map')
       process.exit(1)
     }
 
-    map(config.main, config.public).catch(function(err) {
+    let source = fs.readFileSync(path.resolve(config.public, config.main))
+
+    map(source, config.public).catch(function(err) {
       console.error(err)
       process.exit(1)
     })

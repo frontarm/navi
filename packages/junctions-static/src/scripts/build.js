@@ -5,10 +5,10 @@ import createMap from '../createMap'
 import createDOMFactory from '../createDOMFactory'
 
 
-export default async function build(mainFile, publicFolder, renderToString) {
+export default async function build(source, publicFolder, renderToString) {
     let cwd = process.cwd()
-    let siteMap = await createMap(mainFile, publicFolder)
-    let createDOM = createDOMFactory(mainFile, publicFolder)
+    let siteMap = await createMap(source, publicFolder)
+    let createDOM = createDOMFactory(source, publicFolder)
     let dom = createDOM()
     let rootJunctionTemplate = dom.window.JunctionsStaticApp.root
     let pathnames = Object.keys(siteMap)
