@@ -226,7 +226,7 @@ export class BrowserNavigation<RootJunctionTemplate extends JunctionTemplate> im
         if (!this.disableScrollHandling &&
             (!previousLocation ||
             previousLocation.hash !== nextLocation.hash ||
-            (!nextLocation.hash && previousLocation.pathname !== nextLocation.pathname))
+            previousLocation.pathname !== nextLocation.pathname)
         ) {
             this.location = nextLocation
             if (previousLocation) {
