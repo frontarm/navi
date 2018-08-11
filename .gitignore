@@ -3,3 +3,4 @@ node_modules
 site/build
 site-old
 *.log
+NOTES.md

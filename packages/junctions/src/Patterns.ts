@@ -224,7 +224,7 @@ export function matchMountedPatternAgainstLocation(pattern: MountedPattern, loca
     return {
         params: params,
         matchedLocation: matchedLocation,
-        remainingLocation: remainingLocation.pathname !== '' || remainingLocation.search !== '' ? remainingLocation : undefined
+        remainingLocation: remainingLocation.pathname !== '' ? remainingLocation : undefined
     }
 }
     
