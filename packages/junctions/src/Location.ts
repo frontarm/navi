@@ -36,7 +36,7 @@ export function concatLocations(firstLocation: Location | string, ...locations: 
 }
     
 const parsePattern = /^((((\/?(?:[^\/\?#]+\/+)*)([^\?#]*)))?(\?[^#]+)?)(#.*)?/
-function parseLocationString(locationString: string): Location {
+export function parseLocationString(locationString: string): Location {
     let matches = parsePattern.exec(locationString)
     if (!matches) {
         throw new Error("Tried to parse a non-URI object.")
@@ -48,7 +48,7 @@ function parseLocationString(locationString: string): Location {
     }
 }
 
-function joinPaths(a, b) {
+export function joinPaths(a, b) {
     if (!b) {
         return a
     }

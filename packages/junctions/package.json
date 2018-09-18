@@ -36,7 +36,7 @@
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.0",
     "ts-jest": "^22.0.1",
-    "typescript": "2.8.0-rc",
+    "typescript": "3.0.3",
     "zen-observable": "^0.7.1"
   },
   "dependencies": {

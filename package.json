@@ -2,7 +2,7 @@
   "private": true,
   "devDependencies": {
     "cross-env": "^5.0.5",
-    "lerna": "^2.1.2",
+    "lerna": "^3.3.2",
     "rimraf": "^2.6.2",
     "rollup": "^0.50.0",
     "rollup-plugin-babel": "^3.0.2",
@@ -10,7 +10,7 @@
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^2.0.0",
     "rollup-plugin-uglify": "^2.0.1",
-    "typescript": "2.6.2"
+    "typescript": "3.0.3"
   },
   "scripts": {
     "build": "lerna run --parallel build",

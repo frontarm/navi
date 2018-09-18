@@ -8,11 +8,10 @@
         "strictNullChecks": true,
         "target": "es5",
         "lib": [
-            "es5",
-            "es6",
             "dom",
             "dom.iterable",
-            "es2015.collection",
+            "es2015",
+            "es2016",
             "es2017"
         ]
     },
