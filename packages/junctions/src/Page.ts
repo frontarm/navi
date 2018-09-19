@@ -70,7 +70,7 @@ export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
           location: this.match!.matchedLocation,
       })
 
-    if (!this.last || this.last.result.id !== result.id) {
+    if (!this.last || this.last.result !== result) {
       let { value, status, error } = result
 
       // Only create a new route if necessary, to allow for reference-equality
@@ -95,7 +95,7 @@ export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
   }
 }
 
-export function createPageTemplate<Meta, Content, Context>(options: {
+export function createPage<Meta, Content, Context=any>(options: {
   params?: string[]
   title: string
   meta?: Meta

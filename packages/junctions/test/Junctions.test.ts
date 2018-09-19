@@ -1,35 +1,49 @@
-import { createPageTemplate, createJunctionTemplate, StaticNavigation } from '../src'
+import { createMemoryHistory } from 'history'
+import { createPage, createJunction, Env, Navigation, Router, PageRoute } from '../src'
 
 describe("page under '/test' with 'redirectTo' param", () => {
     function root() {
-        let pageTemplate = createPageTemplate({
+        let pageTemplate = createPage({
             title: 'Test',
+            meta: {
+                description: 'test-page',
+            },
             params: ['redirectTo'],
-            component: null,
+            getContent(env) {
+                // return 'content'
+                return Promise.resolve('content')
+            }
         })
 
-        return createJunctionTemplate({
+        return createJunction({
             children: {
                 '/test': pageTemplate,
-            },
-            component: null,
+            }
         })
     }
 
     test("is parsed correctly", async () => {
-        let nav = new StaticNavigation({
-            rootJunctionTemplate: root(),
-            location: {
-                pathname: '/test',
-                search: '?redirectTo=no',
-            },
+        let junction = root()
+        let router = new Router(junction)
+        let history = createMemoryHistory({
+            initialEntries: ['/test?redirectTo=no'],
         })
-        let route = await nav.getFinalRoute()
+
+        let nav = new Navigation({
+            history,
+            router,
+        })
+        await nav.steady()
+        let route = nav.currentRoute
+        let pageRoute = route.activeChild as PageRoute
         
-        expect(route[0].type).toBe('junction')
-        expect(route[0].activePattern).toBe('/test')
-        expect(route[1].type).toBe('page')
-        expect((route[1] as any).title).toBe('Test')
-        expect(route[1].params).toEqual({ redirectTo: 'no' })
+        expect(route.type).toBe('junction')
+        expect(route.activePattern).toBe('/test')
+        expect(pageRoute.type).toBe('page')
+        expect(pageRoute.title).toBe('Test')
+        expect(pageRoute.meta.description).toBe('test-page')
+        expect(pageRoute.content).toBe('content')
+        expect(pageRoute).toBe(route.deepestRoute)
+        expect(pageRoute.params).toEqual({ redirectTo: 'no' })
     })
 })

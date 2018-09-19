@@ -28,10 +28,11 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
     static type: RouteType.Junction = RouteType.Junction
 
     childMatcherOptions?: NodeMatcherOptions<Context>
-    childResolvableNode?: ResolvableNode<Node, Context>
+    childMaybeResolvableNode?: MaybeResolvableNode<Node>
 
     last?: {
         childResolvables: Resolvable<any>[],
+        childMatcher?: NodeMatcher<any>,
         result: ResolverResult<Node>
         route: JunctionRoute<Meta, Children>
     };
@@ -63,11 +64,8 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
                         resolver: this.resolver,
                         withContent: this.withContent,
                     }
-                    let childResolvable = childMapping.maybeResolvableNode
-                    this.childResolvableNode = childResolvable.isNode
-                        ? (() => childResolvable) as ResolvableNode<Node, Context>
-                        : (childResolvable as ResolvableNode<Node, Context>)
-
+                    this.childMaybeResolvableNode = childMapping.maybeResolvableNode
+                    
                     // The first match is always the only match, as we don't allow
                     // for ambiguous patterns.
                     break
@@ -75,11 +73,10 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
             }
         }
 
-        if (!this.childResolvableNode) {
+        if (!this.childMatcherOptions) {
             this.noMatchedChildRoute = this.createRoute(RouteType.Junction, {
                 status: ResolverStatus.Ready,
                 meta: this.constructor.meta,
-                children: {},
                 junction: this.constructor,
                 activeRoutes: [],
                 isNotFound: true,
@@ -94,52 +91,70 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
             return {}
         }
 
-        if (!this.childResolvableNode) {
+        if (!this.childMaybeResolvableNode) {
             return { route: this.noMatchedChildRoute }
         }
 
-        let result = this.resolver.resolve(this.childResolvableNode, {
-            type: this.constructor.type,
-            location: this.match!.matchedLocation,
-        })
+        let result: ResolverResult<Node>
+        let resolvables: Resolvable<any>[] = []
+        if (this.childMaybeResolvableNode.isNode) {
+            result = {
+                status: ResolverStatus.Ready,
+                value: this.childMaybeResolvableNode as Node
+            }
+        }
+        else {
+            result = this.resolver.resolve(this.childMaybeResolvableNode as ResolvableNode<Node>, {
+                type: this.constructor.type,
+                location: this.match!.matchedLocation,
+            })
+            resolvables.push(this.childMaybeResolvableNode as ResolvableNode<Node>)
+        }
 
-        if (!this.last || this.last.result.id !== result.id) {
+        let childMatcher: NodeMatcher<any> | undefined
+        let matcherResult: NodeMatcherResult | undefined
+        if (!this.last || this.last.result !== result) {
+            if (result.value) {
+                // TODO: only create a new matcher if the result id has failed
+                childMatcher = new result.value(this.childMatcherOptions!)
+            }
+        }
+        else {
+            childMatcher = this.last.childMatcher
+        }
+
+        if (childMatcher) {
+            matcherResult = childMatcher.execute()
+        }
+
+        if (!this.last || ((matcherResult && matcherResult.route) !== this.last.route)) {
             let childMapping = this.childMatcherOptions!.mapping
-            let { value, status, error } = result
+            let { status, error } = result
             let isNotFound = false
 
             let activeChild: Route | undefined
             let childResolvables: Resolvable<any>[] = []
             let descendents: Route[] = []
-            let children: JunctionRouteChildren<any> = {}
 
-            if (value) {
-                let childMatcher = new value(this.childMatcherOptions!)
-                let matcherResult = childMatcher.execute()
-                activeChild = matcherResult.route
-                childResolvables = matcherResult.resolvables || []
-                if (activeChild) {
-                    if (activeChild.type === RouteType.Junction && activeChild.activeChild) {
-                        descendents = [activeChild as Route].concat(activeChild.activeRoutes)
-                    }
-                    else {
-                        descendents = [activeChild]
-                    }
+            activeChild = matcherResult && matcherResult.route
+            childResolvables = (matcherResult && matcherResult.resolvables) || []
+            if (activeChild) {
+                if (activeChild.type === RouteType.Junction && activeChild.activeChild) {
+                    descendents = [activeChild as Route].concat(activeChild.activeRoutes)
                 }
                 else {
-                    isNotFound = true
+                    descendents = [activeChild]
                 }
             }
-
-            if (activeChild) {
-                let pattern = childMapping.pattern
-                children[pattern] = activeChild
+            else {
+                isNotFound = true
             }
 
             // Only create a new route if necessary, to allow for reference-equality
             // based comparisons on routes
             this.last = {
                 result,
+                childMatcher,
                 childResolvables,
                 route: this.createRoute(RouteType.Junction, {
                     status,
@@ -147,10 +162,9 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
                     meta: this.constructor.meta,
                     isNotFound,
                     junction: this.constructor,
-                    children: {},
                     activePattern: childMapping.pattern,
                     activeChild: activeChild,
-                    terminus: descendents[descendents.length - 1],
+                    deepestRoute: descendents[descendents.length - 1],
                     activeRoutes: descendents,
                 }),
             }
@@ -158,13 +172,13 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
 
         return {
             route: this.last.route,
-            resolvables: [this.childResolvableNode].concat(this.last.childResolvables),
+            resolvables: resolvables.concat(this.last.childResolvables),
         }
     }
 }
 
 
-export function createJunctionTemplate<
+export function createJunction<
     Meta,
     Children extends JunctionChildren<Context>,
     Context,

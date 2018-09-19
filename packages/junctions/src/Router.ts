@@ -6,7 +6,7 @@ import { Observer } from './Observable'
 import { ObservableRoute, ObservableRouteOptions } from './ObservableRoute'
 import { ObservableSiteMap, ObservableSiteMapOptions } from './ObservableSiteMap'
 import { Resolver, ResolverStatus } from './Resolver'
-import { JunctionRoute, SiteMap, RouteType } from './Route'
+import { JunctionRoute, SiteMap, RouteType, isRouteSteady } from './Route'
 import { Subscription } from './Observable';
 
 
@@ -36,7 +36,7 @@ export class Router<Context=any, RootJunction extends Junction=any> {
     private rootJunction: RootJunction
     private rootMapping: AbsoluteMapping
     
-    constructor(rootJunction: RootJunction, options: RouterOptions<Context>) {
+    constructor(rootJunction: RootJunction, options: RouterOptions<Context> = {}) {
         this.rootMapping = createRootMapping(rootJunction, options.rootPath)
         this.rootJunction = rootJunction
         this.resolver = new Resolver(
@@ -63,9 +63,6 @@ export class Router<Context=any, RootJunction extends Junction=any> {
                 options
             )
         }
-
-        // TODO:
-        // - return an error observable as it really is an exceptional case.
     }
 
     observeSiteMap(locationOrURL: Location | string, options: ObservableSiteMapOptions = {}): ObservableSiteMap | undefined {
@@ -112,14 +109,6 @@ export class Router<Context=any, RootJunction extends Junction=any> {
     }
 }
 
-
-function isRouteSteady(route: JunctionRoute): boolean {
-    return (
-        route.status === ResolverStatus.Ready && 
-        (!route.terminus || route.terminus.status === ResolverStatus.Ready)
-    )
-}
-
 function getLocationsArray(urls: string | string[]) {
     return Array.isArray(urls)
         ? urls.map(url => parseLocationString(url))
@@ -151,7 +140,7 @@ class RouteObserver implements Observer<JunctionRoute<any>> {
 
     next(route: JunctionRoute<any>) {
         if (!this.done && isRouteSteady(route)) {
-            if (!route.terminus || route.terminus.status !== ResolverStatus.Ready || (route.terminus.type === RouteType.Junction && route.terminus.isNotFound)) {
+            if (!route.deepestRoute || route.deepestRoute.status !== ResolverStatus.Ready || (route.deepestRoute.type === RouteType.Junction && route.deepestRoute.isNotFound)) {
                 this.error(route.error)
             }
             else {

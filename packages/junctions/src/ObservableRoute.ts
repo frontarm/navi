@@ -10,74 +10,88 @@ export interface ObservableRouteOptions {
 }
 
 export class ObservableRoute<RootJunction extends Junction=any> implements Observable<JunctionRoute<RootJunction>> {
-  private matcher: RootJunction['prototype']
-  private observers: Observer<JunctionRoute<RootJunction>>[]
-  private resolver: Resolver<any>
+    readonly location: Location
+
+    private cachedRoute?: JunctionRoute<RootJunction>
+    private matcher: RootJunction['prototype']
+    private observers: Observer<JunctionRoute<RootJunction>>[]
+    private resolver: Resolver<any>
   
-  constructor(
-      location: Location,
-      rootJunction: RootJunction,
-      rootMapping: AbsoluteMapping,
-      resolver: Resolver,
-      options: ObservableRouteOptions
-  ) {
-      this.matcher = new rootJunction({
-          matchableLocation: location,
-          mapping: rootMapping,
-          resolver: this.resolver,
-          withContent: !!options.withContent,
-      })
-      this.observers = []
-      this.resolver = resolver
-  }
+    constructor(
+        location: Location,
+        rootJunction: RootJunction,
+        rootMapping: AbsoluteMapping,
+        resolver: Resolver,
+        options: ObservableRouteOptions
+    ) {
+        this.location = location
+        this.resolver = resolver
+        this.observers = []
+        this.matcher = new rootJunction({
+            matchableLocation: location,
+            mapping: rootMapping,
+            resolver: resolver,
+            withContent: !!options.withContent,
+        })
+    }
 
-  subscribe(
-      onNextOrObserver: Observer<JunctionRoute<RootJunction>> | ((value: JunctionRoute<RootJunction>) => void),
-      onError?: (error: any) => void,
-      onComplete?: () => void
-  ): SimpleSubscription {
-      let { resolvables } = this.matcher.execute()
+    subscribe(
+        onNextOrObserver: Observer<JunctionRoute<RootJunction>> | ((value: JunctionRoute<RootJunction>) => void),
+        onError?: (error: any) => void,
+        onComplete?: () => void
+    ): SimpleSubscription {
+        let { route, resolvables } = this.matcher.execute()
 
-      // This will replace any existing listener and its associated resolvables
-      this.resolver.listen(this.handleChange, resolvables!)
+        this.cachedRoute = route
 
-      let observer: Observer<JunctionRoute<RootJunction>> = 
-          typeof onNextOrObserver === 'function'
-              ? {
-                  next: onNextOrObserver,
-                  error: onError,
-                  complete: onComplete,
-              }
-              : onNextOrObserver
+        // This will replace any existing listener and its associated resolvables
+        this.resolver.listen(this.handleChange, resolvables!)
 
-      this.observers.push(observer)
+        let observer: Observer<JunctionRoute<RootJunction>> = 
+            typeof onNextOrObserver === 'function'
+                ? {
+                    next: onNextOrObserver,
+                    error: onError,
+                    complete: onComplete,
+                }
+                : onNextOrObserver
 
-      return new SimpleSubscription(this.handleUnsubscribe, observer)
-  }
+        this.observers.push(observer)
 
-  getValue(): JunctionRoute<RootJunction> {
-      // We don't need to worry about any subscriptions here
-      return this.matcher.execute().route!
-  }
+        return new SimpleSubscription(this.handleUnsubscribe, observer)
+    }
 
-  private handleUnsubscribe = (observer: Observer<JunctionRoute<RootJunction>>) => {
-      let index = this.observers.indexOf(observer)
-      if (index !== -1) {
-          this.observers.splice(index, 1)
-      }
-      if (this.observers.length === 0) {
-          this.resolver.unlisten(this.handleChange)
-      }
-  }
+    getValue(): JunctionRoute<RootJunction> {
+        // We don't need to worry about any subscriptions here
+        if (this.cachedRoute) {
+            return this.cachedRoute
+        }
+        else {
+            return this.matcher.execute().route!
+        }
+    }
 
-  private handleChange = () => {
-      let { route, resolvables } = this.matcher.execute()
+    private handleUnsubscribe = (observer: Observer<JunctionRoute<RootJunction>>) => {
+        let index = this.observers.indexOf(observer)
+        if (index !== -1) {
+            this.observers.splice(index, 1)
+        }
+        if (this.observers.length === 0) {
+            delete this.cachedRoute
+            this.resolver.unlisten(this.handleChange)
+        }
+    }
 
-      // This will replace any existing listener and its associated resolvables
-      this.resolver.listen(this.handleChange, resolvables!)
+    private handleChange = () => {
+        let { route, resolvables } = this.matcher.execute()
 
-      for (let i = 0; i < this.observers.length; i++) {
-          this.observers[i].next(route!)
-      }
-  }
+        this.cachedRoute = route
+
+        // This will replace any existing listener and its associated resolvables
+        this.resolver.listen(this.handleChange, resolvables!)
+
+        for (let i = 0; i < this.observers.length; i++) {
+            this.observers[i].next(route!)
+        }
+    }
 }

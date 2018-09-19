@@ -81,7 +81,7 @@ export abstract class NodeMatcher<Context> {
             params: (this.match && this.match.params) || {},
             location: this.match!.matchedLocation,
             url: createHref(this.match!.matchedLocation),
-            routable: this.constructor,
+            node: this.constructor,
             meta: <any>undefined,
         }, details)
     }

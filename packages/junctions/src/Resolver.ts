@@ -15,7 +15,7 @@ export enum ResolverStatus {
 }
 
 export type ResolverResult<T> = {
-    id: number
+    id?: number
     status: ResolverStatus,
     error?: any
     value?: T
@@ -72,6 +72,7 @@ export class Resolver<Context=any, RootJunction extends Junction=any> {
 
     resolve<T>(resolvable: Resolvable<T, Context, RootJunction>, event: RouterEvent): ResolverResult<T> {
         let currentResult = this.results.get(resolvable)
+
         if (currentResult) {
             return currentResult
         }
@@ -149,5 +150,5 @@ export class Resolver<Context=any, RootJunction extends Junction=any> {
 // Not all promise libraries use the ES6 `Promise` constructor,
 // so there isn't a better way to check if it's a promise :-(
 function isPromiseLike<T>(x: PromiseLike<T> | T): x is PromiseLike<T> {
-    return !!(x as any).then
+    return !!x && !!(x['then'])
 }

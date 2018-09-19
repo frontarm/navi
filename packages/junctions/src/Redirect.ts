@@ -60,7 +60,7 @@ export class RedirectMatcher<Meta = any, Context = any> extends NodeMatcher<
         type: this.constructor.type,
         location: this.match!.matchedLocation,
     })
-    if (!this.last || this.last.result.id !== result.id) {
+    if (!this.last || this.last.result !== result) {
       let { value, status, error } = result
 
       // Only create a new route if necessary, to allow for reference-equality
@@ -82,7 +82,7 @@ export class RedirectMatcher<Meta = any, Context = any> extends NodeMatcher<
   }
 }
 
-export function createRedirectTemplate<Meta = any, Context = any>(
+export function createRedirect<Meta = any, Context = any>(
   to:
     | Location
     | string
