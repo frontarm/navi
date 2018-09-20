@@ -71,7 +71,10 @@ function joinQueryStrings(left, right, leadingCharacter='?'): string {
     return leadingCharacter+left.slice(1)+'&'+right.slice(1)
 }
 
-export function createHref(location: Location): string {
+export function createURL(location?: Location): string {
+    if (!location) {
+        return ''
+    }
     return location.pathname+(location.search || '')+(location.hash || '')
 }
 

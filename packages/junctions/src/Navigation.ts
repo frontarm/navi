@@ -1,35 +1,35 @@
-import { Location, createHref } from './Location'
+import { Location, createURL } from './Location'
 import { History } from 'history'
 import { Junction } from './Junction'
-import { JunctionRoute, isRouteSteady } from './Route'
+import { JunctionRoute, isRouteSteady, RouteType } from './Route'
 import { Router } from './Router'
-import { ObservableRoute } from './ObservableRoute';
+import { LocationStateObservable } from './LocationStateObservable';
 import { Deferred } from './Deferred';
 import { Subscription } from './Observable';
 
 type Listener = (state: NavigationOutput) => void
 type Unsubscriber = () => void
 
-interface NavigationOutput<RootJunction extends Junction=any> {
+interface NavigationOutput {
     location: Location,
     url: string, 
-    route?: JunctionRoute<RootJunction>,
+    route?: JunctionRoute,
     isSteady: boolean
 }
 
 // TODO: turn this into an Observable
-export class Navigation<RootJunction extends Junction=any> {
+export class Navigation<Context> {
     readonly history: History
-    readonly router: Router<RootJunction>
+    readonly router: Router<Context>
 
     private waitUntilSteadyDeferred?: Deferred<void>
     private listeners: Listener[]
     private lastLocation?: Location
-    private lastRoute?: JunctionRoute<RootJunction>
-    private observableRoute?: ObservableRoute<RootJunction>
+    private lastRoute?: JunctionRoute
+    private observableRoute?: LocationStateObservable
     private observableRouteSubscription?: Subscription
 
-    constructor(options: { history: History, router: Router<RootJunction> }) {
+    constructor(options: { history: History, router: Router<Context> }) {
         this.listeners = []
         this.router = options.router
         this.history = options.history
@@ -40,12 +40,12 @@ export class Navigation<RootJunction extends Junction=any> {
     /**
      * Get the root route
      */
-    get currentRoute(): JunctionRoute<RootJunction> | undefined {
+    get currentState(): JunctionRoute | undefined {
         return this.observableRoute && this.observableRoute.getValue()
     }
 
     get isSteady(): boolean {
-        return !this.currentRoute || isRouteSteady(this.currentRoute)
+        return !this.currentState || isRouteSteady(this.currentState)
     }
 
     /**
@@ -53,7 +53,7 @@ export class Navigation<RootJunction extends Junction=any> {
      * This is useful for implementing static rendering, or for waiting until
      * content is loaded before making the first render.
      */
-    async steady(): Promise<void> {
+    async steadyState(): Promise<void> {
         if (this.isSteady) {
             return Promise.resolve()
         }
@@ -119,21 +119,30 @@ export class Navigation<RootJunction extends Junction=any> {
         })
     }
 
-    private handleRouteChange = (route: JunctionRoute<RootJunction>) => {
+    private handleRouteChange = (route: JunctionRoute) => {
         this.update({
             route,
         })
     }
 
     // Allows for either the location or route or both to be changed at once.
-    private update = (updates: { location?: Location, route?: JunctionRoute<RootJunction> }) => {
+    private update = (updates: { location?: Location, route?: JunctionRoute }) => {
         let location = (updates.location || this.lastLocation)!
-        let route = (updates.route || this.lastRoute)!
+        let route = updates.route || this.lastRoute
+        let lastRoute = route && route.lastRemainingRoute
+
+        if (lastRoute && lastRoute.type === RouteType.Redirect && lastRoute.to) {
+            // No need to notify any listeners of a ready redirect,
+            // as we can take the appropriate action ourselves
+            this.history.replace(lastRoute.to)
+            return
+        }
+
         let output: NavigationOutput = {
             location,
             route,
-            isSteady: isRouteSteady(route),
-            url: createHref(location),
+            isSteady: !route || isRouteSteady(route),
+            url: createURL(location),
         }
 
         for (let i = 0; i < this.listeners.length; i++) {

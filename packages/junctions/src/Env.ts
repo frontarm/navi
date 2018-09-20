@@ -1,26 +1,25 @@
-import { JunctionRoute, SiteMap } from './Route'
-import { Router } from './Router'
-import { ObservableRouteOptions } from './ObservableRoute'
-import { Junction } from './Junction';
+import { PageRoute } from './Route'
+import { Router, RouterLocationOptions, RouterMapOptions } from './Router'
+import { PageRouteMap } from './Maps'
 
 
-export class Env<Context=any, RootJunction extends Junction=any> {
-  private router: Router<Context, RootJunction>
+export class RouterEnv<Context=any> {
+  private router: Router<Context>
 
   readonly context: Context
 
-  constructor(context: Context, router: Router<Context, RootJunction>) {
+  constructor(context: Context, router: Router<Context>) {
     this.context = context
     this.router = router
   }
 
-  route(url: string, options: ObservableRouteOptions): Promise<JunctionRoute<RootJunction>>;
-  route(urls: string[], options: ObservableRouteOptions): Promise<JunctionRoute<RootJunction>[]>;
-  route(urls: string | string[], options: ObservableRouteOptions): Promise<JunctionRoute<RootJunction> | JunctionRoute<RootJunction>[]> {
-    return this.router.route(urls as any, options)
+  pageRoute(url: string, options: RouterLocationOptions): Promise<PageRoute>;
+  pageRoute(urls: string[], options: RouterLocationOptions): Promise<PageRoute[]>;
+  pageRoute(urls: string | string[], options: RouterLocationOptions = {}): Promise<PageRoute | PageRoute[]> {
+    return this.router.pageRoute(urls as any, options)
   }
 
-  siteMap(url: string, options: { maxDepth: number, followRedirects: boolean }): Promise<SiteMap<RootJunction>> {
-    return this.router.siteMap(url, options)
+  pageMap(url: string, options: RouterMapOptions = {}): Promise<PageRouteMap> {
+    return this.router.pageMap(url, options)
   }
 }

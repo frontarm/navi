@@ -10,14 +10,16 @@ import { Redirect } from './Redirect'
  */
 export type Route = JunctionRoute | PageRoute | RedirectRoute
 
-export enum RouteType {
-  Junction = 'junction',
-  Page = 'page',
-  Redirect = 'redirect',
+export enum RouteStatus {
+  Ready = 'Ready',
+  Busy = 'Busy',
+  Error = 'Error',
 }
 
-export interface SiteMap<RootJunction> {
-  [url: string]: JunctionRoute<RootJunction>
+export enum RouteType {
+  Junction = 'Junction',
+  Page = 'Page',
+  Redirect = 'Redirect',
 }
 
 /**
@@ -27,7 +29,7 @@ export interface SiteMap<RootJunction> {
 interface RouteBase {
   type: RouteType
 
-  status: ResolverStatus
+  status: RouteStatus
   error?: any
 
   /**
@@ -60,6 +62,11 @@ export interface PageRoute<Meta = any, Content = any> extends RouteBase {
   meta: Meta
   title: string
   type: RouteType.Page
+
+  nextRoute?: never
+  nextPattern?: never
+  lastRemainingRoute?: never
+  remainingRoutes: any[]
 }
 
 /**
@@ -70,6 +77,11 @@ export interface RedirectRoute<Meta = any> extends RouteBase {
   to?: Location
   meta: Meta
   type: RouteType.Redirect
+
+  nextRoute?: never
+  nextPattern?: never
+  lastRemainingRoute?: never
+  remainingRoutes: any[]
 }
 
 /**
@@ -80,14 +92,13 @@ export interface JunctionRoute<
   Children extends JunctionChildren<any> = any
 > extends RouteBase {
   type: RouteType.Junction
-  isNotFound: boolean
   meta: Meta
   junction: Junction<Meta, Children>
 
   /**
    * The pattern that was matched (with param placeholders if applicable).
    */
-  activePattern?: keyof Children
+  nextPattern?: keyof Children
 
   /**
    * A route object that contains details on the next part of the URL.
@@ -95,7 +106,7 @@ export interface JunctionRoute<
    * It may be undefined if the user has provided an incorrect URL, or
    * if the child's template still needs to be loaded.
    */
-  activeChild?: Route
+  nextRoute?: Route
 
   /**
    * An array of all Segment objects corresponding to the remaining parts
@@ -104,12 +115,12 @@ export interface JunctionRoute<
    * It may be undefined if the user has provided an incorrect URL, or
    * if the child's template still needs to be loaded.
    */
-  activeRoutes: Route[]
+  remainingRoutes: Route[]
 
   /**
    * Contains the final route object, whatever it happens to be.
    */
-  deepestRoute?: Route
+  lastRemainingRoute?: Route
 }
 
 export type JunctionRouteChildren<Children extends JunctionChildren<any>> = {
@@ -124,11 +135,12 @@ type NodeRoute<N extends Node> = N extends Junction
     ? PageRoute<N['meta'], N['_content']>
     : N extends Redirect ? RedirectRoute<N['meta']> : Route
 
+    
 export function isRouteSteady(route: Route): boolean {
   return (
-    route.status === ResolverStatus.Ready &&
+    route.status !== RouteStatus.Busy &&
     (route.type !== RouteType.Junction ||
-      !route.deepestRoute ||
-      route.deepestRoute.status === ResolverStatus.Ready)
+      !route.lastRemainingRoute ||
+      route.lastRemainingRoute.status !== RouteStatus.Busy)
   )
 }

@@ -1,8 +1,9 @@
-import { Location } from './Location'
+import { Location, createURL } from './Location'
 import { ResolverResult, ResolverStatus, Resolvable } from './Resolver'
-import { Route, JunctionRoute, RouteType, JunctionRouteChildren } from './Route'
+import { Route, JunctionRoute, RouteType, RouteStatus } from './Route'
 import { createMapping, Mapping, createChildMapping, matchMappingAgainstLocation } from './Mapping'
 import { NodeMatcher, NodeMatcherResult, Node, NodeBase, MaybeResolvableNode, ResolvableNode, NodeMatcherOptions } from './Node'
+import { NotFoundError } from './NotFoundError'
 
 
 export type JunctionChildren<Context> = { [pattern: string]: MaybeResolvableNode<Context> }
@@ -20,6 +21,7 @@ export interface Junction<
     meta: Meta;
     children: Children;
     mappings: Mapping[],
+    patterns: string[],
 }
 
 
@@ -55,7 +57,7 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
             // are sorted such that the first matching mount is the the most
             // precise match (and we always want to use the most precise match).
             for (let i = mappings.length - 1; i >= 0; i--) {
-                let childMapping = createChildMapping(this.mapping, mappings[i])
+                let childMapping = createChildMapping(this.mapping, mappings[i], this.match.matchedLocation)
                 let match = matchMappingAgainstLocation(childMapping, matchableLocation)
                 if (match) {
                     this.childMatcherOptions = {
@@ -71,16 +73,19 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
                     break
                 }
             }
-        }
 
-        if (!this.childMatcherOptions) {
-            this.noMatchedChildRoute = this.createRoute(RouteType.Junction, {
-                status: ResolverStatus.Ready,
-                meta: this.constructor.meta,
-                junction: this.constructor,
-                activeRoutes: [],
-                isNotFound: true,
-            })
+            if (!this.childMatcherOptions) {
+                this.noMatchedChildRoute = this.createRoute(RouteType.Junction, {
+                    status: RouteStatus.Error,
+                    error: new NotFoundError({
+                        unmatchedURL: createURL(this.match!.remainingLocation),
+                        unmatchedLocation: this.match!.remainingLocation,
+                    }),
+                    meta: this.constructor.meta,
+                    junction: this.constructor,
+                    remainingRoutes: [],
+                })
+            }
         }
     }
 
@@ -130,24 +135,26 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
         if (!this.last || ((matcherResult && matcherResult.route) !== this.last.route)) {
             let childMapping = this.childMatcherOptions!.mapping
             let { status, error } = result
-            let isNotFound = false
-
-            let activeChild: Route | undefined
+            let nextRoute: Route | undefined
             let childResolvables: Resolvable<any>[] = []
-            let descendents: Route[] = []
+            let remainingRoutes: Route[] = []
 
-            activeChild = matcherResult && matcherResult.route
+            nextRoute = matcherResult && matcherResult.route
             childResolvables = (matcherResult && matcherResult.resolvables) || []
-            if (activeChild) {
-                if (activeChild.type === RouteType.Junction && activeChild.activeChild) {
-                    descendents = [activeChild as Route].concat(activeChild.activeRoutes)
+            if (nextRoute) {
+                if (nextRoute.type === RouteType.Junction && nextRoute.nextRoute) {
+                    remainingRoutes = [nextRoute as Route].concat(nextRoute.remainingRoutes)
                 }
                 else {
-                    descendents = [activeChild]
+                    remainingRoutes = [nextRoute]
                 }
             }
-            else {
-                isNotFound = true
+            else if (!error && status !== ResolverStatus.Busy) {
+                error = new NotFoundError({
+                    unmatchedURL: createURL(this.match.remainingLocation),
+                    unmatchedLocation: this.match.remainingLocation,
+                })
+                status = ResolverStatus.Error
             }
 
             // Only create a new route if necessary, to allow for reference-equality
@@ -157,15 +164,14 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
                 childMatcher,
                 childResolvables,
                 route: this.createRoute(RouteType.Junction, {
-                    status,
+                    status: status as string as RouteStatus,
                     error,
                     meta: this.constructor.meta,
-                    isNotFound,
                     junction: this.constructor,
-                    activePattern: childMapping.pattern,
-                    activeChild: activeChild,
-                    deepestRoute: descendents[descendents.length - 1],
-                    activeRoutes: descendents,
+                    nextPattern: childMapping.pattern,
+                    nextRoute,
+                    lastRemainingRoute: remainingRoutes[remainingRoutes.length - 1],
+                    remainingRoutes,
                 }),
             }
         }
@@ -272,6 +278,7 @@ export function createJunction<
         static meta = options.meta as Meta
         static params = options.params || []
         static mappings = mappings
+        static patterns = mappings.map(mapping => mapping.pattern)
     }
 }
 

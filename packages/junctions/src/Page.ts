@@ -1,12 +1,12 @@
 import { ResolverResult, Resolvable } from './Resolver'
-import { RouteType, PageRoute } from './Route'
+import { RouteStatus, RouteType, PageRoute } from './Route'
 import {
   NodeMatcher,
   NodeMatcherResult,
   NodeBase,
   NodeMatcherOptions,
 } from './Node'
-import { Env } from './Env'
+import { RouterEnv } from './Env'
 
 export interface Page<Meta = any, Content = any, Context = any>
   extends NodeBase<Context, PageMatcher<Meta, Content, Context>> {
@@ -20,7 +20,7 @@ export interface Page<Meta = any, Content = any, Context = any>
 
   title: string
   meta: Meta
-  getContent?: ((env: Env<Context>) => Content | PromiseLike<Content>)
+  getContent?: ((env: RouterEnv<Context>) => Content | PromiseLike<Content>)
 
   // This is empty, but is used for the typing for ChildRoute
   _content?: Content
@@ -81,9 +81,10 @@ export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
           title: this.constructor.title,
           meta: this.constructor.meta,
 
-          status,
+          status: status as string as RouteStatus,
           content: value,
           error,
+          remainingRoutes: [],
         }),
       }
     }
@@ -99,7 +100,7 @@ export function createPage<Meta, Content, Context=any>(options: {
   params?: string[]
   title: string
   meta?: Meta
-  getContent?: (env: Env<Context>) => Content | Promise<Content>
+  getContent?: (env: RouterEnv<Context>) => Content | Promise<Content>
 }): Page<Meta, Content> {
   if (process.env.NODE_ENV !== 'production') {
     let { params, title, meta, getContent, ...other } = options

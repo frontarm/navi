@@ -148,7 +148,7 @@ export function createMapping(pattern: string, maybeResolvableNode: MaybeResolva
 }
 
 
-export function createChildMapping(parentMapping: AbsoluteMapping, mapping: Mapping): AbsoluteMapping {
+export function createChildMapping(parentMapping: AbsoluteMapping, mapping: Mapping, parentLocation: Location): AbsoluteMapping {
     let absolutePattern = joinPaths(parentMapping.absolutePattern, mapping.pattern)
 
     if (process.env.NODE_ENV !== 'production') {
@@ -162,7 +162,7 @@ export function createChildMapping(parentMapping: AbsoluteMapping, mapping: Mapp
 
     return {
         absolutePattern,
-        parentLocation: concatLocations(parentMapping.parentLocation),
+        parentLocation,
         ancestorParamNames:
             parentMapping.ancestorParamNames
                 .concat(parentMapping.pathParamNames || [])
@@ -217,6 +217,7 @@ export function addParamNamesToMapping(mapping: AbsoluteMapping, paramNames: str
 
 export type MappingMatch = {
     params: { [name: string]: any },
+    mapping: AbsoluteMapping,
 
     // The full matched location
     matchedLocation: Location,
@@ -268,6 +269,7 @@ export function matchMappingAgainstLocation(mapping: AbsoluteMapping, location: 
 
     return {
         params: params,
+        mapping,
         matchedLocation: concatLocations(mapping.parentLocation, matchedLocationPart),
         remainingLocation: remainingLocation.pathname !== '' ? remainingLocation : undefined
     }

@@ -1,13 +1,13 @@
 import { parseLocationString, Location } from './Location'
 import { ResolverResult, Resolvable } from './Resolver'
-import { RouteType, RedirectRoute } from './Route'
+import { RouteType, RedirectRoute, RouteStatus } from './Route'
 import {
   NodeMatcher,
   NodeMatcherResult,
   NodeBase,
   NodeMatcherOptions,
 } from './Node'
-import { Env } from './Env'
+import { RouterEnv } from './Env'
 
 export interface Redirect<Meta = any, Context = any>
   extends NodeBase<Context, RedirectMatcher<Meta, Context>> {
@@ -15,7 +15,7 @@ export interface Redirect<Meta = any, Context = any>
 
   new (options: NodeMatcherOptions<Context>): RedirectMatcher<Meta>
 
-  to: ((location: Location, env: Env<Context>) => Location | string)
+  to: ((location: Location, env: RouterEnv<Context>) => Location | string)
   meta: Meta
 }
 
@@ -42,7 +42,7 @@ export class RedirectMatcher<Meta = any, Context = any> extends NodeMatcher<
       this.resolvableTo = () => toFn
     } else {
       let toFn = this.constructor.to
-      this.resolvableTo = (env: Env<Context>) =>
+      this.resolvableTo = (env: RouterEnv<Context>) =>
         toFn(this.match!.matchedLocation, env)
     }
   }
@@ -69,8 +69,9 @@ export class RedirectMatcher<Meta = any, Context = any> extends NodeMatcher<
         result,
         route: this.createRoute(RouteType.Redirect, {
           to: typeof value === 'string' ? parseLocationString(value) : value,
-          status,
+          status: status as string as RouteStatus,
           error,
+          remainingRoutes: [],
         }),
       }
     }
@@ -86,7 +87,7 @@ export function createRedirect<Meta = any, Context = any>(
   to:
     | Location
     | string
-    | ((location: Location, env: Env<Context>) => Location | string),
+    | ((location: Location, env: RouterEnv<Context>) => Location | string),
   meta?: Meta,
 ): Redirect {
   return class extends RedirectMatcher<Meta, Context> {

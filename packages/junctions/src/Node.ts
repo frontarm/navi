@@ -1,6 +1,6 @@
-import { Location, createHref } from './Location'
+import { Location, createURL } from './Location'
 import { MappingMatch, matchMappingAgainstLocation, addParamNamesToMapping, AbsoluteMapping } from './Mapping'
-import { Env } from './Env'
+import { RouterEnv } from './Env'
 import { Resolver, ResolverResult, ResolverStatus, Resolvable } from './Resolver'
 import { Route, RouteType } from './Route'
 import { Junction } from './Junction'
@@ -21,7 +21,7 @@ export interface NodeBase<Context, RM extends NodeMatcher<Context> = NodeMatcher
 
 export type Node = Junction | Page | Redirect
 
-export interface ResolvableNode<N extends Node = Node, Context=any, RootJunction extends Junction=any> extends Resolvable<N, Context, RootJunction> {
+export interface ResolvableNode<N extends Node = Node, Context=any> extends Resolvable<N, Context> {
     isNode?: undefined;
 }
 
@@ -40,7 +40,7 @@ export interface NodeMatcherOptions<Context> {
     resolver: Resolver<Context>,
 
     // Whether page content should be fetched
-    withContent: boolean
+    withContent?: boolean
 }
 
 export interface NodeMatcherResult<R extends Route = Route> {
@@ -53,7 +53,7 @@ export abstract class NodeMatcher<Context> {
     match?: MappingMatch;
 
     resolver: Resolver<Context>;
-    withContent: boolean
+    withContent?: boolean
 
     ['constructor']: Node
 
@@ -80,7 +80,7 @@ export abstract class NodeMatcher<Context> {
             type: type,
             params: (this.match && this.match.params) || {},
             location: this.match!.matchedLocation,
-            url: createHref(this.match!.matchedLocation),
+            url: createURL(this.match!.matchedLocation),
             node: this.constructor,
             meta: <any>undefined,
         }, details)

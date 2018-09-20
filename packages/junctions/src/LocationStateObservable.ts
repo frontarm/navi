@@ -4,25 +4,22 @@ import { AbsoluteMapping } from './Mapping'
 import { Observable, Observer, SimpleSubscription } from './Observable'
 import { Resolver } from './Resolver'
 import { JunctionRoute } from './Route'
+import { RouterLocationOptions } from './Router'
 
-export interface ObservableRouteOptions {
-  withContent?: boolean
-}
-
-export class ObservableRoute<RootJunction extends Junction=any> implements Observable<JunctionRoute<RootJunction>> {
+export class LocationStateObservable implements Observable<JunctionRoute> {
     readonly location: Location
 
-    private cachedRoute?: JunctionRoute<RootJunction>
-    private matcher: RootJunction['prototype']
-    private observers: Observer<JunctionRoute<RootJunction>>[]
+    private cachedRoute?: JunctionRoute
+    private matcher: Junction['prototype']
+    private observers: Observer<JunctionRoute>[]
     private resolver: Resolver<any>
   
     constructor(
         location: Location,
-        rootJunction: RootJunction,
+        rootJunction: Junction,
         rootMapping: AbsoluteMapping,
         resolver: Resolver,
-        options: ObservableRouteOptions
+        options: RouterLocationOptions
     ) {
         this.location = location
         this.resolver = resolver
@@ -36,18 +33,15 @@ export class ObservableRoute<RootJunction extends Junction=any> implements Obser
     }
 
     subscribe(
-        onNextOrObserver: Observer<JunctionRoute<RootJunction>> | ((value: JunctionRoute<RootJunction>) => void),
+        onNextOrObserver: Observer<JunctionRoute> | ((value: JunctionRoute) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
-        let { route, resolvables } = this.matcher.execute()
+        if (this.observers.length === 0) {
+            this.refresh()
+        }
 
-        this.cachedRoute = route
-
-        // This will replace any existing listener and its associated resolvables
-        this.resolver.listen(this.handleChange, resolvables!)
-
-        let observer: Observer<JunctionRoute<RootJunction>> = 
+        let observer: Observer<JunctionRoute> = 
             typeof onNextOrObserver === 'function'
                 ? {
                     next: onNextOrObserver,
@@ -61,7 +55,7 @@ export class ObservableRoute<RootJunction extends Junction=any> implements Obser
         return new SimpleSubscription(this.handleUnsubscribe, observer)
     }
 
-    getValue(): JunctionRoute<RootJunction> {
+    getValue(): JunctionRoute {
         // We don't need to worry about any subscriptions here
         if (this.cachedRoute) {
             return this.cachedRoute
@@ -71,7 +65,7 @@ export class ObservableRoute<RootJunction extends Junction=any> implements Obser
         }
     }
 
-    private handleUnsubscribe = (observer: Observer<JunctionRoute<RootJunction>>) => {
+    private handleUnsubscribe = (observer: Observer<JunctionRoute>) => {
         let index = this.observers.indexOf(observer)
         if (index !== -1) {
             this.observers.splice(index, 1)
@@ -83,15 +77,17 @@ export class ObservableRoute<RootJunction extends Junction=any> implements Obser
     }
 
     private handleChange = () => {
-        let { route, resolvables } = this.matcher.execute()
-
-        this.cachedRoute = route
-
-        // This will replace any existing listener and its associated resolvables
-        this.resolver.listen(this.handleChange, resolvables!)
-
+        let route = this.refresh()
         for (let i = 0; i < this.observers.length; i++) {
             this.observers[i].next(route!)
         }
+    }
+
+    private refresh = () => {
+        let { route, resolvables } = this.matcher.execute()
+        this.cachedRoute = route
+        // This will replace any existing listener and its associated resolvables
+        this.resolver.listen(this.handleChange, resolvables!)
+        return route
     }
 }

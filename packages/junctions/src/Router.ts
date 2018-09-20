@@ -1,12 +1,13 @@
-import { Env } from './Env'
+import { RouterEnv } from './Env'
 import { Location, parseLocationString } from './Location'
 import { Junction } from './Junction'
 import { matchMappingAgainstLocation, AbsoluteMapping, createRootMapping } from './Mapping'
 import { Observer } from './Observable'
-import { ObservableRoute, ObservableRouteOptions } from './ObservableRoute'
-import { ObservableSiteMap, ObservableSiteMapOptions } from './ObservableSiteMap'
-import { Resolver, ResolverStatus } from './Resolver'
-import { JunctionRoute, SiteMap, RouteType, isRouteSteady } from './Route'
+import { LocationStateObservable } from './LocationStateObservable'
+import { LocationStateMapObservable } from './LocationStateMapObservable'
+import { Resolver } from './Resolver'
+import { JunctionRoute, PageRoute, isRouteSteady, RouteType, Route } from './Route'
+import { RouterLocationStateMap, isRouterLocationStateMapSteady, SiteMap, PageRouteMap, RedirectRouteMap } from './Maps'
 import { Subscription } from './Observable';
 
 
@@ -31,31 +32,51 @@ interface RouterOptions<Context> {
     onEvent?: (event: RouterEvent) => void,
 }
 
-export class Router<Context=any, RootJunction extends Junction=any> {
+export interface RouterLocationOptions {
+  withContent?: boolean
+}
+
+export interface RouterMapOptions {
+    followRedirects?: boolean,
+    maxDepth?: number,
+    predicate?: (route: Route) => boolean,
+  }
+  
+
+// This is not necessary, but I'm exporting it just to fit in with
+// other "React style" tools
+export function createRouter<Context>(
+    rootJunction: Junction,
+    options: RouterOptions<Context> = {}
+){
+    return new Router(rootJunction, options)
+}
+
+export class Router<Context=any> {
     private resolver: Resolver<Context>
-    private rootJunction: RootJunction
+    private rootJunction: Junction
     private rootMapping: AbsoluteMapping
     
-    constructor(rootJunction: RootJunction, options: RouterOptions<Context> = {}) {
+    constructor(rootJunction: Junction, options: RouterOptions<Context> = {}) {
         this.rootMapping = createRootMapping(rootJunction, options.rootPath)
         this.rootJunction = rootJunction
         this.resolver = new Resolver(
-            new Env(options.initialContext!, this),
+            new RouterEnv(options.initialContext || {} as any, this),
             options.onEvent || (() => {}),
         )
     }
 
     setContext(context: Context): void {
-        this.resolver.setEnv(new Env(context, this))
+        this.resolver.setEnv(new RouterEnv(context || {}, this))
     }
 
-    observeRoute(locationOrURL: Location | string, options: ObservableRouteOptions = {}): ObservableRoute | undefined {
+    observeRoute(locationOrURL: Location | string, options: RouterLocationOptions = {}): LocationStateObservable | undefined {
         // need to somehow keep track of which promises in the resolver correspond to which observables,
         // so that I don't end up updating observables which haven't actually changed.
         let location = typeof locationOrURL === 'string' ? parseLocationString(locationOrURL) : locationOrURL
         let match = location && matchMappingAgainstLocation(this.rootMapping, location)
         if (location && match) {
-            return new ObservableRoute(
+            return new LocationStateObservable(
                 location,
                 this.rootJunction,
                 this.rootMapping,
@@ -65,88 +86,109 @@ export class Router<Context=any, RootJunction extends Junction=any> {
         }
     }
 
-    observeSiteMap(locationOrURL: Location | string, options: ObservableSiteMapOptions = {}): ObservableSiteMap | undefined {
+    observeRouterLocationStateMap(locationOrURL: Location | string, options: RouterMapOptions = {}): LocationStateMapObservable | undefined {
         let location = typeof locationOrURL === 'string' ? parseLocationString(locationOrURL) : locationOrURL
         let match = location && matchMappingAgainstLocation(this.rootMapping, location)
 
         if (location && match) {
-            let matcher = new this.rootJunction({
-                matchableLocation: location,
-                mapping: this.rootMapping,
-                resolver: this.resolver,
-                withContent: false,
-            })
-
-            return new ObservableSiteMap(matcher, this.resolver)
+            return new LocationStateMapObservable(
+                location,
+                this.rootJunction,
+                this.rootMapping,
+                this.resolver,
+                options
+            )
         }
-
-        // TODO:
-        // - return an observable of an empty object {}
     }
 
-    route(url: string, options: ObservableRouteOptions): Promise<JunctionRoute<RootJunction>>;
-    route(urls: string[], options: ObservableRouteOptions): Promise<JunctionRoute<RootJunction>[]>;
-    route(urls: string | string[], options: ObservableRouteOptions = {}): Promise<JunctionRoute<RootJunction> | JunctionRoute<RootJunction>[]> {
+    pageRoute(url: string | Location, options: RouterLocationOptions): Promise<PageRoute>;
+    pageRoute(urls: (Location | string)[], options: RouterLocationOptions): Promise<PageRoute[]>;
+    pageRoute(urls: Location | string | (Location | string)[], options: RouterLocationOptions = {}): Promise<PageRoute | PageRoute[]> {
         let locations: Location[] = getLocationsArray(urls)
         if (locations.length) {
             return Promise.resolve([])
         }
 
         // TODO: reject promises that depend on env when `context` is updated
-        let promises: Promise<JunctionRoute<RootJunction>>[] = []
+        let promises: Promise<PageRoute>[] = []
         for (let i = 0; i < locations.length; i++) {
+            let location = locations[i]
             let observable = this.observeRoute(location, options)
             if (!observable) {
                 return Promise.reject()
             }
             promises.push(getPromiseFromObservableRoute(observable))
         }
-        return Promise.all(promises)
+        return !Array.isArray(urls) ? promises[0] : Promise.all(promises)
     }
 
-    siteMap(url: string, options: ObservableSiteMapOptions = {}): Promise<SiteMap<RootJunction>> {
-        return <any>undefined
+    siteMap(url: string | Location, options: RouterMapOptions = {}): Promise<SiteMap> {
+        let observable = this.observeRouterLocationStateMap(url, options)
+        let promise = new Promise<RouterLocationStateMap>((resolve, reject) => {
+            if (!observable) {
+                reject()
+            }
+            else {
+                let initialValue = observable.getValue()
+                if (isRouterLocationStateMapSteady(initialValue)) {
+                    resolve(initialValue)
+                }
+                else {
+                    observable.subscribe(new SteadyPromiseObserver<RouterLocationStateMap>(resolve, reject, isRouterLocationStateMapSteady))
+                }
+            }
+        })
+        return promise.then(siteMap => {
+            let pageRouteMap = {} as PageRouteMap
+            let redirectRouteMap = {} as RedirectRouteMap
+            let urls = Object.keys(siteMap)
+            for (let i = 0; i < urls.length; i++) {
+                let url = urls[i]
+                let route = siteMap[url]
+                let lastRoute = route.lastRemainingRoute || route
+                if (lastRoute.error || lastRoute.type === RouteType.Junction) {
+                    throw new Error(lastRoute!.error)
+                }
+                else if (lastRoute.type === RouteType.Page) {
+                    pageRouteMap[url] = lastRoute
+                }
+                else if (lastRoute.type === RouteType.Redirect) {
+                    redirectRouteMap[url] = lastRoute
+                }
+            }
+            return {
+                pages: pageRouteMap,
+                redirects: redirectRouteMap,
+            }
+        })
+    }
+
+    pageMap(url: string | Location, options: RouterMapOptions = {}): Promise<PageRouteMap> {
+        return this.siteMap(url, options).then(siteMap => siteMap.pages)
     }
 }
 
-function getLocationsArray(urls: string | string[]) {
-    return Array.isArray(urls)
-        ? urls.map(url => parseLocationString(url))
-        : [parseLocationString(urls)]
-}
-
-function getPromiseFromObservableRoute<RootJunction extends Junction>(observable?: ObservableRoute<RootJunction>): Promise<JunctionRoute<RootJunction>> {
-    return new Promise<JunctionRoute<RootJunction>>((resolve, reject) => {
-        if (!observable) {
-            reject()
-        }
-        else {
-            let observer = new RouteObserver(resolve, reject)
-            observer.subscription = observable.subscribe(observer)
-        }
-    })
-}
-
-class RouteObserver implements Observer<JunctionRoute<any>> {
-    resolve
-    reject
+class SteadyPromiseObserver<T> implements Observer<T> {
+    resolve: (value: T) => void
+    reject: (error: any) => void
+    isSteady: (value: T) => boolean
     subscription: Subscription
     done: boolean
 
-    constructor(resolve, reject) {
+    constructor(resolve: (value: T) => void, reject: (error: any) => void, isSteady: (value: T) => boolean) {
         this.resolve = resolve
         this.reject = reject
+        this.isSteady = isSteady
     }
 
-    next(route: JunctionRoute<any>) {
-        if (!this.done && isRouteSteady(route)) {
-            if (!route.deepestRoute || route.deepestRoute.status !== ResolverStatus.Ready || (route.deepestRoute.type === RouteType.Junction && route.deepestRoute.isNotFound)) {
-                this.error(route.error)
-            }
-            else {
-                this.resolve(route)
-                this.cleanup()
-            }
+    start(subscription: Subscription) {
+        this.subscription = subscription   
+    }
+
+    next(value: T) {
+        if (!this.done && this.isSteady(value)) {
+            this.resolve(value)
+            this.cleanup()
         }
     }
 
@@ -163,5 +205,32 @@ class RouteObserver implements Observer<JunctionRoute<any>> {
         delete this.subscription
         delete this.resolve
         delete this.reject
+        delete this.isSteady
     }
+}
+
+function getLocationsArray(urls: Location | string | (Location | string)[]) {
+    return Array.isArray(urls)
+        ? urls.map(url => typeof url === 'string' ? parseLocationString(url) : url)
+        : [typeof urls === 'string' ? parseLocationString(urls) : urls]
+}
+
+function getPromiseFromObservableRoute(observable: LocationStateObservable): Promise<PageRoute> {
+    return new Promise<JunctionRoute>((resolve, reject) => {
+        let initialValue = observable.getValue()
+        if (isRouteSteady(initialValue)) {
+            resolve(initialValue)
+        }
+        else {
+            observable.subscribe(new SteadyPromiseObserver<JunctionRoute>(resolve, reject, isRouteSteady))
+        }
+    }).then(route => {
+        let lastRoute = route.lastRemainingRoute || route
+        if (lastRoute.type !== RouteType.Page) {
+            throw new Error(lastRoute.error)
+        }
+        else {
+            return lastRoute as PageRoute
+        }
+    })
 }

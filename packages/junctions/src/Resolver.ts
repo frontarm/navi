@@ -1,17 +1,16 @@
-import { Env } from './Env';
+import { RouterEnv } from './Env';
 import { Router, RouterEvent } from './Router';
 import { Junction } from './Junction';
 
 export type Resolvable<
     T,
-    Context=any,
-    RootJunction extends Junction=any
-> = (env: Env<Context, RootJunction>) => PromiseLike<T> | T
+    Context=any
+> = (env: RouterEnv<Context>) => PromiseLike<T> | T
 
 export enum ResolverStatus {
-    Ready = 'ready',
-    Busy = 'busy',
-    Error = 'error',
+    Ready = 'Ready',
+    Busy = 'Busy',
+    Error = 'Error',
 }
 
 export type ResolverResult<T> = {
@@ -23,14 +22,14 @@ export type ResolverResult<T> = {
 
 export type ResolverListener = () => void
 
-export class Resolver<Context=any, RootJunction extends Junction=any> {
-    private env: Env<Context, RootJunction>
+export class Resolver<Context=any> {
+    private env: RouterEnv<Context>
     private onEvent: (event: RouterEvent) => void
     private nextId: number
     private results: Map<Function, ResolverResult<any>>
     private listenerResolvables: Map<Function, Function[]>
 
-    constructor(initialEnv: Env<Context, RootJunction>, onEvent: (event: RouterEvent) => void) {
+    constructor(initialEnv: RouterEnv<Context>, onEvent: (event: RouterEvent) => void) {
         this.listenerResolvables = new Map
         this.nextId = 1
         this.onEvent = onEvent
@@ -38,7 +37,7 @@ export class Resolver<Context=any, RootJunction extends Junction=any> {
         this.setEnv(initialEnv)
     }
 
-    setEnv(env: Env<Context, RootJunction>) {
+    setEnv(env: RouterEnv<Context>) {
         this.env = env
 
         // clear any context dependent results from results
@@ -70,7 +69,7 @@ export class Resolver<Context=any, RootJunction extends Junction=any> {
         this.listenerResolvables.delete(listener)
     }
 
-    resolve<T>(resolvable: Resolvable<T, Context, RootJunction>, event: RouterEvent): ResolverResult<T> {
+    resolve<T>(resolvable: Resolvable<T, Context>, event: RouterEvent): ResolverResult<T> {
         let currentResult = this.results.get(resolvable)
 
         if (currentResult) {
@@ -93,6 +92,12 @@ export class Resolver<Context=any, RootJunction extends Junction=any> {
             ...event,
             type: event['type'] + 'Start',
         })
+
+        let result: ResolverResult<T> = {
+            id,
+            status: ResolverStatus.Busy,
+        }
+        this.results.set(resolvable, result)
 
         maybeValue
             .then(
@@ -138,11 +143,6 @@ export class Resolver<Context=any, RootJunction extends Junction=any> {
                 }
             })
         
-        let result: ResolverResult<T> = {
-            id,
-            status: ResolverStatus.Busy,
-        }
-        this.results.set(resolvable, result)
         return result
     }
 }
