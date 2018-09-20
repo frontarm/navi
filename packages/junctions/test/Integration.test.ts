@@ -19,30 +19,30 @@ describe("page under '/test' with 'redirectTo' param", () => {
     test("integration", async () => {
         let nav = createNavigation('/examples')
 
-        await nav.steadyState()
-        let route = nav.currentState
-        let pageRoute = route.lastRemainingRoute as PageRoute
+        let state = await nav.steadyState()
+        let firstRoute = state.firstRoute
+        let pageRoute = state.lastRoute as PageRoute
         
-        expect(route.type).toBe(RouteType.Junction)
-        expect(route.nextPattern).toBe('/examples')
+        expect(firstRoute.type).toBe(RouteType.Junction)
+        expect(firstRoute.nextPattern).toBe('/examples')
         expect(pageRoute.type).toBe(RouteType.Page)
         expect(pageRoute.title).toBe('Basic example')
         expect(pageRoute.content).toBe('basic-example')
-        expect(pageRoute).toBe(route.nextRoute && route.nextRoute.nextRoute)
+        expect(pageRoute).toBe(firstRoute.nextRoute && firstRoute.nextRoute.nextRoute)
 
         nav.history.push('/examples/advanced?referrer=frontarm')
 
-        route = nav.currentState
-        let lastRoute = route.lastRemainingRoute as JunctionRoute
+        firstRoute = nav.currentState.firstRoute
+        let junctionRoute = firstRoute.lastRemainingRoute as JunctionRoute
 
-        expect(route.params).toEqual({ referrer: 'frontarm' })
-        expect(lastRoute.type).toBe(RouteType.Junction)
-        expect(lastRoute.status).toBe(RouteStatus.Busy)
-        expect(lastRoute.nextPattern).toBe('/advanced')
+        expect(firstRoute.params).toEqual({ referrer: 'frontarm' })
+        expect(junctionRoute.type).toBe(RouteType.Junction)
+        expect(junctionRoute.status).toBe(RouteStatus.Busy)
+        expect(junctionRoute.nextPattern).toBe('/advanced')
 
-        await nav.steadyState()
-        route = nav.currentState
-        pageRoute = route.lastRemainingRoute as PageRoute
+        state = await nav.steadyState()
+        firstRoute = state.firstRoute
+        pageRoute = state.lastRoute as PageRoute
 
         expect(pageRoute.title).toBe('Advanced example')
         expect(pageRoute.meta.isPaywalled).toBe(true)
@@ -52,28 +52,28 @@ describe("page under '/test' with 'redirectTo' param", () => {
             isAuthenticated: true
         })
 
-        await nav.steadyState()
-        route = nav.currentState
-        pageRoute = route.lastRemainingRoute as PageRoute
+        state = await nav.steadyState()
+        firstRoute = state.firstRoute
+        pageRoute = firstRoute.lastRemainingRoute as PageRoute
 
         expect(pageRoute.content).toBe('advanced-example')
 
         nav.history.push('/examples/intermediate')
 
-        await nav.steadyState()
-        route = nav.currentState
-        lastRoute = route.lastRemainingRoute as JunctionRoute
+        state = await nav.steadyState()
+        firstRoute = state.firstRoute
+        junctionRoute = firstRoute.lastRemainingRoute as JunctionRoute
         
-        expect(lastRoute.error && lastRoute.error.type).toBe("NotFoundError")
-        expect(lastRoute.error && lastRoute.error.unmatchedURL).toBe("/intermediate")
+        expect(junctionRoute.error && junctionRoute.error.type).toBe("NotFoundError")
+        expect(junctionRoute.error && junctionRoute.error.unmatchedURL).toBe("/intermediate")
     })
 
     test("map-based content", async () => {
         let nav = createNavigation('/')
 
-        await nav.steadyState()
-        let route = nav.currentState
-        let pageRoute = route.lastRemainingRoute as PageRoute
+        let state = await nav.steadyState()
+        let firstRoute = state.firstRoute
+        let pageRoute = state.lastRoute as PageRoute
 
         expect(Object.keys(pageRoute.content)).toEqual(['/examples/advanced/', '/examples/basic/'])
         expect(pageRoute.type).toBe(RouteType.Page)

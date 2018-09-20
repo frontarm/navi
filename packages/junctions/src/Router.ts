@@ -9,6 +9,7 @@ import { Resolver } from './Resolver'
 import { JunctionRoute, PageRoute, isRouteSteady, RouteType, Route } from './Route'
 import { RouterLocationStateMap, isRouterLocationStateMapSteady, SiteMap, PageRouteMap, RedirectRouteMap } from './Maps'
 import { Subscription } from './Observable';
+import { LocationState } from './LocationState';
 
 
 /**
@@ -216,16 +217,16 @@ function getLocationsArray(urls: Location | string | (Location | string)[]) {
 }
 
 function getPromiseFromObservableRoute(observable: LocationStateObservable): Promise<PageRoute> {
-    return new Promise<JunctionRoute>((resolve, reject) => {
+    return new Promise<LocationState>((resolve, reject) => {
         let initialValue = observable.getValue()
-        if (isRouteSteady(initialValue)) {
+        if (initialValue.isSteady) {
             resolve(initialValue)
         }
         else {
-            observable.subscribe(new SteadyPromiseObserver<JunctionRoute>(resolve, reject, isRouteSteady))
+            observable.subscribe(new SteadyPromiseObserver<LocationState>(resolve, reject, isLocationStateSteady))
         }
-    }).then(route => {
-        let lastRoute = route.lastRemainingRoute || route
+    }).then(state => {
+        let lastRoute = state.lastRoute!
         if (lastRoute.type !== RouteType.Page) {
             throw new Error(lastRoute.error)
         }
@@ -234,3 +235,5 @@ function getPromiseFromObservableRoute(observable: LocationStateObservable): Pro
         }
     })
 }
+
+const isLocationStateSteady = (state: LocationState) => state.isSteady

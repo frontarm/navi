@@ -1,51 +1,46 @@
-import { Location, createURL } from './Location'
 import { History } from 'history'
-import { Junction } from './Junction'
-import { JunctionRoute, isRouteSteady, RouteType } from './Route'
+import { Location, createURL } from './Location'
+import { RouteType } from './Route'
 import { Router } from './Router'
+import { LocationState, createLocationState } from './LocationState'
 import { LocationStateObservable } from './LocationStateObservable';
 import { Deferred } from './Deferred';
 import { Subscription } from './Observable';
 
-type Listener = (state: NavigationOutput) => void
+type Listener = (state: LocationState) => void
 type Unsubscriber = () => void
 
-interface NavigationOutput {
-    location: Location,
-    url: string, 
-    route?: JunctionRoute,
-    isSteady: boolean
-}
-
-// TODO: turn this into an Observable
+// TODO: turn this into a proper Observable
 export class Navigation<Context> {
     readonly history: History
     readonly router: Router<Context>
 
-    private waitUntilSteadyDeferred?: Deferred<void>
+    private waitUntilSteadyDeferred?: Deferred<LocationState>
     private listeners: Listener[]
-    private lastLocation?: Location
-    private lastRoute?: JunctionRoute
-    private observableRoute?: LocationStateObservable
-    private observableRouteSubscription?: Subscription
+    private lastLocation: Location
+    private lastState: LocationState
+    private locationStateObservable?: LocationStateObservable
+    private observableSubscription?: Subscription
 
     constructor(options: { history: History, router: Router<Context> }) {
         this.listeners = []
         this.router = options.router
         this.history = options.history
-        this.history.listen(this.handleLocationChange)
-        this.handleLocationChange(this.history.location)
+        this.lastLocation = this.history.location
+        this.lastState = createLocationState(this.history.location)
+        this.history.listen(location => this.handleLocationChange(location))
+        this.handleLocationChange(this.history.location, true)
     }
 
     /**
      * Get the root route
      */
-    get currentState(): JunctionRoute | undefined {
-        return this.observableRoute && this.observableRoute.getValue()
+    get currentState(): LocationState | undefined {
+        return this.lastState
     }
 
     get isSteady(): boolean {
-        return !this.currentState || isRouteSteady(this.currentState)
+        return this.lastState.isSteady
     }
 
     /**
@@ -53,9 +48,9 @@ export class Navigation<Context> {
      * This is useful for implementing static rendering, or for waiting until
      * content is loaded before making the first render.
      */
-    async steadyState(): Promise<void> {
+    async steadyState(): Promise<LocationState> {
         if (this.isSteady) {
-            return Promise.resolve()
+            return Promise.resolve(this.lastState)
         }
         else if (!this.waitUntilSteadyDeferred) {
             this.waitUntilSteadyDeferred = new Deferred()
@@ -79,9 +74,7 @@ export class Navigation<Context> {
         }
     }
     
-    handleLocationChange = (location: Location) => {
-        let locationExistenceHasChanged = location && !this.lastLocation
-        
+    handleLocationChange(location: Location, force?: boolean) {
         let pathHasChanged, searchHasChanged
         if (location && this.lastLocation) {
             pathHasChanged = location.pathname !== this.lastLocation.pathname
@@ -90,7 +83,7 @@ export class Navigation<Context> {
 
         // The router only looks at path and search, so if they haven't
         // changed, there's no point recreating the observable.
-        if (!(pathHasChanged || searchHasChanged || locationExistenceHasChanged)) {
+        if (!(pathHasChanged || searchHasChanged || force)) {
             this.update({
                 location,
             })
@@ -99,37 +92,37 @@ export class Navigation<Context> {
 
         this.lastLocation = location
 
-        if (this.observableRouteSubscription) {
-            this.observableRouteSubscription.unsubscribe()
+        if (this.observableSubscription) {
+            this.observableSubscription.unsubscribe()
         }
 
-        this.observableRoute = this.router.observeRoute(location, { withContent: true })
-        if (!this.observableRoute) {
-            delete this.observableRouteSubscription
+        this.locationStateObservable = this.router.observeRoute(location, { withContent: true })
+        if (!this.locationStateObservable) {
+            delete this.observableSubscription
             this.update({
                 location,
-                route: undefined,
+                state: undefined,
             })
             return
         }
-        this.observableRouteSubscription = this.observableRoute.subscribe(this.handleRouteChange)
+        this.observableSubscription = this.locationStateObservable.subscribe(this.handleRouteChange)
         this.update({
             location,
-            route: this.observableRoute.getValue(),
+            state: this.locationStateObservable.getValue(),
         })
     }
 
-    private handleRouteChange = (route: JunctionRoute) => {
+    private handleRouteChange = (state: LocationState) => {
         this.update({
-            route,
+            state,
         })
     }
 
     // Allows for either the location or route or both to be changed at once.
-    private update = (updates: { location?: Location, route?: JunctionRoute }) => {
-        let location = (updates.location || this.lastLocation)!
-        let route = updates.route || this.lastRoute
-        let lastRoute = route && route.lastRemainingRoute
+    private update = (updates: { location?: Location, state?: LocationState }) => {
+        let location = updates.location || this.lastLocation
+        let state = updates.state || this.lastState
+        let lastRoute = state && state.lastRoute
 
         if (lastRoute && lastRoute.type === RouteType.Redirect && lastRoute.to) {
             // No need to notify any listeners of a ready redirect,
@@ -138,19 +131,18 @@ export class Navigation<Context> {
             return
         }
 
-        let output: NavigationOutput = {
+        this.lastState = {
+            ...state,
             location,
-            route,
-            isSteady: !route || isRouteSteady(route),
             url: createURL(location),
         }
 
         for (let i = 0; i < this.listeners.length; i++) {
-            this.listeners[i](output)
+            this.listeners[i](this.lastState)
         }
 
-        if (this.waitUntilSteadyDeferred && ('route' in updates) && (!updates.route || isRouteSteady(updates.route))) {
-            this.waitUntilSteadyDeferred.resolve(undefined)
+        if (this.waitUntilSteadyDeferred && ('state' in updates) && this.lastState.isSteady) {
+            this.waitUntilSteadyDeferred.resolve(this.lastState)
             delete this.waitUntilSteadyDeferred
         }
     }

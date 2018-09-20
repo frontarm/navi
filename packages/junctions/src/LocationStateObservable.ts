@@ -1,17 +1,17 @@
 import { Location } from './Location'
+import { LocationState, createLocationState } from './LocationState'
 import { Junction } from './Junction'
 import { AbsoluteMapping } from './Mapping'
 import { Observable, Observer, SimpleSubscription } from './Observable'
 import { Resolver } from './Resolver'
-import { JunctionRoute } from './Route'
 import { RouterLocationOptions } from './Router'
 
-export class LocationStateObservable implements Observable<JunctionRoute> {
+export class LocationStateObservable implements Observable<LocationState> {
     readonly location: Location
 
-    private cachedRoute?: JunctionRoute
+    private cachedValue?: LocationState
     private matcher: Junction['prototype']
-    private observers: Observer<JunctionRoute>[]
+    private observers: Observer<LocationState>[]
     private resolver: Resolver<any>
   
     constructor(
@@ -33,7 +33,7 @@ export class LocationStateObservable implements Observable<JunctionRoute> {
     }
 
     subscribe(
-        onNextOrObserver: Observer<JunctionRoute> | ((value: JunctionRoute) => void),
+        onNextOrObserver: Observer<LocationState> | ((value: LocationState) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
@@ -41,7 +41,7 @@ export class LocationStateObservable implements Observable<JunctionRoute> {
             this.refresh()
         }
 
-        let observer: Observer<JunctionRoute> = 
+        let observer: Observer<LocationState> = 
             typeof onNextOrObserver === 'function'
                 ? {
                     next: onNextOrObserver,
@@ -55,39 +55,39 @@ export class LocationStateObservable implements Observable<JunctionRoute> {
         return new SimpleSubscription(this.handleUnsubscribe, observer)
     }
 
-    getValue(): JunctionRoute {
+    getValue(): LocationState {
         // We don't need to worry about any subscriptions here
-        if (this.cachedRoute) {
-            return this.cachedRoute
+        if (this.cachedValue) {
+            return this.cachedValue
         }
         else {
-            return this.matcher.execute().route!
+            return createLocationState(this.location, this.matcher.execute().route)
         }
     }
 
-    private handleUnsubscribe = (observer: Observer<JunctionRoute>) => {
+    private handleUnsubscribe = (observer: Observer<LocationState>) => {
         let index = this.observers.indexOf(observer)
         if (index !== -1) {
             this.observers.splice(index, 1)
         }
         if (this.observers.length === 0) {
-            delete this.cachedRoute
+            delete this.cachedValue
             this.resolver.unlisten(this.handleChange)
         }
     }
 
     private handleChange = () => {
-        let route = this.refresh()
+        let value = this.refresh()
         for (let i = 0; i < this.observers.length; i++) {
-            this.observers[i].next(route!)
+            this.observers[i].next(value)
         }
     }
 
     private refresh = () => {
         let { route, resolvables } = this.matcher.execute()
-        this.cachedRoute = route
+        this.cachedValue = createLocationState(this.location, route!)
         // This will replace any existing listener and its associated resolvables
         this.resolver.listen(this.handleChange, resolvables!)
-        return route
+        return this.cachedValue!
     }
 }

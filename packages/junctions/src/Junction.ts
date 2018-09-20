@@ -79,7 +79,7 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
                     status: RouteStatus.Error,
                     error: new NotFoundError({
                         unmatchedURL: createURL(this.match!.remainingLocation),
-                        unmatchedLocation: this.match!.remainingLocation,
+                        unmatchedLocation: this.match!.remainingLocation!,
                     }),
                     meta: this.constructor.meta,
                     junction: this.constructor,
@@ -152,7 +152,7 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
             else if (!error && status !== ResolverStatus.Busy) {
                 error = new NotFoundError({
                     unmatchedURL: createURL(this.match.remainingLocation),
-                    unmatchedLocation: this.match.remainingLocation,
+                    unmatchedLocation: this.match.remainingLocation!,
                 })
                 status = ResolverStatus.Error
             }
