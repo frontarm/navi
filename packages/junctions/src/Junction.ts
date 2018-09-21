@@ -231,7 +231,7 @@ export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<
 export function createJunction<Meta, Content, Context>(options: {
   paths: JunctionPaths<Context>
   meta?: Meta
-  params?: string[]
+  paramNames?: string[]
   getContent?: (env: RouterEnv<Context>) => Content | Promise<Content>
 }): Junction<Meta, Content, Context> {
   if (!options) {
@@ -256,7 +256,7 @@ export function createJunction<Meta, Content, Context>(options: {
     .sort((x, y) => compareStrings(x.key, y.key))
 
   if (process.env.NODE_ENV !== 'production') {
-    let { paths, meta, params, getContent, ...other } = options
+    let { paths, meta, paramNames, getContent, ...other } = options
 
     let unknownKeys = Object.keys(other)
     if (unknownKeys.length) {
@@ -340,7 +340,7 @@ export function createJunction<Meta, Content, Context>(options: {
   return class extends JunctionMatcher<Meta, Content, Context> {
     static paths = options.paths
     static meta = options.meta as Meta
-    static params = options.params || []
+    static paramNames = options.paramNames || []
     static mappings = mappings
     static patterns = mappings.map(mapping => mapping.pattern)
     static getContent = options.getContent

@@ -2,13 +2,13 @@ import { History } from 'history'
 import { Location, createURL } from './Location'
 import { RouteType } from './Route'
 import { Router } from './Router'
-import { LocationState } from './LocationState'
-import { LocationStateObservable } from './LocationStateObservable';
+import { RoutingState } from 'junctions/src/RoutingState'
+import { RoutingStateObservable } from 'junctions/src/RoutingStateObservable';
 import { Deferred } from './Deferred';
 import { Subscription } from './Observable';
 import { UnmanagedLocationError } from './Errors';
 
-type Listener = (nextState?: LocationState, prevState?: LocationState) => void
+type Listener = (nextState?: RoutingState, prevState?: RoutingState) => void
 type Unsubscriber = () => void
 
 interface NavigationOptions<Context> {
@@ -28,11 +28,11 @@ export class Navigation<Context> {
     readonly history: History
     readonly router: Router<Context>
 
-    private waitUntilSteadyDeferred?: Deferred<LocationState>
+    private waitUntilSteadyDeferred?: Deferred<RoutingState>
     private listeners: Listener[]
     private lastLocation: Location
-    private lastState?: LocationState
-    private locationStateObservable?: LocationStateObservable
+    private lastState?: RoutingState
+    private routingStateObservable?: RoutingStateObservable
     private observableSubscription?: Subscription
 
     constructor(history: History, router: Router<Context>) {
@@ -47,7 +47,7 @@ export class Navigation<Context> {
     /**
      * Get the root route
      */
-    get currentState(): LocationState | undefined {
+    get currentState(): RoutingState | undefined {
         return this.lastState
     }
 
@@ -60,7 +60,7 @@ export class Navigation<Context> {
      * This is useful for implementing static rendering, or for waiting until
      * content is loaded before making the first render.
      */
-    async steadyState(): Promise<LocationState> {
+    async steadyState(): Promise<RoutingState> {
         if (!this.lastState) {
             console.log('goodbye')
             return Promise.reject(new UnmanagedLocationError(this.lastLocation))
@@ -112,8 +112,8 @@ export class Navigation<Context> {
             this.observableSubscription.unsubscribe()
         }
 
-        this.locationStateObservable = this.router.locationStateObservable(location, { withContent: true })
-        if (!this.locationStateObservable) {
+        this.routingStateObservable = this.router.stateObservable(location, { withContent: true })
+        if (!this.routingStateObservable) {
             delete this.observableSubscription
             this.update({
                 location,
@@ -121,21 +121,21 @@ export class Navigation<Context> {
             })
             return
         }
-        this.observableSubscription = this.locationStateObservable.subscribe(this.handleRouteChange)
+        this.observableSubscription = this.routingStateObservable.subscribe(this.handleRouteChange)
         this.update({
             location,
-            state: this.locationStateObservable.getValue(),
+            state: this.routingStateObservable.getValue(),
         })
     }
 
-    private handleRouteChange = (state: LocationState) => {
+    private handleRouteChange = (state: RoutingState) => {
         this.update({
             state,
         })
     }
 
     // Allows for either the location or route or both to be changed at once.
-    private update = (updates: { location?: Location, state?: LocationState }) => {
+    private update = (updates: { location?: Location, state?: RoutingState }) => {
         let lastState = this.lastState
         let location = updates.location || this.lastLocation
         let state = updates.state || this.lastState

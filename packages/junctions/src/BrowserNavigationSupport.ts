@@ -1,6 +1,6 @@
 import { createBrowserHistory, UnregisterCallback, locationsAreEqual } from 'history'
 import { Location, createURL, concatLocations } from './Location'
-import { LocationState } from './LocationState'
+import { RoutingState } from './RoutingState'
 import { Router } from './Router'
 import { JunctionRoute, RouteType } from './Route'
 import { Navigation } from './Navigation'
@@ -94,7 +94,7 @@ export class BrowserNavigationSupport {
         }
     }
 
-    private handleChange = (nextState?: LocationState, prevState?: LocationState) => {
+    private handleChange = (nextState?: RoutingState, prevState?: RoutingState) => {
         if (nextState && nextState.lastRoute.type === RouteType.Page && this.setDocumentTitle) {
             document.title = this.setDocumentTitle(nextState.lastRoute.title)
         }

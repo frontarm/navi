@@ -1,17 +1,17 @@
-import { Location } from './Location'
-import { LocationState, createLocationState } from './LocationState'
-import { Junction } from './Junction'
-import { AbsoluteMapping } from './Mapping'
-import { Observable, Observer, SimpleSubscription } from './Observable'
-import { Resolver } from './Resolver'
-import { RouterLocationOptions } from './Router'
+import { Location } from 'junctions/src/Location'
+import { RoutingState, createRoutingState } from 'junctions/src/RoutingState'
+import { Junction } from 'junctions/src/Junction'
+import { AbsoluteMapping } from 'junctions/src/Mapping'
+import { Observable, Observer, SimpleSubscription } from 'junctions/src/Observable'
+import { Resolver } from 'junctions/src/Resolver'
+import { RouterLocationOptions } from 'junctions/src/Router'
 
-export class LocationStateObservable implements Observable<LocationState> {
+export class RoutingStateObservable implements Observable<RoutingState> {
     readonly location: Location
 
-    private cachedValue?: LocationState
+    private cachedValue?: RoutingState
     private matcher: Junction['prototype']
-    private observers: Observer<LocationState>[]
+    private observers: Observer<RoutingState>[]
     private resolver: Resolver<any>
   
     constructor(
@@ -33,7 +33,7 @@ export class LocationStateObservable implements Observable<LocationState> {
     }
 
     subscribe(
-        onNextOrObserver: Observer<LocationState> | ((value: LocationState) => void),
+        onNextOrObserver: Observer<RoutingState> | ((value: RoutingState) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
@@ -41,7 +41,7 @@ export class LocationStateObservable implements Observable<LocationState> {
             this.refresh()
         }
 
-        let observer: Observer<LocationState> = 
+        let observer: Observer<RoutingState> = 
             typeof onNextOrObserver === 'function'
                 ? {
                     next: onNextOrObserver,
@@ -55,17 +55,17 @@ export class LocationStateObservable implements Observable<LocationState> {
         return new SimpleSubscription(this.handleUnsubscribe, observer)
     }
 
-    getValue(): LocationState {
+    getValue(): RoutingState {
         // We don't need to worry about any subscriptions here
         if (this.cachedValue) {
             return this.cachedValue
         }
         else {
-            return createLocationState(this.location, this.matcher.execute().route!)
+            return createRoutingState(this.location, this.matcher.execute().route!)
         }
     }
 
-    private handleUnsubscribe = (observer: Observer<LocationState>) => {
+    private handleUnsubscribe = (observer: Observer<RoutingState>) => {
         let index = this.observers.indexOf(observer)
         if (index !== -1) {
             this.observers.splice(index, 1)
@@ -85,7 +85,7 @@ export class LocationStateObservable implements Observable<LocationState> {
 
     private refresh = () => {
         let { route, resolvables } = this.matcher.execute()
-        this.cachedValue = createLocationState(this.location, route!)
+        this.cachedValue = createRoutingState(this.location, route!)
         // This will replace any existing listener and its associated resolvables
         this.resolver.listen(this.handleChange, resolvables!)
         return this.cachedValue!
