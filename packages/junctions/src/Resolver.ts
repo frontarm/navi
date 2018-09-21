@@ -1,4 +1,4 @@
-import { RouterEnv } from './Env';
+import { RouterEnv } from './RouterEnv';
 import { RouterEvent } from './Router';
 
 export type Resolvable<
@@ -20,6 +20,8 @@ export type ResolverResult<T> = {
 }
 
 export type ResolverListener = () => void
+
+export const undefinedResolver = () => undefined
 
 export class Resolver<Context=any> {
     private env: RouterEnv<Context>

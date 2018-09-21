@@ -7,7 +7,7 @@ import {
   NodeBase,
   NodeMatcherOptions,
 } from './Node'
-import { RouterEnv } from './Env'
+import { RouterEnv } from './RouterEnv'
 
 export interface Redirect<Meta = any, Context = any>
   extends NodeBase<Context, RedirectMatcher<Meta, Context>> {

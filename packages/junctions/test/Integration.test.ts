@@ -1,5 +1,5 @@
 import { createMemoryHistory } from 'history'
-import { JunctionRoute, createNavigation, PageRoute, RouteStatus, RouteType, createRouter } from '../src'
+import { JunctionRoute, createNavigation, PageRoute, RouteStatus, RouteContentStatus, RouteType, createRouter } from '../src'
 import { cmsJunction } from './fixtures/junctions'
 
 describe("integration", () => {
@@ -24,7 +24,11 @@ describe("integration", () => {
         let pageRoute = state.lastRoute as PageRoute
         
         expect(firstRoute.type).toBe(RouteType.Junction)
+        expect(firstRoute.content).toBe('site-layout')
+        expect(firstRoute.contentStatus).toBe(RouteContentStatus.Ready)
         expect(firstRoute.nextPattern).toBe('/examples')
+        expect(state.routes[1].content).toBe('example-layout')
+        expect(state.routes[1].contentStatus).toBe(RouteContentStatus.Ready)
         expect(pageRoute.type).toBe(RouteType.Page)
         expect(pageRoute.title).toBe('Basic example')
         expect(pageRoute.content).toBe('basic-example')

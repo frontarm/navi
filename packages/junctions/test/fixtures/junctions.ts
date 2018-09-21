@@ -3,18 +3,26 @@ import { createPage, createJunction, createRedirect, RouterEnv } from '../../src
 export const cmsJunction = createJunction({
     params: ['referrer'],
 
+    getContent() {
+        return 'site-layout'
+    },
+
     paths: {
         '/': createPage({
             title: 'Junctions',
             meta: {
                 description: 'Junctions Is A Router',
             },
-            async getContent(routerEnv: RouterEnv) {
-                return await routerEnv.pageMap('/examples')
+            async getContent(env: RouterEnv) {
+                return await env.pageMap('/examples')
             },
         }),
 
         '/examples': createJunction({
+            async getContent() {
+                return 'example-layout'
+            },
+
             paths: {
                 '/': createRedirect(location => location.pathname+'basic'),
 

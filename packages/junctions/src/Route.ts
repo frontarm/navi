@@ -105,7 +105,8 @@ export interface RedirectRoute<Meta = any> extends RouteBase {
  * Junction routes correspond to non-final segment of the URL.
  */
 export interface JunctionRoute<
-  Meta = any
+  Meta = any,
+  Content = any,
 > extends RouteBase {
   type: RouteType.Junction
   meta: Meta
@@ -115,9 +116,8 @@ export interface JunctionRoute<
   error?: any
 
   // TODO: content for junctions
-  content?: never
-  contentStatus?: never
-  // contentStatus: RouteContentStatus
+  content?: Content
+  contentStatus: RouteContentStatus
   contentError?: any
 
   /**

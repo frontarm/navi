@@ -1,4 +1,4 @@
-import { RouterEnv } from './Env'
+import { RouterEnv } from './RouterEnv'
 import { Location, parseLocationString } from './Location'
 import { Junction } from './Junction'
 import { matchMappingAgainstLocation, AbsoluteMapping, createRootMapping } from './Mapping'

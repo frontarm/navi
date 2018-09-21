@@ -1,4 +1,4 @@
-import { ResolverResult, Resolvable } from './Resolver'
+import { ResolverResult, Resolvable, undefinedResolver } from './Resolver'
 import { RouteStatus, RouteType, PageRoute, RouteContentStatus } from './Route'
 import {
   NodeMatcher,
@@ -6,7 +6,7 @@ import {
   NodeBase,
   NodeMatcherOptions,
 } from './Node'
-import { RouterEnv } from './Env'
+import { RouterEnv } from './RouterEnv'
 
 export interface Page<Meta = any, Content = any, Context = any>
   extends NodeBase<Context, PageMatcher<Meta, Content, Context>> {
@@ -21,12 +21,8 @@ export interface Page<Meta = any, Content = any, Context = any>
   title: string
   meta: Meta
   getContent?: ((env: RouterEnv<Context>) => Content | PromiseLike<Content>)
-
-  // This is empty, but is used for the typing for ChildRoute
-  _content?: Content
 }
 
-const undefinedResolver = () => undefined
 
 export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
   Context
@@ -59,10 +55,10 @@ export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
       return {}
     }
 
-    let resolvable = 
+    let resolvable: Resolvable<Content | undefined> = 
       this.withContent && this.constructor.getContent
         ? this.constructor.getContent
-        : (undefinedResolver as any as Resolvable<Content>)
+        : undefinedResolver
 
     let result: ResolverResult<Content> =
       this.resolver.resolve(resolvable, {
