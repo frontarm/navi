@@ -8,7 +8,7 @@ import { Deferred } from './Deferred';
 import { Subscription } from './Observable';
 import { UnmanagedLocationError } from './Errors';
 
-type Listener = (state?: LocationState) => void
+type Listener = (nextState?: LocationState, prevState?: LocationState) => void
 type Unsubscriber = () => void
 
 interface NavigationOptions<Context> {
@@ -79,11 +79,11 @@ export class Navigation<Context> {
      * Navigation state, as the state may change as new code chunks are
      * received.
      */
-    subscribe(onRouteChange: Listener): Unsubscriber {
-        this.listeners.push(onRouteChange)
+    subscribe(onStateChange: Listener): Unsubscriber {
+        this.listeners.push(onStateChange)
 
         return () => {
-            let index = this.listeners.indexOf(onRouteChange)
+            let index = this.listeners.indexOf(onStateChange)
             if (index !== -1) {
                 this.listeners.splice(index, 1)
             }
@@ -112,7 +112,7 @@ export class Navigation<Context> {
             this.observableSubscription.unsubscribe()
         }
 
-        this.locationStateObservable = this.router.observeRoute(location, { withContent: true })
+        this.locationStateObservable = this.router.locationStateObservable(location, { withContent: true })
         if (!this.locationStateObservable) {
             delete this.observableSubscription
             this.update({
@@ -169,7 +169,7 @@ export class Navigation<Context> {
 
         if (this.lastState !== lastState) {
             for (let i = 0; i < this.listeners.length; i++) {
-                this.listeners[i](this.lastState)
+                this.listeners[i](this.lastState, lastState)
             }
         }
     }

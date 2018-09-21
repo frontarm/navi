@@ -71,7 +71,7 @@ export class Router<Context=any> {
         this.resolver.setEnv(new RouterEnv(context || {}, this))
     }
 
-    observeRoute(locationOrURL: Location | string, options: RouterLocationOptions = {}): LocationStateObservable | undefined {
+    locationStateObservable(locationOrURL: Location | string, options: RouterLocationOptions = {}): LocationStateObservable | undefined {
         // need to somehow keep track of which promises in the resolver correspond to which observables,
         // so that I don't end up updating observables which haven't actually changed.
         let location = typeof locationOrURL === 'string' ? parseLocationString(locationOrURL) : locationOrURL
@@ -87,7 +87,7 @@ export class Router<Context=any> {
         }
     }
 
-    observeRouterLocationStateMap(locationOrURL: Location | string, options: RouterMapOptions = {}): LocationStateMapObservable | undefined {
+    locationStateMapObservable(locationOrURL: Location | string, options: RouterMapOptions = {}): LocationStateMapObservable | undefined {
         let location = typeof locationOrURL === 'string' ? parseLocationString(locationOrURL) : locationOrURL
         let match = location && matchMappingAgainstLocation(this.rootMapping, location)
 
@@ -114,7 +114,7 @@ export class Router<Context=any> {
         let promises: Promise<PageRoute>[] = []
         for (let i = 0; i < locations.length; i++) {
             let location = locations[i]
-            let observable = this.observeRoute(location, options)
+            let observable = this.locationStateObservable(location, options)
             if (!observable) {
                 return Promise.reject()
             }
@@ -124,7 +124,7 @@ export class Router<Context=any> {
     }
 
     siteMap(url: string | Location, options: RouterMapOptions = {}): Promise<SiteMap> {
-        let observable = this.observeRouterLocationStateMap(url, options)
+        let observable = this.locationStateMapObservable(url, options)
         let promise = new Promise<LocationStateMap>((resolve, reject) => {
             if (!observable) {
                 reject()

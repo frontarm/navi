@@ -1,85 +1,83 @@
 import * as React from 'react'
 import { 
-    createPageTemplate,
-    createJunctionTemplate,
-    createRedirectTemplate,
+    createPage,
+    createJunction,
+    createRedirect,
 
-    Page,
-    Junction,
-} from '../src/index'
-
-
-function ArticleComponent(props: { page: Page<typeof Landing> }) {
-    let { page } = props
-    return null
-}
+    PageRoute,
+    JunctionRoute,
+} from '../src'
 
 
-let Landing = createPageTemplate({
+let Landing = createPage({
     title: "React Armory",
-    component: ArticleComponent,
+
+    getContent() {
+        return () => React.createElement("div", {}, "hello")
+    }
 })
-let Latest = createPageTemplate({
+let Latest = createPage({
     title: "Latest",
-    component: ArticleComponent,
+
+    getContent() {
+        return () => React.createElement("div", {}, "latest")
+    }
 })
 
 
 
-let Article1 = createPageTemplate({
+let Article1 = createPage({
     title: "Article 1",
-    component: ArticleComponent,
 })
-let Article2 = createPageTemplate({
+let Article2 = createPage({
     title: "Article 2",
-    component: ArticleComponent,
 })
 
 
+class ArticlesComponent extends React.Component<{ route: JunctionRoute<typeof ArticlesJunction['meta']> }, any> {
+    render() {
+        let { route } = this.props
 
-let ArticlesJunction = createJunctionTemplate(({ split }) => ({
-    children: {
-        '/1': split(() => Promise.resolve(Article1)),
-        '/2': split(() => Promise.resolve(Article2)),
+        return (
+            route.nextRoute
+                ? React.createElement('div', {}, route.nextRoute.content)
+                : null
+        )
+    }
+}
+let ArticlesJunction = createJunction({
+    paths: {
+        '/1': () => Promise.resolve(Article1),
+        '/2': () => Promise.resolve(Article2),
     },
     
-    payload: {
+    meta: {
         bob: 'your uncle'
     },
 
-    component: class ArticlesComponent extends React.Component<{ env, junction: Junction<typeof ArticlesJunction>, }, any> {
-        render() {
-            let { env, junction } = this.props
-
-            return (
-                junction.activeChild
-                    ? React.createElement(junction.activeChild.component, { env, page: junction.activeChild })
-                    : null
-            )
-        }
+    getContent() {
+        return ArticlesComponent
     }
-}))
+})
 
 
-let AppJunction = createJunctionTemplate(({ split }) => ({
-    children: {
+class AppComponent extends React.Component<{ route: JunctionRoute }> {
+    render() {
+        let { route } = this.props
+
+        return (
+            (route.nextRoute && route.nextRoute.content)
+                ? React.createElement(route.nextRoute.content, {
+                    route: route.nextRoute
+                  })
+                : React.createElement('div', {}, route.nextRoute.contentStatus)
+        )
+    }
+}
+let AppJunction = createJunction({
+    paths: {
         '/': Landing,
         '/latest': Latest,
-        '/articles': split(() => Promise.resolve(ArticlesJunction)),
+        '/articles': () => Promise.resolve(ArticlesJunction),
     },
-
-    component: class AppComponent extends React.Component<{ env, junction: Junction<typeof AppJunction> }> {
-        render() {
-            let { env, junction } = this.props
-
-            return (
-                junction.activeChild
-                    ? React.createElement(junction.activeChild.component, {
-                        env,
-                        [junction.activeChild.type]: junction.activeChild
-                      })
-                    : React.createElement('div', {}, junction.status)
-            )
-        }
-    },
-}))
+})
