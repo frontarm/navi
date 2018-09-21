@@ -61,7 +61,7 @@ export class LocationStateObservable implements Observable<LocationState> {
             return this.cachedValue
         }
         else {
-            return createLocationState(this.location, this.matcher.execute().route)
+            return createLocationState(this.location, this.matcher.execute().route!)
         }
     }
 

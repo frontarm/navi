@@ -2,7 +2,7 @@ import { Location } from './Location'
 import { ResolvableNode, Node } from './Node'
 import { Page } from './Page'
 import { ResolverStatus } from './Resolver'
-import { Junction, JunctionChildren } from './Junction'
+import { Junction, JunctionPaths } from './Junction'
 import { Redirect } from './Redirect'
 
 /**
@@ -13,6 +13,13 @@ export type Route = JunctionRoute | PageRoute | RedirectRoute
 export enum RouteStatus {
   Ready = 'Ready',
   Busy = 'Busy',
+  Error = 'Error',
+}
+
+export enum RouteContentStatus {
+  Unrequested = 'Unrequested',
+  Busy = 'Busy',
+  Ready = 'Ready',
   Error = 'Error',
 }
 
@@ -28,9 +35,6 @@ export enum RouteType {
  */
 interface RouteBase {
   type: RouteType
-
-  status: RouteStatus
-  error?: any
 
   /**
    * Any params that have been matched.
@@ -63,6 +67,12 @@ export interface PageRoute<Meta = any, Content = any> extends RouteBase {
   title: string
   type: RouteType.Page
 
+  contentStatus: RouteContentStatus
+  contentError?: any
+
+  status: RouteStatus // is always ready
+  error?: never
+
   nextRoute?: never
   nextPattern?: never
   lastRemainingRoute?: never
@@ -78,6 +88,13 @@ export interface RedirectRoute<Meta = any> extends RouteBase {
   meta: Meta
   type: RouteType.Redirect
 
+  content?: never
+  contentStatus?: never
+  contentError?: never
+
+  status: RouteStatus
+  error?: any
+
   nextRoute?: never
   nextPattern?: never
   lastRemainingRoute?: never
@@ -88,17 +105,25 @@ export interface RedirectRoute<Meta = any> extends RouteBase {
  * Junction routes correspond to non-final segment of the URL.
  */
 export interface JunctionRoute<
-  Meta = any,
-  Children extends JunctionChildren<any> = any
+  Meta = any
 > extends RouteBase {
   type: RouteType.Junction
   meta: Meta
-  junction: Junction<Meta, Children>
+  junction: Junction<Meta>
+
+  status: RouteStatus
+  error?: any
+
+  // TODO: content for junctions
+  content?: never
+  contentStatus?: never
+  // contentStatus: RouteContentStatus
+  contentError?: any
 
   /**
    * The pattern that was matched (with param placeholders if applicable).
    */
-  nextPattern?: keyof Children
+  nextPattern?: string
 
   /**
    * A route object that contains details on the next part of the URL.
@@ -122,25 +147,16 @@ export interface JunctionRoute<
    */
   lastRemainingRoute?: Route
 }
-
-export type JunctionRouteChildren<Children extends JunctionChildren<any>> = {
-  [K in keyof Children]?: Children[K] extends Node
-    ? NodeRoute<Children[K]>
-    : Children[K] extends ResolvableNode<infer N> ? NodeRoute<N> : Route
-}
-
-type NodeRoute<N extends Node> = N extends Junction
-  ? JunctionRoute<N['meta'], N['children']>
-  : N extends Page
-    ? PageRoute<N['meta'], N['_content']>
-    : N extends Redirect ? RedirectRoute<N['meta']> : Route
-
     
 export function isRouteSteady(route: Route): boolean {
   return (
     route.status !== RouteStatus.Busy &&
-    (route.type !== RouteType.Junction ||
-      !route.lastRemainingRoute ||
-      route.lastRemainingRoute.status !== RouteStatus.Busy)
+    (
+      (route.type === RouteType.Page && route.contentStatus !== RouteContentStatus.Busy) ||
+      (route.type === RouteType.Junction && (
+        !route.lastRemainingRoute ||
+        (route.lastRemainingRoute.status !== RouteStatus.Busy && route.lastRemainingRoute.contentStatus !== RouteContentStatus.Busy)
+      ))
+    )
   )
 }

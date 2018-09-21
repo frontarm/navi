@@ -1,31 +1,30 @@
-import { Location, createURL } from './Location'
+import { Location } from './Location'
 import { ResolverResult, ResolverStatus, Resolvable } from './Resolver'
 import { Route, JunctionRoute, RouteType, RouteStatus } from './Route'
 import { createMapping, Mapping, createChildMapping, matchMappingAgainstLocation } from './Mapping'
 import { NodeMatcher, NodeMatcherResult, Node, NodeBase, MaybeResolvableNode, ResolvableNode, NodeMatcherOptions } from './Node'
-import { NotFoundError } from './NotFoundError'
+import { NotFoundError } from './Errors'
 
 
-export type JunctionChildren<Context> = { [pattern: string]: MaybeResolvableNode<Context> }
+export type JunctionPaths<Context> = { [pattern: string]: MaybeResolvableNode<Context> }
 
 
 export interface Junction<
     Meta = any,
-    Children extends JunctionChildren<Context> = any,
     Context = any,
-> extends NodeBase<Context, JunctionMatcher<Meta, Children, Context>> {
+> extends NodeBase<Context, JunctionMatcher<Meta, Context>> {
     type: RouteType.Junction
 
-    new(options: NodeMatcherOptions<Context>): JunctionMatcher<Meta, Children, Context>;
+    new(options: NodeMatcherOptions<Context>): JunctionMatcher<Meta, Context>;
 
     meta: Meta;
-    children: Children;
+    paths: JunctionPaths<Context>;
     mappings: Mapping[],
     patterns: string[],
 }
 
 
-export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, Context> extends NodeMatcher<Context> {
+export class JunctionMatcher<Meta, Context> extends NodeMatcher<Context> {
     static isNode = true
     static type: RouteType.Junction = RouteType.Junction
 
@@ -36,12 +35,12 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
         childResolvables: Resolvable<any>[],
         childMatcher?: NodeMatcher<any>,
         result: ResolverResult<Node>
-        route: JunctionRoute<Meta, Children>
+        route: JunctionRoute<Meta>
     };
 
-    noMatchedChildRoute: JunctionRoute<Meta, Children>
+    noMatchedChildRoute: JunctionRoute<Meta>
 
-    ['constructor']: Junction<Meta, Children, Context>;
+    ['constructor']: Junction<Meta, Context>;
     constructor(options: NodeMatcherOptions<Context>) {
         super(options)
 
@@ -77,10 +76,8 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
             if (!this.childMatcherOptions) {
                 this.noMatchedChildRoute = this.createRoute(RouteType.Junction, {
                     status: RouteStatus.Error,
-                    error: new NotFoundError({
-                        unmatchedURL: createURL(this.match!.remainingLocation),
-                        unmatchedLocation: this.match!.remainingLocation!,
-                    }),
+                    error: new NotFoundError(this.match),
+
                     meta: this.constructor.meta,
                     junction: this.constructor,
                     remainingRoutes: [],
@@ -89,7 +86,7 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
         }
     }
 
-    execute(): NodeMatcherResult<JunctionRoute<Meta, Children>> {
+    execute(): NodeMatcherResult<JunctionRoute<Meta>> {
         if (!this.match) {
             // This junction couldn't be matched due to missing required
             // params, or a non-exact match without a default path.
@@ -150,10 +147,7 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
                 }
             }
             else if (!error && status !== ResolverStatus.Busy) {
-                error = new NotFoundError({
-                    unmatchedURL: createURL(this.match.remainingLocation),
-                    unmatchedLocation: this.match.remainingLocation!,
-                })
+                error = new NotFoundError(this.match)
                 status = ResolverStatus.Error
             }
 
@@ -186,34 +180,33 @@ export class JunctionMatcher<Meta, Children extends JunctionChildren<Context>, C
 
 export function createJunction<
     Meta,
-    Children extends JunctionChildren<Context>,
     Context,
 >(options: {
-    children: Children,
+    paths: JunctionPaths<Context>,
     meta?: Meta,
     params?: string[],
-}): Junction<Meta, Children, Context> {
+}): Junction<Meta, Context> {
     if (!options) {
         throw new Error(`createJunction() was supplied a function that doesn't return any value!`)
     }
-    if (!options.children) {
+    if (!options.paths) {
         if (process.env.NODE_ENV !== 'production') {
             console.warn(`createJunction() was called without a "children" option, but a junction without children doesn't make any sense!`)
         }
-        options.children = {} as any
+        options.paths = {} as any
     }
 
     // Wildcards in PatternMap objects are null (\0) characters, so they'll
     // always be sorted to the top. As such, by sorting the patterns, the
     // most specific (i.e. without wildcard) will always be at the bottom.
     let mappings =
-        Object.keys(options.children)
-            .map(pattern => createMapping(pattern, options.children[pattern]))
+        Object.keys(options.paths)
+            .map(pattern => createMapping(pattern, options.paths[pattern]))
             .sort((x, y) => compareStrings(x.key, y.key))
 
     if (process.env.NODE_ENV !== 'production') {
         let {
-            children,
+            paths,
             meta,
             params,
             ...other
@@ -273,8 +266,8 @@ export function createJunction<
         }
     }
 
-    return class extends JunctionMatcher<Meta, Children, Context> {
-        static children = options.children
+    return class extends JunctionMatcher<Meta, Context> {
+        static paths = options.paths
         static meta = options.meta as Meta
         static params = options.params || []
         static mappings = mappings

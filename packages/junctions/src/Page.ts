@@ -1,5 +1,5 @@
 import { ResolverResult, Resolvable } from './Resolver'
-import { RouteStatus, RouteType, PageRoute } from './Route'
+import { RouteStatus, RouteType, PageRoute, RouteContentStatus } from './Route'
 import {
   NodeMatcher,
   NodeMatcherResult,
@@ -81,9 +81,12 @@ export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
           title: this.constructor.title,
           meta: this.constructor.meta,
 
-          status: status as string as RouteStatus,
+          status: RouteStatus.Ready,
+
+          contentStatus: !this.withContent ? RouteContentStatus.Unrequested : (status as string as RouteContentStatus),
+          contentError: error,
           content: value,
-          error,
+
           remainingRoutes: [],
         }),
       }

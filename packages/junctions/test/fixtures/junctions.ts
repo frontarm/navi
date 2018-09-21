@@ -3,7 +3,7 @@ import { createPage, createJunction, createRedirect, RouterEnv } from '../../src
 export const cmsJunction = createJunction({
     params: ['referrer'],
 
-    children: {
+    paths: {
         '/': createPage({
             title: 'Junctions',
             meta: {
@@ -15,7 +15,7 @@ export const cmsJunction = createJunction({
         }),
 
         '/examples': createJunction({
-            children: {
+            paths: {
                 '/': createRedirect(location => location.pathname+'basic'),
 
                 '/basic': () => Promise.resolve(createPage({

@@ -6,8 +6,8 @@ import { Observer } from './Observable'
 import { LocationStateObservable } from './LocationStateObservable'
 import { LocationStateMapObservable } from './LocationStateMapObservable'
 import { Resolver } from './Resolver'
-import { JunctionRoute, PageRoute, isRouteSteady, RouteType, Route } from './Route'
-import { RouterLocationStateMap, isRouterLocationStateMapSteady, SiteMap, PageRouteMap, RedirectRouteMap } from './Maps'
+import { PageRoute, RouteType, Route } from './Route'
+import { LocationStateMap, isRouterLocationStateMapSteady, SiteMap, PageRouteMap, RedirectRouteMap } from './Maps'
 import { Subscription } from './Observable';
 import { LocationState } from './LocationState';
 
@@ -125,7 +125,7 @@ export class Router<Context=any> {
 
     siteMap(url: string | Location, options: RouterMapOptions = {}): Promise<SiteMap> {
         let observable = this.observeRouterLocationStateMap(url, options)
-        let promise = new Promise<RouterLocationStateMap>((resolve, reject) => {
+        let promise = new Promise<LocationStateMap>((resolve, reject) => {
             if (!observable) {
                 reject()
             }
@@ -135,7 +135,7 @@ export class Router<Context=any> {
                     resolve(initialValue)
                 }
                 else {
-                    observable.subscribe(new SteadyPromiseObserver<RouterLocationStateMap>(resolve, reject, isRouterLocationStateMapSteady))
+                    observable.subscribe(new SteadyPromiseObserver<LocationStateMap>(resolve, reject, isRouterLocationStateMapSteady))
                 }
             }
         })
@@ -146,7 +146,7 @@ export class Router<Context=any> {
             for (let i = 0; i < urls.length; i++) {
                 let url = urls[i]
                 let route = siteMap[url]
-                let lastRoute = route.lastRemainingRoute || route
+                let lastRoute = route.lastRoute
                 if (lastRoute.error || lastRoute.type === RouteType.Junction) {
                     throw new Error(lastRoute!.error)
                 }

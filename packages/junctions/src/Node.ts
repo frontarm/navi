@@ -1,7 +1,6 @@
 import { Location, createURL } from './Location'
 import { MappingMatch, matchMappingAgainstLocation, addParamNamesToMapping, AbsoluteMapping } from './Mapping'
-import { RouterEnv } from './Env'
-import { Resolver, ResolverResult, ResolverStatus, Resolvable } from './Resolver'
+import { Resolver, Resolvable } from './Resolver'
 import { Route, RouteType } from './Route'
 import { Junction } from './Junction'
 import { Page } from './Page'

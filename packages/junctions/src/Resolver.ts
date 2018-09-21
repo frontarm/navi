@@ -1,6 +1,5 @@
 import { RouterEnv } from './Env';
-import { Router, RouterEvent } from './Router';
-import { Junction } from './Junction';
+import { RouterEvent } from './Router';
 
 export type Resolvable<
     T,

@@ -2,13 +2,26 @@ import { History } from 'history'
 import { Location, createURL } from './Location'
 import { RouteType } from './Route'
 import { Router } from './Router'
-import { LocationState, createLocationState } from './LocationState'
+import { LocationState } from './LocationState'
 import { LocationStateObservable } from './LocationStateObservable';
 import { Deferred } from './Deferred';
 import { Subscription } from './Observable';
+import { UnmanagedLocationError } from './Errors';
 
-type Listener = (state: LocationState) => void
+type Listener = (state?: LocationState) => void
 type Unsubscriber = () => void
+
+interface NavigationOptions<Context> {
+    history: History,
+    router: Router<Context>
+}
+
+export function createNavigation<Context>(options: NavigationOptions<Context>) {
+    return new Navigation<Context>(
+        options.history,
+        options.router,
+    )
+}
 
 // TODO: turn this into a proper Observable
 export class Navigation<Context> {
@@ -18,16 +31,15 @@ export class Navigation<Context> {
     private waitUntilSteadyDeferred?: Deferred<LocationState>
     private listeners: Listener[]
     private lastLocation: Location
-    private lastState: LocationState
+    private lastState?: LocationState
     private locationStateObservable?: LocationStateObservable
     private observableSubscription?: Subscription
 
-    constructor(options: { history: History, router: Router<Context> }) {
+    constructor(history: History, router: Router<Context>) {
         this.listeners = []
-        this.router = options.router
-        this.history = options.history
+        this.router = router
+        this.history = history
         this.lastLocation = this.history.location
-        this.lastState = createLocationState(this.history.location)
         this.history.listen(location => this.handleLocationChange(location))
         this.handleLocationChange(this.history.location, true)
     }
@@ -40,7 +52,7 @@ export class Navigation<Context> {
     }
 
     get isSteady(): boolean {
-        return this.lastState.isSteady
+        return !this.lastState || this.lastState.isSteady
     }
 
     /**
@@ -49,7 +61,11 @@ export class Navigation<Context> {
      * content is loaded before making the first render.
      */
     async steadyState(): Promise<LocationState> {
-        if (this.isSteady) {
+        if (!this.lastState) {
+            console.log('goodbye')
+            return Promise.reject(new UnmanagedLocationError(this.lastLocation))
+        }
+        else if (this.isSteady) {
             return Promise.resolve(this.lastState)
         }
         else if (!this.waitUntilSteadyDeferred) {
@@ -120,6 +136,7 @@ export class Navigation<Context> {
 
     // Allows for either the location or route or both to be changed at once.
     private update = (updates: { location?: Location, state?: LocationState }) => {
+        let lastState = this.lastState
         let location = updates.location || this.lastLocation
         let state = updates.state || this.lastState
         let lastRoute = state && state.lastRoute
@@ -131,19 +148,29 @@ export class Navigation<Context> {
             return
         }
 
-        this.lastState = {
-            ...state,
-            location,
-            url: createURL(location),
+        if (('state' in updates) && updates.state === undefined) {
+            this.lastState = undefined
+            if (this.waitUntilSteadyDeferred) {
+                this.waitUntilSteadyDeferred.reject(new UnmanagedLocationError(location))
+                delete this.waitUntilSteadyDeferred
+            }
+        }
+        else if (this.lastState || updates.state) {
+            this.lastState = {
+                ...state!,
+                location,
+                url: createURL(location),
+            }
+            if (this.waitUntilSteadyDeferred && state!.isSteady) {
+                this.waitUntilSteadyDeferred.resolve(this.lastState)
+                delete this.waitUntilSteadyDeferred
+            }
         }
 
-        for (let i = 0; i < this.listeners.length; i++) {
-            this.listeners[i](this.lastState)
-        }
-
-        if (this.waitUntilSteadyDeferred && ('state' in updates) && this.lastState.isSteady) {
-            this.waitUntilSteadyDeferred.resolve(this.lastState)
-            delete this.waitUntilSteadyDeferred
+        if (this.lastState !== lastState) {
+            for (let i = 0; i < this.listeners.length; i++) {
+                this.listeners[i](this.lastState)
+            }
         }
     }
 }

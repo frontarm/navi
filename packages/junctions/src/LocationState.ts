@@ -1,12 +1,12 @@
 import { Location, createURL } from './Location'
-import { Route, JunctionRoute, RouteStatus, isRouteSteady } from './Route'
+import { Route, JunctionRoute, RouteStatus, isRouteSteady, RouteContentStatus } from './Route'
 
 export interface LocationState {
   location: Location
   url: string
   routes: Route[]
-  firstRoute?: JunctionRoute
-  lastRoute?: Route
+  firstRoute: JunctionRoute
+  lastRoute: Route
 
   /**
    * Indicates that the router context must be changed to cause any more
@@ -24,25 +24,28 @@ export interface LocationState {
 }
 
 export enum LocationStateStatus {
-  Unmanaged = 'Unmanaged',
   Busy = 'Busy',
   Ready = 'Ready',
   Error = 'Error',
 }
 
-export function createLocationState(location: Location, topRoute?: JunctionRoute): LocationState {
-  let routes = topRoute ? [topRoute as Route].concat(topRoute.remainingRoutes) : []
+export function createLocationState(location: Location, topRoute: JunctionRoute): LocationState {
+  let routes = [topRoute as Route].concat(topRoute.remainingRoutes)
   let lastRoute = routes[routes.length - 1]
-  let status = !lastRoute ? LocationStateStatus.Unmanaged : lastRoute.status
+  let status = (
+    (lastRoute.contentStatus && lastRoute.contentStatus !== RouteContentStatus.Unrequested)
+      ? lastRoute.contentStatus
+      : lastRoute.status
+  ) as string as LocationStateStatus
 
   return {
     location,
     url: createURL(location),
     routes,
-    firstRoute: routes[0] as JunctionRoute | undefined,
+    firstRoute: routes[0] as JunctionRoute,
     lastRoute,
-    isSteady: !routes[0] || isRouteSteady(routes[0]),
+    isSteady: isRouteSteady(routes[0]),
     error: lastRoute && lastRoute.error,
-    status: status as string as LocationStateStatus,
+    status,
   } 
 }

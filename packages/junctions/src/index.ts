@@ -3,7 +3,7 @@
 export { RouterEnv } from './Env'
 export { createJunction, Junction } from './Junction'
 export { Location, concatLocations, createURL } from './Location'
-export { Navigation } from './Navigation'
+export { Navigation, createNavigation } from './Navigation'
 export { createPage, Page } from './Page'
 export { createRedirect, Redirect } from './Redirect'
 export { Route, RouteType, RouteStatus, JunctionRoute, PageRoute, RedirectRoute } from './Route'

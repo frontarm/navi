@@ -3,10 +3,11 @@ import { Junction } from './Junction'
 import { AbsoluteMapping } from './Mapping'
 import { Observable, Observer, SimpleSubscription } from './Observable'
 import { Resolver, Resolvable } from './Resolver'
-import { JunctionRoute, Route, RouteType, RouteStatus } from './Route'
+import { JunctionRoute, Route, RouteType, RouteStatus, RouteContentStatus } from './Route'
 import { RouterMapOptions } from './Router'
-import { RouterLocationStateMap } from './Maps'
+import { LocationStateMap } from './Maps'
 import { locationsAreEqual } from 'history';
+import { createLocationState } from './LocationState';
 
 interface QueueItem {
     location: Location
@@ -18,11 +19,11 @@ interface QueueItem {
     lastRouteCache?: Route
 }
 
-export class LocationStateMapObservable implements Observable<RouterLocationStateMap> {
-    private cachedSiteMap?: RouterLocationStateMap
+export class LocationStateMapObservable implements Observable<LocationStateMap> {
+    private cachedSiteMap?: LocationStateMap
     private rootJunction: Junction
     private rootMapping: AbsoluteMapping
-    private observers: Observer<RouterLocationStateMap>[]
+    private observers: Observer<LocationStateMap>[]
     private resolver: Resolver<any>
     private options: RouterMapOptions
 
@@ -52,7 +53,7 @@ export class LocationStateMapObservable implements Observable<RouterLocationStat
     }
 
     subscribe(
-        onNextOrObserver: Observer<RouterLocationStateMap> | ((value: RouterLocationStateMap) => void),
+        onNextOrObserver: Observer<LocationStateMap> | ((value: LocationStateMap) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
@@ -60,7 +61,7 @@ export class LocationStateMapObservable implements Observable<RouterLocationStat
             this.refresh()
         }
 
-        let observer: Observer<RouterLocationStateMap> = 
+        let observer: Observer<LocationStateMap> = 
             typeof onNextOrObserver === 'function'
                 ? {
                     next: onNextOrObserver,
@@ -74,7 +75,7 @@ export class LocationStateMapObservable implements Observable<RouterLocationStat
         return new SimpleSubscription(this.handleUnsubscribe, observer)
     }
 
-    getValue(): RouterLocationStateMap {
+    getValue(): LocationStateMap {
         if (this.cachedSiteMap) {
             return this.cachedSiteMap
         }
@@ -86,7 +87,7 @@ export class LocationStateMapObservable implements Observable<RouterLocationStat
         }
     }
 
-    private handleUnsubscribe = (observer?: Observer<RouterLocationStateMap>) => {
+    private handleUnsubscribe = (observer?: Observer<LocationStateMap>) => {
         if (observer) {
             let index = this.observers.indexOf(observer)
             if (index !== -1) {
@@ -137,6 +138,7 @@ export class LocationStateMapObservable implements Observable<RouterLocationStat
             if (
                 !lastRoute ||
                 lastRoute.status === RouteStatus.Error ||
+                lastRoute.contentStatus === RouteContentStatus.Error ||
 
                 // A URL's children can change based on context, so we need
                 // to remove items from the children if their source stops
@@ -196,7 +198,7 @@ export class LocationStateMapObservable implements Observable<RouterLocationStat
         for (let i = 0; i < this.queueURLs.length; i++) {
             let url = this.queueURLs[i]
             let item = this.queueItems[i]
-            this.cachedSiteMap[joinPaths(url, '/')] = item.routeCache!
+            this.cachedSiteMap[joinPaths(url, '/')] = createLocationState(parseLocationString(url), item.routeCache!)
         }
 
         return this.cachedSiteMap

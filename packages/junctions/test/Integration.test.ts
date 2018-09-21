@@ -1,23 +1,23 @@
 import { createMemoryHistory } from 'history'
-import { JunctionRoute, Navigation, Router, PageRoute, RouteStatus, RouteType } from '../src'
+import { JunctionRoute, createNavigation, PageRoute, RouteStatus, RouteType, createRouter } from '../src'
 import { cmsJunction } from './fixtures/junctions'
 
-describe("page under '/test' with 'redirectTo' param", () => {
-    function createNavigation(initialURL) {
+describe("integration", () => {
+    function createTestNavigation(initialURL) {
         let history = createMemoryHistory({
             initialEntries: [initialURL],
         })
 
-        let router = new Router(cmsJunction)
+        let router = createRouter(cmsJunction)
 
-        return new Navigation({
+        return createNavigation({
             history,
             router,
         })
     }
 
     test("integration", async () => {
-        let nav = createNavigation('/examples')
+        let nav = createTestNavigation('/examples')
 
         let state = await nav.steadyState()
         let firstRoute = state.firstRoute
@@ -64,12 +64,12 @@ describe("page under '/test' with 'redirectTo' param", () => {
         firstRoute = state.firstRoute
         junctionRoute = firstRoute.lastRemainingRoute as JunctionRoute
         
-        expect(junctionRoute.error && junctionRoute.error.type).toBe("NotFoundError")
-        expect(junctionRoute.error && junctionRoute.error.unmatchedURL).toBe("/intermediate")
+        expect(junctionRoute.error && junctionRoute.error.name).toBe("NotFoundError")
+        expect(junctionRoute.error && junctionRoute.error.url).toBe("/examples/intermediate")
     })
 
     test("map-based content", async () => {
-        let nav = createNavigation('/')
+        let nav = createTestNavigation('/')
 
         let state = await nav.steadyState()
         let firstRoute = state.firstRoute
