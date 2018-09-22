@@ -32,10 +32,7 @@ import * as PropTypes from 'prop-types'
 import { Navigation } from 'junctions'
 
 
-export interface ExitPromptProps {
-  env: {
-    navigation: Navigation,
-  },
+export interface PromptProps {
   when?: boolean,
   message: string | (() => string)
 }
@@ -45,7 +42,7 @@ export interface ExitPromptProps {
  * The public API for prompting the user before navigating away
  * from a screen with a component.
  */
-export class ExitPrompt extends React.Component<ExitPromptProps> {
+export class Prompt extends React.Component<PromptProps> {
   navigation: Navigation;
   unblock?: () => void;
 

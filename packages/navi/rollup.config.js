@@ -10,6 +10,12 @@ import uglify from 'rollup-plugin-uglify'
 
 const env = process.env.NODE_ENV
 const config = {
+  external: [
+    'history',
+  ],
+  globals: {
+    'history': 'History',
+  },
   input: 'dist/umd-intermediate/index.js',
   plugins: []
 }

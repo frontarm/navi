@@ -1,7 +1,7 @@
 {
-  "name": "react-junctions",
-  "version": "0.5.0",
-  "description": "Junction-based routing for React.",
+  "name": "react-navi",
+  "version": "0.7.0-beta.2",
+  "description": "A batteries-included router for react.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
@@ -26,8 +26,10 @@
     "react"
   ],
   "peerDependencies": {
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0"
+    "history": "^4.7.2",
+    "junctions": "^0.7.0-beta.2",
+    "react": "^16.5.0",
+    "react-dom": "^16.5.0"
   },
   "devDependencies": {
     "cross-env": "^5.0.5",
@@ -39,10 +41,7 @@
   },
   "dependencies": {
     "@types/history": "^4.6.2",
-    "@types/prop-types": "^15.5.2",
-    "@types/react": "^16.0.33",
-    "@types/react-dom": "^16.0.3",
-    "history": "^4.7.2",
-    "prop-types": "^15.6.0"
+    "@types/react": "^16.4.6",
+    "@types/react-dom": "^16.0.6"
   }
 }
