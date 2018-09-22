@@ -1,9 +1,6 @@
 import { Location } from './Location'
-import { ResolvableNode, Node } from './Node'
-import { Page } from './Page'
-import { ResolverStatus } from './Resolver'
-import { Junction, JunctionPaths } from './Junction'
-import { Redirect } from './Redirect'
+import { Junction } from './Junction'
+import { Node } from './Node'
 
 /**
  * A type that covers all Segment objects.
@@ -86,6 +83,7 @@ export interface PageRoute<Meta = any, Content = any> extends RouteBase {
 export interface RedirectRoute<Meta = any> extends RouteBase {
   to?: Location
   meta: Meta
+  title?: never
   type: RouteType.Redirect
 
   content?: never
@@ -110,12 +108,12 @@ export interface JunctionRoute<
 > extends RouteBase {
   type: RouteType.Junction
   meta: Meta
+  title?: never
   junction: Junction<Meta>
 
   status: RouteStatus
   error?: any
 
-  // TODO: content for junctions
   content?: Content
   contentStatus: RouteContentStatus
   contentError?: any

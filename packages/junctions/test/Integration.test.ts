@@ -1,25 +1,18 @@
-import { createMemoryHistory } from 'history'
-import { JunctionRoute, createNavigation, PageRoute, RouteStatus, RouteContentStatus, RouteType, createRouter } from '../src'
+import { JunctionRoute, createMemoryNavigation, PageRoute, RouteStatus, RouteContentStatus, RouteType, createRouter } from '../src'
 import { cmsJunction } from './fixtures/junctions'
 
 describe("integration", () => {
     function createTestNavigation(initialURL) {
-        let history = createMemoryHistory({
-            initialEntries: [initialURL],
-        })
-
-        let router = createRouter(cmsJunction)
-
-        return createNavigation({
-            history,
-            router,
+        return createMemoryNavigation({
+            url: initialURL,
+            router: createRouter({ junction: cmsJunction }),
         })
     }
 
     test("integration", async () => {
         let nav = createTestNavigation('/examples')
 
-        let state = await nav.steadyState()
+        let state = await nav.getSteadyState()
         let firstRoute = state.firstRoute
         let pageRoute = state.lastRoute as PageRoute
         
@@ -36,7 +29,7 @@ describe("integration", () => {
 
         nav.history.push('/examples/advanced?referrer=frontarm')
 
-        firstRoute = nav.currentState.firstRoute
+        firstRoute = nav.getState().firstRoute
         let junctionRoute = firstRoute.lastRemainingRoute as JunctionRoute
 
         expect(firstRoute.params).toEqual({ referrer: 'frontarm' })
@@ -44,7 +37,7 @@ describe("integration", () => {
         expect(junctionRoute.status).toBe(RouteStatus.Busy)
         expect(junctionRoute.nextPattern).toBe('/advanced')
 
-        state = await nav.steadyState()
+        state = await nav.getSteadyState()
         firstRoute = state.firstRoute
         pageRoute = state.lastRoute as PageRoute
 
@@ -56,7 +49,7 @@ describe("integration", () => {
             isAuthenticated: true
         })
 
-        state = await nav.steadyState()
+        state = await nav.getSteadyState()
         firstRoute = state.firstRoute
         pageRoute = firstRoute.lastRemainingRoute as PageRoute
 
@@ -64,7 +57,7 @@ describe("integration", () => {
 
         nav.history.push('/examples/intermediate')
 
-        state = await nav.steadyState()
+        state = await nav.getSteadyState()
         firstRoute = state.firstRoute
         junctionRoute = firstRoute.lastRemainingRoute as JunctionRoute
         
@@ -75,12 +68,10 @@ describe("integration", () => {
     test("map-based content", async () => {
         let nav = createTestNavigation('/')
 
-        let state = await nav.steadyState()
-        let firstRoute = state.firstRoute
-        let pageRoute = state.lastRoute as PageRoute
-
-        expect(Object.keys(pageRoute.content)).toEqual(['/examples/advanced/', '/examples/basic/'])
-        expect(pageRoute.type).toBe(RouteType.Page)
-        expect(pageRoute.title).toBe('Junctions')
+        let { lastRoute } = await nav.getSteadyState()
+        
+        expect(Object.keys(lastRoute.content)).toEqual(['/examples/advanced/', '/examples/basic/'])
+        expect(lastRoute.type).toBe(RouteType.Page)
+        expect(lastRoute.title).toBe('Junctions')
     })
 })

@@ -1,7 +1,7 @@
 import { PageRoute, RedirectRoute } from './Route'
-import { RoutingState } from 'junctions/src/RoutingState'
+import { RoutingState } from './RoutingState'
 
-export interface RoutingStateMap {
+export interface RoutingMapState {
   [url: string]: RoutingState
 }
 
@@ -18,6 +18,6 @@ export interface RedirectRouteMap {
   [url: string]: RedirectRoute
 }
 
-export function isRoutingStateMapSteady(routingStateMap: RoutingStateMap): boolean {
+export function isRoutingStateMapSteady(routingStateMap: RoutingMapState): boolean {
   return Object.values(routingStateMap).every(routingState => routingState.isSteady)
 }

@@ -1,12 +1,12 @@
-import { Location } from 'junctions/src/Location'
-import { RoutingState, createRoutingState } from 'junctions/src/RoutingState'
-import { Junction } from 'junctions/src/Junction'
-import { AbsoluteMapping } from 'junctions/src/Mapping'
-import { Observable, Observer, SimpleSubscription } from 'junctions/src/Observable'
-import { Resolver } from 'junctions/src/Resolver'
-import { RouterLocationOptions } from 'junctions/src/Router'
+import { Location } from './Location'
+import { RoutingState, createRoutingState } from './RoutingState'
+import { Junction } from './Junction'
+import { AbsoluteMapping } from './Mapping'
+import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
+import { Resolver } from './Resolver'
+import { RouterLocationOptions } from './Router'
 
-export class RoutingStateObservable implements Observable<RoutingState> {
+export class RoutingObservable implements Observable<RoutingState> {
     readonly location: Location
 
     private cachedValue?: RoutingState
@@ -40,22 +40,12 @@ export class RoutingStateObservable implements Observable<RoutingState> {
         if (this.observers.length === 0) {
             this.refresh()
         }
-
-        let observer: Observer<RoutingState> = 
-            typeof onNextOrObserver === 'function'
-                ? {
-                    next: onNextOrObserver,
-                    error: onError,
-                    complete: onComplete,
-                }
-                : onNextOrObserver
-
+        let observer = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
         this.observers.push(observer)
-
         return new SimpleSubscription(this.handleUnsubscribe, observer)
     }
 
-    getValue(): RoutingState {
+    getState(): RoutingState {
         // We don't need to worry about any subscriptions here
         if (this.cachedValue) {
             return this.cachedValue

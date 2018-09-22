@@ -1,13 +1,13 @@
-import { Location, createURL, joinPaths, parseLocationString } from 'junctions/src/Location'
-import { Junction } from 'junctions/src/Junction'
-import { AbsoluteMapping } from 'junctions/src/Mapping'
-import { Observable, Observer, SimpleSubscription } from 'junctions/src/Observable'
-import { Resolver, Resolvable } from 'junctions/src/Resolver'
-import { JunctionRoute, Route, RouteType, RouteStatus, RouteContentStatus } from 'junctions/src/Route'
-import { RouterMapOptions } from 'junctions/src/Router'
-import { RoutingStateMap } from 'junctions/src/Maps'
+import { Location, createURL, joinPaths, parseLocationString } from './Location'
+import { Junction } from './Junction'
+import { AbsoluteMapping } from './Mapping'
+import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
+import { Resolver, Resolvable } from './Resolver'
+import { JunctionRoute, Route, RouteType, RouteStatus, RouteContentStatus } from './Route'
+import { RouterMapOptions } from './Router'
+import { RoutingMapState } from './Maps'
 import { locationsAreEqual } from 'history';
-import { createRoutingState } from 'junctions/src/RoutingState';
+import { createRoutingState } from './RoutingState';
 
 interface QueueItem {
     location: Location
@@ -19,11 +19,11 @@ interface QueueItem {
     lastRouteCache?: Route
 }
 
-export class RoutingStateMapObservable implements Observable<RoutingStateMap> {
-    private cachedSiteMap?: RoutingStateMap
+export class RoutingMapObservable implements Observable<RoutingMapState> {
+    private cachedSiteMap?: RoutingMapState
     private rootJunction: Junction
     private rootMapping: AbsoluteMapping
-    private observers: Observer<RoutingStateMap>[]
+    private observers: Observer<RoutingMapState>[]
     private resolver: Resolver<any>
     private options: RouterMapOptions
 
@@ -53,29 +53,19 @@ export class RoutingStateMapObservable implements Observable<RoutingStateMap> {
     }
 
     subscribe(
-        onNextOrObserver: Observer<RoutingStateMap> | ((value: RoutingStateMap) => void),
+        onNextOrObserver: Observer<RoutingMapState> | ((value: RoutingMapState) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
         if (this.observers.length === 0) {
             this.refresh()
         }
-
-        let observer: Observer<RoutingStateMap> = 
-            typeof onNextOrObserver === 'function'
-                ? {
-                    next: onNextOrObserver,
-                    error: onError,
-                    complete: onComplete,
-                }
-                : onNextOrObserver
-
+        let observer = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
         this.observers.push(observer)
-        
         return new SimpleSubscription(this.handleUnsubscribe, observer)
     }
 
-    getValue(): RoutingStateMap {
+    getState(): RoutingMapState {
         if (this.cachedSiteMap) {
             return this.cachedSiteMap
         }
@@ -87,7 +77,7 @@ export class RoutingStateMapObservable implements Observable<RoutingStateMap> {
         }
     }
 
-    private handleUnsubscribe = (observer?: Observer<RoutingStateMap>) => {
+    private handleUnsubscribe = (observer?: Observer<RoutingMapState>) => {
         if (observer) {
             let index = this.observers.indexOf(observer)
             if (index !== -1) {

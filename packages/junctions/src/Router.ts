@@ -3,13 +3,14 @@ import { Location, parseLocationString } from './Location'
 import { Junction } from './Junction'
 import { matchMappingAgainstLocation, AbsoluteMapping, createRootMapping } from './Mapping'
 import { Observer } from './Observable'
-import { RoutingStateObservable } from 'junctions/src/RoutingStateObservable'
-import { RoutingStateMapObservable } from 'junctions/src/RoutingStateMapObservable'
+import { RoutingObservable } from './RoutingObservable'
+import { RoutingMapObservable } from './RoutingMapObservable'
 import { Resolver } from './Resolver'
 import { PageRoute, RouteType, Route } from './Route'
-import { RoutingStateMap, isRoutingStateMapSteady, SiteMap, PageRouteMap, RedirectRouteMap } from './Maps'
+import { RoutingMapState, isRoutingStateMapSteady, SiteMap, PageRouteMap, RedirectRouteMap } from './Maps'
 import { Subscription } from './Observable';
-import { RoutingState } from 'junctions/src/RoutingState';
+import { RoutingState } from './RoutingState';
+import { UnmanagedLocationError } from './Errors';
 
 
 /**
@@ -27,14 +28,15 @@ export interface RouterEvent {
 }
 
 
-interface RouterOptions<Context> {
+export interface RouterOptions<Context> {
+    junction: Junction,
     rootPath?: string,
     initialContext?: Context,
     onEvent?: (event: RouterEvent) => void,
 }
 
 export interface RouterLocationOptions {
-  withContent?: boolean
+    withContent?: boolean
 }
 
 export interface RouterMapOptions {
@@ -46,11 +48,8 @@ export interface RouterMapOptions {
 
 // This is not necessary, but I'm exporting it just to fit in with
 // other "React style" tools
-export function createRouter<Context>(
-    rootJunction: Junction,
-    options: RouterOptions<Context> = {}
-){
-    return new Router(rootJunction, options)
+export function createRouter<Context>(options: RouterOptions<Context>){
+    return new Router(options)
 }
 
 export class Router<Context=any> {
@@ -58,9 +57,9 @@ export class Router<Context=any> {
     private rootJunction: Junction
     private rootMapping: AbsoluteMapping
     
-    constructor(rootJunction: Junction, options: RouterOptions<Context> = {}) {
-        this.rootMapping = createRootMapping(rootJunction, options.rootPath)
-        this.rootJunction = rootJunction
+    constructor(options: RouterOptions<Context>) {
+        this.rootMapping = createRootMapping(options.junction, options.rootPath)
+        this.rootJunction = options.junction
         this.resolver = new Resolver(
             new RouterEnv(options.initialContext || {} as any, this),
             options.onEvent || (() => {}),
@@ -71,13 +70,13 @@ export class Router<Context=any> {
         this.resolver.setEnv(new RouterEnv(context || {}, this))
     }
 
-    stateObservable(locationOrURL: Location | string, options: RouterLocationOptions = {}): RoutingStateObservable | undefined {
+    observable(locationOrURL: Location | string, options: RouterLocationOptions = {}): RoutingObservable {
         // need to somehow keep track of which promises in the resolver correspond to which observables,
         // so that I don't end up updating observables which haven't actually changed.
         let location = typeof locationOrURL === 'string' ? parseLocationString(locationOrURL) : locationOrURL
         let match = location && matchMappingAgainstLocation(this.rootMapping, location)
         if (location && match) {
-            return new RoutingStateObservable(
+            return new RoutingObservable(
                 location,
                 this.rootJunction,
                 this.rootMapping,
@@ -85,20 +84,26 @@ export class Router<Context=any> {
                 options
             )
         }
+        else {
+            throw new UnmanagedLocationError(location)
+        }
     }
 
-    stateMapObservable(locationOrURL: Location | string, options: RouterMapOptions = {}): RoutingStateMapObservable | undefined {
+    mapObservable(locationOrURL: Location | string, options: RouterMapOptions = {}): RoutingMapObservable {
         let location = typeof locationOrURL === 'string' ? parseLocationString(locationOrURL) : locationOrURL
         let match = location && matchMappingAgainstLocation(this.rootMapping, location)
 
         if (location && match) {
-            return new RoutingStateMapObservable(
+            return new RoutingMapObservable(
                 location,
                 this.rootJunction,
                 this.rootMapping,
                 this.resolver,
                 options
             )
+        }
+        else {
+            throw new UnmanagedLocationError(location)
         }
     }
 
@@ -114,7 +119,7 @@ export class Router<Context=any> {
         let promises: Promise<PageRoute>[] = []
         for (let i = 0; i < locations.length; i++) {
             let location = locations[i]
-            let observable = this.stateObservable(location, options)
+            let observable = this.observable(location, options)
             if (!observable) {
                 return Promise.reject()
             }
@@ -124,19 +129,14 @@ export class Router<Context=any> {
     }
 
     siteMap(url: string | Location, options: RouterMapOptions = {}): Promise<SiteMap> {
-        let observable = this.stateMapObservable(url, options)
-        let promise = new Promise<RoutingStateMap>((resolve, reject) => {
-            if (!observable) {
-                reject()
+        let promise = new Promise<RoutingMapState>((resolve, reject) => {
+            let observable = this.mapObservable(url, options)
+            let initialValue = observable.getState()
+            if (isRoutingStateMapSteady(initialValue)) {
+                resolve(initialValue)
             }
             else {
-                let initialValue = observable.getValue()
-                if (isRoutingStateMapSteady(initialValue)) {
-                    resolve(initialValue)
-                }
-                else {
-                    observable.subscribe(new SteadyPromiseObserver<RoutingStateMap>(resolve, reject, isRoutingStateMapSteady))
-                }
+                observable.subscribe(new SteadyPromiseObserver<RoutingMapState>(resolve, reject, isRoutingStateMapSteady))
             }
         })
         return promise.then(siteMap => {
@@ -216,9 +216,9 @@ function getLocationsArray(urls: Location | string | (Location | string)[]) {
         : [typeof urls === 'string' ? parseLocationString(urls) : urls]
 }
 
-function getPromiseFromObservableRoute(observable: RoutingStateObservable): Promise<PageRoute> {
+function getPromiseFromObservableRoute(observable: RoutingObservable): Promise<PageRoute> {
     return new Promise<RoutingState>((resolve, reject) => {
-        let initialValue = observable.getValue()
+        let initialValue = observable.getState()
         if (initialValue.isSteady) {
             resolve(initialValue)
         }

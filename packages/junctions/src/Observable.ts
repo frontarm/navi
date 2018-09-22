@@ -1,56 +1,72 @@
 export interface Subscription  {
-  closed: boolean;
-  unsubscribe: () => void;
+    closed: boolean;
+    unsubscribe: () => void;
 }
 
 export interface Observable<T> {
-  // Subscribes to the sequence with an observer
-  subscribe(observer: Observer<T>): Subscription;
+    // Subscribes to the sequence with an observer
+    subscribe(observer: Observer<T>): Subscription;
 
-  // Subscribes to the sequence with callbacks
-  subscribe(
-    onNext: (value: T) => void,
-    onError?: (error: any) => void,
-    onComplete?: () => void
-  ): Subscription;
+    // Subscribes to the sequence with callbacks
+    subscribe(
+        onNext: (value: T) => void,
+        onError?: (error: any) => void,
+        onComplete?: () => void
+    ): Subscription;
 
-  getValue(): T;
+    getState(): T;
 }
 
 export interface Observer<T> {
-  // Receives the subscription object when `subscribe` is called
-  start?(subscription: Subscription): void;
+    // Receives the subscription object when `subscribe` is called
+    start?(subscription: Subscription): void;
 
-  // Receives the next value in the sequence
-  next(value: T): void;
+    // Receives the next value in the sequence
+    next(value: T): void;
 
-  // Receives the sequence error
-  error?(errorValue: any): void;
+    // Receives the sequence error
+    error?(errorValue: any): void;
 
-  // Receives a completion notification
-  complete?(): void;
+    // Receives a completion notification
+    complete?(): void;
 }
 
 export class SimpleSubscription implements Subscription {
-  closed: boolean;
+    closed: boolean;
 
-  private close: (observer: Observer<any>) => void
-  private observer: Observer<any>
+    private close: (observer: Observer<any>) => void
+    private observer: Observer<any>
 
-  constructor(close: (observer: Observer<any>) => void, observer: Observer<any>) {
-      this.close = close
-      this.observer = observer
-      if (this.observer.start) {
-        this.observer.start(this)
-      }
-  }
+    constructor(close: (observer: Observer<any>) => void, observer: Observer<any>) {
+        this.close = close
+        this.observer = observer
+        if (this.observer.start) {
+          this.observer.start(this)
+        }
+    }
 
-  unsubscribe() {
-      if (!this.closed) {
-          this.closed = true
-          this.close(this.observer)
-          delete this.close
-          delete this.observer
-      }
-  }
+    unsubscribe() {
+        if (!this.closed) {
+            this.closed = true
+            this.close(this.observer)
+            delete this.close
+            delete this.observer
+        }
+    }
+}
+
+export function createOrPassthroughObserver<T>(
+    onNextOrObserver: Observer<T> | ((value: T) => void),
+    onError?: (error: any) => void,
+    onComplete?: () => void
+): Observer<T> {
+    return (
+        typeof onNextOrObserver === 'function'
+            ? {
+                next: onNextOrObserver,
+                error: onError,
+                complete: onComplete,
+            }
+            : onNextOrObserver
+    )
 }

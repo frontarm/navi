@@ -35,6 +35,6 @@ export class UnmanagedLocationError extends ExtendableError {
   constructor(location: Location) {
     super(`URL not managed by router: ${createURL(location)}`)
     this.location = location
-    this.name = 'UnmanagedLocationERror'
+    this.name = 'UnmanagedLocationError'
   }
 }
