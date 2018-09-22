@@ -28,8 +28,8 @@ SOFTWARE.
 */
 
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
 import { Navigation } from 'junctions'
+import { NavigationContext } from './NavigationContext'
 
 
 export interface PromptProps {
@@ -38,51 +38,25 @@ export interface PromptProps {
 }
 
 
+export function Prompt(props: PromptProps) {
+  return (
+    <NavigationContext.Consumer>
+      {context => <InnerPrompt context={context} {...props} />}
+    </NavigationContext.Consumer>
+  )
+}
+
+
 /**
  * The public API for prompting the user before navigating away
  * from a screen with a component.
  */
-export class Prompt extends React.Component<PromptProps> {
+class InnerPrompt extends React.Component<PromptProps & { context: NavigationContext }> {
   navigation: Navigation;
   unblock?: () => void;
 
-  static propTypes = {
-    env: PropTypes.shape({
-      navigation: PropTypes.shape({
-        block: PropTypes.func.isRequired,
-      })
-    }),
-    when: PropTypes.bool,
-    message: PropTypes.oneOfType([
-      PropTypes.func,
-      PropTypes.string
-    ]).isRequired
-  }
-
   static defaultProps = {
     when: true,
-  }
-
-  static contextTypes = {
-    navigation: PropTypes.shape({
-      block: PropTypes.func.isRequired
-    }).isRequired
-  }
-  
-  constructor(props, context) {
-    super(props, context)
-
-    this.navigation = this.props.env ? this.props.env.navigation : context.navigation
-
-    if (process.env.NODE_ENV !== 'production') {
-      if (!this.navigation) {
-        console.warn(
-          `An <ExitPrompt> was created without access to a "navigation" object. `+
-          `You can provide a Navigation object through an "env" prop, or via `+
-          `React Context.`
-        )
-      }
-    }
   }
 
   enable(message) {
@@ -90,7 +64,7 @@ export class Prompt extends React.Component<PromptProps> {
       this.unblock()
     }
 
-    this.unblock = this.navigation.block(message)
+    this.unblock = this.props.context.history.block(message)
   }
 
   disable() {

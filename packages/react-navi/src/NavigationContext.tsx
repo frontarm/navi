@@ -1,13 +1,9 @@
 import * as React from 'react'
-import { Navigation, NavigationState } from 'junctions'
+import { NavigationState, Route } from 'junctions'
 
+export const NavigationContext = React.createContext<NavigationContext>(undefined as any)
 
-interface NavigationProviderProps {
-  navigation?: Navigation
-  navigationState?: NavigationState
-}
-
-
-export class NavigationProvider extends React.Component<NavigationProviderProps> {
-  
+export interface NavigationContext extends NavigationState {
+  // The routes that haven't been used yet. Initially identical to routingState.routes
+  unusedRoutes?: Route[],
 }

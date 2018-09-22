@@ -1,5 +1,5 @@
 {
-  "name": "navi-cli",
+  "name": "navi-static",
   "engine": {
     "node": ">=8.0.0"
   },
@@ -8,7 +8,7 @@
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
   "bin": {
-    "junctions-static": "./bin/junctions-static.js"
+    "navi": "./bin/navi.js"
   },
   "main": "lib/index.js",
   "scripts": {

@@ -1,34 +1,33 @@
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
-import { createHref, Location, Navigation } from 'junctions'
+import { NavigationContext } from './NavigationContext'
+import { createURL, Location, Navigation } from 'junctions'
 
 
 export interface LinkProps {
-  // NOTE: must be used with react-cx
-  cx?: any,
-
   active?: boolean,
   activeClassName?: string,
   activeStyle?: object,
   children: any,
   className?: string,
   disabled?: boolean,
-  env: { navigation: Navigation },
   exact?: boolean,
   hidden?: boolean,
   href: string | Location,
   id?: string,
   lang?: string,
+  rel?: string,
   style?: object,
   tabIndex?: number,
   target?: string,
   title?: string,
+  precache?: boolean,
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>,
 
   render?: (props: LinkRendererProps) => any,
 }
 
 export interface LinkRendererProps {
-  cx?: any,
+  Anchor: React.SFC<React.AnchorHTMLAttributes<HTMLAnchorElement>>,
 
   active: boolean,
   activeClassName?: string,
@@ -44,48 +43,61 @@ export interface LinkRendererProps {
   style?: object,
   target?: string,
   title?: string,
-  
-  onFollow: (event: { preventDefault: () => {} }) => void,
+  onClick: React.MouseEventHandler<any>,
 } 
 
 
-export class Link extends React.Component<LinkProps> {
+export const Link: React.SFC<LinkProps> = function Link(props: LinkProps) {
+  return (
+    <NavigationContext.Consumer>
+      {context => <InnerLink context={context} {...props} />}
+    </NavigationContext.Consumer>
+  )
+}
+
+Link.defaultProps = {
+  render: (props: LinkRendererProps) => {
+    let { 
+      active,
+      activeClassName,
+      activeStyle,
+      children,
+      className,
+      hidden,
+      style,
+    } = props
+
+    return (
+      <props.Anchor
+        children={children}
+        className={`${className || ''} ${(active && activeClassName) || ''}`}
+        hidden={hidden}
+        style={Object.assign({}, style, active ? activeStyle : {})}
+      />
+    )
+  }
+}
+
+
+interface InnerLinkProps extends LinkProps {
+  context: NavigationContext
+}
+
+class InnerLink extends React.Component<InnerLinkProps> {
   navigation: Navigation
 
-  static defaultProps = {
-    render: (props: LinkRendererProps) =>
-      <AnchorLink {...props} />
-  }
+  constructor(props: InnerLinkProps) {
+    super(props)
 
-  static contextTypes = {
-    navigation: PropTypes.object,
-  }
-
-  constructor(props, context) {
-    super(props, context)
-
-    this.navigation = this.props.env ? this.props.env.navigation : context.navigation
-
-    // NOTE: I may want to enable this even outside of productino at some
-    // point, as it can be used to pre-cache linked pages.
-    if (process.env.NODE_ENV !== 'production') {
-      if (!this.navigation && this.getLocation()) {
-        console.warn(
-          `A <Link> was created without access to a "navigation" object. `+
-          `You can provide a Navigation object through an "env" prop, or via `+
-          `React Context.`
-        )
-      }
-      
-      let location = this.getLocation() as Location
-      if (location && location.pathname) {
-        this.navigation.getPages(location.pathname).catch(() => {
+    let location = this.getLocation() as Location
+    if (location && location.pathname) {
+      this.props.context.router.pageRoute(location, { withContent: props.precache })
+        .catch(() => {
           console.warn(
             `A <Link> referred to href "${location.pathname}", but the` +
             `router could not find this path.`
           )
         })
-      }
     }
   }
 
@@ -115,73 +127,68 @@ export class Link extends React.Component<LinkProps> {
     if (hash) location.hash = '#' + hash
     return location
   }
-
-  handleFollow = (event: ({ preventDefault: () => {} })) => {
-    if (this.props.disabled) {
-      event.preventDefault()
-      return
-    }
-    
-    let location = this.getLocation()
-    if (location) {
-      event.preventDefault()
-      this.navigation.pushLocation(location)
-    }
-  }
   
   render() {
-    let {
-      env,
-      exact,
-      href,
-      render = Link.defaultProps.render,
-      ...other
-    } = this.props
-
+    let props = this.props
     let linkLocation = this.getLocation()
-    let navigationLocation = this.navigation.getLocation()
-    let active =
-      env && linkLocation &&
-      (exact
+    let navigationLocation = this.props.context.location
+    let active = !!(
+      linkLocation &&
+      (props.exact
         ? linkLocation.pathname === navigationLocation.pathname
         : navigationLocation.pathname.indexOf(linkLocation.pathname) === 0)
+    )
 
-    return render({
-      active: !!active,
-      href: linkLocation ? createHref(linkLocation) : href as string,
-
-      ...other,
-      
-      onFollow: this.handleFollow,
+    return props.render!({
+      Anchor: this.Anchor,
+      active,
+      activeClassName: props.activeClassName,
+      activeStyle: props.activeStyle,
+      children: props.children,
+      className: props.className,
+      disabled: props.disabled,
+      tabIndex: props.tabIndex,
+      hidden: props.hidden,
+      href: linkLocation ? createURL(linkLocation) : props.href as string,
+      id: props.id,
+      lang: props.lang,
+      style: props.style,
+      target: props.target,
+      title: props.title,
+      onClick: this.handleClick,
     })
   }
-}
 
-
-export class AnchorLink extends React.Component<LinkRendererProps> {
-  render() {
-    let { 
-      active,
-      activeClassName,
-      activeStyle,
-      className,
-      disabled,
-      style,
-      onFollow,
-      ...other
-    } = this.props
+  Anchor = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+    let linkLocation = this.getLocation()
+    let handleClick: React.MouseEventHandler<HTMLAnchorElement> = this.handleClick
+    if (props.onClick) {
+      handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        props.onClick!(e)
+        if (!e.defaultPrevented) {
+          this.handleClick(e)
+        }
+      }
+    }
 
     return (
       <a
-        {...other}
-        className={(className || '')+' '+((active && activeClassName) || '')}
-        onClick={this.handleClick}
-        style={Object.assign({}, style, active ? activeStyle : {})}
+        id={this.props.id}
+        lang={this.props.lang}
+        rel={this.props.target}
+        tabIndex={this.props.tabIndex}
+        target={this.props.target}
+        title={this.props.title}
+
+        {...props}
+
+        href={linkLocation ? createURL(linkLocation) : this.props.href as string}
+        onClick={handleClick}
       />
     )
   }
 
-  handleClick = (event) => {
+  handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     // Let the browser handle the event directly if:
     // - The user used the middle/right mouse button
     // - The user was holding a modifier key
@@ -190,7 +197,20 @@ export class AnchorLink extends React.Component<LinkRendererProps> {
     if (event.button === 0 &&
         !(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) &&
         !this.props.target) {
-          this.props.onFollow(event)
+      if (this.props.disabled) {
+        event.preventDefault()
+        return
+      }
+
+      if (this.props.onClick) {
+        this.props.onClick(event)
+      }
+      
+      let location = this.getLocation()
+      if (!event.isDefaultPrevented && location) {
+        event.preventDefault()
+        this.props.context.history.push(location)
+      }
     }
   }
 }
