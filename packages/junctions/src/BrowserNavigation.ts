@@ -1,15 +1,13 @@
 import { createBrowserHistory, History, locationsAreEqual } from 'history';
 import { Navigation, NavigationState } from './Navigation'
 import { RouteType } from './Route'
-import { Router } from './Router'
+import { Router, RouterOptions, createRouter } from './Router'
 import { RoutingState } from './RoutingState'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { HistoryRoutingObservable, createHistoryRoutingObservable } from './HistoryRoutingObservable';
 
 
-type BrowserNavigationOptions<Context> = {
-    router: Router<Context>,
-    
+interface BrowserNavigationOptions<Context> extends RouterOptions<Context> {
     /**
      * You can manually supply a history object. This is useful for
      * integration with react-router.
@@ -55,7 +53,7 @@ export class BrowserNavigation<Context> implements Navigation {
 
     constructor(options: BrowserNavigationOptions<Context>) {
         this.history = options.history || createBrowserHistory()
-        this.router = options.router
+        this.router = createRouter(options)
 
         if (options.setDocumentTitle !== false) {
             this.setDocumentTitle = typeof options.setDocumentTitle === 'function' ? options.setDocumentTitle : ((x) => x || 'Untitled Page')

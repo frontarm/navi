@@ -7,6 +7,7 @@ export { HistoryRoutingObservable, createHistoryRoutingObservable } from './Hist
 export { createPage, Page } from './Page'
 export { createRedirect, Redirect } from './Redirect'
 export * from './Route'
+export * from './Errors'
 export { Router, createRouter } from './Router'
 export { RoutingState } from './RoutingState'
 export { MaybeResolvableNode, Node } from './Node'

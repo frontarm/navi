@@ -45,7 +45,7 @@ export function createRoutingState(location: Location, topRoute: JunctionRoute):
     firstRoute: routes[0] as JunctionRoute,
     lastRoute,
     isSteady: isRouteSteady(routes[0]),
-    error: lastRoute && lastRoute.error,
+    error: lastRoute && (lastRoute.error || lastRoute.contentError),
     status,
   } 
 }

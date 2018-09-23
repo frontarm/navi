@@ -29,7 +29,7 @@ export interface RouterEvent {
 
 
 export interface RouterOptions<Context> {
-    junction: Junction,
+    rootJunction: Junction,
     rootPath?: string,
     initialContext?: Context,
     onEvent?: (event: RouterEvent) => void,
@@ -58,8 +58,14 @@ export class Router<Context=any> {
     private rootMapping: AbsoluteMapping
     
     constructor(options: RouterOptions<Context>) {
-        this.rootMapping = createRootMapping(options.junction, options.rootPath)
-        this.rootJunction = options.junction
+        if (process.env.NODE_ENV !== "production") {
+            if (!options.rootJunction || options.rootJunction.type !== RouteType.Junction) {
+                throw new Error(`Expected to receive a Junction object for the "junction" prop, but instead received "${options.rootJunction}".`)
+            }
+        }
+
+        this.rootMapping = createRootMapping(options.rootJunction, options.rootPath)
+        this.rootJunction = options.rootJunction
         this.resolver = new Resolver(
             new RouterEnv(options.initialContext || {} as any, this),
             options.onEvent || (() => {}),
@@ -70,7 +76,7 @@ export class Router<Context=any> {
         this.resolver.setEnv(new RouterEnv(context || {}, this))
     }
 
-    observable(locationOrURL: Location | string, options: RouterLocationOptions = {}): RoutingObservable {
+    observable(locationOrURL: Location | string, options: RouterLocationOptions = {}): RoutingObservable | undefined {
         // need to somehow keep track of which promises in the resolver correspond to which observables,
         // so that I don't end up updating observables which haven't actually changed.
         let location = typeof locationOrURL === 'string' ? parseLocationString(locationOrURL) : locationOrURL
@@ -83,9 +89,6 @@ export class Router<Context=any> {
                 this.resolver,
                 options
             )
-        }
-        else {
-            throw new UnmanagedLocationError(location)
         }
     }
 

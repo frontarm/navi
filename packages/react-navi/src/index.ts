@@ -1,7 +1,10 @@
 export * from 'junctions'
 
-export * from './Consumer'
+export { NavigationContext as Context } from './NavigationContext'
+
+export * from './Consume'
+export * from './ErrorBoundary'
+export * from './History'
 export * from './Link'
 export * from './Prompt'
 export * from './Provider'
-export * from './UseRoute'

@@ -1,4 +1,5 @@
 import { History } from 'history'
+import { UnmanagedLocationError } from './Errors'
 import { Location, createURL } from './Location'
 import { RouteType } from './Route'
 import { Router } from './Router'
@@ -23,6 +24,7 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
     readonly history: History
     readonly router: Router<Context>
 
+    private error?: any
     private waitUntilSteadyDeferred?: Deferred<RoutingState>
     private observers: Observer<RoutingState>[]
     private lastLocation: Location
@@ -52,7 +54,10 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
      * content is loaded before making the first render.
      */
     async getSteadyState(): Promise<RoutingState> {
-        if (this.lastState.isSteady) {
+        if (this.error) {
+            return Promise.reject(this.error)
+        }
+        else if (this.lastState.isSteady) {
             return Promise.resolve(this.lastState)
         }
         else if (!this.waitUntilSteadyDeferred) {
@@ -92,39 +97,31 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
 
         // The router only looks at path and search, so if they haven't
         // changed, there's no point recreating the observable.
-        if (!(pathHasChanged || searchHasChanged || force)) {
+        if (!force && !(pathHasChanged || searchHasChanged) && !this.lastState.error) {
             this.update({
                 location,
             })
             return
         }
 
-        this.lastLocation = location
-
         if (this.observableSubscription) {
             this.observableSubscription.unsubscribe()
         }
 
-        try {
-            this.routingObservable = this.router.observable(location, { withContent: true })
+        let observable = this.router.observable(location, { withContent: true })
+        if (observable) {
+            this.routingObservable = observable
             this.observableSubscription = this.routingObservable.subscribe(this.handleRouteChange)
             this.update({
                 location,
                 state: this.routingObservable.getState(),
             })
         }
-        catch (e) {
-            if (this.waitUntilSteadyDeferred) {
-                this.waitUntilSteadyDeferred.reject(e)
-                delete this.waitUntilSteadyDeferred
-            }
-            for (let i = 0; i < this.observers.length; i++) {
-                let observer = this.observers[i]
-                if (observer.error) {
-                    observer.error(e)
-                }
-            }
+        else if (!this.lastLocation) {
+            throw new UnmanagedLocationError(location)
         }
+
+        this.lastLocation = location
     }
 
     private handleRouteChange = (state: RoutingState) => {

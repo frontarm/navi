@@ -1,18 +1,31 @@
 import { Location, createURL, concatLocations } from './Location'
 import { MappingMatch } from './Mapping';
 
-// See https://stackoverflow.com/questions/31089801/extending-error-in-javascript-with-es6-syntax-babel
-class ExtendableError extends Error {
+// See https://stackoverflow.com/questions/30402287/extended-errors-do-not-have-message-or-stack-trace
+export class NaviError extends Error {
+  __proto__: NaviError;
+
   constructor(message) {
+    const trueProto = new.target.prototype;
+
     super(message);
 
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
+    this.__proto__ = trueProto;
+
+    if (Error.hasOwnProperty('captureStackTrace'))
+        Error.captureStackTrace(this, this.constructor);
+    else
+       Object.defineProperty(this, 'stack', {
+          value: (new Error()).stack
+      });
+
+    Object.defineProperty(this, 'message', {
+      value: message
+    });
   }
 }
 
-export class NotFoundError extends ExtendableError {
+export class NotFoundError extends NaviError {
   location: Location
   url: string
   match: MappingMatch
@@ -29,7 +42,18 @@ export class NotFoundError extends ExtendableError {
   }
 }
 
-export class UnmanagedLocationError extends ExtendableError {
+export class UnresolvableError extends NaviError {
+  details: any
+
+  constructor(details: any) {
+    super(`Some parts of your app couldn't be loaded.`)
+
+    this.details = details
+    this.name = 'UnresolvableError'
+  }
+}
+
+export class UnmanagedLocationError extends NaviError {
   location: Location
 
   constructor(location: Location) {

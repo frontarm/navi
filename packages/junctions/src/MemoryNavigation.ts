@@ -1,14 +1,13 @@
 import { createMemoryHistory, History } from 'history';
 import { Navigation, NavigationState } from './Navigation'
-import { Router } from './Router'
+import { Router, RouterOptions, createRouter } from './Router'
 import { RoutingState } from './RoutingState'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { HistoryRoutingObservable, createHistoryRoutingObservable } from './HistoryRoutingObservable';
 
 
-type MemoryNavigationOptions<Context> = {
-    url: string,
-    router: Router<Context>
+interface MemoryNavigationOptions<Context> extends RouterOptions<Context> {
+    url: string
 }
 
 
@@ -27,7 +26,7 @@ export class MemoryNavigation<Context> implements Navigation {
         this.history = createMemoryHistory({
             initialEntries: [options.url],
         })
-        this.router = options.router
+        this.router = createRouter(options)
         this.historyRoutingObservable = createHistoryRoutingObservable({
             history: this.history,
             router: this.router,

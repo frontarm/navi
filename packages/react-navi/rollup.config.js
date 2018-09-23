@@ -11,10 +11,14 @@ import uglify from 'rollup-plugin-uglify'
 const env = process.env.NODE_ENV
 const config = {
   external: [
+    'junctions',
+    'history',
     'react',
     'react-dom',
   ],
   globals: {
+    'junctions': 'Junctions',
+    'history': 'History',
     'react': 'React',
     'react-dom': 'ReactDOM',
   },

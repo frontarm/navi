@@ -1,4 +1,4 @@
-import { Link } from 'react-junctions'
+import { Link } from 'react-navi'
 
 Junctions Tutorial: Make this site
 ==================================

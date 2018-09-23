@@ -1,10 +1,11 @@
 import { RouterEnv } from './RouterEnv';
 import { RouterEvent } from './Router';
+import { UnresolvableError } from './Errors';
 
 export type Resolvable<
     T,
     Context=any
-> = (env: RouterEnv<Context>) => PromiseLike<T> | T
+> = (env: RouterEnv<Context>) => PromiseLike<{ default: T } | T> | T
 
 export enum ResolverStatus {
     Ready = 'Ready',
@@ -108,7 +109,7 @@ export class Resolver<Context=any> {
                         this.results.set(resolvable, {
                             id: currentResult.id,
                             status: ResolverStatus.Ready,
-                            value,
+                            value: extractDefault(value),
                         })
                         return true
                     }
@@ -119,8 +120,22 @@ export class Resolver<Context=any> {
                         this.results.set(resolvable, {
                             id: currentResult.id,
                             status: ResolverStatus.Error,
-                            error,
+                            error: new UnresolvableError(error),
                         })
+
+                        // Remove errors from the cache in a short delay that
+                        // accounts for them being used
+                        // TODO: use requestIdleCallback instead
+                        setTimeout(() => {
+                            let result = this.results.get(resolvable)
+                            if (result && currentResult && result.id === currentResult.id && result.error) {
+                                // No need to notify any subscribers that the
+                                // cache has been purged, as we don't want to
+                                // cause a re-render.
+                                this.results.delete(resolvable)
+                            }
+                        })
+                        
                         return true
                     }
                 }
@@ -150,6 +165,19 @@ export class Resolver<Context=any> {
 
 // Not all promise libraries use the ES6 `Promise` constructor,
 // so there isn't a better way to check if it's a promise :-(
-function isPromiseLike<T>(x: PromiseLike<T> | T): x is PromiseLike<T> {
+function isPromiseLike<T>(x: PromiseLike<{ default: T } | T> | T): x is PromiseLike<{ default: T } | T> {
     return !!x && !!(x['then'])
+}
+
+function extractDefault<T>(value: { default: T } | T): T {
+    if (hasDefault(value)) {
+        return value.default
+    }
+    else {
+        return value
+    }
+}
+
+function hasDefault<T>(value: { default: T } | T): value is { default: T } {
+    return 'default' in (value as any)
 }

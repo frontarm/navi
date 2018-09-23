@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { 
     createPage,
     createJunction,
@@ -34,7 +33,7 @@ let Article2 = createPage({
 })
 
 
-class ArticlesComponent extends React.Component<{ route: JunctionRoute<typeof ArticlesJunction['meta']> }, any> {
+class ArticlesComponent extends React.Component {
     render() {
         let { route } = this.props
 
@@ -61,7 +60,7 @@ let ArticlesJunction = createJunction({
 })
 
 
-class AppComponent extends React.Component<{ route: JunctionRoute }> {
+class AppComponent extends React.Component {
     render() {
         let { route } = this.props
 

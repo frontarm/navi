@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Navigation, NavigationState, Subscription } from 'junctions'
-import { NavigationContext } from 'react-navi/src/NavigationContext'
+import { Navigation, NavigationState, Subscription, NaviError } from 'junctions'
+import { NavigationContext } from './NavigationContext'
 
 
 interface NavigationProviderProps {
@@ -16,7 +16,7 @@ interface NavigationProviderState {
 export class NavigationProvider extends React.Component<NavigationProviderProps, NavigationProviderState> {
   subscription?: Subscription
 
-  static getDerivedStateFromProps(props: NavigationProviderProps, state: NavigationProviderState = {}) {
+  static getDerivedStateFromProps(props: NavigationProviderProps, state: NavigationProviderState) {
     if (props.navigationState) {
       return {
         navigationState: undefined,
@@ -33,6 +33,11 @@ export class NavigationProvider extends React.Component<NavigationProviderProps,
     else {
       return null
     }
+  }
+
+  constructor(props: NavigationProviderProps) {
+    super(props)
+    this.state = {}
   }
 
   render() {
@@ -97,12 +102,8 @@ export class NavigationProvider extends React.Component<NavigationProviderProps,
   }
 }
 
-export class MissingNavigationError extends Error {
+export class MissingNavigationError extends NaviError {
   constructor() {
     super(`A <NavigationProvider> component must receive a "navigation" or "navigationState" prop.`)
-
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor);
-    }
   }
 }

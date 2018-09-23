@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-junctions'
+import { Link } from 'react-navi'
 import './MDXWrapper.css'
 
 
@@ -28,11 +28,7 @@ function createHeadingFactory(type) {
 
 export class MDXWrapper extends React.Component {
   factories = {
-    a: (props, ...children) =>
-        React.createElement(Link, {
-            ...props,
-            env: this.props.env
-        }, ...children),
+    a: (props, ...children) => React.createElement(Link, props, ...children),
 
     h1: createHeadingFactory('h1'),
     h2: createHeadingFactory('h2'),
@@ -43,34 +39,14 @@ export class MDXWrapper extends React.Component {
   }
 
   render() {
-    let { env, page } = this.props
+    let { route } = this.props
 
     return (
         <div className='MDXWrapper'>
-            <LoadingIndicator isLoading={page.contentStatus === 'busy'} />
-
-            {   page.contentStatus === 'ready' &&
-                <div className='MDXWrapper-ready'>
-                    {React.createElement(page.content.default, {
-                        factories: this.factories,
-                        page: page,
-                        env: env,
-                    })}
-                </div>
-            }
-            {   page.contentStatus === 'error' &&
-                <div className='MDXWrapper-error'>
-                    <h1>Gosh darn it.</h1>
-                    <p>Something went wrong while loading the page.</p>
-                </div>
-            }
+            {React.createElement(route.content, {
+                factories: this.factories,
+            })}
         </div>
     )
   }
 }
-
-const LoadingIndicator = ({ isLoading }) =>
-  <div className={`
-    MDXWrapper-LoadingIndicator
-    MDXWrapper-LoadingIndicator-${isLoading ? 'loading' : 'done'}
-  `} />

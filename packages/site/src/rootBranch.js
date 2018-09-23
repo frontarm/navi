@@ -1,63 +1,9 @@
-import React from 'react'
-import { createJunctionTemplate, createPageTemplate, JunctionActiveChild } from 'react-junctions'
-import { MDXWrapper } from './MDXWrapper'
-import { Sidebar } from './Sidebar'
-import './App.css'
+import { createJunction, createPage } from 'junctions'
 
-
-export class App extends React.Component {
-  state = {
-    open: false,
-  }
-
-  handleToggleMenu = () => {
-    this.setState({ open: !this.state.open })
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.junction !== this.props.junction) {
-      this.setState({ open: false })
-    }
-  }
-
-  render() {
-    let { env, junction } = this.props
-
-    return (
-      <div className="App">
-        <div className={`App-nav ${this.state.open ? 'App-nav-open' : ''}`}>
-          <Sidebar
-            env={env}
-            className='App-nav-sidebar'
-          />
-          <button
-            className='App-nav-hamburger'
-            onClick={this.handleToggleMenu}>
-            <div className='App-nav-hamburger-icon' />
-          </button>
-        </div>
-
-        <main className="App-content">
-          <JunctionActiveChild
-            junction={junction}
-            notFoundElement={
-              <div className='App-notfound'>
-                <h1>404</h1>
-              </div>
-            }
-          />
-        </main>
-      </div>
-    )
-  }
-}
-
-
-export const AppJunctionTemplate = createJunctionTemplate({
-  children: {
-    '/': createPageTemplate({
+export const rootBranch = createJunction({
+  paths: {
+    '/': createPage({
       title: 'Junctions',
-      component: MDXWrapper,
       getContent: () => import('!babel-loader!mdx-loader!./pages/landing.md'),
       meta: {
         socialTitle: 'Junctions',
@@ -65,9 +11,8 @@ export const AppJunctionTemplate = createJunctionTemplate({
       },
     }),
 
-    '/api-reference': createPageTemplate({
+    '/api-reference': createPage({
       title: 'Junctions API Reference',
-      component: MDXWrapper,
       getContent: () => import('!babel-loader!mdx-loader!./pages/api-reference.md'),
       meta: {
         socialTitle: 'Junctions API Reference',
@@ -75,9 +20,8 @@ export const AppJunctionTemplate = createJunctionTemplate({
       },
     }),
 
-    '/static-sites-with-create-react-app': createPageTemplate({
+    '/static-sites-with-create-react-app': createPage({
       title: 'Static sites with create-react-app and Junctions',
-      component: MDXWrapper,
       getContent: () => import('!babel-loader!mdx-loader!./pages/static-sites-with-create-react-app.md'),
       meta: {
         socialTitle: 'Static rendering for create-react-app',
@@ -85,9 +29,8 @@ export const AppJunctionTemplate = createJunctionTemplate({
       },
     }),
 
-    '/tutorial': createPageTemplate({
+    '/tutorial': createPage({
       title: 'Junctions Tutorial',
-      component: MDXWrapper,
       getContent: () => import('!babel-loader!mdx-loader!./pages/tutorial.md'),
       meta: {
         socialTitle: 'Build a static documentation site, with create-react-app and Junctions',
@@ -95,9 +38,8 @@ export const AppJunctionTemplate = createJunctionTemplate({
       },
     }),
 
-    '/why-another-router': createPageTemplate({
+    '/why-another-router': createPage({
       title: 'Why another Router?',
-      component: MDXWrapper,
       getContent: () => import('!babel-loader!mdx-loader!./pages/why-another-router.md'),
       meta: {
         socialTitle: 'react-router vs. Junctions',
@@ -105,9 +47,8 @@ export const AppJunctionTemplate = createJunctionTemplate({
       },
     }),
 
-    '/why-another-static-site-generator': createPageTemplate({
+    '/why-another-static-site-generator': createPage({
       title: 'Why another Router?',
-      component: MDXWrapper,
       getContent: () => import('!babel-loader!mdx-loader!./pages/why-another-static-site-generator.md'),
       meta: {
         socialTitle: 'Gatsby vs. Junctions',
@@ -115,6 +56,4 @@ export const AppJunctionTemplate = createJunctionTemplate({
       },
     }),
   },
-
-  component: App,
 })

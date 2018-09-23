@@ -1,58 +1,56 @@
 import React from 'react'
-import { Link } from 'react-junctions'
+import { Link } from 'react-navi'
 import logo from './logo.svg'
 import './Sidebar.css'
 
 
-export const Sidebar = ({ className='', env }) =>
+export const Sidebar = ({ className='' }) =>
   <div className={"Sidebar "+className}>
-    <Link env={env} href='/' className="Sidebar-brand">
+    <Link href='/' className="Sidebar-brand">
       <img src={logo} className="Sidebar-brand-logo" alt="logo" />
       <span className="Sidebar-brand-title">Junctions</span>
     </Link>
 
     <nav className="Sidebar-nav">
       <section>
-        <NavLink env={env} href="/" className="Sidebar-nav-heading">Junctions</NavLink>
-        <NavLink env={env} href="/why-another-router/">Why another router?</NavLink>
-        <NavLink env={env} href="/why-another-static-site-generator/">Why another static generator?</NavLink>
+        <NavLink href="/" className="Sidebar-nav-heading">Junctions</NavLink>
+        <NavLink href="/why-another-router/">Why another router?</NavLink>
+        <NavLink href="/why-another-static-site-generator/">Why another static generator?</NavLink>
       </section>
 
       <section>
-        <NavLink env={env} href="/tutorial/" className="Sidebar-nav-heading">Tutorial</NavLink>
-        <HashLink env={env} href="/tutorial/#Creating-a-react-app">Creating a React app</HashLink>
-        <HashLink env={env} href="/tutorial/#Templates">Templates</HashLink>
-        <HashLink env={env} href="/tutorial/#The-JunctionNavigation-Component">The JunctionNavigation component</HashLink>
-        <HashLink env={env} href="/tutorial/#Junctions-and-Pages">Junctions and Pages</HashLink>
-        <HashLink env={env} href="/tutorial/#Rendering-Content">Rendering content</HashLink>
-        <HashLink env={env} href="/tutorial/#Links">Links</HashLink>
-        <HashLink env={env} href="/tutorial/#Markdown-Components">Markdown components</HashLink>
-        <HashLink env={env} href="/tutorial/#Split-Content">Split content</HashLink>
-        <HashLink env={env} href="/tutorial/#Static-Builds">Static builds</HashLink>
+        <NavLink href="/tutorial/" className="Sidebar-nav-heading">Tutorial</NavLink>
+        <HashLink href="/tutorial/#Creating-a-react-app">Creating a React app</HashLink>
+        <HashLink href="/tutorial/#Templates">Templates</HashLink>
+        <HashLink href="/tutorial/#The-JunctionNavigation-Component">The JunctionNavigation component</HashLink>
+        <HashLink href="/tutorial/#Junctions-and-Pages">Junctions and Pages</HashLink>
+        <HashLink href="/tutorial/#Rendering-Content">Rendering content</HashLink>
+        <HashLink href="/tutorial/#Links">Links</HashLink>
+        <HashLink href="/tutorial/#Markdown-Components">Markdown components</HashLink>
+        <HashLink href="/tutorial/#Split-Content">Split content</HashLink>
+        <HashLink href="/tutorial/#Static-Builds">Static builds</HashLink>
       </section>
       
       <section>
         <div className="Sidebar-nav-heading">Guides</div>
-        <NavLink env={env} href="/static-sites-with-create-react-app/">Static builds with create-react-app</NavLink>
+        <NavLink href="/static-sites-with-create-react-app/">Static builds with create-react-app</NavLink>
       </section>
 
       <section className="Sidebar-api">
-        <NavLink env={env} href="/api-reference/" className="Sidebar-nav-heading">API Reference</NavLink>
+        <NavLink href="/api-reference/" className="Sidebar-nav-heading">API Reference</NavLink>
         
         <div className="Sidebar-nav-subheading">Templates</div>
 
-        <HashLink env={env} href="/api-reference/#createPageTemplate">createPageTemplate</HashLink>
-        <HashLink env={env} href="/api-reference/#createRedirectTemplate">createRedirectTemplate</HashLink>
-        <HashLink env={env} href="/api-reference/#createJunctionTemplate">createJunctionTemplate</HashLink>
+        <HashLink href="/api-reference/#createPageTemplate">createPageTemplate</HashLink>
+        <HashLink href="/api-reference/#createRedirectTemplate">createRedirectTemplate</HashLink>
+        <HashLink href="/api-reference/#createJunctionTemplate">createJunctionTemplate</HashLink>
 
         <div className="Sidebar-nav-subheading">Components</div>
 
         {/*<ComponentLink
-          env={env}
           href="/api-reference/#ExitPrompt"
           name='ExitPrompt'
           props={[
-            ['env', 'env?: { navigation }'],
             ['message-string', 'message: string'],
             ['message-func', 'message: func'],
             ['when', 'when?: bool'],
@@ -60,7 +58,6 @@ export const Sidebar = ({ className='', env }) =>
         />*/}
 
         {<ComponentLink
-          env={env}
           href="/api-reference/#JunctionActiveChild"
           name='JunctionActiveChild'
           props={[
@@ -72,7 +69,6 @@ export const Sidebar = ({ className='', env }) =>
         />}
 
         <ComponentLink
-          env={env}
           href="/api-reference/#JunctionNavigation"
           name='JunctionNavigation'
           props={[
@@ -87,14 +83,12 @@ export const Sidebar = ({ className='', env }) =>
         />
 
         <ComponentLink
-          env={env}
           href="/api-reference/#Link"
           name='Link'
           props={[
             ['active', 'active?: bool'],
             ['activeClassName', 'activeClassName?: string'],
             ['activeStyle', 'activeStyle?: object'],
-            ['env', 'env?: { navigation }'],
             ['exact', 'exact?: string'],
             ['href', 'href: string'],
           ]}
@@ -102,43 +96,40 @@ export const Sidebar = ({ className='', env }) =>
 
         <div className="Sidebar-nav-subheading">Types</div>
 
-        <HashLink env={env} href="/api-reference/#Junction">Junction</HashLink>
-        <HashLink env={env} href="/api-reference/#Page">Page</HashLink>
+        <HashLink href="/api-reference/#Junction">Junction</HashLink>
+        <HashLink href="/api-reference/#Page">Page</HashLink>
       </section>
 
       <section>
-        <NavLink env={env} href="https://github.com/jamesknelson/junctions" className="Sidebar-nav-heading">GitHub &raquo;</NavLink>
+        <NavLink href="https://github.com/jamesknelson/junctions" className="Sidebar-nav-heading">GitHub &raquo;</NavLink>
       </section>
     </nav>
   </div>
 
 
-const NavLink = ({ children, className='', env, href }) =>
+const NavLink = ({ children, className='', href }) =>
   <Link
     activeClassName='Sidebar-NavLink-active'
     className={'Sidebar-NavLink '+className}
-    env={env}
     href={href}
     exact>
     {children}
   </Link>
 
-const HashLink = ({ children, className='', env, href }) =>
+const HashLink = ({ children, className='', href }) =>
   <Link
     className={'Sidebar-HashLink '+className}
-    env={env}
     href={href}
     exact>
     {children}
   </Link>
 
-const ComponentLink = ({ env, href, name, props }) =>
+const ComponentLink = ({ href, name, props }) =>
   <div className='Sidebar-ComponentLink'>
-    <HashLink env={env} href={href}>&lt;{name}&gt;</HashLink>
+    <HashLink href={href}>&lt;{name}&gt;</HashLink>
     {/*props.map(([id, label]) => 
       <HashLink
         key={id}
-        env={env}
         href={href+'-'+id}
         className="Sidebar-nav-prop">
         {label}

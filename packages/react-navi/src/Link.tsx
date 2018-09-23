@@ -57,7 +57,7 @@ export const Link: React.SFC<LinkProps> = function Link(props: LinkProps) {
 
 Link.defaultProps = {
   render: (props: LinkRendererProps) => {
-    let { 
+    let {
       active,
       activeClassName,
       activeStyle,
@@ -197,6 +197,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
     if (event.button === 0 &&
         !(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) &&
         !this.props.target) {
+
       if (this.props.disabled) {
         event.preventDefault()
         return
@@ -207,7 +208,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
       }
       
       let location = this.getLocation()
-      if (!event.isDefaultPrevented && location) {
+      if (!event.defaultPrevented && location) {
         event.preventDefault()
         this.props.context.history.push(location)
       }
