@@ -100,7 +100,7 @@ interface InnerConsumeState {
 class InnerConsume extends React.Component<InnerConsumeProps, InnerConsumeState> {
   static getDerivedStateFromProps(props: InnerConsumeProps, state: InnerConsumeState) {
     let unusedRoutes = props.context.unusedRoutes || props.context.routes
-
+    
     let errorRoute = unusedRoutes.find(route =>
       route.status === RouteStatus.Error ||
       route.contentStatus === RouteContentStatus.Error
@@ -111,19 +111,19 @@ class InnerConsume extends React.Component<InnerConsumeProps, InnerConsumeState>
       }
     }
 
-    let index = unusedRoutes.findIndex(props.where!)
-    if (index === -1) {
-      return {
-        error: new MissingRoute(props.context),
-      }
-    }
-
-    let usedRoutes = unusedRoutes.slice(0, index + 1)
-    let route = unusedRoutes[index]
-    let isReady = props.isReady!(route)
+    let isReady = props.isReady!(unusedRoutes[0])
     let lastReady = state.lastReady
 
     if (isReady) {
+      let index = unusedRoutes.findIndex(props.where!)
+      if (index === -1) {
+        return {
+          error: new MissingRoute(props.context),
+        }
+      }
+      let usedRoutes = unusedRoutes.slice(0, index + 1)
+      let route = unusedRoutes[index]
+
       lastReady = {
         route,
         usedRoutes,
