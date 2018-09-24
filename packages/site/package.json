@@ -1,6 +1,6 @@
 {
   "name": "site",
-  "version": "0.4.4",
+  "version": "0.7.0-beta.3",
   "private": true,
   "dependencies": {
     "mdx-loader": "^1.0.0-beta.3",
@@ -14,7 +14,7 @@
     "clean": "rimraf build",
     "start": "react-scripts start",
     "build": "react-scripts build && navi build -e build/static/js/main.*.js",
-    "map": "react-scripts build && navi map -e build/static/js/main.*.js -j",
+    "map": "react-scripts build && navi map -e build/static/js/main.*.js -j -o build/static/js/map.json",
     "test": "react-scripts test --env=jsdom",
     "serve": "navi serve -p 3000"
   }

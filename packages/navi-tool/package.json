@@ -3,7 +3,7 @@
   "engine": {
     "node": ">=8.0.0"
   },
-  "version": "0.7.0-beta.2",
+  "version": "0.7.0-beta.3",
   "description": "Build static websites with navi-based apps.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -22,8 +22,8 @@
     "finalhandler": "^1.1.0",
     "fs-extra": "^5.0.0",
     "jsdom": "^11.5.1",
-    "serve-static": "^1.11.2",
-    "raf": "^3.4.0"
+    "raf": "^3.4.0",
+    "serve-static": "^1.11.2"
   },
   "keywords": [
     "navi",
