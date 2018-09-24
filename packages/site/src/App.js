@@ -5,11 +5,13 @@ import { Sidebar } from './Sidebar'
 import './App.css'
 
 
-export function App() {
+export function App(props) {
   return (
-    <Navi.History>
-      {history => <AppContent location={history.location} />}
-    </Navi.History>
+    <Navi.Provider navigation={props.navigation}>
+      <Navi.History>
+        {history => <AppContent location={history.location} />}
+      </Navi.History>
+    </Navi.Provider>
   )
 }
 

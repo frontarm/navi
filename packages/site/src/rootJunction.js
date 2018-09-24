@@ -1,6 +1,6 @@
 import { createJunction, createPage } from 'junctions'
 
-export const rootBranch = createJunction({
+export const rootJunction = createJunction({
   paths: {
     '/': createPage({
       title: 'Junctions',
