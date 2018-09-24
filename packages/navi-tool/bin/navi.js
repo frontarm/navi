@@ -33,7 +33,8 @@ async function createConfigFromCommand(command) {
     config = require(path.resolve(cwd, command.config))
   }
   catch (e) {
-    console.log(chalk.red("[ohshit] ")+`Couldn't read config file "${command.config}". Aborting.`)
+    console.error(chalk.red("[ohshit] ")+`Couldn't read config file "${command.config}". Aborting.`)
+    console.error(e.message)
     process.exit(1)
   }
 

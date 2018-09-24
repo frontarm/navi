@@ -9,7 +9,7 @@ let templatePath = path.resolve(rootDir, 'public/index.html')
 let template = fs.readFileSync(templatePath, 'utf8')
 
 let assetManifestPath = path.resolve(rootDir, 'build/asset-manifest.json')
-let assetManifest = require(assetManifestPath)
+let assetManifest = require(assetManifestPath)  
 
 function renderCreateReactAppPageToString({ replaceTitle, dependencies, element, config }) {
   let html = template

@@ -33,7 +33,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 
-// Make the `rootBranch` branch and `main` function available to navi-tool,
+// Make the `rooJunction` branch and `main` function available to navi-tool,
 // via a global variable, so that it knows what to render and how to start
 // the app.
 window.$exports = {
