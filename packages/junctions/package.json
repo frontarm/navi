@@ -1,18 +1,18 @@
 {
   "name": "junctions",
-  "version": "0.7.0-beta.4",
+  "version": "0.7.0-beta.5",
   "description": "Junction-based routing for JavaScript.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
   "module": "dist/es/index.js",
-  "types": "src/index.ts",
+  "types": "dist/commonjs/index.d.ts",
   "scripts": {
     "clean": "rimraf dist",
-    "build:commonjs": "tsc --pretty --module commonjs --outDir dist/commonjs",
-    "build:es": "tsc --pretty --module es2015 --outDir dist/es",
-    "build:umd": "tsc --pretty --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/junctions.js && rimraf dist/umd-intermediate",
-    "build:umd:min": "tsc --pretty --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/junctions.min.js && rimraf dist/umd-intermediate",
+    "build:commonjs": "tsc --pretty --declaration --module commonjs --outDir dist/commonjs",
+    "build:es": "tsc --pretty --declaration --module es2015 --outDir dist/es",
+    "build:umd": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/junctions.js && rimraf dist/umd-intermediate",
+    "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/junctions.min.js && rimraf dist/umd-intermediate",
     "build": "npm run build:es && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
     "build:watch": "npm run clean && npm run build:es -- --watch",
     "prepublish": "npm run clean && npm run build && npm run test",
@@ -39,7 +39,7 @@
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.0",
     "ts-jest": "^22.0.1",
-    "typescript": "3.0.3"
+    "typescript": "2.8.1"
   },
   "dependencies": {
     "@types/history": "^4.6.2"
