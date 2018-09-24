@@ -3,6 +3,7 @@ const packageJSON = require('../package.json')
 const chalk = require('chalk')
 const program = require('commander')
 const path = require('path')
+const fs = require('fs-extra')
 const { processConfig, configSchema, defaultConfig } = require('../lib/config')
 
 let defaultHost = process.platform === 'win32'
@@ -86,12 +87,19 @@ program.command('map')
   .option('-r, --root [directory]', configSchema.properties.root.description, defaultConfig.root)
   .option('-e, --entry [file]', configSchema.properties.entry.description)
   .option('-c, --config [file]', 'Specify a config file.', 'navi.config.js')
+  .option('-o, --output [file]', 'Write the map to a file.')
   .action(async function (command) {
     let config = await createConfigFromCommand(command)
     let { createMap, formatMap } = require('../lib/map')
     try {
       let map = await createMap(config)
-      console.log(!command.json ? formatMap(map) : JSON.stringify(map, undefined, 2))
+      let string = !command.json ? formatMap(map) : JSON.stringify(map, undefined, 2)
+      if (command.output) {
+        await fs.writeFile(command.output, string)
+      }
+      else {
+        console.log(string)
+      }
     }
     catch (error) {
       console.error(chalk.red("[ohshit] ")+chalk.whiteBright("An error occured while building your map"))

@@ -6,7 +6,7 @@ import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Obs
 import { HistoryRoutingObservable, createHistoryRoutingObservable } from './HistoryRoutingObservable';
 
 
-interface MemoryNavigationOptions<Context> extends RouterOptions<Context> {
+export interface MemoryNavigationOptions<Context> extends RouterOptions<Context> {
     url: string
 }
 

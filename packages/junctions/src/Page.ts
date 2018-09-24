@@ -96,13 +96,13 @@ export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
 }
 
 export function createPage<Meta, Content, Context=any>(options: {
-  paramNames?: string[]
+  useParams?: string[]
   title: string
   meta?: Meta
   getContent?: (env: RouterEnv<Context>) => Content | Promise<Content>
 }): Page<Meta, Content> {
   if (process.env.NODE_ENV !== 'production') {
-    let { paramNames, title, meta, getContent, ...other } = options
+    let { useParams, title, meta, getContent, ...other } = options
 
     let unknownKeys = Object.keys(other)
     if (unknownKeys.length) {
@@ -123,7 +123,7 @@ export function createPage<Meta, Content, Context=any>(options: {
   return class extends PageMatcher<Meta, Content, Context> {
     static title = options.title
     static meta = options.meta as Meta
-    static paramNames = options.paramNames || []
+    static useParams = options.useParams || []
     static getContent = options.getContent
   }
 }

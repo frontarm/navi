@@ -3,15 +3,14 @@ import { Navigation, NavigationState, Subscription, NaviError } from 'junctions'
 import { NavigationContext } from './NavigationContext'
 
 
-interface NavigationProviderProps {
+export interface NavigationProviderProps {
   navigation?: Navigation
   navigationState?: NavigationState
 }
 
-interface NavigationProviderState {
+export interface NavigationProviderState {
   navigationState?: NavigationState
 }
-
 
 export class NavigationProvider extends React.Component<NavigationProviderProps, NavigationProviderState> {
   subscription?: Subscription

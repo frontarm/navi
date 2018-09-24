@@ -2,7 +2,7 @@ import * as React from 'react'
 import { NaviError, NotFoundError, UnresolvableError } from 'junctions'
 import { NavigationContext } from './NavigationContext'
 
-interface ErrorBoundaryProps {
+export interface ErrorBoundaryProps {
   renderUnresolvable?: (error: UnresolvableError) => React.ReactNode,
   renderNotFound?: (error: NotFoundError) => React.ReactNode,
   onError?: (error: NaviError, info: any) => void,

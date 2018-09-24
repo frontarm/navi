@@ -8,7 +8,7 @@ import { RoutingObservable } from './RoutingObservable';
 import { Deferred } from './Deferred';
 import { Observer, Observable, Subscription, SimpleSubscription, createOrPassthroughObserver } from './Observable';
 
-interface NavigationOptions<Context> {
+export interface NavigationOptions<Context> {
     history: History,
     router: Router<Context>
 }

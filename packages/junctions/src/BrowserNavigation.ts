@@ -7,7 +7,7 @@ import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Obs
 import { HistoryRoutingObservable, createHistoryRoutingObservable } from './HistoryRoutingObservable';
 
 
-interface BrowserNavigationOptions<Context> extends RouterOptions<Context> {
+export interface BrowserNavigationOptions<Context> extends RouterOptions<Context> {
     /**
      * You can manually supply a history object. This is useful for
      * integration with react-router.

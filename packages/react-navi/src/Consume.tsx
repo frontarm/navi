@@ -7,7 +7,7 @@ export interface ConsumeProps {
   /**
    * A render function that will be used to render the selected route.
    */
-  children: (output: ConsumeOutput) => React.ReactNode
+  children?: (output: ConsumeOutput) => React.ReactNode
 
   /**
    * The first route that matches this will be consumed, along with
@@ -97,7 +97,7 @@ interface InnerConsumeState {
   error?: Error
 }
 
-export class InnerConsume extends React.Component<InnerConsumeProps, InnerConsumeState> {
+class InnerConsume extends React.Component<InnerConsumeProps, InnerConsumeState> {
   static getDerivedStateFromProps(props: InnerConsumeProps, state: InnerConsumeState) {
     let unusedRoutes = props.context.unusedRoutes || props.context.routes
 
@@ -207,10 +207,21 @@ export class InnerConsume extends React.Component<InnerConsumeProps, InnerConsum
 
         ...routingState,
       })
+    
+    let render: (props: ConsumeOutput) => React.ReactNode
+    if (this.props.children) {
+      render = this.props.children as (props: ConsumeOutput) => React.ReactNode
+    }
+    else if (output.route && output.route.content && output.route.content.render) {
+      render = output.route.content.render
+    }
+    else {
+      throw new Error("<Navi.Consume> was not able to find a `children` prop, or a `render` function in the consumed route's `content`.")
+    }
 
     return (
       <NavigationContext.Provider value={this.state.lastReady ? this.state.lastReady.childContext : this.props.context}>
-        {this.props.children(output)}
+        {render(output)}
       </NavigationContext.Provider>
     )
   }

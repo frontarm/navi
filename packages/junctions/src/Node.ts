@@ -12,7 +12,7 @@ export interface NodeBase<Context, RM extends NodeMatcher<Context> = NodeMatcher
     type: RouteType;
 
     // The params to extract from the matchable location part.
-    paramNames: string[],
+    useParams: string[],
 
     new(options: NodeMatcherOptions<Context>): RM;
     prototype: RM;
@@ -62,7 +62,7 @@ export abstract class NodeMatcher<Context> {
 
         // Get the full route object for this junction, including information
         // on any params that it consumes.
-        this.mapping = addParamNamesToMapping(options.mapping, this.constructor.paramNames)
+        this.mapping = addParamNamesToMapping(options.mapping, this.constructor.useParams)
 
         // Note that we'll have already matched the *path* part of the location
         // in the parent function. However, we may not have matched params that

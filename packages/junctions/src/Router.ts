@@ -73,7 +73,7 @@ export class Router<Context=any> {
     }
 
     setContext(context: Context): void {
-        this.resolver.setEnv(new RouterEnv(context || {}, this))
+        this.resolver.setEnv(new RouterEnv<Context>(context || ({} as any), this))
     }
 
     observable(locationOrURL: Location | string, options: RouterLocationOptions = {}): RoutingObservable | undefined {
@@ -110,8 +110,8 @@ export class Router<Context=any> {
         }
     }
 
-    pageRoute(url: string | Location, options: RouterLocationOptions): Promise<PageRoute>;
-    pageRoute(urls: (Location | string)[], options: RouterLocationOptions): Promise<PageRoute[]>;
+    pageRoute(url: string | Location, options?: RouterLocationOptions): Promise<PageRoute>;
+    pageRoute(urls: (Location | string)[], options?: RouterLocationOptions): Promise<PageRoute[]>;
     pageRoute(urls: Location | string | (Location | string)[], options: RouterLocationOptions = {}): Promise<PageRoute | PageRoute[]> {
         let locations: Location[] = getLocationsArray(urls)
         if (locations.length) {
@@ -124,7 +124,7 @@ export class Router<Context=any> {
             let location = locations[i]
             let observable = this.observable(location, options)
             if (!observable) {
-                return Promise.reject()
+                return Promise.reject(undefined)
             }
             promises.push(getPromiseFromObservableRoute(observable))
         }

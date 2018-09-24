@@ -179,5 +179,5 @@ function extractDefault<T>(value: { default: T } | T): T {
 }
 
 function hasDefault<T>(value: { default: T } | T): value is { default: T } {
-    return 'default' in (value as any)
+    return value && typeof value === 'object' && 'default' in (value as any)
 }

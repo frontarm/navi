@@ -1,7 +1,7 @@
 import { createPage, createJunction, createRedirect, RouterEnv } from '../../src'
 
 export const cmsJunction = createJunction({
-    paramNames: ['referrer'],
+    useParams: ['referrer'],
 
     getContent() {
         return 'site-layout'

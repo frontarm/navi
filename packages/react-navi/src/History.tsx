@@ -2,7 +2,7 @@ import * as React from 'react'
 import { History } from 'history'
 import { NavigationContext } from './NavigationContext'
 
-interface HistoryProps {
+export interface HistoryProps {
   children: (history: History) => React.ReactNode,
 }
 

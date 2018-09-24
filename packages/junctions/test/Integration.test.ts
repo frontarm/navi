@@ -5,7 +5,7 @@ describe("integration", () => {
     function createTestNavigation(initialURL) {
         return createMemoryNavigation({
             url: initialURL,
-            router: createRouter({ junction: cmsJunction }),
+            rootJunction: cmsJunction,
         })
     }
 

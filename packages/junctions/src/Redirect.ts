@@ -92,7 +92,7 @@ export function createRedirect<Meta = any, Context = any>(
 ): Redirect {
   return class extends RedirectMatcher<Meta, Context> {
     static to = typeof to === 'function' ? to : () => to
-    static paramNames = []
+    static useParams = []
     static meta = meta
   }
 }

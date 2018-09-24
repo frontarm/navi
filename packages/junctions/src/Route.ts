@@ -30,7 +30,7 @@ export enum RouteType {
  * All routes extend this interface. It includes all information that can be
  * inferred from just a pattern string and a location.
  */
-interface RouteBase {
+export interface RouteBase {
   type: RouteType
 
   /**
