@@ -130,7 +130,7 @@ class InnerConsume extends React.Component<InnerConsumeProps, InnerConsumeState>
         context: props.context,
         childContext: {
           ...props.context,
-          unusedRoutes: usedRoutes.slice(index),
+          unusedRoutes: unusedRoutes.slice(index + 1),
         },
       }
     }
