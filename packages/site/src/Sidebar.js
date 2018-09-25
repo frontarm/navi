@@ -14,8 +14,8 @@ export const Sidebar = ({ className='' }) =>
     <nav className="Sidebar-nav">
       <section>
         <NavLink href="/" className="Sidebar-nav-heading">Junctions</NavLink>
-        <NavLink href="/why-another-router/">Why another router?</NavLink>
-        <NavLink href="/why-another-static-site-generator/">Why another static generator?</NavLink>
+        <NavLink href="/why-another-router">Why another router?</NavLink>
+        <NavLink href="/why-another-static-site-generator">Why another static generator?</NavLink>
       </section>
 
       <section>

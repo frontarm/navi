@@ -104,6 +104,17 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
             return
         }
 
+        // Ensure the pathname always has a trailing `/`, so that we don't
+        // have multiple URLs referring to the same page.
+        if (location.pathname.substr(-1) !== '/') {
+            location = {
+                ...location,
+                pathname: location.pathname + '/',
+            }
+            this.history.replace(location)
+            return
+        }
+
         if (this.observableSubscription) {
             this.observableSubscription.unsubscribe()
         }

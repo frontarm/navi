@@ -108,23 +108,31 @@ class InnerLink extends React.Component<InnerLinkProps> {
       return
     }
 
-    if (typeof href !== 'string') {
-      return href
+    let location
+    if (typeof href === 'string') {
+      // If this is an external link, return undefined so that the native
+      // response will be used.
+      if (href.indexOf('://') !== -1 || href.indexOf('mailto:') === 0) {
+        return
+      }
+
+      let [lhs, hash] = href.split('#')
+      let [pathname, search] = lhs.split('?')
+      location = {
+        pathname: pathname || ''
+      } as Location
+      if (search) location.search = '?' + search
+      if (hash) location.hash = '#' + hash
+    }
+    else {
+      location = href
     }
 
-    // If this is an external link, return undefined so that the native
-    // response will be used.
-    if (href.indexOf('://') !== -1 || href.indexOf('mailto:') === 0) {
-      return
+    // Ensure there is a trailing slash
+    if (location.pathname && location.pathname.substr(-1) !== '/') {
+      location.pathname += '/'
     }
 
-    let [lhs, hash] = href.split('#')
-    let [pathname, search] = lhs.split('?')
-    let location = {
-      pathname: pathname || ''
-    } as Location
-    if (search) location.search = '?' + search
-    if (hash) location.hash = '#' + hash
     return location
   }
   
