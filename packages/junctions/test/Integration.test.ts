@@ -62,7 +62,7 @@ describe("integration", () => {
         junctionRoute = firstRoute.lastRemainingRoute as JunctionRoute
         
         expect(junctionRoute.error && junctionRoute.error.name).toBe("NotFoundError")
-        expect(junctionRoute.error && junctionRoute.error.url).toBe("/examples/intermediate")
+        expect(junctionRoute.error && junctionRoute.error.url).toBe("/examples/intermediate/")
     })
 
     test("map-based content", async () => {
