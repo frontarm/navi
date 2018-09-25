@@ -168,7 +168,6 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
         // Allow for control over which routes are mapped.
         (this.options.predicate && !this.options.predicate(lastRoute))
       ) {
-        console.log('remove', url)
         this.removeFromQueue(url)
         continue
       }
