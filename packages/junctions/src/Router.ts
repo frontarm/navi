@@ -114,7 +114,7 @@ export class Router<Context=any> {
     pageRoute(urls: (Location | string)[], options?: RouterLocationOptions): Promise<PageRoute[]>;
     pageRoute(urls: Location | string | (Location | string)[], options: RouterLocationOptions = {}): Promise<PageRoute | PageRoute[]> {
         let locations: Location[] = getLocationsArray(urls)
-        if (locations.length) {
+        if (!locations.length) {
             return Promise.resolve([])
         }
 

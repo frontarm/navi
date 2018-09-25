@@ -8,7 +8,7 @@ export const cmsJunction = createJunction({
     },
 
     paths: {
-        '/': createPage({
+        '/': async () => createPage({
             title: 'Junctions',
             meta: {
                 description: 'Junctions Is A Router',
@@ -18,22 +18,22 @@ export const cmsJunction = createJunction({
             },
         }),
 
-        '/examples': createJunction({
+        '/examples': async () => createJunction({
             async getContent() {
                 return 'example-layout'
             },
 
             paths: {
-                '/': createRedirect(location => location.pathname+'basic'),
+                '/': async () => createRedirect(location => location.pathname+'basic'),
 
-                '/basic': () => Promise.resolve(createPage({
+                '/basic': async () => createPage({
                     title: 'Basic example',
                     getContent() {
                         return Promise.resolve('basic-example')
                     }
-                })),
+                }),
 
-                '/advanced': () => Promise.resolve(createPage({
+                '/advanced': async () => createPage({
                     title: 'Advanced example',
                     meta: {
                         isPaywalled: true,
@@ -45,7 +45,18 @@ export const cmsJunction = createJunction({
                             Promise.resolve('please-login')
                         )
                     }
-                }))
+                })
+            }
+        }),
+
+        '/goodies': async () => createJunction({
+            paths: {
+                '/cheatsheet': async () => createPage({
+                    title: 'Cheatsheet',
+                    getContent() {
+                        return Promise.resolve('cheatsheet')
+                    }
+                })
             }
         })
     }

@@ -165,7 +165,7 @@ export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<
       (matcherResult && matcherResult.route) !== this.last.route ||
       contentResult !== this.last.contentResult
     ) {
-      let childMapping = this.childMatcherOptions!.mapping
+      let childMapping = this.childMatcherOptions && this.childMatcherOptions.mapping
       let error: any | undefined
       let status: RouteStatus | undefined
       let nextRoute: Route | undefined
@@ -213,7 +213,7 @@ export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<
           content: contentResult.value,
           meta: this.constructor.meta,
           junction: this.constructor,
-          nextPattern: childMapping.pattern,
+          nextPattern: childMapping && childMapping.pattern,
           nextRoute,
           lastRemainingRoute: remainingRoutes[remainingRoutes.length - 1],
           remainingRoutes,

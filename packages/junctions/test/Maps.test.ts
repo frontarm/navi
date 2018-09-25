@@ -5,13 +5,13 @@ describe("pageMap", () => {
     test("mapping over '/' returns full site", async () => {
         let router = createRouter({ rootJunction: cmsJunction })
         let map = await router.pageMap('/')
-        expect(Object.keys(map).length).toBe(3)
+        expect(Object.keys(map).length).toBe(4)
     })
      
     test("mapping over '' returns full site", async () => {
         let router = createRouter({ rootJunction: cmsJunction })
         let map = await router.pageMap('/')
-        expect(Object.keys(map).length).toBe(3)
+        expect(Object.keys(map).length).toBe(4)
     })
 
     test("doesn't include content", async () => {

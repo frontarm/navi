@@ -14,6 +14,8 @@ export type Query = {
 }
 
 export function concatLocations(firstLocation: Location | string, ...locations: (Location | string)[]): Location {
+    locations = locations.filter(x => !!x)
+    
     let result = 
         typeof firstLocation === 'string'
             ? { pathname: firstLocation } as Location
