@@ -39,11 +39,11 @@ export class MDXWrapper extends React.Component {
   }
 
   render() {
-    let { route } = this.props
+    let { document } = this.props
 
     return (
         <div className='MDXWrapper'>
-            {React.createElement(route.content, {
+            {React.createElement(document, {
                 factories: this.factories,
             })}
         </div>

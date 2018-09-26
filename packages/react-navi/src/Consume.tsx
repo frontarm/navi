@@ -7,22 +7,19 @@ export interface ConsumeProps {
   /**
    * A render function that will be used to render the selected route.
    */
-  children?: (output: ConsumeOutput) => React.ReactNode
+  children: (output: ConsumeOutput) => React.ReactNode
 
   /**
    * The first route that matches this will be consumed, along with
    * all routes before it.
-   * 
-   * By default, looks for a route for a page or branch that defines
-   * `getContent()`.
    */
   where?: (route: Route, index: number, unusedRoutes: Route[]) => boolean
 
   /**
-   * A function that indicates whether the route found by `where` is ready
-   * to render. Defaults to checking with `isRouteSteady()`.
+   * A function that indicates whether the first unconsumed route is ready
+   * to be traversed. Defaults to checking with `isRouteSteady()`.
    */
-  isReady?: (route: Route) => boolean
+  isReady?: (firstUnconsumedRoute: Route) => boolean
 
   /**
    * Allows for a delay until the `showBusyIndicator` injected property becomes true.
@@ -75,7 +72,6 @@ export const Consume: React.SFC<ConsumeProps> = function Consume(props: ConsumeP
   )
 }
 Consume.defaultProps = {
-  where: (route: Route) => route.contentStatus !== RouteContentStatus.Unrequested,
   isReady: (route: Route) => isRouteSteady(route),
   waitingIndicatorDelay: 333,
 }
@@ -115,7 +111,7 @@ class InnerConsume extends React.Component<InnerConsumeProps, InnerConsumeState>
     let lastReady = state.lastReady
 
     if (isReady) {
-      let index = unusedRoutes.findIndex(props.where!)
+      let index = props.where ? unusedRoutes.findIndex(props.where!) : 0
       if (index === -1) {
         return {
           error: new MissingRoute(props.context),
@@ -208,15 +204,12 @@ class InnerConsume extends React.Component<InnerConsumeProps, InnerConsumeState>
         ...routingState,
       })
     
-    let render: (props: ConsumeOutput) => React.ReactNode
-    if (this.props.children) {
-      render = this.props.children as (props: ConsumeOutput) => React.ReactNode
+    let render: (props: ConsumeOutput) => React.ReactNode = this.props.children
+    if (!render) {
+      throw new Error("<Navi.Consume> requires that you specify a `children` function.")
     }
-    else if (output.route && output.route.content && output.route.content.render) {
-      render = output.route.content.render
-    }
-    else {
-      throw new Error("<Navi.Consume> was not able to find a `children` prop, or a `render` function in the consumed route's `content`.")
+    else if (typeof render !== "function") {
+      throw new Error(`<Navi.Consume> expects its children or route.content to be a function, but instead received "${render}".`)
     }
 
     return (
