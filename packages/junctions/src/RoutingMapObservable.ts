@@ -219,7 +219,9 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
     for (let i = 0; i < this.queueURLs.length; i++) {
       let url = this.queueURLs[i]
       let item = this.queueItems[i]
-      if (item.lastRouteCache!.status !== RouteStatus.Error) {
+      let lastRoute = item.lastRouteCache!
+      if (lastRoute.type !== RouteType.Junction ||
+          lastRoute.status !== RouteStatus.Ready && !(lastRoute.error && lastRoute.error.name === "NotFoundError")) {
         this.cachedSiteMap[joinPaths(url, '/')] = createRoutingState(
           parseLocationString(url),
           item.routeCache!,

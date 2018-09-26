@@ -13,8 +13,8 @@ export class RouterEnv<Context=any> {
     this.router = router
   }
 
-  pageRoute(url: string, options: RouterLocationOptions): Promise<PageRoute>;
-  pageRoute(urls: string[], options: RouterLocationOptions): Promise<PageRoute[]>;
+  pageRoute(url: string, options?: RouterLocationOptions): Promise<PageRoute>;
+  pageRoute(urls: string[], options?: RouterLocationOptions): Promise<PageRoute[]>;
   pageRoute(urls: string | string[], options: RouterLocationOptions = {}): Promise<PageRoute | PageRoute[]> {
     return this.router.pageRoute(urls as any, options)
   }
