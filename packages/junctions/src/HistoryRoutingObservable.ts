@@ -1,6 +1,6 @@
 import { History } from 'history'
 import { UnmanagedLocationError } from './Errors'
-import { Location, createURL } from './Location'
+import { Location, createURL, areLocationsEqual } from './Location'
 import { RouteType } from './Route'
 import { Router } from './Router'
 import { RoutingState } from './RoutingState'
@@ -23,6 +23,11 @@ export function createHistoryRoutingObservable<Context>(options: NavigationOptio
 export class HistoryRoutingObservable<Context> implements Observable<RoutingState> {
     readonly history: History
     readonly router: Router<Context>
+
+    // Stores the last receive location, even if we haven't processed it.
+    // Used to detect and defuse loops where a change to history results
+    // in a new change to history before the previous one completes.
+    private lastReceivedLocation?: Location
 
     private error?: any
     private waitUntilSteadyDeferred?: Deferred<RoutingState>
@@ -89,6 +94,12 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
     }
     
     private handleLocationChange(location: Location, force?: boolean) {
+        // Defuse history update loops
+        if (this.lastReceivedLocation && areLocationsEqual(this.lastReceivedLocation, location)) {
+            return
+        }
+        this.lastReceivedLocation = location
+
         let pathHasChanged, searchHasChanged
         if (location && this.lastLocation) {
             pathHasChanged = location.pathname !== this.lastLocation.pathname

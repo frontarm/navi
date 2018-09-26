@@ -1,4 +1,4 @@
-import { Location, createURL, joinPaths, parseLocationString } from './Location'
+import { Location, createURL, joinPaths, parseLocationString, areLocationsEqual } from './Location'
 import { Junction } from './Junction'
 import { AbsoluteMapping } from './Mapping'
 import {
@@ -17,7 +17,6 @@ import {
 } from './Route'
 import { RouterMapOptions } from './Router'
 import { RoutingMapState } from './Maps'
-import { locationsAreEqual } from 'history'
 import { createRoutingState } from './RoutingState'
 
 interface QueueItem {
@@ -183,7 +182,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
           cachedLastRoute.type !== RouteType.Redirect ||
           cachedLastRoute.status !== RouteStatus.Ready ||
           !cachedLastRoute.to ||
-          !locationsAreEqual(cachedLastRoute.to!, lastRoute.to))
+          !areLocationsEqual(cachedLastRoute.to!, lastRoute.to))
       ) {
         this.addToQueue(createURL(lastRoute.to), item.depth + 1, url)
       }

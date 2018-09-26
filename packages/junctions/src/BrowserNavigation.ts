@@ -1,10 +1,11 @@
-import { createBrowserHistory, History, locationsAreEqual } from 'history';
+import { createBrowserHistory, History } from 'history';
 import { Navigation, NavigationState } from './Navigation'
 import { RouteType } from './Route'
 import { Router, RouterOptions, createRouter } from './Router'
 import { RoutingState } from './RoutingState'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { HistoryRoutingObservable, createHistoryRoutingObservable } from './HistoryRoutingObservable';
+import { areLocationsEqual } from './Location';
 
 
 export interface BrowserNavigationOptions<Context> extends RouterOptions<Context> {
@@ -115,7 +116,7 @@ export class BrowserNavigation<Context> implements Navigation {
             }
 
             if (nextState && nextState.isSteady) {
-                if (prevState && locationsAreEqual(nextState.location, prevState.location)) {
+                if (prevState && areLocationsEqual(nextState.location, prevState.location)) {
                     return
                 }
 

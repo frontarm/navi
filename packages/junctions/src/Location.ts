@@ -13,6 +13,21 @@ export type Query = {
     [name: string]: any
 }
 
+export function areLocationsEqual(x?: Location, y?: Location): boolean {
+    if (x == y) {
+        return true
+    }
+    else if (!x || !y) {
+        return false
+    }
+    return (
+        x.pathname == y.pathname &&
+        x.search == y.search &&
+        x.hash == y.hash &&
+        x.state == y.state
+    )
+}
+
 export function concatLocations(firstLocation: Location | string, ...locations: (Location | string)[]): Location {
     locations = locations.filter(x => !!x)
     
