@@ -21,6 +21,26 @@ describe("pageMap", () => {
     })
 })
 
+describe("pageRoute", () => {
+    test("follows redirects when { followRedirects: true }", async () => {
+        let router = createRouter({ rootJunction: cmsJunction })
+        let route = await router.pageRoute('/examples', { followRedirects: true })
+        expect(route.url).toBe('/examples/basic')
+    })
+     
+    test("mapping over '' returns full site", async () => {
+        let router = createRouter({ rootJunction: cmsJunction })
+        let map = await router.pageMap('/')
+        expect(Object.keys(map).length).toBe(4)
+    })
+
+    test("doesn't include content", async () => {
+        let router = createRouter({ rootJunction: cmsJunction })
+        let map = await router.pageMap('/')
+        expect(map['/'].content).toBeUndefined()
+    })
+})
+
 describe("pageAndRedirectMap", () => {
     test("includes redirects", async () => {
         let router = createRouter({ rootJunction: cmsJunction })

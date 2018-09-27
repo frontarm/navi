@@ -36,6 +36,7 @@ export interface RouterOptions<Context> {
 }
 
 export interface RouterLocationOptions {
+    followRedirects?: boolean,
     withContent?: boolean
 }
 
@@ -119,16 +120,36 @@ export class Router<Context=any> {
         }
 
         // TODO: reject promises that depend on env when `context` is updated
-        let promises: Promise<PageRoute>[] = []
-        for (let i = 0; i < locations.length; i++) {
-            let location = locations[i]
-            let observable = this.observable(location, options)
-            if (!observable) {
-                return Promise.reject(undefined)
-            }
-            promises.push(getPromiseFromObservableRoute(observable))
-        }
+        let promises = locations.map(location => this.getPageRoutePromise(location, options))
         return !Array.isArray(urls) ? promises[0] : Promise.all(promises)
+    }
+
+    private getPageRoutePromise(location: Location, options: RouterLocationOptions): Promise<PageRoute> {
+        let observable = this.observable(location, options)
+        if (!observable) {
+            return Promise.reject(undefined)
+        }
+
+        return new Promise<RoutingState>((resolve, reject) => {
+            let initialValue = observable!.getState()
+            if (initialValue.isSteady) {
+                resolve(initialValue)
+            }
+            else {
+                observable!.subscribe(new SteadyPromiseObserver<RoutingState>(resolve, reject, isRoutingStateSteady))
+            }
+        }).then(state => {
+            let lastRoute = state.lastRoute!
+            if (lastRoute.type === RouteType.Redirect && options.followRedirects) {
+                return this.getPageRoutePromise(lastRoute.to!, options)
+            }
+            else if (lastRoute.type !== RouteType.Page) {
+                throw new Error(lastRoute.error)
+            }
+            else {
+                return lastRoute as PageRoute
+            }
+        })
     }
 
     siteMap(url: string | Location, options: RouterMapOptions = {}): Promise<SiteMap> {
@@ -217,26 +238,6 @@ function getLocationsArray(urls: Location | string | (Location | string)[]) {
     return Array.isArray(urls)
         ? urls.map(url => typeof url === 'string' ? parseLocationString(url) : url)
         : [typeof urls === 'string' ? parseLocationString(urls) : urls]
-}
-
-function getPromiseFromObservableRoute(observable: RoutingObservable): Promise<PageRoute> {
-    return new Promise<RoutingState>((resolve, reject) => {
-        let initialValue = observable.getState()
-        if (initialValue.isSteady) {
-            resolve(initialValue)
-        }
-        else {
-            observable.subscribe(new SteadyPromiseObserver<RoutingState>(resolve, reject, isRoutingStateSteady))
-        }
-    }).then(state => {
-        let lastRoute = state.lastRoute!
-        if (lastRoute.type !== RouteType.Page) {
-            throw new Error(lastRoute.error)
-        }
-        else {
-            return lastRoute as PageRoute
-        }
-    })
 }
 
 const isRoutingStateSteady = (state: RoutingState) => state.isSteady

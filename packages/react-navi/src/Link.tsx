@@ -91,7 +91,10 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
     let location = this.getLocation() as Location
     if (location && location.pathname) {
-      this.props.context.router.pageRoute(location, { withContent: props.precache })
+      this.props.context.router.pageRoute(location, {
+        withContent: !!props.precache,
+        followRedirects: true,
+      })
         .catch(() => {
           console.warn(
             `A <Link> referred to href "${location.pathname}", but the` +
