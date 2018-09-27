@@ -33,9 +33,8 @@ describe("integration", () => {
         let junctionRoute = firstRoute.lastRemainingRoute as JunctionRoute
 
         expect(firstRoute.params).toEqual({ referrer: 'frontarm' })
-        expect(junctionRoute.type).toBe(RouteType.Junction)
-        expect(junctionRoute.status).toBe(RouteStatus.Busy)
-        expect(junctionRoute.nextPattern).toBe('/advanced')
+        expect(firstRoute.status).toEqual(RouteStatus.Busy)
+        expect(firstRoute.nextPattern).toEqual('/examples')
 
         state = await nav.getSteadyState()
         firstRoute = state.firstRoute
@@ -45,7 +44,7 @@ describe("integration", () => {
         expect(pageRoute.meta.isPaywalled).toBe(true)
         expect(pageRoute.content).toBe('please-login')
 
-        nav.router.setContext({
+        nav.setContext({
             isAuthenticated: true
         })
 

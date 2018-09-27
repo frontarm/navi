@@ -1,6 +1,6 @@
 import { RouterEnv } from './RouterEnv';
-import { RouterEvent } from './Router';
 import { UnresolvableError } from './Errors';
+import { NodeMatcher } from './Node';
 
 export type Resolvable<
     T,
@@ -13,8 +13,8 @@ export enum ResolverStatus {
     Error = 'Error',
 }
 
-export type ResolverResult<T> = {
-    id?: number
+export type Resolution<T> = {
+    id: number
     status: ResolverStatus,
     error?: any
     value?: T
@@ -24,89 +24,70 @@ export type ResolverListener = () => void
 
 export const undefinedResolver = () => undefined
 
-export class Resolver<Context=any> {
-    private env: RouterEnv<Context>
-    private onEvent: (event: RouterEvent) => void
+export class Resolver {
     private nextId: number
-    private results: Map<Function, ResolverResult<any>>
-    private listenerResolvables: Map<Function, Function[]>
+    private results: WeakMap<NodeMatcher<any>, Map<Function, Resolution<any>>>
+    private listenerIds: Map<Function, number[]>
 
-    constructor(initialEnv: RouterEnv<Context>, onEvent: (event: RouterEvent) => void) {
-        this.listenerResolvables = new Map
+    constructor() {
+        this.listenerIds = new Map
         this.nextId = 1
-        this.onEvent = onEvent
-        this.results = new Map()
-        this.setEnv(initialEnv)
+        this.results = new WeakMap()
     }
 
-    setEnv(env: RouterEnv<Context>) {
-        this.env = env
-
-        // clear any context dependent results from results
-        let allResolvables = Array.from(this.results.keys())
-        let clearedResolvables: Function[] = []
-        for (let i = 0; i < allResolvables.length; i++) {
-            let resolvable = allResolvables[i]
-            if (resolvable.length > 0) {
-                clearedResolvables.push(resolvable)
-                this.results.delete(resolvable)
-            }
-        }
-        
-        // notify any listeners for the cleared resolvables
-        let listenerResolvables = Array.from(this.listenerResolvables.entries())
-        for (let i = 0; i < listenerResolvables.length; i++) {
-            let [listener, resolvables] = listenerResolvables[i]
-            if (clearedResolvables.find(clearedResolvable => resolvables.indexOf(clearedResolvable) !== -1)) {
-                listener()
-            }
-        }
-    }
-
-    listen(listener: ResolverListener, resolvables: Resolvable<any>[]) {
-        this.listenerResolvables.set(listener, resolvables)
+    listen(listener: ResolverListener, resolutionIds: number[]) {
+        this.listenerIds.set(listener, resolutionIds)
     }
 
     unlisten(listener: ResolverListener) {
-        this.listenerResolvables.delete(listener)
+        this.listenerIds.delete(listener)
     }
 
-    resolve<T>(resolvable: Resolvable<T, Context>, event: RouterEvent): ResolverResult<T> {
-        let currentResult = this.results.get(resolvable)
+    resolve<T>(matcher: NodeMatcher<any>, resolvable: Resolvable<T>): Resolution<T> {
+        let matcherResults = this.results.get(matcher)
+        if (!matcherResults) {
+            matcherResults = new Map()
+            this.results.set(matcher, matcherResults)
+        }
 
+        let currentResult = matcherResults.get(resolvable)
         if (currentResult) {
             return currentResult
         }
 
         let id = this.nextId++
-        let maybeValue = resolvable(this.env)
+        let maybeValue = resolvable(matcher.env)
         if (!isPromiseLike(maybeValue)) {
-            let result: ResolverResult<T> = {
+            let result: Resolution<T> = {
                 id,
                 status: ResolverStatus.Ready,
                 value: maybeValue,
             }
-            this.results.set(resolvable, result)
+            matcherResults.set(resolvable, result)
             return result
         }
 
-        this.onEvent({
-            ...event,
-            type: event['type'] + 'Start',
-        })
-
-        let result: ResolverResult<T> = {
+        let result: Resolution<T> = {
             id,
             status: ResolverStatus.Busy,
         }
-        this.results.set(resolvable, result)
+        matcherResults.set(resolvable, result)
+        this.listenForChanges(maybeValue, matcherResults, resolvable, id)        
+        return result
+    }
 
+    listenForChanges<T>(
+        maybeValue: PromiseLike<T>,
+        matcherResults: Map<Function, Resolution<T>>,
+        resolvable: Resolvable<T>,
+        id: number
+    ) {
         maybeValue
             .then(
                 value => {
-                    let currentResult = this.results.get(resolvable)
+                    let currentResult = matcherResults!.get(resolvable)
                     if (currentResult && currentResult.id === id) {
-                        this.results.set(resolvable, {
+                        matcherResults!.set(resolvable, {
                             id: currentResult.id,
                             status: ResolverStatus.Ready,
                             value: extractDefault(value),
@@ -115,25 +96,12 @@ export class Resolver<Context=any> {
                     }
                 },
                 error => {
-                    let currentResult = this.results.get(resolvable)
+                    let currentResult = matcherResults!.get(resolvable)
                     if (currentResult && currentResult.id === id) {
-                        this.results.set(resolvable, {
+                        matcherResults!.set(resolvable, {
                             id: currentResult.id,
                             status: ResolverStatus.Error,
                             error: new UnresolvableError(error),
-                        })
-
-                        // Remove errors from the cache in a short delay that
-                        // accounts for them being used
-                        // TODO: use requestIdleCallback instead
-                        setTimeout(() => {
-                            let result = this.results.get(resolvable)
-                            if (result && currentResult && result.id === currentResult.id && result.error) {
-                                // No need to notify any subscribers that the
-                                // cache has been purged, as we don't want to
-                                // cause a re-render.
-                                this.results.delete(resolvable)
-                            }
                         })
                         
                         return true
@@ -141,25 +109,18 @@ export class Resolver<Context=any> {
                 }
             )
             .then(didUpdate => {
-                this.onEvent({
-                    ...event,
-                    type: event['type'] + 'End',
-                })
-
                 // Call any listeners that want to be notified of changes
                 // to this resolvable
                 if (didUpdate) {
-                    let listenerResolvables = Array.from(this.listenerResolvables.entries())
-                    for (let i = 0; i < listenerResolvables.length; i++) {
-                        let [listener, resolvables] = listenerResolvables[i]
-                        if (resolvables.indexOf(resolvable) !== -1) {
+                    let listenerIds = Array.from(this.listenerIds.entries())
+                    for (let i = 0; i < listenerIds.length; i++) {
+                        let [listener, ids] = listenerIds[i]
+                        if (ids.indexOf(id) !== -1) {
                             listener()
                         }
                     }
                 }
             })
-        
-        return result
     }
 }
 

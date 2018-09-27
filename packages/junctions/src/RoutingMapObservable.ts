@@ -15,7 +15,7 @@ import {
   RouteStatus,
   RouteContentStatus,
 } from './Route'
-import { RouterMapOptions } from './Router'
+import { Router, RouterMapOptions } from './Router'
 import { RoutingMapState } from './Maps'
 import { createRoutingState } from './RoutingState'
 
@@ -31,29 +31,39 @@ interface QueueItem {
 
 export class RoutingMapObservable implements Observable<RoutingMapState> {
   private cachedSiteMap?: RoutingMapState
+  private context: any
   private rootJunction: Junction
   private rootMapping: AbsoluteMapping
   private observers: Observer<RoutingMapState>[]
-  private resolver: Resolver<any>
-  private options: RouterMapOptions
+  private resolver: Resolver
+  private router: Router<any>
+  private followRedirects?: boolean
+  private maxDepth?: number
+  private predicate?: (route: Route) => boolean
 
   private queueURLs: string[]
   private queueItems: QueueItem[]
 
   constructor(
+    context: any,
     topLocation: Location,
     rootJunction: Junction,
     rootMapping: AbsoluteMapping,
     resolver: Resolver,
+    router: Router,
     options: RouterMapOptions,
   ) {
     this.observers = []
     this.queueURLs = []
     this.queueItems = []
+    this.context = context
     this.resolver = resolver
+    this.router = router
     this.rootJunction = rootJunction
     this.rootMapping = rootMapping
-    this.options = options
+    this.followRedirects = options.followRedirects
+    this.maxDepth = options.maxDepth
+    this.predicate = options.predicate
 
     let url = createURL(topLocation)
     if (url.substr(-1) === '/') {
@@ -101,6 +111,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
     }
     if (this.observers.length === 0) {
       this.resolver.unlisten(this.handleChange)
+      delete this.cachedSiteMap
     }
   }
 
@@ -112,12 +123,12 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
   }
 
   private refresh = () => {
-    let allResolvables: Resolvable<any>[] = []
+    let allResolvableIds: number[] = []
     let i = 0
     while (i < this.queueURLs.length) {
       let url = this.queueURLs[i]
       let item = this.queueItems[i]
-      let { route, resolvables } = item.matcher.execute()
+      let { route, resolutionIds } = item.matcher.run()
       let lastRoute =
         route &&
         (route.status === RouteStatus.Busy ? route : route.lastRemainingRoute)
@@ -165,7 +176,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
             url,
           )) ||
         // Allow for control over which routes are mapped.
-        (this.options.predicate && !this.options.predicate(lastRoute))
+        (this.predicate && !this.predicate(lastRoute))
       ) {
         this.removeFromQueue(url)
         continue
@@ -174,7 +185,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
       // If a redirect has been added or changed `to` location,
       // then add the location to the map.
       if (
-        this.options.followRedirects &&
+        this.followRedirects &&
         lastRoute.type === RouteType.Redirect &&
         lastRoute.status === RouteStatus.Ready &&
         lastRoute.to &&
@@ -205,14 +216,14 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
         }
       }
 
-      if (resolvables) {
-        allResolvables = allResolvables.concat(resolvables)
+      if (resolutionIds) {
+        allResolvableIds = allResolvableIds.concat(resolutionIds)
       }
       i++
     }
 
     // This will replace any existing listener and its associated resolvables
-    this.resolver.listen(this.handleChange, allResolvables!)
+    this.resolver.listen(this.handleChange, allResolvableIds!)
 
     this.cachedSiteMap = {}
     for (let i = 0; i < this.queueURLs.length; i++) {
@@ -242,7 +253,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
   private addToQueue(url, depth, fromURL?) {
     if (
       this.queueURLs.indexOf(url) === -1 &&
-      (!this.options.maxDepth || depth <= this.options.maxDepth)
+      (!this.maxDepth || depth <= this.maxDepth)
     ) {
       let location = parseLocationString(url === '' ? '/' : url)
       this.queueURLs.push(url)
@@ -252,9 +263,11 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
         fromURL,
         depth,
         matcher: new this.rootJunction({
+          context: this.context,
           matchableLocation: location,
           mapping: this.rootMapping,
           resolver: this.resolver,
+          router: this.router,
         }),
       })
     }

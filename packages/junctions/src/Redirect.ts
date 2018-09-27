@@ -1,5 +1,5 @@
 import { parseLocationString, Location } from './Location'
-import { ResolverResult, Resolvable } from './Resolver'
+import { Resolution, Resolvable } from './Resolver'
 import { RouteType, RedirectRoute, RouteStatus } from './Route'
 import {
   NodeMatcher,
@@ -28,7 +28,7 @@ export class RedirectMatcher<Meta = any, Context = any> extends NodeMatcher<
   resolvableTo: Resolvable<Location | string>
 
   last?: {
-    result: ResolverResult<Location | string>
+    resolution: Resolution<Location | string>
     route: RedirectRoute<Meta>
   };
 
@@ -47,7 +47,7 @@ export class RedirectMatcher<Meta = any, Context = any> extends NodeMatcher<
     }
   }
 
-  execute(): NodeMatcherResult<RedirectRoute<Meta>> {
+  protected execute(): NodeMatcherResult<RedirectRoute<Meta>> {
     if (
       !this.match ||
       (this.match.remainingLocation &&
@@ -56,17 +56,14 @@ export class RedirectMatcher<Meta = any, Context = any> extends NodeMatcher<
       return {}
     }
 
-    let result = this.resolver.resolve(this.resolvableTo, {
-        type: this.constructor.type,
-        location: this.match!.matchedLocation,
-    })
-    if (!this.last || this.last.result !== result) {
-      let { value, status, error } = result
+    let resolution = this.resolver.resolve(this, this.resolvableTo)
+    if (!this.last || this.last.resolution !== resolution) {
+      let { value, status, error } = resolution
 
       // Only create a new route if necessary, to allow for reference-equality
       // based comparisons on routes
       this.last = {
-        result,
+        resolution,
         route: this.createRoute(RouteType.Redirect, {
           to: typeof value === 'string' ? parseLocationString(value) : value,
           status: status as string as RouteStatus,
@@ -78,7 +75,7 @@ export class RedirectMatcher<Meta = any, Context = any> extends NodeMatcher<
 
     return {
       route: this.last.route,
-      resolvables: [this.resolvableTo],
+      resolutionIds: [resolution.id],
     }
   }
 }

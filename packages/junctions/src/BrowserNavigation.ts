@@ -1,14 +1,16 @@
 import { createBrowserHistory, History } from 'history';
+import { Junction } from './Junction'
 import { Navigation, NavigationState } from './Navigation'
 import { RouteType } from './Route'
-import { Router, RouterOptions, createRouter } from './Router'
+import { Resolver } from './Resolver'
+import { Router, RouterOptions } from './Router'
 import { RoutingState } from './RoutingState'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { HistoryRoutingObservable, createHistoryRoutingObservable } from './HistoryRoutingObservable';
 import { areLocationsEqual } from './Location';
 
 
-export interface BrowserNavigationOptions<Context> extends RouterOptions<Context> {
+export interface BrowserNavigationOptions<Context> {
     /**
      * You can manually supply a history object. This is useful for
      * integration with react-router.
@@ -33,6 +35,11 @@ export interface BrowserNavigationOptions<Context> extends RouterOptions<Context
      * pages.
      */
     disableScrollHandling?: boolean,
+
+    initialRootContext?: Context,
+
+    rootJunction: Junction,
+    rootPath?: string,
 }
 
 
@@ -41,20 +48,29 @@ export function createBrowserNavigation<Context>(options: BrowserNavigationOptio
 }
 
 
-export class BrowserNavigation<Context> implements Navigation {
-    readonly router: Router<Context>
+export class BrowserNavigation<Context> implements Navigation<Context> {
+    router: Router<Context>
+
     readonly history: History
 
     private setDocumentTitle: false | ((pageTitle: string | null) => string)
     private disableScrollHandling: boolean
 
+    private rootJunction: Junction
+    private rootPath?: string
+    private resolver: Resolver
     private receivedState: RoutingState
     private renderedState?: RoutingState
     private historyRoutingObservable: HistoryRoutingObservable<Context>
 
     constructor(options: BrowserNavigationOptions<Context>) {
         this.history = options.history || createBrowserHistory()
-        this.router = createRouter(options)
+        this.resolver = new Resolver
+        this.router = new Router(this.resolver, {
+            rootContext: options.initialRootContext,
+            rootJunction: this.rootJunction,
+            rootPath: this.rootPath,
+        })
 
         if (options.setDocumentTitle !== false) {
             this.setDocumentTitle = typeof options.setDocumentTitle === 'function' ? options.setDocumentTitle : ((x) => x || 'Untitled Page')
@@ -67,6 +83,15 @@ export class BrowserNavigation<Context> implements Navigation {
         })
         this.historyRoutingObservable.subscribe(this.handleChange)
         this.renderedState = this.historyRoutingObservable.getState()
+    }
+
+    setContext(context: Context) {
+        this.router = new Router(this.resolver, {
+            rootContext: context,
+            rootJunction: this.rootJunction,
+            rootPath: this.rootPath,
+        })
+        this.historyRoutingObservable.setRouter(this.router)
     }
 
     getState(): NavigationState {

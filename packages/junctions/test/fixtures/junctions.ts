@@ -14,7 +14,7 @@ export const cmsJunction = createJunction({
                 description: 'Junctions Is A Router',
             },
             async getContent(env: RouterEnv) {
-                return await env.pageMap('/examples')
+                return await env.router.pageMap('/examples')
             },
         }),
 

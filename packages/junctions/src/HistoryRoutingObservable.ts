@@ -21,8 +21,8 @@ export function createHistoryRoutingObservable<Context>(options: NavigationOptio
 }
 
 export class HistoryRoutingObservable<Context> implements Observable<RoutingState> {
-    readonly history: History
-    readonly router: Router<Context>
+    private history: History
+    private router: Router<Context>
 
     // Stores the last receive location, even if we haven't processed it.
     // Used to detect and defuse loops where a change to history results
@@ -43,7 +43,16 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
         this.history = history
         this.lastLocation = this.history.location
         this.history.listen(location => this.handleLocationChange(location))
+        this.refresh()
+    }
+
+    refresh() {
         this.handleLocationChange(this.history.location, true)
+    }
+
+    setRouter(router: Router<Context>) {
+        this.router = router
+        this.refresh()
     }
 
     /**
@@ -95,7 +104,7 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
     
     private handleLocationChange(location: Location, force?: boolean) {
         // Defuse history update loops
-        if (this.lastReceivedLocation && areLocationsEqual(this.lastReceivedLocation, location)) {
+        if (!force && this.lastReceivedLocation && areLocationsEqual(this.lastReceivedLocation, location)) {
             return
         }
         this.lastReceivedLocation = location

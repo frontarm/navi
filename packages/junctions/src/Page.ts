@@ -1,4 +1,4 @@
-import { ResolverResult, Resolvable, undefinedResolver } from './Resolver'
+import { Resolution, Resolvable, undefinedResolver } from './Resolver'
 import { RouteStatus, RouteType, PageRoute, RouteContentStatus } from './Route'
 import {
   NodeMatcher,
@@ -31,7 +31,7 @@ export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
   static type: RouteType.Page = RouteType.Page
 
   last?: {
-    result: ResolverResult<Content>
+    resolution: Resolution<Content>
     route: PageRoute<Meta, Content>
   };
 
@@ -48,7 +48,7 @@ export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
     }
   }
 
-  execute(): NodeMatcherResult<PageRoute<Meta, Content>> {
+  protected execute(): NodeMatcherResult<PageRoute<Meta, Content>> {
     if (!this.match) {
       // Required params are missing, or there is an unknown part to the
       // path.
@@ -59,20 +59,15 @@ export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
       this.withContent && this.constructor.getContent
         ? this.constructor.getContent
         : undefinedResolver
+    let resolution: Resolution<Content> = this.resolver.resolve(this, resolvable)
 
-    let result: ResolverResult<Content> =
-      this.resolver.resolve(resolvable, {
-          type: this.constructor.type,
-          location: this.match!.matchedLocation,
-      })
-
-    if (!this.last || this.last.result !== result) {
-      let { value, status, error } = result
+    if (!this.last || this.last.resolution !== resolution) {
+      let { value, status, error } = resolution
 
       // Only create a new route if necessary, to allow for reference-equality
       // based comparisons on routes
       this.last = {
-        result,
+        resolution,
         route: this.createRoute(RouteType.Page, {
           title: this.constructor.title,
           meta: this.constructor.meta,
@@ -90,7 +85,7 @@ export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
 
     return {
       route: this.last.route,
-      resolvables: [resolvable],
+      resolutionIds: [resolution.id],
     }
   }
 }

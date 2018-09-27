@@ -1,10 +1,12 @@
 import { Location, createURL } from './Location'
 import { MappingMatch, matchMappingAgainstLocation, addParamNamesToMapping, AbsoluteMapping } from './Mapping'
 import { Resolver, Resolvable } from './Resolver'
+import { Router } from './Router'
 import { Route, RouteType } from './Route'
 import { Junction } from './Junction'
 import { Page } from './Page'
 import { Redirect } from './Redirect'
+import { RouterEnv } from './RouterEnv';
 
 
 export interface NodeBase<Context, RM extends NodeMatcher<Context> = NodeMatcher<Context>> {
@@ -27,6 +29,8 @@ export interface ResolvableNode<N extends Node = Node, Context=any> extends Reso
 export type MaybeResolvableNode<Context=any> = Node | ResolvableNode<Node, Context>
 
 export interface NodeMatcherOptions<Context> {
+    context: Context,
+
     // The part of the location that hasn't been consumed by the parent,
     // and that can be matched by this Matcher object.
     matchableLocation: Location,
@@ -35,8 +39,10 @@ export interface NodeMatcherOptions<Context> {
     // node is mounted
     mapping: AbsoluteMapping,
 
+    router: Router<Context>,
+
     // The router instance
-    resolver: Resolver<Context>,
+    resolver: Resolver,
 
     // Whether page content should be fetched
     withContent?: boolean
@@ -44,15 +50,17 @@ export interface NodeMatcherOptions<Context> {
 
 export interface NodeMatcherResult<R extends Route = Route> {
     route?: R
-    resolvables?: Resolvable<any>[]
+    resolutionIds?: number[]
 }
 
 export abstract class NodeMatcher<Context> {
+    resolver: Resolver;
     mapping: AbsoluteMapping;
-    match?: MappingMatch;
 
-    resolver: Resolver<Context>;
     withContent?: boolean
+
+    env: RouterEnv<Context>
+    match: MappingMatch;
 
     ['constructor']: Node
 
@@ -68,11 +76,32 @@ export abstract class NodeMatcher<Context> {
         // in the parent function. However, we may not have matched params that
         // are specified by the junction, so we need to perform another match.
         // However, this time we're guaranteed that the match will work.
-        this.match = matchMappingAgainstLocation(this.mapping, options.matchableLocation)
+        let match = matchMappingAgainstLocation(this.mapping, options.matchableLocation)
+        
+        if (match) {
+            this.match = match
+            this.env = new RouterEnv(
+                options.context,
+                this.match.matchedLocation,
+                this.match.params,
+                options.router,
+                createURL(this.match!.matchedLocation),
+            )
+        }
     }
 
     // Get the route object given the current state.
-    abstract execute(): NodeMatcherResult;
+    run(): NodeMatcherResult {
+        if (!this.match) {
+            // This junction couldn't be matched due to missing required
+            // params, or a non-exact match without a default path.
+            return {}
+        }
+
+        return this.execute()
+    };
+    
+    protected abstract execute(): NodeMatcherResult;
 
     protected createRoute<Type extends string, Details>(type: Type, details: Details) {
         return Object.assign({

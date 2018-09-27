@@ -13,26 +13,10 @@ import { RoutingState } from './RoutingState';
 import { UnmanagedLocationError } from './Errors';
 
 
-/**
- * Allows you to be notified when junctions or content at a certain
- * path start and finish loading.
- * 
- * This can be used to analyze which bundle chunks are required
- * for each URL, and for each junction, so that <script> tags can be added
- * to statically generated HTML, and appropriate files can be 
- * pre-emptively pushed when HTTP/2 is available.
- */
-export interface RouterEvent {
-    type: string,
-    location: Location
-}
-
-
 export interface RouterOptions<Context> {
+    rootContext?: Context,
     rootJunction: Junction,
     rootPath?: string,
-    initialContext?: Context,
-    onEvent?: (event: RouterEvent) => void,
 }
 
 export interface RouterLocationOptions {
@@ -47,34 +31,29 @@ export interface RouterMapOptions {
   }
   
 
-// This is not necessary, but I'm exporting it just to fit in with
-// other "React style" tools
+// The public factory function creates a resolver.
 export function createRouter<Context>(options: RouterOptions<Context>){
-    return new Router(options)
+    return new Router(new Resolver(), options)
 }
 
 export class Router<Context=any> {
-    private resolver: Resolver<Context>
-    private rootJunction: Junction
+    private resolver: Resolver
+    private rootContext: Context
+    private rootJunction: Junction<any, any, Context>
     private rootMapping: AbsoluteMapping
     
-    constructor(options: RouterOptions<Context>) {
+    constructor(resolver: Resolver, options: RouterOptions<Context>) {
         if (process.env.NODE_ENV !== "production") {
             if (!options.rootJunction || options.rootJunction.type !== RouteType.Junction) {
                 throw new Error(`Expected to receive a Junction object for the "junction" prop, but instead received "${options.rootJunction}".`)
             }
         }
 
+        this.rootContext = options.rootContext || {} as any
         this.rootMapping = createRootMapping(options.rootJunction, options.rootPath)
         this.rootJunction = options.rootJunction
-        this.resolver = new Resolver(
-            new RouterEnv(options.initialContext || {} as any, this),
-            options.onEvent || (() => {}),
-        )
-    }
 
-    setContext(context: Context): void {
-        this.resolver.setEnv(new RouterEnv<Context>(context || ({} as any), this))
+        this.resolver = resolver
     }
 
     observable(locationOrURL: Location | string, options: RouterLocationOptions = {}): RoutingObservable | undefined {
@@ -84,10 +63,12 @@ export class Router<Context=any> {
         let match = location && matchMappingAgainstLocation(this.rootMapping, location)
         if (location && match) {
             return new RoutingObservable(
+                this.rootContext,
                 location,
                 this.rootJunction,
                 this.rootMapping,
                 this.resolver,
+                this,
                 options
             )
         }
@@ -99,10 +80,12 @@ export class Router<Context=any> {
 
         if (location && match) {
             return new RoutingMapObservable(
+                this.rootContext,
                 location,
                 this.rootJunction,
                 this.rootMapping,
                 this.resolver,
+                this,
                 options
             )
         }

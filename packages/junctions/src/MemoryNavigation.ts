@@ -1,6 +1,8 @@
 import { createMemoryHistory, History } from 'history';
+import { Junction } from './Junction'
 import { Navigation, NavigationState } from './Navigation'
-import { Router, RouterOptions, createRouter } from './Router'
+import { Resolver } from './Resolver'
+import { Router, RouterOptions } from './Router'
 import { RoutingState } from './RoutingState'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { HistoryRoutingObservable, createHistoryRoutingObservable } from './HistoryRoutingObservable';
@@ -8,6 +10,11 @@ import { HistoryRoutingObservable, createHistoryRoutingObservable } from './Hist
 
 export interface MemoryNavigationOptions<Context> extends RouterOptions<Context> {
     url: string
+
+    initialRootContext?: Context,
+
+    rootJunction: Junction,
+    rootPath?: string,
 }
 
 
@@ -16,9 +23,14 @@ export function createMemoryNavigation<Context>(options: MemoryNavigationOptions
 }
 
 
-export class MemoryNavigation<Context> implements Navigation {
-    readonly router: Router<Context>
+export class MemoryNavigation<Context> implements Navigation<Context> {
+    router: Router<Context>
+
     readonly history: History
+
+    private rootJunction: Junction
+    private rootPath?: string
+    private resolver: Resolver
 
     private historyRoutingObservable: HistoryRoutingObservable<Context>
 
@@ -26,11 +38,27 @@ export class MemoryNavigation<Context> implements Navigation {
         this.history = createMemoryHistory({
             initialEntries: [options.url],
         })
-        this.router = createRouter(options)
+        this.resolver = new Resolver
+        this.rootJunction = options.rootJunction
+        this.rootPath = options.rootPath
+        this.router = new Router(this.resolver, {
+            rootContext: options.initialRootContext,
+            rootJunction: this.rootJunction,
+            rootPath: this.rootPath,
+        })
         this.historyRoutingObservable = createHistoryRoutingObservable({
             history: this.history,
             router: this.router,
         })
+    }
+
+    setContext(context: Context) {
+        this.router = new Router(this.resolver, {
+            rootContext: context,
+            rootJunction: this.rootJunction,
+            rootPath: this.rootPath,
+        })
+        this.historyRoutingObservable.setRouter(this.router)
     }
 
     getState(): NavigationState {

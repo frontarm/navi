@@ -3,9 +3,11 @@ import { Router } from './Router'
 import { RoutingState } from './RoutingState'
 import { Observable } from './Observable'
 
-export interface Navigation extends Observable<NavigationState> {
+export interface Navigation<Context=any> extends Observable<NavigationState> {
   readonly history: History
   readonly router: Router
+
+  setContext(context: Context): void;
 
   /**
    * Returns a promise that resolves once `isReady()` returns true.

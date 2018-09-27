@@ -1,25 +1,26 @@
+import { Location } from './Location'
 import { PageRoute } from './Route'
-import { Router, RouterLocationOptions, RouterMapOptions } from './Router'
+import { Router } from './Router'
 import { PageRouteMap } from './Maps'
 
-
-export class RouterEnv<Context=any> {
-  private router: Router<Context>
-
+export class RouterEnv<Context = any> {
   readonly context: Context
+  readonly location: Location
+  readonly params: { [name: string]: string }
+  readonly router: Router<Context>
+  readonly url: string
 
-  constructor(context: Context, router: Router<Context>) {
+  constructor(
+    context: Context,
+    location: Location,
+    params: { [name: string]: string },
+    router: Router<Context>,
+    url: string,
+  ) {
     this.context = context
+    this.location = location
+    this.params = params
     this.router = router
-  }
-
-  pageRoute(url: string, options?: RouterLocationOptions): Promise<PageRoute>;
-  pageRoute(urls: string[], options?: RouterLocationOptions): Promise<PageRoute[]>;
-  pageRoute(urls: string | string[], options: RouterLocationOptions = {}): Promise<PageRoute | PageRoute[]> {
-    return this.router.pageRoute(urls as any, options)
-  }
-
-  pageMap(url: string, options: RouterMapOptions = {}): Promise<PageRouteMap> {
-    return this.router.pageMap(url, options)
+    this.url = url
   }
 }
