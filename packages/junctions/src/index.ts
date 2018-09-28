@@ -1,8 +1,9 @@
 export { createBrowserHistory, createHashHistory, createMemoryHistory } from 'history'
 
+export { createContext, Context } from './Context'
 export { RouterEnv } from './RouterEnv'
 export { createJunction, Junction } from './Junction'
-export { Location, concatLocations, createURL } from './Location'
+export * from './URLTools'
 export { HistoryRoutingObservable, createHistoryRoutingObservable } from './HistoryRoutingObservable'
 export { createPage, Page } from './Page'
 export { createRedirect, Redirect } from './Redirect'

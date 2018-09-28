@@ -3,11 +3,11 @@ import { Junction } from './Junction'
 import { Navigation, NavigationState } from './Navigation'
 import { RouteType } from './Route'
 import { Resolver } from './Resolver'
-import { Router, RouterOptions } from './Router'
+import { Router } from './Router'
 import { RoutingState } from './RoutingState'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { HistoryRoutingObservable, createHistoryRoutingObservable } from './HistoryRoutingObservable';
-import { areLocationsEqual } from './Location';
+import { areURLDescriptorsEqual } from './URLTools';
 
 
 export interface BrowserNavigationOptions<Context> {
@@ -28,7 +28,7 @@ export interface BrowserNavigationOptions<Context> {
      * 
      * Defaults to `true`.
      */
-    setDocumentTitle?: boolean | ((pageTitle: string | null) => string),
+    setDocumentTitle?: boolean | ((pageTitle?: string) => string),
 
     /**
      * If `true`, this will not scroll the user when navigating between
@@ -53,7 +53,7 @@ export class BrowserNavigation<Context> implements Navigation<Context> {
 
     readonly history: History
 
-    private setDocumentTitle: false | ((pageTitle: string | null) => string)
+    private setDocumentTitle: false | ((pageTitle?: string) => string)
     private disableScrollHandling: boolean
 
     private rootJunction: Junction
@@ -68,12 +68,12 @@ export class BrowserNavigation<Context> implements Navigation<Context> {
         this.resolver = new Resolver
         this.router = new Router(this.resolver, {
             rootContext: options.initialRootContext,
-            rootJunction: this.rootJunction,
-            rootPath: this.rootPath,
+            rootJunction: options.rootJunction,
+            rootPath: options.rootPath,
         })
 
         if (options.setDocumentTitle !== false) {
-            this.setDocumentTitle = typeof options.setDocumentTitle === 'function' ? options.setDocumentTitle : ((x) => x || 'Untitled Page')
+            this.setDocumentTitle = typeof options.setDocumentTitle === 'function' ? options.setDocumentTitle : ((x?) => x || 'Untitled Page')
         }
         this.disableScrollHandling = !!options.disableScrollHandling
 
@@ -82,7 +82,7 @@ export class BrowserNavigation<Context> implements Navigation<Context> {
             router: this.router,
         })
         this.historyRoutingObservable.subscribe(this.handleChange)
-        this.renderedState = this.historyRoutingObservable.getState()
+        this.renderedState = this.historyRoutingObservable.getValue()
     }
 
     setContext(context: Context) {
@@ -94,11 +94,11 @@ export class BrowserNavigation<Context> implements Navigation<Context> {
         this.historyRoutingObservable.setRouter(this.router)
     }
 
-    getState(): NavigationState {
+    getSnapshot(): NavigationState {
         return {
             history: this.history,
             router: this.router,
-            ...this.historyRoutingObservable.getState(),
+            ...this.historyRoutingObservable.getValue(),
             onRendered: this.handleRendered,
         }
     }
@@ -141,17 +141,17 @@ export class BrowserNavigation<Context> implements Navigation<Context> {
             }
 
             if (nextState && nextState.isSteady) {
-                if (prevState && areLocationsEqual(nextState.location, prevState.location)) {
+                if (prevState && areURLDescriptorsEqual(nextState.url, prevState.url)) {
                     return
                 }
 
                 if (!this.disableScrollHandling &&
                     (!prevState ||
-                    !prevState.location ||
-                    prevState.location.hash !== nextState.location.hash ||
-                    prevState.location.pathname !== nextState.location.pathname)
+                    !prevState.url ||
+                    prevState.url.hash !== nextState.url.hash ||
+                    prevState.url.pathname !== nextState.url.pathname)
                 ) {
-                    scrollToHash(nextState.location.hash)
+                    scrollToHash(nextState.url.hash)
                 }
             }
 

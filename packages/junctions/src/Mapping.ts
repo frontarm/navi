@@ -1,5 +1,7 @@
-import { Location, joinPaths, parseQuery, stringifyQuery, concatLocations } from './Location'
 import { Node, MaybeResolvableNode } from './Node'
+import { Router } from './Router'
+import { RouterEnv } from './RouterEnv'
+import { URLDescriptor, Params, joinPaths } from './URLTools'
 
 
 export const KEY_WILDCARD = '\0'
@@ -34,11 +36,6 @@ export interface Mapping {
      * The names of params that correspond to wildcards in the relative path.
      */
     pathParamNames?: string[],
-    
-    /**
-     * Parameters that will be consumed from the query string if available.
-     */
-    searchParamNames?: string[],
 
     /**
      * The node that will be used to handle detailed matching of this path,
@@ -47,23 +44,8 @@ export interface Mapping {
     maybeResolvableNode: MaybeResolvableNode,
 }
 
-export interface AbsoluteMapping extends Mapping {
-    // The pattern including ancestor patterns. This is useful for outputting
-    // error messages.
-    absolutePattern: string,
-
-    // The Location object where this mapping has actually been placed,
-    // excluding the mapping's pattern itself.
-    parentLocation: Location,
-
-    // The names of all params used by the mapping, including both search and
-    // path params. This is used to generate warnings when multiple nodes
-    // specify that they require the same param names.
-    ancestorParamNames: string[],
-}
-
-export function createRootMapping(maybeResolvableNode: MaybeResolvableNode, rootPath: string = ''): AbsoluteMapping {
-    let rootMapping: Mapping =
+export function createRootMapping(maybeResolvableNode: MaybeResolvableNode, rootPath: string = ''): Mapping {
+    return (
         rootPath !== ''
             ?   createMapping(rootPath, maybeResolvableNode)
             :   {
@@ -72,17 +54,7 @@ export function createRootMapping(maybeResolvableNode: MaybeResolvableNode, root
                     regExp: new RegExp(''),
                     maybeResolvableNode,
                 }
-        
-    if (rootMapping.pathParamNames && rootMapping.pathParamNames.length > 0) {
-        throw new Error("Your root path may not contain parameters")
-    }
-
-    return {
-        ...rootMapping,
-        absolutePattern: rootPath,
-        parentLocation: { pathname: '' },
-        ancestorParamNames: [],
-    }
+    )
 }
 
 export function createMapping(pattern: string, maybeResolvableNode: MaybeResolvableNode): Mapping {
@@ -94,7 +66,6 @@ export function createMapping(pattern: string, maybeResolvableNode: MaybeResolva
         processedPattern = processedPattern.substr(0, processedPattern.length - 1)
     }
 
-    // TODO: swap this so pattern should *not* start with '/'
     if (processedPattern[0] !== '/') {
         if (process.env.NODE_ENV !== 'production') {
             console.warn(`The pattern "${pattern}" does not start with the character '/', so it has been automatically added. To avoid this warning, make sure to add the leading "/" to all patterns.`)
@@ -141,101 +112,20 @@ export function createMapping(pattern: string, maybeResolvableNode: MaybeResolva
         pattern: processedPattern,
         pathParamNames: pathParams.length ? pathParams : undefined,
         regExp: new RegExp(regExpParts.join('/')),
-        // searchParamNames is not added here as the node might not have been
-        // resolved yet, and they are stored on the node. Instead, add them
-        // with `addParamNamesToMapping` once the node is available.
     }
 }
 
 
-export function createChildMapping(parentMapping: AbsoluteMapping, mapping: Mapping, parentLocation: Location): AbsoluteMapping {
-    let absolutePattern = joinPaths(parentMapping.absolutePattern, mapping.pattern)
-
-    if (process.env.NODE_ENV !== 'production') {
-        if (mapping.pathParamNames) {        
-            let doubleParams = mapping.pathParamNames.filter(param => parentMapping.ancestorParamNames.indexOf(param) !== -1)
-            if (doubleParams.length) {
-                console.error(`The node at "${absolutePattern}" has claimed ownership of the param names ${doubleParams.map(x => `"${x}"`).join(', ')}, but they have already been consumed by a parent node.`)
-            }
-        }
-    }
-
-    return {
-        absolutePattern,
-        parentLocation,
-        ancestorParamNames:
-            parentMapping.ancestorParamNames
-                .concat(parentMapping.pathParamNames || [])
-                .concat(parentMapping.searchParamNames || []),
-
-        ...mapping,
-    }
-}
-
-
-/**
- * A node may not be loaded until *after* it's path has been defined. Once the
- * node *is* loaded, this function can be used to add its `paramNames` to its
- * Mapping object.
- * @param mapping
- * @param paramNames 
- */
-export function addParamNamesToMapping(mapping: AbsoluteMapping, paramNames: string[]): AbsoluteMapping {
-    let searchParamNames = paramNames || []
-
-    // If any of the mapping's path params are specified in `paramNames`, then
-    // remove them from `relativeSearchParams`.
-    if (mapping.pathParamNames) {
-        for (let i = mapping.pathParamNames.length - 1; i >= 0; i--) {
-            let pathParam = mapping.pathParamNames[i]
-            let index = searchParamNames.indexOf(pathParam)
-            if (index !== -1) {
-                searchParamNames.splice(index, 1)
-            }
-        }    
-    }
-    
-    // If there are no search params, the Mapping object won't change
-    if (searchParamNames.length === 0) {
-        return mapping
-    }
-    
-    // Ensure that none of our search param names have already been consumed
-    // by ancestor junctions.
-    if (process.env.NODE_ENV !== 'production') {
-        let doubleParams = searchParamNames.filter(param => mapping.ancestorParamNames.indexOf(param) !== -1)
-        if (doubleParams.length) {
-            console.error(`The node at "${mapping.absolutePattern}" has claimed ownership of the param names ${doubleParams.map(x => `"${x}"`).join(', ')}, but they have already been consumed by a parent node.`)
-        }
-    }
-    
-    return {
-        ...mapping,
-        searchParamNames: searchParamNames.length ? searchParamNames : undefined,
-    }
-}
-
-export type MappingMatch = {
-    params: { [name: string]: any },
-    mapping: AbsoluteMapping,
-
-    // The full matched location
-    matchedLocation: Location,
-
-    // This should be empty if the match consumes the entire location.
-    remainingLocation?: Location,
-}
-
-
-export function matchMappingAgainstLocation(mapping: AbsoluteMapping, location: Location): MappingMatch | undefined {
-    let match = mapping.regExp.exec(location.pathname)
-    let params = {}
-
+export function matchMappingAgainstPathname<Context>(env: RouterEnv<Context>, mapping: Mapping, appendFinalSlash: boolean): RouterEnv<Context> | undefined {
+    let match = mapping.regExp.exec(env.unmatchedPathnamePart)
     if (!match) {
         return
     }
 
+    let matchedPathname = match[0]
+
     // Set path params using RegExp match
+    let params = {}
     if (mapping.pathParamNames) {
         for (let i = 0; i < mapping.pathParamNames.length; i++) {
             let paramName = mapping.pathParamNames[i]
@@ -243,35 +133,14 @@ export function matchMappingAgainstLocation(mapping: AbsoluteMapping, location: 
         }
     }
 
-    let matchedQueryParts = {}
-    let remainingQueryParts = parseQuery(location.search)
-    if (mapping.searchParamNames) {
-        for (let i = 0; i < mapping.searchParamNames.length; i++) {
-            let paramName = mapping.searchParamNames[i]
-            if (remainingQueryParts[paramName] !== undefined) {
-                params[paramName] = remainingQueryParts[paramName]
-                matchedQueryParts[paramName] = remainingQueryParts[paramName]
-                delete remainingQueryParts[paramName]
-            }
-        }
-    }
-
-    let matchedLocationPart = {
-        pathname: match[0],
-        search: stringifyQuery(matchedQueryParts),
-    }
-    let remainingLocation = {
-        pathname: location.pathname.slice(match[0].length),
-        search: stringifyQuery(remainingQueryParts),
-        hash: location.hash,
-        state: location.state,
-    }
-
     return {
-        params: params,
-        mapping,
-        matchedLocation: concatLocations(mapping.parentLocation, matchedLocationPart),
-        remainingLocation: remainingLocation.pathname !== '' ? remainingLocation : undefined
+        context: env.context,
+        method: env.method,
+        params: { ...env.params, ...params },
+        pathname: joinPaths(env.pathname, matchedPathname),
+        query: env.query,
+        router: env.router,
+        unmatchedPathnamePart: env.unmatchedPathnamePart.slice(matchedPathname.length) || (appendFinalSlash ? '/' : ''),
     }
 }
     

@@ -1,7 +1,5 @@
-import { Location } from './Location'
 import {
   Resolution,
-  ResolverStatus,
   Resolvable,
   undefinedResolver,
 } from './Resolver'
@@ -9,15 +7,17 @@ import {
   Route,
   JunctionRoute,
   RouteType,
-  RouteStatus,
-  RouteContentStatus,
+  Status,
+  PlaceholderRoute,
+  createRoute,
+  createPlaceholderRoute,
+  createNotFoundRoute,
 } from './Route'
 import { RouterEnv } from './RouterEnv'
 import {
   createMapping,
   Mapping,
-  createChildMapping,
-  matchMappingAgainstLocation,
+  matchMappingAgainstPathname,
 } from './Mapping'
 import {
   NodeMatcher,
@@ -29,6 +29,7 @@ import {
   NodeMatcherOptions,
 } from './Node'
 import { NotFoundError } from './Errors'
+import { joinPaths } from './URLTools';
 
 export type JunctionPaths<Context> = {
   [pattern: string]: MaybeResolvableNode<Context>
@@ -52,172 +53,136 @@ export interface Junction<Meta = any, Content = any, Context = any>
 }
 
 export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<
-  Context
+  Context,
+  JunctionRoute<Meta, Content>
 > {
   static isNode = true
   static type: RouteType.Junction = RouteType.Junction
 
-  childMatcherOptions?: NodeMatcherOptions<Context>
-  childMaybeResolvableNode?: MaybeResolvableNode<Node>
+  child?: {
+    mapping: Mapping,
+    matcherOptions: NodeMatcherOptions<Context>
+    maybeResolvableNode: MaybeResolvableNode<Node>
+  }
 
   last?: {
-    resolutionIds: number[]
-    childMatcher?: NodeMatcher<any>
-    childNodeResolution?: Resolution<Node>
-    contentResolution: Resolution<Content>
-    route: JunctionRoute<Meta, Content>
+    matcher?: NodeMatcher<any>
+    node?: Node
   };
 
   ['constructor']: Junction<Meta, Content, Context>
   constructor(options: NodeMatcherOptions<Context>) {
-    super(options)
+    super(options, true)
 
-    if (this.match) {
-      let matchableLocation: Location = this.match.remainingLocation
-        ? this.match.remainingLocation
-        : { pathname: '/' }
-
-      let mappings = this.constructor.mappings
-
-      // Start from the beginning and take the first result, as child mounts
-      // are sorted such that the first matching mount is the the most
-      // precise match (and we always want to use the most precise match).
-      for (let i = mappings.length - 1; i >= 0; i--) {
-        let childMapping = createChildMapping(
-          this.mapping,
-          mappings[i],
-          this.match.matchedLocation,
-        )
-        let match = matchMappingAgainstLocation(childMapping, matchableLocation)
-        if (match) {
-          this.childMatcherOptions = {
-            context: this.env.context,
-            matchableLocation: matchableLocation,
-            mapping: childMapping,
+    // Start from the beginning and take the first result, as child mounts
+    // are sorted such that the first matching mount is the the most
+    // precise match (and we always want to use the most precise match).
+    let mappings = this.constructor.mappings
+    for (let i = mappings.length - 1; i >= 0; i--) {
+      let mapping = mappings[i]
+      let childEnv = matchMappingAgainstPathname(this.env, mapping, this.appendFinalSlash)
+      if (childEnv) {
+        this.child = {
+          mapping,
+          matcherOptions: {
+            env: childEnv,
             resolver: this.resolver,
-            router: this.env.router,
             withContent: this.withContent,
-          }
-          this.childMaybeResolvableNode = childMapping.maybeResolvableNode
-
-          // The first match is always the only match, as we don't allow
-          // for ambiguous patterns.
-          break
+            appendFinalSlash: this.appendFinalSlash,
+          },
+          maybeResolvableNode: mapping.maybeResolvableNode,
         }
+
+        // The first match is always the only match, as we don't allow
+        // for ambiguous patterns.
+        break
       }
     }
   }
 
-  run(): NodeMatcherResult<JunctionRoute<Meta, Content>> {
-    return super.run() as any
-  }
-
-  protected execute(): NodeMatcherResult<JunctionRoute<Meta, Content>> {
+  protected execute() {
     let hasContent = this.withContent && this.constructor.getContent
     let contentResolution: Resolution<Content | undefined>
     let contentResolvable: Resolvable<Content | undefined> = hasContent
       ? this.constructor.getContent!
       : undefinedResolver
-
-    contentResolution = this.resolver.resolve(this, contentResolvable)
-
-    let childNodeResolution: Resolution<Node> | undefined
+    contentResolution = this.resolver.resolve(this.env, contentResolvable)
+    
     let resolutionIds: number[] = [contentResolution.id]
-    if (this.childMaybeResolvableNode) {
-      if (this.childMaybeResolvableNode.isNode) {
-        childNodeResolution = {
-          id: -1,
-          status: ResolverStatus.Ready,
-          value: this.childMaybeResolvableNode as Node,
-        }
+    let childMatcher: NodeMatcher<any> | undefined
+    let childNodeResolution: Resolution<Node> | undefined
+    if (this.child) {
+      let childNode: Node | undefined
+      if (this.child.maybeResolvableNode.isNode) {
+        childNode = this.child.maybeResolvableNode
       } else {
         childNodeResolution = this.resolver.resolve(
-          this,
-          this.childMaybeResolvableNode as ResolvableNode<Node>,
+          this.env,
+          this.child.maybeResolvableNode as ResolvableNode<Node>,
         )
         resolutionIds.push(childNodeResolution.id)
+        childNode = childNodeResolution.value
       }
-    }
 
-    let childMatcher: NodeMatcher<any> | undefined
-    let matcherResult: NodeMatcherResult | undefined
-    if (childNodeResolution) {
-      if (!this.last || this.last.childNodeResolution !== childNodeResolution) {
-        if (childNodeResolution.value) {
-          childMatcher = new childNodeResolution.value(this.childMatcherOptions!)
+      if (!this.last || this.last.node !== childNode) {
+        if (childNode) {
+          childMatcher = new childNode(this.child.matcherOptions)
         }
       } else {
-        childMatcher = this.last.childMatcher
-      }
-    }
-    if (childMatcher) {
-      matcherResult = childMatcher.run()
-    }
-
-    if (
-      !this.last ||
-      (matcherResult && matcherResult.route) !== this.last.route ||
-      contentResolution !== this.last.contentResolution
-    ) {
-      let childMapping = this.childMatcherOptions && this.childMatcherOptions.mapping
-      let error: any | undefined
-      let status: RouteStatus | undefined
-      let nextRoute: Route | undefined
-      let childResolutionIds: number[] = []
-      let remainingRoutes: Route[] = []
-
-      nextRoute = matcherResult && matcherResult.route
-      childResolutionIds = (matcherResult && matcherResult.resolutionIds) || []
-
-      if (childNodeResolution) {
-        error = childNodeResolution.error
-        status = (childNodeResolution.status as string) as RouteStatus
-      }
-      if (nextRoute) {
-        if (nextRoute.type === RouteType.Junction && nextRoute.nextRoute) {
-          remainingRoutes = [nextRoute as Route].concat(
-            nextRoute.remainingRoutes,
-          )
-        } else {
-          remainingRoutes = [nextRoute]
-        }
-      } else if (
-        !childNodeResolution ||
-        (!childNodeResolution.error &&
-          childNodeResolution.status !== ResolverStatus.Busy)
-      ) {
-        error = new NotFoundError(this.match)
-        status = RouteStatus.Error
+        childMatcher = this.last.matcher
       }
 
-      // Only create a new route if necessary, to allow for reference-equality
-      // based comparisons on routes
       this.last = {
-        childNodeResolution,
-        childMatcher,
-        contentResolution,
-        resolutionIds: resolutionIds.concat(childResolutionIds),
-        route: this.createRoute(RouteType.Junction, {
-          status: (status as string) as RouteStatus,
-          error,
-          contentStatus: hasContent
-            ? ((contentResolution.status as string) as RouteContentStatus)
-            : RouteContentStatus.Unrequested,
-          contentError: contentResolution.error,
-          content: contentResolution.value,
-          meta: this.constructor.meta,
-          junction: this.constructor,
-          nextPattern: childMapping && childMapping.pattern,
-          nextRoute,
-          lastRemainingRoute: remainingRoutes[remainingRoutes.length - 1],
-          remainingRoutes,
-        }),
+        node: childNode,
+        matcher: childMatcher,
       }
     }
 
+    let childMatcherResult: NodeMatcherResult | undefined
+    if (childMatcher) {
+      childMatcherResult = childMatcher.getResult()
+    }
+
+    let nextRoute: Route | undefined
+    if (childMatcherResult) {
+      nextRoute = childMatcherResult && childMatcherResult.route
+    }
+    else if (childNodeResolution) {
+      nextRoute = createPlaceholderRoute(
+        this.child!.matcherOptions.env, 
+        childNodeResolution.error
+      )
+    }
+    else if (this.env.unmatchedPathnamePart) {
+      nextRoute = createNotFoundRoute(this.env)
+    }
+    else {
+      // We've matched the junction exactly, and don't need to match
+      // any child routes - which is useful for creating maps.
+    }
+
+    let remainingRoutes: Route[] = []
+    if (nextRoute) {
+      remainingRoutes = nextRoute.type === RouteType.Junction
+        ? [nextRoute as Route].concat(nextRoute.remainingRoutes)
+        : [nextRoute]
+    }
+
+    // Only create a new route if necessary, to allow for reference-equality
+    // based comparisons on routes
     return {
-      route: this.last.route,
-      resolutionIds: resolutionIds.concat(this.last.resolutionIds),
+      resolutionIds: resolutionIds.concat(childMatcherResult ? childMatcherResult.resolutionIds : []),
+      route: createRoute(RouteType.Junction, this.env, {
+        status: contentResolution.status,
+        error: contentResolution.error,
+        content: contentResolution.value,
+        meta: this.constructor.meta,
+        junction: this.constructor,
+        nextPattern: this.child && this.child.mapping.pattern,
+        nextRoute,
+        lastRemainingRoute: remainingRoutes[remainingRoutes.length - 1],
+        remainingRoutes,
+      }),
     }
   }
 }
@@ -225,7 +190,6 @@ export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<
 export function createJunction<Meta, Content, Context>(options: {
   paths: JunctionPaths<Context>
   meta?: Meta
-  useParams?: string[]
   getContent?: (env: RouterEnv<Context>) => Content | Promise<Content>
 }): Junction<Meta, Content, Context> {
   if (!options) {
@@ -250,7 +214,7 @@ export function createJunction<Meta, Content, Context>(options: {
     .sort((x, y) => compareStrings(x.key, y.key))
 
   if (process.env.NODE_ENV !== 'production') {
-    let { paths, meta, useParams, getContent, ...other } = options
+    let { paths, meta, getContent, ...other } = options
 
     let unknownKeys = Object.keys(other)
     if (unknownKeys.length) {
@@ -263,7 +227,7 @@ export function createJunction<Meta, Content, Context>(options: {
 
     if (mappings.length === 0) {
       console.warn(
-        `createJunction() was called with an empty object {} for "children". This doesn't make any sense.`,
+        `createJunction() was called with an empty object {} for "paths". This doesn't make any sense.`,
       )
     }
 
@@ -334,7 +298,6 @@ export function createJunction<Meta, Content, Context>(options: {
   return class extends JunctionMatcher<Meta, Content, Context> {
     static paths = options.paths
     static meta = options.meta as Meta
-    static useParams = options.useParams || []
     static mappings = mappings
     static patterns = mappings.map(mapping => mapping.pattern)
     static getContent = options.getContent

@@ -25,11 +25,11 @@ describe("pageRoute", () => {
     test("follows redirects when { followRedirects: true }", async () => {
         let router = createRouter({ rootJunction: cmsJunction })
         let route = await router.pageRoute('/examples', { followRedirects: true })
-        expect(route.url).toBe('/examples/basic')
+        expect(route.pathname).toBe('/examples/basic')
     })
 })
 
-describe("pageAndRedirectMap", () => {
+describe("siteMap", () => {
     test("includes redirects", async () => {
         let router = createRouter({ rootJunction: cmsJunction })
         let map = await router.siteMap('/')

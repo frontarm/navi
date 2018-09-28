@@ -1,5 +1,5 @@
-import { Location, createURL, concatLocations } from './Location'
-import { MappingMatch } from './Mapping';
+import { URLDescriptor, createURLDescriptor, joinPaths } from './URLTools'
+import { RouterEnv } from './RouterEnv'
 
 // See https://stackoverflow.com/questions/30402287/extended-errors-do-not-have-message-or-stack-trace
 export class NaviError extends Error {
@@ -26,39 +26,23 @@ export class NaviError extends Error {
 }
 
 export class NotFoundError extends NaviError {
-  location: Location
-  url: string
-  match: MappingMatch
+  pathname: string
+  env: RouterEnv
 
-  constructor(match: MappingMatch) {
-    let location = concatLocations(match.matchedLocation, match.remainingLocation!)
+  constructor(pathname: string) {
+    super(`URL not found: ${pathname}`)
 
-    super(`URL not found: ${createURL(location)}`)
-
-    this.location = location
-    this.url = createURL(location)
-    this.match = match
+    this.pathname = pathname
     this.name = 'NotFoundError'
   }
 }
 
-export class UnresolvableError extends NaviError {
-  details: any
+export class OutOfRootError extends NaviError {
+  url: URLDescriptor
 
-  constructor(details: any) {
-    super(`Some parts of your app couldn't be loaded.`)
-
-    this.details = details
-    this.name = 'UnresolvableError'
-  }
-}
-
-export class UnmanagedLocationError extends NaviError {
-  location: Location
-
-  constructor(location: Location) {
-    super(`URL not managed by router: ${createURL(location)}`)
-    this.location = location
+  constructor(url: URLDescriptor) {
+    super(`URL not managed by router: ${url.href}`)
+    this.url = url
     this.name = 'UnmanagedLocationError'
   }
 }

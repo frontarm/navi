@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { RoutingState, Route, RouteStatus, RouteContentStatus, isRouteSteady, NaviError } from 'junctions'
+import { RoutingState, Route, isRouteSteady, NaviError, Status, RouteType } from 'junctions'
 import { Consume, ConsumeOutput } from './Consume'
 
 
@@ -22,8 +22,8 @@ export interface ConsumeContentProps {
   waitingIndicatorDelay?: number
 }
 
-function doesRouteDefineContent(route: Route) {
-  return route.contentStatus !== RouteContentStatus.Unrequested
+function hasContentOrIsLast(route: Route) {
+  return route.content || route.status === Status.Busy || route.type !== RouteType.Junction
 }
 
 export class ConsumeContent extends React.Component<ConsumeContentProps> {
@@ -35,7 +35,7 @@ export class ConsumeContent extends React.Component<ConsumeContentProps> {
   render() {
     return (
       <Consume
-        where={doesRouteDefineContent}
+        where={hasContentOrIsLast}
         isReady={this.props.isReady}
         waitingIndicatorDelay={this.props.waitingIndicatorDelay}
         children={this.renderChildren}
@@ -57,7 +57,7 @@ export class ConsumeContent extends React.Component<ConsumeContentProps> {
         render = output.route.content
       }
       else if (React.isValidElement(content)) {
-        render = () => content
+        return content
       }
     }
     if (!render) {

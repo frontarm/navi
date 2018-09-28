@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { RoutingState, Route, RouteStatus, RouteContentStatus, isRouteSteady, NaviError } from 'junctions'
+import { RoutingState, Route, isRouteSteady, NaviError, Status } from 'junctions'
 import { NavigationContext } from './NavigationContext'
 
 
@@ -96,22 +96,19 @@ interface InnerConsumeState {
 class InnerConsume extends React.Component<InnerConsumeProps, InnerConsumeState> {
   static getDerivedStateFromProps(props: InnerConsumeProps, state: InnerConsumeState) {
     let unusedRoutes = props.context.unusedRoutes || props.context.routes
-    
-    let errorRoute = unusedRoutes.find(route =>
-      route.status === RouteStatus.Error ||
-      route.contentStatus === RouteContentStatus.Error
-    )
-    if (errorRoute) {
-      return {
-        error: errorRoute.error || errorRoute.contentError || new Error("Unknown routing error")
-      }
-    }
 
     let isReady = props.isReady!(unusedRoutes[0])
     let lastReady = state.lastReady
 
     if (isReady) {
       let index = props.where ? unusedRoutes.findIndex(props.where!) : 0
+      let errorSearchRoutes = index === -1 ? unusedRoutes : unusedRoutes.slice(0, index + 1)
+      let errorRoute = errorSearchRoutes.find(route => route.status === Status.Error)
+      if (errorRoute) {
+        return {
+          error: errorRoute.error || new Error("Unknown routing error")
+        }
+      }
       if (index === -1) {
         return {
           error: new MissingRoute(props.context),

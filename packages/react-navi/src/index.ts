@@ -4,7 +4,7 @@ export { NavigationContext as Context } from './NavigationContext'
 
 export * from './Consume'
 export * from './ConsumeContent'
-export * from './ErrorBoundary'
+export * from './NotFoundBoundary'
 export * from './History'
 export * from './Link'
 export * from './Prompt'

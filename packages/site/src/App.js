@@ -32,12 +32,9 @@ class InnerApp extends React.Component {
             isBusy={showWaitingIndicator}
             isMenuOpen={this.state.open}
             onToggleMenu={this.handleToggleMenu}>
-            <Navi.ErrorBoundary
-              renderNotFound={renderNotFound}
-              renderUnresolvable={renderUnresolvable}
-            >
+            <Navi.NotFoundBoundary render={renderNotFound}>
               <Navi.ConsumeContent />
-            </Navi.ErrorBoundary>
+            </Navi.NotFoundBoundary>
           </AppLayout>
         }
       </Navi.Consume>
@@ -58,11 +55,3 @@ function renderNotFound() {
     </div>
   )
 } 
-
-function renderUnresolvable() {
-  return (
-    <div className='App-error'>
-      <h1>Oh shit something went wrong.</h1>
-    </div>
-  )
-}

@@ -26,7 +26,7 @@ export class NavigationProvider extends React.Component<NavigationProviderProps,
         throw new MissingNavigationError
       }
       return {
-        navigationState: props.navigation.getState()
+        navigationState: props.navigation.getSnapshot()
       }
     }
     else {

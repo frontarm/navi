@@ -1,9 +1,9 @@
-import { Location, createURL } from './Location'
-import { Route, JunctionRoute, isRouteSteady, RouteContentStatus } from './Route'
+import { URLDescriptor, Params } from './URLTools'
+import { Route, JunctionRoute, isRouteSteady, PlaceholderRoute, Status } from './Route'
 
 export interface RoutingState {
-  location: Location
-  url: string
+  url: URLDescriptor
+
   routes: Route[]
   firstRoute: JunctionRoute
   lastRoute: Route
@@ -18,34 +18,23 @@ export interface RoutingState {
    * Indicates whether the location has fully loaded (including content if
    * content was requested), is still busy, or encountered an error.
    */
-  status: RoutingStateStatus
+  status: Status
 
   error?: any
 }
 
-export enum RoutingStateStatus {
-  Busy = 'Busy',
-  Ready = 'Ready',
-  Error = 'Error',
-}
-
-export function createRoutingState(location: Location, topRoute: JunctionRoute): RoutingState {
+export function createRoute(url: URLDescriptor, topRoute: JunctionRoute | PlaceholderRoute): RoutingState {
   let routes = [topRoute as Route].concat(topRoute.remainingRoutes)
   let lastRoute = routes[routes.length - 1]
-  let status = (
-    (lastRoute.contentStatus && lastRoute.contentStatus !== RouteContentStatus.Unrequested)
-      ? lastRoute.contentStatus
-      : lastRoute.status
-  ) as string as RoutingStateStatus
+  let status = lastRoute.status
 
   return {
-    location,
-    url: createURL(location),
+    url: url,
     routes,
     firstRoute: routes[0] as JunctionRoute,
     lastRoute,
     isSteady: isRouteSteady(routes[0]),
-    error: lastRoute && (lastRoute.error || lastRoute.contentError),
+    error: lastRoute && lastRoute.error,
     status,
   } 
 }

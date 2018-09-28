@@ -97,10 +97,10 @@
 
 
 .App-LoadingIndicator {
-  position: absolute;
+  position: fixed;
   height: 4px;
   top: 0;
-  left: 220px;
+  left: 0;
   right: 0;
   background-image: linear-gradient(-45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.2) 75%, transparent 75%, transparent);
   background-color: #10b068;

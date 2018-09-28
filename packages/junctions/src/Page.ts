@@ -1,12 +1,6 @@
 import { Resolution, Resolvable, undefinedResolver } from './Resolver'
-import { RouteStatus, RouteType, PageRoute, RouteContentStatus } from './Route'
-import {
-  NodeMatcher,
-  NodeMatcherResult,
-  NodeBase,
-  NodeMatcherOptions,
-} from './Node'
-import { RouterEnv } from './RouterEnv'
+import { Status, RouteType, PageRoute, createRoute } from './Route'
+import { NodeMatcher, NodeBase, NodeMatcherOptions } from './Node'
 
 export interface Page<Meta = any, Content = any, Context = any>
   extends NodeBase<Context, PageMatcher<Meta, Content, Context>> {
@@ -20,84 +14,49 @@ export interface Page<Meta = any, Content = any, Context = any>
 
   title: string
   meta: Meta
-  getContent?: ((env: RouterEnv<Context>) => Content | PromiseLike<Content>)
+  getContent?: Resolvable<Content>
 }
 
 
 export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
-  Context
+  Context,
+  PageRoute<Meta, Content>
 > {
+  ['constructor']: Page<Meta, Content, Context>
+
   static isNode = true
   static type: RouteType.Page = RouteType.Page
 
-  last?: {
-    resolution: Resolution<Content>
-    route: PageRoute<Meta, Content>
-  };
-
-  ['constructor']: Page<Meta, Content, Context>
-  constructor(options: NodeMatcherOptions<Context>) {
-    super(options)
-
-    if (this.match) {
-      let remainingLocation = this.match.remainingLocation
-      if (remainingLocation && remainingLocation.pathname !== '/') {
-        // We don't understand the remaining part of the path.
-        delete this.match
-      }
-    }
-  }
-
-  protected execute(): NodeMatcherResult<PageRoute<Meta, Content>> {
-    if (!this.match) {
-      // Required params are missing, or there is an unknown part to the
-      // path.
-      return {}
-    }
-
+  protected execute() {
     let resolvable: Resolvable<Content | undefined> = 
       this.withContent && this.constructor.getContent
         ? this.constructor.getContent
         : undefinedResolver
-    let resolution: Resolution<Content> = this.resolver.resolve(this, resolvable)
-
-    if (!this.last || this.last.resolution !== resolution) {
-      let { value, status, error } = resolution
-
-      // Only create a new route if necessary, to allow for reference-equality
-      // based comparisons on routes
-      this.last = {
-        resolution,
-        route: this.createRoute(RouteType.Page, {
-          title: this.constructor.title,
-          meta: this.constructor.meta,
-
-          status: RouteStatus.Ready,
-
-          contentStatus: !this.withContent ? RouteContentStatus.Unrequested : (status as string as RouteContentStatus),
-          contentError: error,
-          content: value,
-
-          remainingRoutes: [],
-        }),
-      }
-    }
-
+    let resolution: Resolution<Content> = this.resolver.resolve(this.env, resolvable)
+    
     return {
-      route: this.last.route,
       resolutionIds: [resolution.id],
+      route: createRoute(RouteType.Page, this.env, {
+        title: this.constructor.title,
+        meta: this.constructor.meta,
+
+        status: resolution.status,
+        error: resolution.error,
+        content: resolution.value,
+
+        remainingRoutes: [],
+      }),
     }
   }
 }
 
 export function createPage<Meta, Content, Context=any>(options: {
-  useParams?: string[]
   title: string
   meta?: Meta
-  getContent?: (env: RouterEnv<Context>) => Content | Promise<Content>
+  getContent?: Resolvable<Content>
 }): Page<Meta, Content> {
   if (process.env.NODE_ENV !== 'production') {
-    let { useParams, title, meta, getContent, ...other } = options
+    let { title, meta, getContent, ...other } = options
 
     let unknownKeys = Object.keys(other)
     if (unknownKeys.length) {
@@ -118,7 +77,6 @@ export function createPage<Meta, Content, Context=any>(options: {
   return class extends PageMatcher<Meta, Content, Context> {
     static title = options.title
     static meta = options.meta as Meta
-    static useParams = options.useParams || []
     static getContent = options.getContent
   }
 }

@@ -1,10 +1,9 @@
 import { History } from 'history'
-import { UnmanagedLocationError } from './Errors'
-import { Location, createURL, areLocationsEqual } from './Location'
+import { OutOfRootError } from './Errors'
+import { URLDescriptor, areURLDescriptorsEqual, createURLDescriptor } from './URLTools'
 import { RouteType } from './Route'
 import { Router } from './Router'
 import { RoutingState } from './RoutingState'
-import { RoutingObservable } from './RoutingObservable';
 import { Deferred } from './Deferred';
 import { Observer, Observable, Subscription, SimpleSubscription, createOrPassthroughObserver } from './Observable';
 
@@ -27,27 +26,27 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
     // Stores the last receive location, even if we haven't processed it.
     // Used to detect and defuse loops where a change to history results
     // in a new change to history before the previous one completes.
-    private lastReceivedLocation?: Location
+    private lastReceivedURL?: URLDescriptor
 
     private error?: any
+
     private waitUntilSteadyDeferred?: Deferred<RoutingState>
     private observers: Observer<RoutingState>[]
-    private lastLocation: Location
+    private lastURL: URLDescriptor
     private lastState: RoutingState
-    private routingObservable?: RoutingObservable
     private observableSubscription?: Subscription
 
     constructor(history: History, router: Router<Context>) {
         this.observers = []
         this.router = router
         this.history = history
-        this.lastLocation = this.history.location
-        this.history.listen(location => this.handleLocationChange(location))
+        this.lastURL = createURLDescriptor(this.history.location)
+        this.history.listen(location => this.handleURLChange(createURLDescriptor(location)))
         this.refresh()
     }
 
     refresh() {
-        this.handleLocationChange(this.history.location, true)
+        this.handleURLChange(createURLDescriptor(this.history.location), true)
     }
 
     setRouter(router: Router<Context>) {
@@ -58,7 +57,7 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
     /**
      * Get the root route
      */
-    getState(): RoutingState {
+    getValue(): RoutingState {
         return this.lastState
     }
 
@@ -71,7 +70,7 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
         if (this.error) {
             return Promise.reject(this.error)
         }
-        else if (this.lastState.isSteady) {
+        else if (this.lastState && this.lastState.isSteady) {
             return Promise.resolve(this.lastState)
         }
         else if (!this.waitUntilSteadyDeferred) {
@@ -102,36 +101,36 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
         }
     }
     
-    private handleLocationChange(location: Location, force?: boolean) {
+    private handleURLChange(url: URLDescriptor, force?: boolean) {
         // Defuse history update loops
-        if (!force && this.lastReceivedLocation && areLocationsEqual(this.lastReceivedLocation, location)) {
+        if (!force && this.lastReceivedURL && areURLDescriptorsEqual(this.lastReceivedURL, url)) {
             return
         }
-        this.lastReceivedLocation = location
+        this.lastReceivedURL = url
 
+        // Ensure the pathname always has a trailing `/`, so that we don't
+        // have multiple URLs referring to the same page.
+        if (url.pathname.substr(-1) !== '/') {
+            url = {
+                ...url,
+                pathname: url.pathname + '/',
+            }
+            this.history.replace(url)
+            return
+        }
+
+        let lastURL = this.lastURL
+        this.lastURL = url
         let pathHasChanged, searchHasChanged
-        if (location && this.lastLocation) {
-            pathHasChanged = location.pathname !== this.lastLocation.pathname
-            searchHasChanged = location.search !== this.lastLocation.search
+        if (url && lastURL) {
+            pathHasChanged = url.pathname !== lastURL.pathname
+            searchHasChanged = url.search !== lastURL.search
         }
 
         // The router only looks at path and search, so if they haven't
         // changed, there's no point recreating the observable.
         if (!force && !(pathHasChanged || searchHasChanged) && !this.lastState.error) {
-            this.update({
-                location,
-            })
-            return
-        }
-
-        // Ensure the pathname always has a trailing `/`, so that we don't
-        // have multiple URLs referring to the same page.
-        if (location.pathname.substr(-1) !== '/') {
-            location = {
-                ...location,
-                pathname: location.pathname + '/',
-            }
-            this.history.replace(location)
+            this.update()
             return
         }
 
@@ -139,33 +138,19 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
             this.observableSubscription.unsubscribe()
         }
 
-        let observable = this.router.observable(location, { withContent: true })
+        let observable = this.router.observable(url, { withContent: true })
         if (observable) {
-            this.routingObservable = observable
-            this.observableSubscription = this.routingObservable.subscribe(this.handleRouteChange)
-            this.update({
-                location,
-                state: this.routingObservable.getState(),
-            })
+            this.observableSubscription = observable.subscribe(this.update)
         }
-        else if (!this.lastLocation) {
-            throw new UnmanagedLocationError(location)
+        else if (!lastURL) {
+            throw new OutOfRootError(url)
         }
-
-        this.lastLocation = location
-    }
-
-    private handleRouteChange = (state: RoutingState) => {
-        this.update({
-            state,
-        })
     }
 
     // Allows for either the location or route or both to be changed at once.
-    private update = (updates: { location?: Location, state?: RoutingState }) => {
-        let lastState = this.lastState
-        let location = updates.location || this.lastLocation
-        let state = updates.state || this.lastState
+    private update = (state?: RoutingState) => {
+        let url = this.lastURL
+        let nextState = state || this.lastState
         let lastRoute = state && state.lastRoute
 
         if (lastRoute && lastRoute.type === RouteType.Redirect && lastRoute.to) {
@@ -176,11 +161,10 @@ export class HistoryRoutingObservable<Context> implements Observable<RoutingStat
         }
 
         this.lastState = {
-            ...state!,
-            location,
-            url: createURL(location),
+            ...nextState!,
+            url,
         }
-        if (this.waitUntilSteadyDeferred && state!.isSteady) {
+        if (this.waitUntilSteadyDeferred && this.lastState.isSteady) {
             this.waitUntilSteadyDeferred.resolve(this.lastState)
             delete this.waitUntilSteadyDeferred
         }

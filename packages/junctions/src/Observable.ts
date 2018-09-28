@@ -13,8 +13,6 @@ export interface Observable<T> {
         onError?: (error: any) => void,
         onComplete?: () => void
     ): Subscription;
-
-    getState(): T;
 }
 
 export interface Observer<T> {
@@ -69,4 +67,25 @@ export function createOrPassthroughObserver<T>(
             }
             : onNextOrObserver
     )
+}
+
+export function createPromiseFromObservable<T>(observable: Observable<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+        observable.subscribe({
+            start(subscription: Subscription) {
+                this.subscription = subscription
+            },
+            next(value: T) {
+                this.value = value
+            },
+            complete() {
+                resolve(this.value)
+                this.subscription.unsubscribe()
+            },
+            error(e) {
+                reject(e)
+                this.subscription.unsubscribe()
+            }
+        })
+    })
 }

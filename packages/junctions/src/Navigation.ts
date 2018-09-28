@@ -9,6 +9,8 @@ export interface Navigation<Context=any> extends Observable<NavigationState> {
 
   setContext(context: Context): void;
 
+  getSnapshot(): NavigationState;
+
   /**
    * Returns a promise that resolves once `isReady()` returns true.
    * This is useful for implementing static rendering, or for waiting until

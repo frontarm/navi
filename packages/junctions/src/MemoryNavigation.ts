@@ -61,11 +61,11 @@ export class MemoryNavigation<Context> implements Navigation<Context> {
         this.historyRoutingObservable.setRouter(this.router)
     }
 
-    getState(): NavigationState {
+    getSnapshot(): NavigationState {
         return {
             history: this.history,
             router: this.router,
-            ...this.historyRoutingObservable.getState(),
+            ...this.historyRoutingObservable.getValue(),
             onRendered: noop,
         }
     }

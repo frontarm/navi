@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { NavigationContext } from './NavigationContext'
-import { createURL, Location, Navigation } from 'junctions'
+import { URLDescriptor, Navigation, createURLDescriptor } from 'junctions'
 
 
 export interface LinkProps {
@@ -12,7 +12,7 @@ export interface LinkProps {
   disabled?: boolean,
   exact?: boolean,
   hidden?: boolean,
-  href: string | Location,
+  href: string | Partial<URLDescriptor>,
   id?: string,
   lang?: string,
   rel?: string,
@@ -89,65 +89,42 @@ class InnerLink extends React.Component<InnerLinkProps> {
   constructor(props: InnerLinkProps) {
     super(props)
 
-    let location = this.getLocation() as Location
-    if (location && location.pathname) {
-      this.props.context.router.pageRoute(location, {
+    let url = this.getURL()
+    if (url && url.pathname) {
+      this.props.context.router.pageRoute(url, {
         withContent: !!props.precache,
         followRedirects: true,
       })
         .catch(() => {
           console.warn(
-            `A <Link> referred to href "${location.pathname}", but the` +
+            `A <Link> referred to href "${url!.pathname}", but the` +
             `router could not find this path.`
           )
         })
     }
   }
 
-  getLocation(): Location | undefined  {
+  getURL(): URLDescriptor | undefined  {
     let href = this.props.href
 
-    if (!href) {
+    // If this is an external link, return undefined so that the native
+    // response will be used.
+    if (!href || typeof href === 'string' && (href.indexOf('://') !== -1 || href.indexOf('mailto:') === 0)) {
       return
     }
 
-    let location
-    if (typeof href === 'string') {
-      // If this is an external link, return undefined so that the native
-      // response will be used.
-      if (href.indexOf('://') !== -1 || href.indexOf('mailto:') === 0) {
-        return
-      }
-
-      let [lhs, hash] = href.split('#')
-      let [pathname, search] = lhs.split('?')
-      location = {
-        pathname: pathname || ''
-      } as Location
-      if (search) location.search = '?' + search
-      if (hash) location.hash = '#' + hash
-    }
-    else {
-      location = href
-    }
-
-    // Ensure there is a trailing slash
-    if (location.pathname && location.pathname.substr(-1) !== '/') {
-      location.pathname += '/'
-    }
-
-    return location
+    return createURLDescriptor(href)
   }
   
   render() {
     let props = this.props
-    let linkLocation = this.getLocation()
-    let navigationLocation = this.props.context.location
+    let linkURL = this.getURL()
+    let navigaitonURL = this.props.context.url
     let active = !!(
-      linkLocation &&
+      linkURL &&
       (props.exact
-        ? linkLocation.pathname === navigationLocation.pathname
-        : navigationLocation.pathname.indexOf(linkLocation.pathname) === 0)
+        ? linkURL.pathname === navigaitonURL.pathname
+        : navigaitonURL.pathname.indexOf(linkURL.pathname) === 0)
     )
 
     return props.render!({
@@ -160,7 +137,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
       disabled: props.disabled,
       tabIndex: props.tabIndex,
       hidden: props.hidden,
-      href: linkLocation ? createURL(linkLocation) : props.href as string,
+      href: linkURL ? linkURL.href : props.href as string,
       id: props.id,
       lang: props.lang,
       style: props.style,
@@ -171,7 +148,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
   }
 
   Anchor = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
-    let linkLocation = this.getLocation()
+    let linkURL = this.getURL()
     let handleClick: React.MouseEventHandler<HTMLAnchorElement> = this.handleClick
     if (props.onClick) {
       handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -193,7 +170,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
         {...props}
 
-        href={linkLocation ? createURL(linkLocation) : this.props.href as string}
+        href={linkURL ? linkURL.href : this.props.href as string}
         onClick={handleClick}
       />
     )
@@ -218,10 +195,10 @@ class InnerLink extends React.Component<InnerLinkProps> {
         this.props.onClick(event)
       }
       
-      let location = this.getLocation()
-      if (!event.defaultPrevented && location) {
+      let url = this.getURL()
+      if (!event.defaultPrevented && url) {
         event.preventDefault()
-        this.props.context.history.push(location)
+        this.props.context.history.push(url)
       }
     }
   }

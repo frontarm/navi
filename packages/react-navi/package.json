@@ -14,7 +14,7 @@
     "build:umd": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/react-junctions.js && rimraf dist/umd-intermediate",
     "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/react-junctions.min.js && rimraf dist/umd-intermediate",
     "build": "npm run build:es && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
-    "build:watch": "npm run clean && npm run build:es -- --watch",
+    "build:watch": "npm run clean && npm run build:commonjs -- --watch",
     "prepublish": "npm run clean && npm run build"
   },
   "keywords": [

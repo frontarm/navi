@@ -1,26 +1,20 @@
-import { Location } from './Location'
+import { Params, URLDescriptor, joinPaths } from './URLTools'
 import { Junction } from './Junction'
-import { Node } from './Node'
+import { RouterEnv, NotFoundError } from '.';
 
 /**
  * A type that covers all Segment objects.
  */
-export type Route = JunctionRoute | PageRoute | RedirectRoute
+export type Route = PlaceholderRoute | JunctionRoute | PageRoute | RedirectRoute
 
-export enum RouteStatus {
+export enum Status {
   Ready = 'Ready',
   Busy = 'Busy',
-  Error = 'Error',
-}
-
-export enum RouteContentStatus {
-  Unrequested = 'Unrequested',
-  Busy = 'Busy',
-  Ready = 'Ready',
   Error = 'Error',
 }
 
 export enum RouteType {
+  Placeholder = 'Placeholder',
   Junction = 'Junction',
   Page = 'Page',
   Redirect = 'Redirect',
@@ -30,44 +24,50 @@ export enum RouteType {
  * All routes extend this interface. It includes all information that can be
  * inferred from just a pattern string and a location.
  */
-export interface RouteBase {
+export interface GenericRoute {
   type: RouteType
 
   /**
    * Any params that have been matched.
    */
-  params?: { [name: string]: any }
+  params: Params
 
   /**
-   * A Location object representing the part of the URL that has been
-   * matched.
+   * The part of the URL pathname that has been matched.
    */
-  location: Location
+  pathname: string
 
   /**
-   * The part of the entire URL string that has been matched.
+   * The query string from the URL
    */
-  url: string
+  query: Params
+}
 
-  /**
-   * The Template object which created this Route Segment.
-   */
-  node: Node
+export interface PlaceholderRoute extends GenericRoute {
+  type: RouteType.Placeholder
+
+  nextRoute?: never
+  nextPattern?: never
+  status: Status
+  error?: any
+  content?: never
+  meta?: never
+  title?: never
+
+  lastRemainingRoute?: never
+  remainingRoutes: any[]
 }
 
 /**
  * Page routes corresponds to a URL segment followed by a final '/'.
  */
-export interface PageRoute<Meta = any, Content = any> extends RouteBase {
-  content?: Content
-  meta: Meta
-  title: string
+export interface PageRoute<Meta = any, Content = any> extends GenericRoute {
   type: RouteType.Page
+  content?: Content
+  meta?: Meta
+  title?: string
 
-  contentStatus: RouteContentStatus
-  contentError?: any
-
-  status: RouteStatus // is always ready
+  status: Status
   error?: never
 
   nextRoute?: never
@@ -80,17 +80,14 @@ export interface PageRoute<Meta = any, Content = any> extends RouteBase {
  * Redirect routes indicate that anything underneath this route
  * should be redirected to the location specified at `to`.
  */
-export interface RedirectRoute<Meta = any> extends RouteBase {
-  to?: Location
+export interface RedirectRoute<Meta = any> extends GenericRoute {
+  to?: string
   meta: Meta
   title?: never
   type: RouteType.Redirect
 
   content?: never
-  contentStatus?: never
-  contentError?: never
-
-  status: RouteStatus
+  status: Status
   error?: any
 
   nextRoute?: never
@@ -105,18 +102,15 @@ export interface RedirectRoute<Meta = any> extends RouteBase {
 export interface JunctionRoute<
   Meta = any,
   Content = any,
-> extends RouteBase {
+> extends GenericRoute {
   type: RouteType.Junction
   meta: Meta
   title?: never
   junction: Junction<Meta>
 
-  status: RouteStatus
+  status: Status
   error?: any
-
   content?: Content
-  contentStatus: RouteContentStatus
-  contentError?: any
 
   /**
    * The pattern that was matched (with param placeholders if applicable).
@@ -148,13 +142,43 @@ export interface JunctionRoute<
     
 export function isRouteSteady(route: Route): boolean {
   return (
-    route.status !== RouteStatus.Busy &&
+    route.status !== Status.Busy &&
     (
-      (route.type === RouteType.Page && route.contentStatus !== RouteContentStatus.Busy) ||
-      (route.type === RouteType.Junction && (
+      route.type !== RouteType.Junction || (
         !route.lastRemainingRoute ||
-        (route.lastRemainingRoute.status !== RouteStatus.Busy && route.lastRemainingRoute.contentStatus !== RouteContentStatus.Busy)
-      ))
+        route.lastRemainingRoute.status !== Status.Busy
+      )
     )
   )
+}
+
+export function createRoute<Type extends string, Details>(type: Type, env: RouterEnv, details: Details) {
+  return Object.assign({
+    type: type,
+    meta: undefined as any,
+    params: env.params,
+    pathname: env.pathname,
+    query: env.query,
+    remainingRoutes: (details as any).remainingRoutes || []
+  }, details)
+}
+
+export function createPlaceholderRoute(env: RouterEnv, error?: any): PlaceholderRoute {
+  return createRoute(RouteType.Placeholder, env, {
+    status: error ? Status.Error : Status.Busy,
+    error: error,
+  })
+}
+
+export function createNotFoundRoute(env: RouterEnv): PlaceholderRoute {
+  let fullPathname = joinPaths(env.pathname, env.unmatchedPathnamePart)
+  return {
+    type: RouteType.Placeholder,
+    params: env.params,
+    pathname: fullPathname,
+    query: env.query,
+    status: Status.Error,
+    error: new NotFoundError(fullPathname),
+    remainingRoutes: [],
+  }
 }

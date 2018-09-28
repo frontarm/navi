@@ -1,42 +1,36 @@
-import { Location } from './Location'
-import { RoutingState, createRoutingState } from './RoutingState'
+import { RoutingState, createRoute } from './RoutingState'
 import { Junction } from './Junction'
-import { AbsoluteMapping } from './Mapping'
 import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { Resolver } from './Resolver'
 import { Router, RouterLocationOptions } from './Router'
 import { NodeMatcherOptions } from './Node';
+import { RouterEnv } from './RouterEnv';
+import { URLDescriptor } from './URLTools';
 
 export class RoutingObservable implements Observable<RoutingState> {
-    readonly location: Location
+    readonly url: URLDescriptor
 
-    private cachedValue?: RoutingState
-    private context: any
+    private cachedValue: RoutingState
     private matcher: Junction['prototype']
     private observers: Observer<RoutingState>[]
     private resolver: Resolver
-    private router: Router
-    private rootJunction: Junction
-    private rootMapping: AbsoluteMapping
-    private withContent: boolean
   
     constructor(
-        context: any,
-        location: Location,
+        url: URLDescriptor,
+        env: RouterEnv,
         rootJunction: Junction,
-        rootMapping: AbsoluteMapping,
         resolver: Resolver,
-        router: Router,
-        options: RouterLocationOptions
+        withContent: boolean
     ) {
-        this.context = context
-        this.location = location
+        this.url = url
         this.resolver = resolver
         this.observers = []
-        this.rootJunction = rootJunction
-        this.rootMapping = rootMapping
-        this.router = router
-        this.withContent = !!options.withContent
+        this.matcher = new rootJunction({
+            appendFinalSlash: true,
+            env,
+            resolver: this.resolver,
+            withContent: withContent
+        })
     }
 
     subscribe(
@@ -44,37 +38,16 @@ export class RoutingObservable implements Observable<RoutingState> {
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
-        if (this.observers.length === 0) {
-            this.createMatcher()
-            this.refresh()
+        if (!this.resolver) {
+            throw new Error("Can't subscribe to an already-complete RoutingObservable.")
         }
         let observer = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
         this.observers.push(observer)
-        return new SimpleSubscription(this.handleUnsubscribe, observer)
-    }
-
-    private createMatcher() {
-        this.matcher = new this.rootJunction({
-            context: this.context,
-            matchableLocation: this.location,
-            mapping: this.rootMapping,
-            resolver: this.resolver,
-            router: this.router,
-            withContent: !!this.withContent
-        })
-    }
-
-    getState(): RoutingState {
-        // We don't need to worry about any subscriptions here
-        if (this.cachedValue) {
-            return this.cachedValue
+        let subscription = new SimpleSubscription(this.handleUnsubscribe, observer)
+        if (this.observers.length === 1) {
+            this.handleChange()
         }
-        else {
-            this.createMatcher()
-            let state = createRoutingState(this.location, this.matcher.run().route!)
-            delete this.matcher
-            return state
-        }
+        return subscription
     }
 
     private handleUnsubscribe = (observer: Observer<RoutingState>) => {
@@ -82,25 +55,28 @@ export class RoutingObservable implements Observable<RoutingState> {
         if (index !== -1) {
             this.observers.splice(index, 1)
         }
-        if (this.observers.length === 0) {
-            delete this.matcher
-            delete this.cachedValue
-            this.resolver.unlisten(this.handleChange)
-        }
     }
 
     private handleChange = () => {
-        let value = this.refresh()
+        this.refresh()
         for (let i = 0; i < this.observers.length; i++) {
-            this.observers[i].next(value)
+            let observer = this.observers[i]
+            observer.next(this.cachedValue)
+            if (this.cachedValue.isSteady && observer.complete) {
+                observer.complete()
+            }
+        }
+        if (this.cachedValue.isSteady) {
+            this.resolver.unlisten(this.handleChange)
+            delete this.matcher
+            delete this.resolver
         }
     }
 
     private refresh = () => {
-        let { route, resolutionIds } = this.matcher.run()
-        this.cachedValue = createRoutingState(this.location, route!)
+        let { route, resolutionIds } = this.matcher.getResult()
+        this.cachedValue = createRoute(this.url, route)
         // This will replace any existing listener and its associated resolvables
-        this.resolver.listen(this.handleChange, resolutionIds!)
-        return this.cachedValue!
+        this.resolver.listen(this.handleChange, resolutionIds)
     }
 }

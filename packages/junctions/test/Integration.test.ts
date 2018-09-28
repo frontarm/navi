@@ -1,4 +1,4 @@
-import { JunctionRoute, createMemoryNavigation, PageRoute, RouteStatus, RouteContentStatus, RouteType, createRouter } from '../src'
+import { JunctionRoute, createMemoryNavigation, PageRoute, Status, RouteType, createRouter } from '../src'
 import { cmsJunction } from './fixtures/junctions'
 
 describe("integration", () => {
@@ -18,10 +18,10 @@ describe("integration", () => {
         
         expect(firstRoute.type).toBe(RouteType.Junction)
         expect(firstRoute.content).toBe('site-layout')
-        expect(firstRoute.contentStatus).toBe(RouteContentStatus.Ready)
+        expect(firstRoute.status).toBe(Status.Ready)
         expect(firstRoute.nextPattern).toBe('/examples')
         expect(state.routes[1].content).toBe('example-layout')
-        expect(state.routes[1].contentStatus).toBe(RouteContentStatus.Ready)
+        expect(state.routes[1].status).toBe(Status.Ready)
         expect(pageRoute.type).toBe(RouteType.Page)
         expect(pageRoute.title).toBe('Basic example')
         expect(pageRoute.content).toBe('basic-example')
@@ -29,17 +29,19 @@ describe("integration", () => {
 
         nav.history.push('/examples/advanced?referrer=frontarm')
 
-        firstRoute = nav.getState().firstRoute
-        let junctionRoute = firstRoute.lastRemainingRoute as JunctionRoute
+        firstRoute = nav.getSnapshot().firstRoute
+        let secondRoute = firstRoute.nextRoute
 
-        expect(firstRoute.params).toEqual({ referrer: 'frontarm' })
-        expect(firstRoute.status).toEqual(RouteStatus.Busy)
+        expect(firstRoute.query).toEqual({ referrer: 'frontarm' })
         expect(firstRoute.nextPattern).toEqual('/examples')
+        expect(firstRoute.status).toEqual(Status.Ready)
+        expect(secondRoute.status).toEqual(Status.Busy)
 
         state = await nav.getSteadyState()
         firstRoute = state.firstRoute
         pageRoute = state.lastRoute as PageRoute
 
+        expect(pageRoute.query).toEqual({ referrer: 'frontarm' })
         expect(pageRoute.title).toBe('Advanced example')
         expect(pageRoute.meta.isPaywalled).toBe(true)
         expect(pageRoute.content).toBe('please-login')
@@ -58,10 +60,10 @@ describe("integration", () => {
 
         state = await nav.getSteadyState()
         firstRoute = state.firstRoute
-        junctionRoute = firstRoute.lastRemainingRoute as JunctionRoute
+        let　junctionRoute = firstRoute.lastRemainingRoute as JunctionRoute
         
         expect(junctionRoute.error && junctionRoute.error.name).toBe("NotFoundError")
-        expect(junctionRoute.error && junctionRoute.error.url).toBe("/examples/intermediate/")
+        expect(junctionRoute.error && junctionRoute.error.pathname).toBe("/examples/intermediate/")
     })
 
     test("map-based content", async () => {
