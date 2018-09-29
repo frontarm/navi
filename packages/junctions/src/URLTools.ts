@@ -40,9 +40,10 @@ export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescrip
         throw new Error("Couldn't parse the provided URL.")
     }
     let search = matches[6] || ''
+    let query = parseQuery(search)
     url = {
       pathname: matches[2] || '',
-      query: parseQuery(search),
+      query: query,
       search,
       hash: matches[7] || '',
       href: urlOrDescriptor,

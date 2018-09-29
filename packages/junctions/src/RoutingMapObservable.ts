@@ -40,10 +40,6 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
   private router: Router
   private options: RouterMapOptions
 
-  private followRedirects?: boolean
-  private maxDepth?: number
-  private predicate?: (route: Route) => boolean
-
   private queuePathnames: string[]
   private queueItems: QueueItem[]
 
@@ -122,7 +118,6 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
       this.resolver.unlisten(this.handleChange)
 
       delete this.rootContext
-      delete this.predicate
       delete this.queueItems
       delete this.router
       delete this.observers
@@ -139,7 +134,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
       let { route, resolutionIds } = item.matcher.getResult()
       let lastRoute = route.lastRemainingRoute || route
       let cachedLastRoute = item.lastRouteCache
-      item.routeCache = route
+      item.routeCache = route as JunctionRoute
       item.lastRouteCache = lastRoute
 
       // If an item in the map cannot be found, throws an error, or is
@@ -151,7 +146,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
       // will still be removed.
       if (
         lastRoute.status === Status.Error ||
-        (this.predicate && !this.predicate(lastRoute))
+        (this.options.predicate && !this.options.predicate(lastRoute))
       ) {
         this.removeFromQueue(pathname)
         continue
@@ -160,7 +155,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
       // If a redirect has been added or changed `to` location,
       // then add the location to the map.
       if (
-        this.followRedirects &&
+        this.options.followRedirects &&
         lastRoute.type === RouteType.Redirect &&
         lastRoute.status === Status.Ready &&
         lastRoute.to &&
@@ -225,7 +220,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
   private addToQueue(pathname: string, depth: number, fromPathname?: string) {
     if (
       this.queuePathnames.indexOf(pathname) === -1 &&
-      (!this.maxDepth || depth <= this.maxDepth)
+      (!this.options.maxDepth || depth <= this.options.maxDepth)
     ) {
       let url = createURLDescriptor(pathname, { ensureTrailingSlash: false })
       let rootEnv: RouterEnv = {

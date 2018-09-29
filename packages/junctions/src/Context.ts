@@ -25,10 +25,7 @@ export interface Context<ParentContext = any, ChildContext = any>
 }
 
 
-export class ContextMatcher<ParentContext, ChildContext> extends NodeMatcher<
-  ParentContext,
-  Route
-> {
+export class ContextMatcher<ParentContext, ChildContext> extends NodeMatcher<ParentContext> {
   static isNode = true;
   static type: 'Context' = 'Context';
 

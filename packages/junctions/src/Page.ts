@@ -1,6 +1,6 @@
 import { Resolution, Resolvable, undefinedResolver } from './Resolver'
 import { Status, RouteType, PageRoute, createRoute } from './Route'
-import { NodeMatcher, NodeBase, NodeMatcherOptions } from './Node'
+import { NodeMatcher, NodeMatcherResult, NodeBase, NodeMatcherOptions } from './Node'
 
 export interface Page<Meta = any, Content = any, Context = any>
   extends NodeBase<Context, PageMatcher<Meta, Content, Context>> {
@@ -18,16 +18,13 @@ export interface Page<Meta = any, Content = any, Context = any>
 }
 
 
-export class PageMatcher<Meta, Content, Context> extends NodeMatcher<
-  Context,
-  PageRoute<Meta, Content>
-> {
+export class PageMatcher<Meta, Content, Context> extends NodeMatcher<Context> {
   ['constructor']: Page<Meta, Content, Context>
 
   static isNode = true
   static type: RouteType.Page = RouteType.Page
 
-  protected execute() {
+  protected execute(): NodeMatcherResult<PageRoute<Meta, Content>> {
     let resolvable: Resolvable<Content | undefined> = 
       this.withContent && this.constructor.getContent
         ? this.constructor.getContent

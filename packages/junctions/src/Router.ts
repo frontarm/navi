@@ -64,7 +64,7 @@ export class Router<Context=any> {
         let rootEnv = {
             context: this.rootContext,
             method: options.method || HTTPMethod.Get,
-            params: {},
+            params: url.query,
             pathname: '',
             query: url.query,
             router: this,

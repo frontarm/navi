@@ -6,6 +6,7 @@ import { Router, RouterLocationOptions } from './Router'
 import { NodeMatcherOptions } from './Node';
 import { RouterEnv } from './RouterEnv';
 import { URLDescriptor } from './URLTools';
+import { JunctionRoute } from '.';
 
 export class RoutingObservable implements Observable<RoutingState> {
     readonly url: URLDescriptor
@@ -75,7 +76,7 @@ export class RoutingObservable implements Observable<RoutingState> {
 
     private refresh = () => {
         let { route, resolutionIds } = this.matcher.getResult()
-        this.cachedValue = createRoute(this.url, route)
+        this.cachedValue = createRoute(this.url, route as JunctionRoute)
         // This will replace any existing listener and its associated resolvables
         this.resolver.listen(this.handleChange, resolutionIds)
     }

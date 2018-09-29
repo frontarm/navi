@@ -1,7 +1,7 @@
 import { URLDescriptor, createURLDescriptor } from './URLTools'
 import { Resolution, Resolvable } from './Resolver'
 import { RouteType, RedirectRoute, Status, createRoute } from './Route'
-import { NodeMatcher, NodeBase, NodeMatcherOptions } from './Node'
+import { NodeMatcher, NodeMatcherResult, NodeBase, NodeMatcherOptions } from './Node'
 
 export interface Redirect<Meta = any, Context = any>
   extends NodeBase<Context, RedirectMatcher<Meta, Context>> {
@@ -13,16 +13,13 @@ export interface Redirect<Meta = any, Context = any>
   meta: Meta
 }
 
-export class RedirectMatcher<Meta = any, Context = any> extends NodeMatcher<
-  Context,
-  RedirectRoute<Meta>
-> {
+export class RedirectMatcher<Meta = any, Context = any> extends NodeMatcher<Context> {
   ['constructor']: Redirect
 
   static isNode = true
   static type: RouteType.Redirect = RouteType.Redirect
 
-  protected execute() {
+  protected execute(): NodeMatcherResult<RedirectRoute<Meta>> {
     let resolution = this.resolver.resolve(this.env, this.constructor.to)
     let value = resolution.value
     

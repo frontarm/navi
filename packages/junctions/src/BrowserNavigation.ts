@@ -66,6 +66,8 @@ export class BrowserNavigation<Context> implements Navigation<Context> {
     constructor(options: BrowserNavigationOptions<Context>) {
         this.history = options.history || createBrowserHistory()
         this.resolver = new Resolver
+        this.rootJunction = options.rootJunction
+        this.rootPath = options.rootPath
         this.router = new Router(this.resolver, {
             rootContext: options.initialRootContext,
             rootJunction: options.rootJunction,

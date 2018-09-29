@@ -36,7 +36,7 @@ export interface NodeMatcherResult<R extends Route = Route> {
     resolutionIds: number[]
 }
 
-export abstract class NodeMatcher<Context, R extends Route = Route> {
+export abstract class NodeMatcher<Context> {
     appendFinalSlash: boolean
     env: RouterEnv;
     resolver: Resolver;
@@ -55,7 +55,7 @@ export abstract class NodeMatcher<Context, R extends Route = Route> {
     }
 
     // Get the route object given the current state.
-    getResult(): NodeMatcherResult<R | PlaceholderRoute> {
+    getResult(): NodeMatcherResult {
         let unmatchedPathnamePart = this.env.unmatchedPathnamePart
         if (this.wildcard || !unmatchedPathnamePart || unmatchedPathnamePart === '/') {
             return this.execute()
@@ -70,5 +70,5 @@ export abstract class NodeMatcher<Context, R extends Route = Route> {
         }
     };
     
-    protected abstract execute(): NodeMatcherResult<R>;
+    protected abstract execute(): NodeMatcherResult;
 }

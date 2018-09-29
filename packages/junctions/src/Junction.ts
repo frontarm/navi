@@ -52,10 +52,7 @@ export interface Junction<Meta = any, Content = any, Context = any>
   patterns: string[]
 }
 
-export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<
-  Context,
-  JunctionRoute<Meta, Content>
-> {
+export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<Context> {
   static isNode = true
   static type: RouteType.Junction = RouteType.Junction
 
@@ -100,7 +97,7 @@ export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<
     }
   }
 
-  protected execute() {
+  protected execute(): NodeMatcherResult<JunctionRoute<Meta, Content>> {
     let hasContent = this.withContent && this.constructor.getContent
     let contentResolution: Resolution<Content | undefined>
     let contentResolvable: Resolvable<Content | undefined> = hasContent
