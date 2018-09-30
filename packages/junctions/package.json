@@ -1,6 +1,6 @@
 {
   "name": "junctions",
-  "version": "0.7.0-beta.17",
+  "version": "0.7.0-beta.18",
   "description": "Junction-based routing for JavaScript.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -11,8 +11,8 @@
     "clean": "rimraf dist",
     "build:commonjs": "tsc --pretty --declaration --module commonjs --outDir dist/commonjs",
     "build:es": "tsc --pretty --declaration --module es2015 --outDir dist/es",
-    "build:umd": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/junctions.js && rimraf dist/umd-intermediate",
-    "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/junctions.min.js && rimraf dist/umd-intermediate",
+    "build:umd": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/navi.js && rimraf dist/umd-intermediate",
+    "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/navi.min.js && rimraf dist/umd-intermediate",
     "build": "npm run build:es && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
     "build:watch": "npm run clean && npm run build:es -- --watch",
     "prepublish": "npm run clean && npm run build && npm run test",

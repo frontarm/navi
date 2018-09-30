@@ -1,12 +1,12 @@
 {
   "name": "react-navi",
-  "version": "0.7.0-beta.16",
+  "version": "0.7.0-beta.18",
   "description": "A batteries-included router for react.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
   "module": "dist/es/index.js",
-  "types": "src/commonjs/index.d.ts",
+  "types": "dist/commonjs/index.d.ts",
   "scripts": {
     "clean": "rimraf dist",
     "build:commonjs": "tsc --pretty --declaration --module commonjs --outDir dist/commonjs",
