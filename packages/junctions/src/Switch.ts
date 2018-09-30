@@ -1,7 +1,8 @@
 import {
   Resolution,
   Resolvable,
-  undefinedResolver,
+  undefinedResolvable,
+  reduceStatuses,
 } from './Resolver'
 import {
   Segment,
@@ -41,8 +42,8 @@ export interface Switch<Context extends object = any, Meta extends object = any,
     Content
   >
 
-  meta: Meta
-  getContent?: Resolvable<Content, Context>
+  meta: Resolvable<Meta, Context>
+  getContent: Resolvable<Content | undefined, Context>
   paths: SwitchPaths<Context>
   mappings: Mapping[]
   patterns: string[]
@@ -95,13 +96,18 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
 
   protected execute(): NodeMatcherResult<SwitchSegment<Meta, Content>> {
     let hasContent = this.withContent && this.constructor.getContent
-    let contentResolution: Resolution<Content | undefined>
     let contentResolvable: Resolvable<Content | undefined> = hasContent
       ? this.constructor.getContent!
-      : undefinedResolver
-    contentResolution = this.resolver.resolve(this.env, contentResolvable)
+      : undefinedResolvable
+    let contentResolution = this.resolver.resolve(this.env, contentResolvable)
+    let { value: content, status, error } = contentResolution
     
-    let resolutionIds: number[] = [contentResolution.id]
+    let metaResolution = this.resolver.resolve(this.env, this.constructor.meta)
+    let meta = metaResolution.value
+    status = reduceStatuses(status, metaResolution.status)
+    error = error || metaResolution.error
+
+    let resolutionIds: number[] = [contentResolution.id, metaResolution.id]
     let childMatcher: NodeMatcher<any> | undefined
     let childNodeResolution: Resolution<NaviNode> | undefined
     if (this.child) {
@@ -166,11 +172,11 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
     return {
       resolutionIds: resolutionIds.concat(childMatcherResult ? childMatcherResult.resolutionIds : []),
       segment: createSegment(SegmentType.Switch, this.env, {
-        status: contentResolution.status,
-        error: contentResolution.error,
-        content: contentResolution.value,
+        status,
+        error,
+        content,
+        meta: meta || {},
         switch: this.constructor,
-        meta: this.constructor.meta,
         nextPattern: this.child && this.child.mapping.pattern,
         nextSegment,
         lastRemainingSegment: remainingSegments[remainingSegments.length - 1],
@@ -182,7 +188,7 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
 
 export function createSwitch<Context extends object, Meta extends object, Content>(options: {
   paths: SwitchPaths<Context>
-  meta?: Meta
+  meta?: Meta | Resolvable<Meta>
   getContent?: Resolvable<Content, Context>
 }): Switch<Context, Meta, Content> {
   if (!options) {
@@ -290,10 +296,10 @@ export function createSwitch<Context extends object, Meta extends object, Conten
 
   return class extends SwitchMatcher<Context, Meta, Content> {
     static paths = options.paths
-    static meta = options.meta as Meta
+    static meta = typeof options.meta === 'function' ? options.meta : (() => options.meta  as any)
     static mappings = mappings
     static patterns = mappings.map(mapping => mapping.pattern)
-    static getContent = options.getContent
+    static getContent = options.getContent || undefinedResolvable
   }
 }
 

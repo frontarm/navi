@@ -4,7 +4,7 @@ import { NotFoundError } from './Errors'
 
 export type Resolvable<T, Context extends object = any> = (
   env: Env<Context>,
-) => PromiseLike<{ default: T } | T> | T
+) => (T | PromiseLike<{ default: T } | T>)
 
 export type Resolution<T> = {
   id: number
@@ -19,7 +19,17 @@ export enum Status {
   Error = 'error',
 }
 
-export const undefinedResolver = () => undefined
+export function reduceStatuses(x: Status, y: Status) {
+  if (x === Status.Error || y === Status.Error) {
+    return Status.Error
+  }
+  else if (x === Status.Busy || y === Status.Busy) {
+    return Status.Busy
+  }
+  return Status.Ready
+}
+
+export const undefinedResolvable = () => undefined
 
 export class Resolver {
   private nextId: number

@@ -6,14 +6,12 @@ export const fixtureSwitch = createSwitch({
     },
 
     paths: {
-        '/': async () => createPage({
+        '/': () => createPage({
             title: 'Junctions',
             meta: {
                 description: 'Junctions Is A Router',
             },
-            async getContent(env: Env) {
-                return await env.router.resolvePageMap('/examples')
-            },
+            getContent: (env: Env) => env.router.resolvePageMap('/examples'),
         }),
 
         '/examples': async () =>
@@ -32,21 +30,19 @@ export const fixtureSwitch = createSwitch({
 
                         '/basic': async () => createPage({
                             title: 'Basic example',
-                            getContent() {
-                                return Promise.resolve('basic-example')
-                            }
+                            getContent: () => 'basic-example'
                         }),
 
-                        '/advanced': async () => createPage({
-                            title: 'Advanced example',
-                            meta: {
+                        '/advanced': createPage({
+                            title: () => 'Advanced example',
+                            meta: () => ({
                                 isPaywalled: true,
-                            },
-                            getContent(env: Env) {
+                            }),
+                            async getContent(env: Env) {
                                 return (env.context.contextName === 'examples' && env.context.isAuthenticated) ? (
-                                    Promise.resolve('advanced-example')
+                                    'advanced-example'
                                 ) : (
-                                    Promise.resolve('please-login')
+                                    'please-login'
                                 )
                             }
                         })

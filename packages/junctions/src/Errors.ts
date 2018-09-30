@@ -44,6 +44,6 @@ export class OutOfRootError extends NaviError {
   constructor(url: URLDescriptor) {
     super(`URL not managed by router: ${url.href}`)
     this.url = url
-    this.name = 'UnmanagedLocationError'
+    this.name = 'OutOfRootError'
   }
 }

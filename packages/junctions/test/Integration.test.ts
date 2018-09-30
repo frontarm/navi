@@ -1,5 +1,5 @@
 import { SwitchSegment, createMemoryNavigation, PageSegment, Status, SegmentType, NotFoundError } from '../src'
-import { fixtureSwitch } from './fixtures/junctions'
+import { fixtureSwitch } from './fixtures/switches'
 
 describe("integration", () => {
     function createTestNavigation(initialURL) {

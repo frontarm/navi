@@ -1,5 +1,5 @@
 import { createRouter } from '../src'
-import { fixtureSwitch } from './fixtures/junctions'
+import { fixtureSwitch } from './fixtures/switches'
 
 describe("pageMap", () => {
     test("mapping over '/' returns full site", async () => {

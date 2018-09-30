@@ -26,7 +26,7 @@ Once you've installed the `navi` and `react-navi` packages, you can create your 
 To declare your pages, you'll use Navi's `createSwitch()` and `createPage()` functions. Switches are used to map paths to pages. Pages represent individual locations that you can navigate to.
 
 ```js
-// screens/index.js
+// switches/index.js
 import { createPage, createSwitch } from 'navi'
 import * as React from 'react'
 import { Link } from 'react-navi'
@@ -59,7 +59,7 @@ As you'll see later, you can return *anything* from `getContent()`. You can retu
 But what about the `/reference` page? It's not returning an element. It's returning a *Promise* to an element -- and this is where Navi shines. When the user clicks the "API reference" link, instead of immediately rendering a blank page, Navi will wait until `reference.js` has loaded ---  and *then* it'll render the page.
 
 ```js
-// screens/reference.js
+// switches/reference.js
 import * as React from 'react'
 import { Link } from 'react-navi'
 
@@ -82,7 +82,7 @@ To create a `Navigation`, just call `createBrowserNavigation()` within `index.js
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import { createBrowserNavigation } from 'navi'
-import { rootSwitch } from './screens'
+import { rootSwitch } from './switches'
 import App from './App'
 
 let navigation = createBrowserNavigation({ rootSwitch })

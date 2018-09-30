@@ -19,7 +19,7 @@ export interface RouterOptions<Context extends object> {
     rootPath?: string,
 }
 
-export interface RouterLocationOptions {
+export interface RouterResolveOptions {
     followRedirects?: boolean,
     withContent?: boolean,
     method?: HTTPMethod,
@@ -56,7 +56,7 @@ export class Router<Context extends object=any> {
         this.rootMapping = createRootMapping(options.rootSwitch, options.rootPath)
     }
 
-    createObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterLocationOptions = {}): RouteObservable | undefined {
+    createObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterResolveOptions = {}): RouteObservable | undefined {
         // need to somehow keep track of which promises in the resolver correspond to which observables,
         // so that I don't end up updating observables which haven't actually changed.
         let url = createURLDescriptor(urlOrDescriptor)
@@ -93,9 +93,9 @@ export class Router<Context extends object=any> {
         )
     }
 
-    resolve(url: string | Partial<URLDescriptor>, options?: RouterLocationOptions): Promise<PageRoute>;
-    resolve(urls: (string | Partial<URLDescriptor>)[], options?: RouterLocationOptions): Promise<PageRoute[]>;
-    resolve(urls: string | Partial<URLDescriptor> | (string | Partial<URLDescriptor>)[], options: RouterLocationOptions = {}): Promise<PageRoute | PageRoute[]> {
+    resolve(url: string | Partial<URLDescriptor>, options?: RouterResolveOptions): Promise<PageRoute>;
+    resolve(urls: (string | Partial<URLDescriptor>)[], options?: RouterResolveOptions): Promise<PageRoute[]>;
+    resolve(urls: string | Partial<URLDescriptor> | (string | Partial<URLDescriptor>)[], options: RouterResolveOptions = {}): Promise<PageRoute | PageRoute[]> {
         let urlDescriptors: URLDescriptor[] = getDescriptorsArray(urls)
         if (!urlDescriptors.length) {
             return Promise.resolve([])
@@ -137,7 +137,7 @@ export class Router<Context extends object=any> {
         return this.resolveSiteMap(urlOrDescriptor, options).then(siteMap => siteMap.pages)
     }
 
-    private getPageRoutePromise(url: URLDescriptor, options: RouterLocationOptions): Promise<PageRoute> {
+    private getPageRoutePromise(url: URLDescriptor, options: RouterResolveOptions): Promise<PageRoute> {
         let observable = this.createObservable(url, options)
         if (!observable) {
             return Promise.reject(new OutOfRootError(url))
