@@ -1,23 +1,22 @@
-import { PageRoute, RedirectRoute } from './Route'
-import { RoutingState } from './RoutingState'
+import { Route, PageRoute, RedirectRoute } from './Route'
 
-export interface RoutingMapState {
-  [url: string]: RoutingState
+export interface RouteMap {
+  [url: string]: Route
 }
 
 export interface SiteMap {
-  redirects: RedirectRouteMap
-  pages: PageRouteMap
+  redirects: RedirectMap
+  pages: PageMap
 }
 
-export interface PageRouteMap {
+export interface PageMap {
   [url: string]: PageRoute
 }
 
-export interface RedirectRouteMap {
+export interface RedirectMap {
   [url: string]: RedirectRoute
 }
 
-export function isRoutingStateMapSteady(routingStateMap: RoutingMapState): boolean {
-  return Object.values(routingStateMap).every(routingState => routingState.isSteady)
+export function isRouteMapSteady(routeMap: RouteMap): boolean {
+  return Object.values(routeMap).every(route => route.isSteady)
 }

@@ -41,6 +41,10 @@ export class MDXWrapper extends React.Component {
   render() {
     let { document } = this.props
 
+    if (document.default) {
+        document = document.default
+    }
+
     return (
         <div className='MDXWrapper'>
             {React.createElement(document, {

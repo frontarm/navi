@@ -1,6 +1,6 @@
-import { createPage, createJunction, createRedirect, createContext, RouterEnv } from '../../src'
+import { createPage, createSwitch, createRedirect, createContext, Env } from '../../src'
 
-export const cmsJunction = createJunction({
+export const fixtureSwitch = createSwitch({
     getContent() {
         return 'site-layout'
     },
@@ -11,8 +11,8 @@ export const cmsJunction = createJunction({
             meta: {
                 description: 'Junctions Is A Router',
             },
-            async getContent(env: RouterEnv) {
-                return await env.router.pageMap('/examples')
+            async getContent(env: Env) {
+                return await env.router.resolvePageMap('/examples')
             },
         }),
 
@@ -22,7 +22,7 @@ export const cmsJunction = createJunction({
                     ...context,
                     contextName: 'examples'
                 }),
-                async () => createJunction({
+                async () => createSwitch({
                     async getContent() {
                         return 'example-layout'
                     },
@@ -42,7 +42,7 @@ export const cmsJunction = createJunction({
                             meta: {
                                 isPaywalled: true,
                             },
-                            getContent(env) {
+                            getContent(env: Env) {
                                 return (env.context.contextName === 'examples' && env.context.isAuthenticated) ? (
                                     Promise.resolve('advanced-example')
                                 ) : (
@@ -54,7 +54,7 @@ export const cmsJunction = createJunction({
                 })
             ),
 
-        '/goodies': async () => createJunction({
+        '/goodies': async () => createSwitch({
             paths: {
                 '/cheatsheet': async () => createPage({
                     title: 'Cheatsheet',

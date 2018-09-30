@@ -1,11 +1,11 @@
 import { URLDescriptor, createURLDescriptor } from './URLTools'
-import { Resolution, Resolvable } from './Resolver'
-import { RouteType, RedirectRoute, Status, createRoute } from './Route'
-import { NodeMatcher, NodeMatcherResult, NodeBase, NodeMatcherOptions } from './Node'
+import { Resolvable } from './Resolver'
+import { SegmentType, RedirectSegment, createSegment } from './Segments'
+import { NodeMatcher, NodeMatcherResult, NaviNodeBase, NaviNodeType, NodeMatcherOptions } from './Node'
 
-export interface Redirect<Meta = any, Context = any>
-  extends NodeBase<Context, RedirectMatcher<Meta, Context>> {
-  type: RouteType.Redirect
+export interface Redirect<Context extends object = any, Meta extends object = any>
+  extends NaviNodeBase<Context, RedirectMatcher<Context, Meta>> {
+  type: NaviNodeType.Redirect
 
   new (options: NodeMatcherOptions<Context>): RedirectMatcher<Meta>
 
@@ -13,36 +13,36 @@ export interface Redirect<Meta = any, Context = any>
   meta: Meta
 }
 
-export class RedirectMatcher<Meta = any, Context = any> extends NodeMatcher<Context> {
+export class RedirectMatcher<Context extends object = any, Meta extends object = any> extends NodeMatcher<Context> {
   ['constructor']: Redirect
 
   static isNode = true
-  static type: RouteType.Redirect = RouteType.Redirect
+  static type: NaviNodeType.Redirect = NaviNodeType.Redirect
 
-  protected execute(): NodeMatcherResult<RedirectRoute<Meta>> {
+  protected execute(): NodeMatcherResult<RedirectSegment<Meta>> {
     let resolution = this.resolver.resolve(this.env, this.constructor.to)
     let value = resolution.value
     
     return {
       resolutionIds: [resolution.id],
-      route: createRoute(RouteType.Redirect, this.env, {
+      segment: createSegment(SegmentType.Redirect, this.env, {
         to: value && (typeof value === 'string' ? value : createURLDescriptor(value).href),
         status: resolution.status,
         error: resolution.error,
-        remainingRoutes: [],
+        remainingSegments: [],
       }),
     }
   }
 }
 
-export function createRedirect<Meta = any, Context = any>(
+export function createRedirect<Context extends object = any, Meta extends object = any>(
   to:
     | Location
     | string
     | Resolvable<Partial<URLDescriptor> | string>,
   meta?: Meta,
 ): Redirect {
-  return class extends RedirectMatcher<Meta, Context> {
+  return class extends RedirectMatcher<Context, Meta> {
     static to = typeof to === 'function' ? to : () => to
     static meta = meta
   }

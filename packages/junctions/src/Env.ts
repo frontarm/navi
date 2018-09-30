@@ -2,7 +2,7 @@ import { Router } from './Router'
 import { Params } from './URLTools'
 import { HTTPMethod } from './HTTPMethod'
 
-export interface RouterEnv<Context=any> {
+export interface Env<Context extends object=any> {
   readonly context: Context
   readonly method: HTTPMethod
   readonly params: Params

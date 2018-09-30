@@ -1,32 +1,30 @@
-import { RoutingState, createRoute } from './RoutingState'
-import { Junction } from './Junction'
+import { Route, createRoute } from './Route'
+import { Switch } from './Switch'
 import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { Resolver } from './Resolver'
-import { Router, RouterLocationOptions } from './Router'
-import { NodeMatcherOptions } from './Node';
-import { RouterEnv } from './RouterEnv';
+import { Env } from './Env';
 import { URLDescriptor } from './URLTools';
-import { JunctionRoute } from '.';
+import { SwitchSegment } from './Segments';
 
-export class RoutingObservable implements Observable<RoutingState> {
+export class RouteObservable implements Observable<Route> {
     readonly url: URLDescriptor
 
-    private cachedValue: RoutingState
-    private matcher: Junction['prototype']
-    private observers: Observer<RoutingState>[]
+    private cachedValue: Route
+    private matcher: Switch['prototype']
+    private observers: Observer<Route>[]
     private resolver: Resolver
   
     constructor(
         url: URLDescriptor,
-        env: RouterEnv,
-        rootJunction: Junction,
+        env: Env,
+        rootSwitch: Switch,
         resolver: Resolver,
         withContent: boolean
     ) {
         this.url = url
         this.resolver = resolver
         this.observers = []
-        this.matcher = new rootJunction({
+        this.matcher = new rootSwitch({
             appendFinalSlash: true,
             env,
             resolver: this.resolver,
@@ -35,7 +33,7 @@ export class RoutingObservable implements Observable<RoutingState> {
     }
 
     subscribe(
-        onNextOrObserver: Observer<RoutingState> | ((value: RoutingState) => void),
+        onNextOrObserver: Observer<Route> | ((value: Route) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
@@ -51,7 +49,7 @@ export class RoutingObservable implements Observable<RoutingState> {
         return subscription
     }
 
-    private handleUnsubscribe = (observer: Observer<RoutingState>) => {
+    private handleUnsubscribe = (observer: Observer<Route>) => {
         let index = this.observers.indexOf(observer)
         if (index !== -1) {
             this.observers.splice(index, 1)
@@ -75,8 +73,8 @@ export class RoutingObservable implements Observable<RoutingState> {
     }
 
     private refresh = () => {
-        let { route, resolutionIds } = this.matcher.getResult()
-        this.cachedValue = createRoute(this.url, route as JunctionRoute)
+        let { segment, resolutionIds } = this.matcher.getResult()
+        this.cachedValue = createRoute(this.url, segment as SwitchSegment)
         // This will replace any existing listener and its associated resolvables
         this.resolver.listen(this.handleChange, resolutionIds)
     }

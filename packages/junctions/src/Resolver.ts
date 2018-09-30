@@ -1,8 +1,9 @@
-import { RouterEnv } from './RouterEnv'
-import { Status } from './Route'
+import { Env } from './Env'
+import { joinPaths } from './URLTools'
+import { NotFoundError } from './Errors'
 
-export type Resolvable<T, Context = any> = (
-  env: RouterEnv<Context>,
+export type Resolvable<T, Context extends object = any> = (
+  env: Env<Context>,
 ) => PromiseLike<{ default: T } | T> | T
 
 export type Resolution<T> = {
@@ -12,11 +13,17 @@ export type Resolution<T> = {
   value?: T
 }
 
+export enum Status {
+  Ready = 'ready',
+  Busy = 'busy',
+  Error = 'error',
+}
+
 export const undefinedResolver = () => undefined
 
 export class Resolver {
   private nextId: number
-  private results: WeakMap<RouterEnv<any>, Map<Function, Resolution<any>>>
+  private results: WeakMap<Env<any>, Map<Function, Resolution<any>>>
   private listenerIds: Map<Function, number[]>
 
   constructor() {
@@ -34,7 +41,7 @@ export class Resolver {
   }
 
   resolve<T>(
-    env: RouterEnv<any>,
+    env: Env<any>,
     resolvable: Resolvable<T>,
   ): Resolution<T> {
     let matcherResults = this.results.get(env)
@@ -65,7 +72,7 @@ export class Resolver {
       status: Status.Busy,
     }
     matcherResults.set(resolvable, result)
-    this.listenForChanges(maybeValue, matcherResults, resolvable, id)
+    this.listenForChanges(maybeValue, matcherResults, resolvable, id, joinPaths(env.pathname, env.unmatchedPathnamePart))
     return result
   }
 
@@ -74,6 +81,7 @@ export class Resolver {
     matcherResults: Map<Function, Resolution<T>>,
     resolvable: Resolvable<T>,
     id: number,
+    fullPathname: string,
   ) {
     maybeValue
       .then(
@@ -90,6 +98,11 @@ export class Resolver {
         },
         error => {
           let currentResult = matcherResults!.get(resolvable)
+
+          if (error instanceof NotFoundError && !error.pathname) {
+            error.pathname = fullPathname
+          }
+
           if (currentResult && currentResult.id === id) {
             matcherResults!.set(resolvable, {
               id: currentResult.id,

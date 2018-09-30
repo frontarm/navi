@@ -1,40 +1,41 @@
-import { Resolution, Resolvable, undefinedResolver } from './Resolver'
-import { Status, RouteType, PageRoute, Route, createRoute, createPlaceholderRoute } from './Route'
+import { Status, Resolution, Resolvable } from './Resolver'
+import { Segment, createPlaceholderSegment } from './Segments'
 import {
-  Node,
+  NaviNode,
   NodeMatcher,
   NodeMatcherResult,
-  NodeBase,
+  NaviNodeBase,
   NodeMatcherOptions,
   MaybeResolvableNode,
+  NaviNodeType,
 } from './Node'
-import { RouterEnv } from './RouterEnv'
+import { Env } from './Env'
 
 
-export interface Context<ParentContext = any, ChildContext = any>
-  extends NodeBase<ParentContext, ContextMatcher<ParentContext, ChildContext>> {
-  type: 'Context'
+export interface Context<ParentContext extends object = any, ChildContext extends object = any>
+  extends NaviNodeBase<ParentContext, ContextMatcher<ParentContext, ChildContext>> {
+  type: NaviNodeType.Context
 
   new (options: NodeMatcherOptions<ParentContext>): ContextMatcher<
     ParentContext,
     ChildContext
   >
 
-  childNodeResolvable: Resolvable<Node>
+  childNodeResolvable: Resolvable<NaviNode>
   childContextResolvable: Resolvable<ChildContext>
 }
 
 
-export class ContextMatcher<ParentContext, ChildContext> extends NodeMatcher<ParentContext> {
+export class ContextMatcher<ParentContext extends object, ChildContext extends object> extends NodeMatcher<ParentContext> {
   static isNode = true;
-  static type: 'Context' = 'Context';
+  static type: NaviNodeType.Context = NaviNodeType.Context;
 
   last?: {
     childContext?: ChildContext
-    childEnv?: RouterEnv
+    childEnv?: Env
 
     matcher?: NodeMatcher<any>
-    node?: Node
+    node?: NaviNode
   };
 
   ['constructor']: Context<ParentContext, ChildContext>
@@ -42,18 +43,18 @@ export class ContextMatcher<ParentContext, ChildContext> extends NodeMatcher<Par
     super(options, true)
   }
 
-  protected execute(): NodeMatcherResult<Route> {
+  protected execute(): NodeMatcherResult<Segment> {
     let childContextResolution: Resolution<ChildContext> = this.resolver.resolve(this.env, this.constructor.childContextResolvable)
     if (childContextResolution.status !== Status.Ready) {
       return {
         resolutionIds: [childContextResolution.id],
-        route: createPlaceholderRoute(this.env, childContextResolution.error)
+        segment: createPlaceholderSegment(this.env, childContextResolution.error)
       }
     }
 
     // Need te memoize env, as its the key for memoization by the resolver
     let childContext = childContextResolution.value!
-    let childEnv: RouterEnv<ChildContext>
+    let childEnv: Env<ChildContext>
     if (!this.last || this.last.childContext !== childContext) {
       childEnv = {
         ...this.env,
@@ -72,7 +73,7 @@ export class ContextMatcher<ParentContext, ChildContext> extends NodeMatcher<Par
     if (childNodeResolution.status !== Status.Ready) {
       return {
         resolutionIds: [childNodeResolution.id],
-        route: createPlaceholderRoute(childEnv, childNodeResolution.error)
+        segment: createPlaceholderSegment(childEnv, childNodeResolution.error)
       }
     }
 
@@ -100,8 +101,8 @@ export class ContextMatcher<ParentContext, ChildContext> extends NodeMatcher<Par
   }
 }
 
-export function createContext<ParentContext=any, ChildContext=any>(
-  maybeChildContextResolvable: ((env: RouterEnv<ParentContext>) => Promise<ChildContext> | ChildContext) | ChildContext,
+export function createContext<ParentContext extends object=any, ChildContext extends object=any>(
+  maybeChildContextResolvable: ((env: Env<ParentContext>) => Promise<ChildContext> | ChildContext) | ChildContext,
   maybeChildNodeResolvable: MaybeResolvableNode<ChildContext>,
   options: { useParams?: string[] } = {}
 ): Context<ParentContext, ChildContext> {
@@ -124,8 +125,8 @@ export function createContext<ParentContext=any, ChildContext=any>(
     }
   }
 
-  let childNodeResolvable: Resolvable<Node> =
-    maybeChildNodeResolvable.isNode ? (() => maybeChildNodeResolvable) : (maybeChildNodeResolvable as Resolvable<Node>)
+  let childNodeResolvable: Resolvable<NaviNode> =
+    maybeChildNodeResolvable.isNode ? (() => maybeChildNodeResolvable) : (maybeChildNodeResolvable as Resolvable<NaviNode>)
 
   let childContextResolvable: Resolvable<ChildContext> =
     (typeof maybeChildContextResolvable !== 'function') ? (() => maybeChildContextResolvable) : maybeChildContextResolvable

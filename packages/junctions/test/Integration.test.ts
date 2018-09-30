@@ -1,78 +1,78 @@
-import { JunctionRoute, createMemoryNavigation, PageRoute, Status, RouteType, createRouter } from '../src'
-import { cmsJunction } from './fixtures/junctions'
+import { SwitchSegment, createMemoryNavigation, PageSegment, Status, SegmentType, NotFoundError } from '../src'
+import { fixtureSwitch } from './fixtures/junctions'
 
 describe("integration", () => {
     function createTestNavigation(initialURL) {
         return createMemoryNavigation({
             url: initialURL,
-            rootJunction: cmsJunction,
+            rootSwitch: fixtureSwitch,
         })
     }
 
     test("integration", async () => {
         let nav = createTestNavigation('/examples')
 
-        let state = await nav.getSteadyState()
-        let firstRoute = state.firstRoute
-        let pageRoute = state.lastRoute as PageRoute
+        let { route } = await nav.getSteadySnapshot()
+        let firstSegment = route.firstSegment
+        let pageSegment = route.lastSegment as PageSegment
         
-        expect(firstRoute.type).toBe(RouteType.Junction)
-        expect(firstRoute.content).toBe('site-layout')
-        expect(firstRoute.status).toBe(Status.Ready)
-        expect(firstRoute.nextPattern).toBe('/examples')
-        expect(state.routes[1].content).toBe('example-layout')
-        expect(state.routes[1].status).toBe(Status.Ready)
-        expect(pageRoute.type).toBe(RouteType.Page)
-        expect(pageRoute.title).toBe('Basic example')
-        expect(pageRoute.content).toBe('basic-example')
-        expect(pageRoute).toBe(firstRoute.nextRoute && firstRoute.nextRoute.nextRoute)
+        expect(firstSegment.type).toBe(SegmentType.Switch)
+        expect(firstSegment.content).toBe('site-layout')
+        expect(firstSegment.status).toBe(Status.Ready)
+        expect(firstSegment.nextPattern).toBe('/examples')
+        expect(route.segments[1].content).toBe('example-layout')
+        expect(route.segments[1].status).toBe(Status.Ready)
+        expect(pageSegment.type).toBe(SegmentType.Page)
+        expect(pageSegment.title).toBe('Basic example')
+        expect(pageSegment.content).toBe('basic-example')
+        expect(pageSegment).toBe(firstSegment.nextSegment && firstSegment.nextSegment.nextSegment)
 
         nav.history.push('/examples/advanced?referrer=frontarm')
 
-        firstRoute = nav.getSnapshot().firstRoute
-        let secondRoute = firstRoute.nextRoute
+        firstSegment = nav.getSnapshot().route.firstSegment
+        let secondSegment = firstSegment.nextSegment
 
-        expect(firstRoute.query).toEqual({ referrer: 'frontarm' })
-        expect(firstRoute.nextPattern).toEqual('/examples')
-        expect(firstRoute.status).toEqual(Status.Ready)
-        expect(secondRoute.status).toEqual(Status.Busy)
+        expect(firstSegment.url.query).toEqual({ referrer: 'frontarm' })
+        expect(firstSegment.nextPattern).toEqual('/examples')
+        expect(firstSegment.status).toEqual(Status.Ready)
+        expect(secondSegment.status).toEqual(Status.Busy)
 
-        state = await nav.getSteadyState()
-        firstRoute = state.firstRoute
-        pageRoute = state.lastRoute as PageRoute
+        route = (await nav.getSteadySnapshot()).route
+        firstSegment = route.firstSegment
+        pageSegment = route.lastSegment as PageSegment
 
-        expect(pageRoute.query).toEqual({ referrer: 'frontarm' })
-        expect(pageRoute.title).toBe('Advanced example')
-        expect(pageRoute.meta.isPaywalled).toBe(true)
-        expect(pageRoute.content).toBe('please-login')
+        expect(pageSegment.url.query).toEqual({ referrer: 'frontarm' })
+        expect(pageSegment.title).toBe('Advanced example')
+        expect(pageSegment.meta.isPaywalled).toBe(true)
+        expect(pageSegment.content).toBe('please-login')
 
         nav.setContext({
             isAuthenticated: true
         })
 
-        state = await nav.getSteadyState()
-        firstRoute = state.firstRoute
-        pageRoute = firstRoute.lastRemainingRoute as PageRoute
+        route = (await nav.getSteadySnapshot()).route
+        firstSegment = route.firstSegment
+        pageSegment = firstSegment.lastRemainingSegment as PageSegment
 
-        expect(pageRoute.content).toBe('advanced-example')
+        expect(pageSegment.content).toBe('advanced-example')
 
         nav.history.push('/examples/intermediate')
 
-        state = await nav.getSteadyState()
-        firstRoute = state.firstRoute
-        let　junctionRoute = firstRoute.lastRemainingRoute as JunctionRoute
+        route = (await nav.getSteadySnapshot()).route
+        firstSegment = route.firstSegment
+        let　junctionSegment = firstSegment.lastRemainingSegment as SwitchSegment
         
-        expect(junctionRoute.error && junctionRoute.error.name).toBe("NotFoundError")
-        expect(junctionRoute.error && junctionRoute.error.pathname).toBe("/examples/intermediate/")
+        expect(junctionSegment.error && junctionSegment.error).toBeInstanceOf(NotFoundError)
+        expect(junctionSegment.error && junctionSegment.error.pathname).toBe("/examples/intermediate/")
     })
 
     test("map-based content", async () => {
         let nav = createTestNavigation('/')
 
-        let { lastRoute } = await nav.getSteadyState()
+        let { route } = await nav.getSteadySnapshot()
         
-        expect(Object.keys(lastRoute.content)).toEqual(['/examples/advanced/', '/examples/basic/'])
-        expect(lastRoute.type).toBe(RouteType.Page)
-        expect(lastRoute.title).toBe('Junctions')
+        expect(Object.keys(route.lastSegment.content)).toEqual(['/examples/advanced/', '/examples/basic/'])
+        expect(route.type).toBe(SegmentType.Page)
+        expect(route.title).toBe('Junctions')
     })
 })

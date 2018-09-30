@@ -1,15 +1,14 @@
 import * as React from 'react'
-import { createJunction, createPage } from 'junctions'
-import { AppLayout } from './AppLayout'
-import { MDXWrapper } from './MDXWrapper'
+import { createSwitch, createPage } from 'junctions'
+import { MDXWrapper } from '../MDXWrapper'
 
-export const rootJunction = createJunction({
+export const rootSwitch = createSwitch({
   paths: {
     '/': createPage({
       title: 'Junctions',
       getContent: async () =>
         <MDXWrapper
-          document={(await import('!babel-loader!mdx-loader!./pages/landing.md')).default}
+          document={await import('!babel-loader!mdx-loader!./landing.md')}
         />,
       meta: {
         socialTitle: 'Junctions',
@@ -21,7 +20,7 @@ export const rootJunction = createJunction({
       title: 'Junctions API Reference',
       getContent: async () =>
         <MDXWrapper
-          document={(await import('!babel-loader!mdx-loader!./pages/api-reference.md')).default}
+          document={await import('!babel-loader!mdx-loader!./api-reference.md')}
         />,
       meta: {
         socialTitle: 'Junctions API Reference',
@@ -33,7 +32,7 @@ export const rootJunction = createJunction({
       title: 'Static sites with create-react-app and Junctions',
       getContent: async () =>
         <MDXWrapper
-          document={(await import('!babel-loader!mdx-loader!./pages/static-sites-with-create-react-app.md')).default}
+          document={await import('!babel-loader!mdx-loader!./static-sites-with-create-react-app.md')}
         />,
       meta: {
         socialTitle: 'Static rendering for create-react-app',
@@ -45,7 +44,7 @@ export const rootJunction = createJunction({
       title: 'Junctions Tutorial',
       getContent: async () =>
         <MDXWrapper
-          document={(await import('!babel-loader!mdx-loader!./pages/tutorial.md')).default}
+          document={await import('!babel-loader!mdx-loader!./tutorial.md')}
         />,
       meta: {
         socialTitle: 'Build a static documentation site, with create-react-app and Junctions',
@@ -57,7 +56,7 @@ export const rootJunction = createJunction({
       title: 'Why another Router?',
       getContent: async () =>
         <MDXWrapper
-          document={(await import('!babel-loader!mdx-loader!./pages/why-another-router.md')).default}
+          document={await import('!babel-loader!mdx-loader!./why-another-router.md')}
         />,
       meta: {
         socialTitle: 'react-router vs. Junctions',
@@ -69,7 +68,7 @@ export const rootJunction = createJunction({
       title: 'Why another Router?',
       getContent: async () =>
         <MDXWrapper
-          document={(await import('!babel-loader!mdx-loader!./pages/why-another-static-site-generator.md')).default}
+          document={await import('!babel-loader!mdx-loader!./why-another-static-site-generator.md')}
         />,
       meta: {
         socialTitle: 'Gatsby vs. Junctions',

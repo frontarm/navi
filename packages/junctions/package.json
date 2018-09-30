@@ -26,9 +26,6 @@
     "static",
     "navigation"
   ],
-  "peerDependencies": {
-    "history": "^4.7.2"
-  },
   "devDependencies": {
     "@types/jest": "^22.1.0",
     "cross-env": "^5.0.5",
@@ -42,7 +39,8 @@
     "typescript": "2.8.1"
   },
   "dependencies": {
-    "@types/history": "^4.6.2"
+    "@types/history": "^4.6.2",
+    "history": "^4.7.2"
   },
   "jest": {
     "transform": {

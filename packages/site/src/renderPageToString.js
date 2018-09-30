@@ -3,10 +3,10 @@ import { createMemoryNavigation } from 'junctions'
 import { renderCreateReactAppPageToString } from 'react-navi/create-react-app'
 
 export async function renderPageToString({ $exports, url, dependencies, config }) {
-  let navigation = createMemoryNavigation({ url, rootJunction: $exports.rootJunction })
+  let navigation = createMemoryNavigation({ url, rootSwitch: $exports.rootSwitch })
   
-  let { lastRoute } = await navigation.getSteadyState()
-  let { title, meta } = lastRoute
+  let { route } = await navigation.getSteadySnapshot()
+  let { title, meta } = route
 
   return renderCreateReactAppPageToString({
     config,

@@ -1,16 +1,15 @@
 import { createBrowserHistory, History } from 'history';
-import { Junction } from './Junction'
-import { Navigation, NavigationState } from './Navigation'
-import { RouteType } from './Route'
-import { Resolver } from './Resolver'
+import { Switch } from './Switch'
+import { Navigation, NavigationSnapshot } from './Navigation'
+import { Resolver, Status } from './Resolver'
 import { Router } from './Router'
-import { RoutingState } from './RoutingState'
+import { Route, RouteType } from './Route'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
-import { HistoryRoutingObservable, createHistoryRoutingObservable } from './HistoryRoutingObservable';
+import { CurrentRouteObservable, createCurrentRouteObservable } from './CurrentRouteObservable';
 import { areURLDescriptorsEqual } from './URLTools';
 
 
-export interface BrowserNavigationOptions<Context> {
+export interface BrowserNavigationOptions<Context extends object> {
     /**
      * You can manually supply a history object. This is useful for
      * integration with react-router.
@@ -21,7 +20,7 @@ export interface BrowserNavigationOptions<Context> {
 
     /**
      * Sets `document.title` to the value of the
-     * `pageTitle` property in the current junctions' meta, if it exists.
+     * `pageTitle` property in the current switchs' meta, if it exists.
      * 
      * You can also supply a function that reseives `pageTitle`, and
      * returns a processed string that will be set.
@@ -38,17 +37,17 @@ export interface BrowserNavigationOptions<Context> {
 
     initialRootContext?: Context,
 
-    rootJunction: Junction,
+    rootSwitch: Switch,
     rootPath?: string,
 }
 
 
-export function createBrowserNavigation<Context>(options: BrowserNavigationOptions<Context>) {
+export function createBrowserNavigation<Context extends object>(options: BrowserNavigationOptions<Context>) {
     return new BrowserNavigation(options)
 }
 
 
-export class BrowserNavigation<Context> implements Navigation<Context> {
+export class BrowserNavigation<Context extends object> implements Navigation<Context> {
     router: Router<Context>
 
     readonly history: History
@@ -56,21 +55,21 @@ export class BrowserNavigation<Context> implements Navigation<Context> {
     private setDocumentTitle: false | ((pageTitle?: string) => string)
     private disableScrollHandling: boolean
 
-    private rootJunction: Junction
+    private rootSwitch: Switch
     private rootPath?: string
     private resolver: Resolver
-    private receivedState: RoutingState
-    private renderedState?: RoutingState
-    private historyRoutingObservable: HistoryRoutingObservable<Context>
+    private receivedRoute: Route
+    private renderedRoute?: Route
+    private currentRouteObservable: CurrentRouteObservable<Context>
 
     constructor(options: BrowserNavigationOptions<Context>) {
         this.history = options.history || createBrowserHistory()
         this.resolver = new Resolver
-        this.rootJunction = options.rootJunction
+        this.rootSwitch = options.rootSwitch
         this.rootPath = options.rootPath
         this.router = new Router(this.resolver, {
             rootContext: options.initialRootContext,
-            rootJunction: options.rootJunction,
+            rootSwitch: options.rootSwitch,
             rootPath: options.rootPath,
         })
 
@@ -79,85 +78,87 @@ export class BrowserNavigation<Context> implements Navigation<Context> {
         }
         this.disableScrollHandling = !!options.disableScrollHandling
 
-        this.historyRoutingObservable = createHistoryRoutingObservable({
+        this.currentRouteObservable = createCurrentRouteObservable({
             history: this.history,
             router: this.router,
         })
-        this.historyRoutingObservable.subscribe(this.handleChange)
-        this.renderedState = this.historyRoutingObservable.getValue()
+        this.currentRouteObservable.subscribe(this.handleChange)
+        this.renderedRoute = this.currentRouteObservable.getValue()
     }
 
     setContext(context: Context) {
         this.router = new Router(this.resolver, {
             rootContext: context,
-            rootJunction: this.rootJunction,
+            rootSwitch: this.rootSwitch,
             rootPath: this.rootPath,
         })
-        this.historyRoutingObservable.setRouter(this.router)
+        this.currentRouteObservable.setRouter(this.router)
     }
 
-    getSnapshot(): NavigationState {
+    getSnapshot(): NavigationSnapshot {
+        let route = this.currentRouteObservable.getValue()
         return {
+            route,
+            url: route.url,
             history: this.history,
             router: this.router,
-            ...this.historyRoutingObservable.getValue(),
             onRendered: this.handleRendered,
         }
     }
 
-    async getSteadyState(): Promise<NavigationState> {
-        return this.historyRoutingObservable.getSteadyState().then(routingState => ({
+    async getSteadySnapshot(): Promise<NavigationSnapshot> {
+        return this.currentRouteObservable.getSteadyRoute().then(route => ({
+            route,
+            url: route.url,
             history: this.history,
             router: this.router,
-            ...routingState,
             onRendered: this.handleRendered,
         }))
     }
 
     /**
      * If you're using code splitting, you'll need to subscribe to changes to
-     * Navigation state, as the state may change as new code chunks are
-     * received.
+     * the snapshot, as the route may change as new code chunks are received.
      */
     subscribe(
-        onNextOrObserver: Observer<NavigationState> | ((value: NavigationState) => void),
+        onNextOrObserver: Observer<NavigationSnapshot> | ((value: NavigationSnapshot) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
         let navigationObserver = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
         let mapObserver = new MapObserver(navigationObserver, this.history, this.router, this.handleRendered)
-        return this.historyRoutingObservable.subscribe(mapObserver)
+        return this.currentRouteObservable.subscribe(mapObserver)
     }
 
-    private handleChange = (state: RoutingState) => {
-        this.receivedState = state
+    private handleChange = (route: Route) => {
+        this.receivedRoute = route
     }
 
     private handleRendered = () => {
-        if (this.renderedState !== this.receivedState) {
-            let prevState = this.renderedState
-            let nextState = this.receivedState
+        if (this.renderedRoute !== this.receivedRoute) {
+            let prevRoute = this.renderedRoute
+            let nextRoute = this.receivedRoute
 
-            if (nextState && nextState.lastRoute.type === RouteType.Page && this.setDocumentTitle) {
-                document.title = this.setDocumentTitle(nextState.lastRoute.title)
+            if (nextRoute && nextRoute.type === RouteType.Page && nextRoute.status === Status.Ready && this.setDocumentTitle) {
+                document.title = this.setDocumentTitle(nextRoute.title)
             }
 
-            if (nextState && nextState.isSteady) {
-                if (prevState && areURLDescriptorsEqual(nextState.url, prevState.url)) {
+            if (nextRoute && nextRoute.isSteady) {
+                if (prevRoute && areURLDescriptorsEqual(nextRoute.url, prevRoute.url)) {
                     return
                 }
 
                 if (!this.disableScrollHandling &&
-                    (!prevState ||
-                    !prevState.url ||
-                    prevState.url.hash !== nextState.url.hash ||
-                    prevState.url.pathname !== nextState.url.pathname)
+                    (!prevRoute ||
+                    !prevRoute.url ||
+                    prevRoute.url.hash !== nextRoute.url.hash ||
+                    prevRoute.url.pathname !== nextRoute.url.pathname)
                 ) {
-                    scrollToHash(nextState.url.hash)
+                    scrollToHash(nextRoute.url.hash)
                 }
             }
 
-            this.renderedState = this.receivedState
+            this.renderedRoute = this.receivedRoute
         }
     }
 }
@@ -187,24 +188,25 @@ function scrollToHash(hash) {
 }
 
 
-class MapObserver implements Observer<RoutingState> {
+class MapObserver implements Observer<Route> {
     history: History
     router: Router<any>
-    observer: Observer<NavigationState>
+    observer: Observer<NavigationSnapshot>
     onRendered: () => void
 
-    constructor(observer: Observer<RoutingState>, history: History, router: Router<any>, onRendered: () => void) {
+    constructor(observer: Observer<NavigationSnapshot>, history: History, router: Router<any>, onRendered: () => void) {
         this.observer = observer
         this.history = history
         this.router = router
         this.onRendered = onRendered
     }
 
-    next(routingState: RoutingState): void {
+    next(route: Route): void {
         this.observer.next({
+            route,
+            url: route.url,
             history: this.history,
             router: this.router,
-            ...routingState,
             onRendered: this.onRendered,
         })
     }

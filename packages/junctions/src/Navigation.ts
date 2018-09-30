@@ -1,27 +1,31 @@
 import { History } from 'history'
 import { Router } from './Router'
-import { RoutingState } from './RoutingState'
+import { Route } from './Route'
 import { Observable } from './Observable'
+import { URLDescriptor } from './URLTools'
 
-export interface Navigation<Context=any> extends Observable<NavigationState> {
+export interface Navigation<Context extends object=any> extends Observable<NavigationSnapshot> {
   readonly history: History
   readonly router: Router
 
   setContext(context: Context): void;
 
-  getSnapshot(): NavigationState;
+  getSnapshot(): NavigationSnapshot;
 
   /**
    * Returns a promise that resolves once `isReady()` returns true.
    * This is useful for implementing static rendering, or for waiting until
    * content is loaded before making the first render.
    */
-  getSteadyState(): Promise<NavigationState>;
+  getSteadySnapshot(): Promise<NavigationSnapshot>;
 }
 
-export interface NavigationState extends RoutingState {
+export interface NavigationSnapshot {
   history: History
   router: Router
+
+  route: Route
+  url: URLDescriptor
 
   /**
    * Navigation managers can't scroll to hashes until they've been rendered.

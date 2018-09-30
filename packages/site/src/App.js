@@ -26,18 +26,18 @@ class InnerApp extends React.Component {
 
   render() {
     return (
-      <Navi.Consume>
+      <Navi.ConsumeSegment>
         {({ showWaitingIndicator }) =>
           <AppLayout
             isBusy={showWaitingIndicator}
             isMenuOpen={this.state.open}
             onToggleMenu={this.handleToggleMenu}>
             <Navi.NotFoundBoundary render={renderNotFound}>
-              <Navi.ConsumeContent />
+              <Navi.ConsumeContentSegment />
             </Navi.NotFoundBoundary>
           </AppLayout>
         }
-      </Navi.Consume>
+      </Navi.ConsumeSegment>
     )
   }
 

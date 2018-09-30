@@ -1,49 +1,54 @@
 import { Context } from './Context'
-import { NotFoundError } from './Errors'
 import { Resolver, Resolvable } from './Resolver'
-import { Route, RouteType, PlaceholderRoute, Status, createNotFoundRoute } from './Route'
-import { Junction } from './Junction'
+import { Segment, createNotFoundSegment } from './Segments'
+import { Switch } from './Switch'
 import { Page } from './Page'
 import { Redirect } from './Redirect'
-import { RouterEnv } from './RouterEnv'
+import { Env } from './Env'
 
+export enum NaviNodeType {
+    Switch = 'switch',
+    Page = 'page',
+    Redirect = 'redirect',
+    Context = 'context'
+}
 
-export interface NodeBase<Context, RM extends NodeMatcher<Context> = NodeMatcher<Context>> {
+export interface NaviNodeBase<Context extends object, RM extends NodeMatcher<Context> = NodeMatcher<Context>> {
     isNode: boolean;
-    type: RouteType | 'Context';
+    type: NaviNodeType;
 
     new(options: NodeMatcherOptions<Context>): RM;
     prototype: RM;
 }
 
-export type Node = Junction | Page | Redirect | Context
+export type NaviNode = Switch | Page | Redirect | Context
 
-export interface ResolvableNode<N extends Node = Node, Context=any> extends Resolvable<N, Context> {
+export interface ResolvableNode<N extends NaviNode = NaviNode, Context extends object=any> extends Resolvable<N, Context> {
     isNode?: undefined;
 }
 
-export type MaybeResolvableNode<Context=any> = Node | ResolvableNode<Node, Context>
+export type MaybeResolvableNode<Context extends object=any> = NaviNode | ResolvableNode<NaviNode, Context>
 
-export interface NodeMatcherOptions<Context> {
+export interface NodeMatcherOptions<Context extends object> {
     appendFinalSlash?: boolean
-    env: RouterEnv<Context>;
+    env: Env<Context>;
     resolver: Resolver,
     withContent?: boolean
 }
 
-export interface NodeMatcherResult<R extends Route = Route> {
-    route: R
+export interface NodeMatcherResult<S extends Segment = Segment> {
+    segment: S
     resolutionIds: number[]
 }
 
-export abstract class NodeMatcher<Context> {
+export abstract class NodeMatcher<Context extends object> {
     appendFinalSlash: boolean
-    env: RouterEnv;
+    env: Env;
     resolver: Resolver;
     wildcard: boolean;
     withContent: boolean
 
-    ['constructor']: Node
+    ['constructor']: NaviNode
 
     constructor(options: NodeMatcherOptions<Context>, wildcard = false) {
         this.appendFinalSlash = !!options.appendFinalSlash
@@ -54,18 +59,18 @@ export abstract class NodeMatcher<Context> {
         this.wildcard = wildcard
     }
 
-    // Get the route object given the current state.
+    // Get the segment object given the current state.
     getResult(): NodeMatcherResult {
         let unmatchedPathnamePart = this.env.unmatchedPathnamePart
         if (this.wildcard || !unmatchedPathnamePart || unmatchedPathnamePart === '/') {
             return this.execute()
         }
         else {
-            // This junction couldn't be matched due to missing required
+            // This switch couldn't be matched due to missing required
             // params, or a non-exact match without a default path.
             return {
                 resolutionIds: [],
-                route: createNotFoundRoute(this.env)
+                segment: createNotFoundSegment(this.env)
             }
         }
     };

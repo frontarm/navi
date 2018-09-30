@@ -1,52 +1,53 @@
 import { createMemoryHistory, History } from 'history';
-import { Junction } from './Junction'
-import { Navigation, NavigationState } from './Navigation'
+import { Switch } from './Switch'
+import { Navigation, NavigationSnapshot } from './Navigation'
 import { Resolver } from './Resolver'
 import { Router, RouterOptions } from './Router'
-import { RoutingState } from './RoutingState'
+import { Route } from './Route'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
-import { HistoryRoutingObservable, createHistoryRoutingObservable } from './HistoryRoutingObservable';
+import { CurrentRouteObservable, createCurrentRouteObservable } from './CurrentRouteObservable';
+import { URLDescriptor, createURLDescriptor } from './URLTools';
 
 
-export interface MemoryNavigationOptions<Context> extends RouterOptions<Context> {
-    url: string
+export interface MemoryNavigationOptions<Context extends object> extends RouterOptions<Context> {
+    url: string | Partial<URLDescriptor>
 
     initialRootContext?: Context,
 
-    rootJunction: Junction,
+    rootSwitch: Switch,
     rootPath?: string,
 }
 
 
-export function createMemoryNavigation<Context>(options: MemoryNavigationOptions<Context>) {
+export function createMemoryNavigation<Context extends object>(options: MemoryNavigationOptions<Context>) {
     return new MemoryNavigation(options)
 }
 
 
-export class MemoryNavigation<Context> implements Navigation<Context> {
+export class MemoryNavigation<Context extends object> implements Navigation<Context> {
     router: Router<Context>
 
     readonly history: History
 
-    private rootJunction: Junction
+    private rootSwitch: Switch
     private rootPath?: string
     private resolver: Resolver
 
-    private historyRoutingObservable: HistoryRoutingObservable<Context>
+    private currentRouteObservable: CurrentRouteObservable<Context>
 
     constructor(options: MemoryNavigationOptions<Context>) {
         this.history = createMemoryHistory({
-            initialEntries: [options.url],
+            initialEntries: [createURLDescriptor(options.url).href],
         })
         this.resolver = new Resolver
-        this.rootJunction = options.rootJunction
+        this.rootSwitch = options.rootSwitch
         this.rootPath = options.rootPath
         this.router = new Router(this.resolver, {
             rootContext: options.initialRootContext,
-            rootJunction: this.rootJunction,
+            rootSwitch: this.rootSwitch,
             rootPath: this.rootPath,
         })
-        this.historyRoutingObservable = createHistoryRoutingObservable({
+        this.currentRouteObservable = createCurrentRouteObservable({
             history: this.history,
             router: this.router,
         })
@@ -55,43 +56,46 @@ export class MemoryNavigation<Context> implements Navigation<Context> {
     setContext(context: Context) {
         this.router = new Router(this.resolver, {
             rootContext: context,
-            rootJunction: this.rootJunction,
+            rootSwitch: this.rootSwitch,
             rootPath: this.rootPath,
         })
-        this.historyRoutingObservable.setRouter(this.router)
+        this.currentRouteObservable.setRouter(this.router)
     }
 
-    getSnapshot(): NavigationState {
+    getSnapshot(): NavigationSnapshot {
+        let route = this.currentRouteObservable.getValue()
         return {
+            route,
+            url: route.url,
             history: this.history,
             router: this.router,
-            ...this.historyRoutingObservable.getValue(),
             onRendered: noop,
         }
     }
 
-    async getSteadyState(): Promise<NavigationState> {
-        return this.historyRoutingObservable.getSteadyState().then(routingState => ({
+    async getSteadySnapshot(): Promise<NavigationSnapshot> {
+        return this.currentRouteObservable.getSteadyRoute().then(route => ({
+            route,
+            url: route.url,
             history: this.history,
             router: this.router,
-            ...routingState,
             onRendered: noop,
         }))
     }
 
     /**
      * If you're using code splitting, you'll need to subscribe to changes to
-     * Navigation state, as the state may change as new code chunks are
-     * received.
+     * the snapshot, as the route may change as new code chunks are received.
      */
+    subsc
     subscribe(
-        onNextOrObserver: Observer<NavigationState> | ((value: NavigationState) => void),
+        onNextOrObserver: Observer<NavigationSnapshot> | ((value: NavigationSnapshot) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
         let navigationObserver = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
         let mapObserver = new MapObserver(navigationObserver, this.history, this.router)
-        return this.historyRoutingObservable.subscribe(mapObserver)
+        return this.currentRouteObservable.subscribe(mapObserver)
     }
 }
 
@@ -99,22 +103,23 @@ export class MemoryNavigation<Context> implements Navigation<Context> {
 const noop = () => {}
 
 
-class MapObserver implements Observer<RoutingState> {
+class MapObserver implements Observer<Route> {
     history: History
     router: Router<any>
-    observer: Observer<NavigationState>
+    observer: Observer<NavigationSnapshot>
 
-    constructor(observer: Observer<RoutingState>, history: History, router: Router<any>) {
+    constructor(observer: Observer<NavigationSnapshot>, history: History, router: Router<any>) {
         this.observer = observer
         this.history = history
         this.router = router
     }
 
-    next(routingState: RoutingState): void {
+    next(route: Route): void {
         this.observer.next({
+            route,
+            url: route.url,
             history: this.history,
             router: this.router,
-            ...routingState,
             onRendered: noop,
         })
     }

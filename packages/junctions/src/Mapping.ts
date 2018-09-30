@@ -1,7 +1,6 @@
-import { Node, MaybeResolvableNode } from './Node'
-import { Router } from './Router'
-import { RouterEnv } from './RouterEnv'
-import { URLDescriptor, Params, joinPaths } from './URLTools'
+import { MaybeResolvableNode } from './Node'
+import { Env } from './Env'
+import { joinPaths } from './URLTools'
 
 
 export const KEY_WILDCARD = '\0'
@@ -14,7 +13,7 @@ export const KEY_WILDCARD_REGEXP = /\0/g
  */
 export interface Mapping {
     /**
-     * The relative path of a Junction to its parent, with wildcards
+     * The relative path of a Switch to its parent, with wildcards
      * represented by a colon `:`, followed by the name of the param where
      * their value should be placed.
      */
@@ -116,7 +115,7 @@ export function createMapping(pattern: string, maybeResolvableNode: MaybeResolva
 }
 
 
-export function matchMappingAgainstPathname<Context>(env: RouterEnv<Context>, mapping: Mapping, appendFinalSlash: boolean): RouterEnv<Context> | undefined {
+export function matchMappingAgainstPathname<Context extends object>(env: Env<Context>, mapping: Mapping, appendFinalSlash: boolean): Env<Context> | undefined {
     let match = mapping.regExp.exec(env.unmatchedPathnamePart)
     if (!match) {
         return

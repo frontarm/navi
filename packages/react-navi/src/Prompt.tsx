@@ -29,7 +29,7 @@ SOFTWARE.
 
 import * as React from 'react'
 import { Navigation } from 'junctions'
-import { NavigationContext } from './NavigationContext'
+import { NaviContext } from './NaviContext'
 
 
 export interface PromptProps {
@@ -40,9 +40,9 @@ export interface PromptProps {
 
 export function Prompt(props: PromptProps) {
   return (
-    <NavigationContext.Consumer>
+    <NaviContext.Consumer>
       {context => <InnerPrompt context={context} {...props} />}
-    </NavigationContext.Consumer>
+    </NaviContext.Consumer>
   )
 }
 
@@ -51,7 +51,7 @@ export function Prompt(props: PromptProps) {
  * The public API for prompting the user before navigating away
  * from a screen with a component.
  */
-class InnerPrompt extends React.Component<PromptProps & { context: NavigationContext }> {
+class InnerPrompt extends React.Component<PromptProps & { context: NaviContext }> {
   navigation: Navigation;
   unblock?: () => void;
 

@@ -1,16 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { createBrowserNavigation } from 'junctions'
-import { rootJunction } from './rootJunction'
+import { rootSwitch } from './screens'
 import { App } from './App'
 import './index.css'
 
 
 async function main() {
-    let navigation = createBrowserNavigation({ rootJunction })
+    let navigation = createBrowserNavigation({ rootSwitch })
 
     // Wait until the content is available before making the first render
-    await navigation.getSteadyState()
+    await navigation.getSteadySnapshot()
 
     let content = <App navigation={navigation} />
     let node = document.getElementById('root')
@@ -38,6 +38,6 @@ if (process.env.NODE_ENV !== 'production') {
 // the app.
 window.$exports = {
     App,
-    rootJunction,
+    rootSwitch,
     main,
 }

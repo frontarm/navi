@@ -1,184 +1,101 @@
-import { Params, URLDescriptor, joinPaths } from './URLTools'
-import { Junction } from './Junction'
-import { RouterEnv, NotFoundError } from '.';
-
-/**
- * A type that covers all Segment objects.
- */
-export type Route = PlaceholderRoute | JunctionRoute | PageRoute | RedirectRoute
-
-export enum Status {
-  Ready = 'Ready',
-  Busy = 'Busy',
-  Error = 'Error',
-}
+import { URLDescriptor } from './URLTools'
+import { Status } from './Resolver'
+import { Segment, SwitchSegment, isSegmentSteady, PlaceholderSegment, SegmentType, PageSegment, RedirectSegment } from './Segments'
 
 export enum RouteType {
-  Placeholder = 'Placeholder',
-  Junction = 'Junction',
-  Page = 'Page',
-  Redirect = 'Redirect',
+  Switch = 'switch',
+  Page = 'page',
+  Redirect = 'redirect',
+  Plaecholder = 'placeholder'
 }
 
-/**
- * All routes extend this interface. It includes all information that can be
- * inferred from just a pattern string and a location.
- */
-export interface GenericRoute {
+export interface Route {
+  url: URLDescriptor
+
   type: RouteType
 
-  /**
-   * Any params that have been matched.
-   */
-  params: Params
+  segments: Segment[]
+  firstSegment: SwitchSegment
+  lastSegment: Segment
 
   /**
-   * The part of the URL pathname that has been matched.
+   * Indicates that the router context must be changed to cause any more
+   * changes.
    */
-  pathname: string
+  isSteady: boolean
 
   /**
-   * The query string from the URL
+   * Indicates whether the location has fully loaded (including content if
+   * content was requested), is still busy, or encountered an error.
    */
-  query: Params
-}
-
-export interface PlaceholderRoute extends GenericRoute {
-  type: RouteType.Placeholder
-
-  nextRoute?: never
-  nextPattern?: never
   status: Status
-  error?: any
-  content?: never
-  meta?: never
-  title?: never
 
-  lastRemainingRoute?: never
-  remainingRoutes: any[]
+  error?: any
+
+  // Placeholder properties for page/redirect route
+  to?: any
+  title?: any
+  meta?: any
+  content?: any
 }
 
-/**
- * Page routes corresponds to a URL segment followed by a final '/'.
- */
-export interface PageRoute<Meta = any, Content = any> extends GenericRoute {
+export interface PageRoute<Meta extends object = any, Content extends object = any> extends Route {
   type: RouteType.Page
-  content?: Content
-  meta?: Meta
-  title?: string
+  status: Status.Ready
+  isSteady: true
+  lastSegment: PageSegment<Meta, Content>
 
-  status: Status
-  error?: never
-
-  nextRoute?: never
-  nextPattern?: never
-  lastRemainingRoute?: never
-  remainingRoutes: any[]
+  title: string
+  meta: Meta
+  content: Content
 }
 
-/**
- * Redirect routes indicate that anything underneath this route
- * should be redirected to the location specified at `to`.
- */
-export interface RedirectRoute<Meta = any> extends GenericRoute {
-  to?: string
-  meta: Meta
-  title?: never
+export interface RedirectRoute<Meta extends object = any> extends Route {
   type: RouteType.Redirect
+  status: Status.Ready
+  isSteady: true
+  lastSegment: RedirectSegment<Meta>
 
-  content?: never
-  status: Status
-  error?: any
-
-  nextRoute?: never
-  nextPattern?: never
-  lastRemainingRoute?: never
-  remainingRoutes: any[]
-}
-
-/**
- * Junction routes correspond to non-final segment of the URL.
- */
-export interface JunctionRoute<
-  Meta = any,
-  Content = any,
-> extends GenericRoute {
-  type: RouteType.Junction
+  to: string
   meta: Meta
-  title?: never
-  junction: Junction<Meta>
-
-  status: Status
-  error?: any
-  content?: Content
-
-  /**
-   * The pattern that was matched (with param placeholders if applicable).
-   */
-  nextPattern?: string
-
-  /**
-   * A route object that contains details on the next part of the URL.
-   *
-   * It may be undefined if the user has provided an incorrect URL, or
-   * if the child's template still needs to be loaded.
-   */
-  nextRoute?: Route
-
-  /**
-   * An array of all Segment objects corresponding to the remaining parts
-   * of the URL.
-   *
-   * It may be undefined if the user has provided an incorrect URL, or
-   * if the child's template still needs to be loaded.
-   */
-  remainingRoutes: Route[]
-
-  /**
-   * Contains the final route object, whatever it happens to be.
-   */
-  lastRemainingRoute?: Route
-}
-    
-export function isRouteSteady(route: Route): boolean {
-  return (
-    route.status !== Status.Busy &&
-    (
-      route.type !== RouteType.Junction || (
-        !route.lastRemainingRoute ||
-        route.lastRemainingRoute.status !== Status.Busy
-      )
-    )
-  )
 }
 
-export function createRoute<Type extends string, Details>(type: Type, env: RouterEnv, details: Details) {
-  return Object.assign({
-    type: type,
-    meta: undefined as any,
-    params: env.params,
-    pathname: env.pathname,
-    query: env.query,
-    remainingRoutes: (details as any).remainingRoutes || []
-  }, details)
-}
+export function createRoute(url: URLDescriptor, firstSegment: SwitchSegment | PlaceholderSegment): Route {
+  let segments = [firstSegment as Segment].concat(firstSegment.remainingSegments)
+  let lastSegment = segments[segments.length - 1]
+  let status = lastSegment.status
+  let error: any
 
-export function createPlaceholderRoute(env: RouterEnv, error?: any): PlaceholderRoute {
-  return createRoute(RouteType.Placeholder, env, {
-    status: error ? Status.Error : Status.Busy,
-    error: error,
-  })
-}
-
-export function createNotFoundRoute(env: RouterEnv): PlaceholderRoute {
-  let fullPathname = joinPaths(env.pathname, env.unmatchedPathnamePart)
-  return {
-    type: RouteType.Placeholder,
-    params: env.params,
-    pathname: fullPathname,
-    query: env.query,
-    status: Status.Error,
-    error: new NotFoundError(fullPathname),
-    remainingRoutes: [],
+  // An error could appear in a mid segment if its content fails to load,
+  // and we want to always use the first error available.
+  for (let i = 0; i < segments.length; i++) {
+    let segment = segments[i]
+    if (segment.status === Status.Error) {
+      error = segment.error
+      status = Status.Error
+    }
   }
+
+  let route: Route = {
+    type: lastSegment.type as string as RouteType,
+    url: url,
+    segments,
+    firstSegment: segments[0] as SwitchSegment,
+    lastSegment,
+    isSteady: isSegmentSteady(segments[0]),
+    error,
+    status,
+  }
+
+  if (lastSegment.type === SegmentType.Redirect) {
+    route.to = lastSegment.to
+    route.meta = lastSegment.meta
+  }
+  if (lastSegment.type === SegmentType.Page) {
+    route.title = lastSegment.title
+    route.meta = lastSegment.meta
+    route.content = lastSegment.content
+  }
+
+  return route
 }

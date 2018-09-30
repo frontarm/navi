@@ -82,7 +82,7 @@ program.command('build')
   })
 
 program.command('map')
-  .description('Output a map of all statically-buildable URLs within your root junction.')
+  .description('Output a map of all statically-buildable URLs within your root switch.')
   .option('-j, --json', 'Output the map as json.')
   .option('-r, --root [directory]', configSchema.properties.root.description, defaultConfig.root)
   .option('-e, --entry [file]', configSchema.properties.entry.description)

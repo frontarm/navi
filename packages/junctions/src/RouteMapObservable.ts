@@ -1,23 +1,22 @@
 import { URLDescriptor, createURLDescriptor, joinPaths } from './URLTools'
-import { Junction } from './Junction'
+import { Switch } from './Switch'
 import {
   Observable,
   Observer,
   SimpleSubscription,
   createOrPassthroughObserver,
 } from './Observable'
-import { Resolver, Resolvable } from './Resolver'
+import { Status, Resolver } from './Resolver'
 import {
-  JunctionRoute,
-  Route,
-  RouteType,
-  Status,
-  PlaceholderRoute,
-} from './Route'
+  SwitchSegment,
+  Segment,
+  SegmentType,
+  PlaceholderSegment,
+} from './Segments'
 import { RouterMapOptions, Router } from './Router'
-import { RoutingMapState, isRoutingStateMapSteady } from './Maps'
-import { createRoute } from './RoutingState'
-import { RouterEnv } from './RouterEnv'
+import { RouteMap, isRouteMapSteady } from './Maps'
+import { createRoute } from './Route'
+import { Env } from './Env'
 import { Mapping, matchMappingAgainstPathname } from './Mapping'
 import { HTTPMethod } from './HTTPMethod'
 
@@ -25,17 +24,17 @@ interface QueueItem {
   url: URLDescriptor
   fromPathname?: string
   depth: number
-  matcher: Junction['prototype']
-  routeCache?: JunctionRoute | PlaceholderRoute
-  lastRouteCache?: Route
+  matcher: Switch['prototype']
+  segmentCache?: SwitchSegment | PlaceholderSegment
+  lastSegmentCache?: Segment
 }
 
-export class RoutingMapObservable implements Observable<RoutingMapState> {
-  private cachedSiteMap: RoutingMapState
+export class RouteMapObservable implements Observable<RouteMap> {
+  private cachedSiteMap: RouteMap
   private rootContext: any
-  private rootJunction: Junction
+  private rootSwitch: Switch
   private rootMapping: Mapping
-  private observers: Observer<RoutingMapState>[]
+  private observers: Observer<RouteMap>[]
   private resolver: Resolver
   private router: Router
   private options: RouterMapOptions
@@ -46,7 +45,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
   constructor(
     url: URLDescriptor,
     rootContext: any,
-    rootJunction: Junction,
+    rootSwitch: Switch,
     rootMapping: Mapping,
     resolver: Resolver,
     router: Router,
@@ -57,7 +56,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
     this.queueItems = []
     this.resolver = resolver
     this.rootContext = rootContext
-    this.rootJunction = rootJunction
+    this.rootSwitch = rootSwitch
     this.rootMapping = rootMapping
     this.options = options
 
@@ -74,8 +73,8 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
 
   subscribe(
     onNextOrObserver:
-      | Observer<RoutingMapState>
-      | ((value: RoutingMapState) => void),
+      | Observer<RouteMap>
+      | ((value: RouteMap) => void),
     onError?: (error: any) => void,
     onComplete?: () => void,
   ): SimpleSubscription {
@@ -96,7 +95,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
     return subscription
   }
 
-  private handleUnsubscribe = (observer: Observer<RoutingMapState>) => {
+  private handleUnsubscribe = (observer: Observer<RouteMap>) => {
     let index = this.observers.indexOf(observer)
     if (index !== -1) {
       this.observers.splice(index, 1)
@@ -106,7 +105,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
   private handleChange = () => {
     this.refresh()
 
-    let isSteady = isRoutingStateMapSteady(this.cachedSiteMap)
+    let isSteady = isRouteMapSteady(this.cachedSiteMap)
     for (let i = 0; i < this.observers.length; i++) {
       let observer = this.observers[i]
       observer.next(this.cachedSiteMap)
@@ -131,11 +130,11 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
     while (i < this.queuePathnames.length) {
       let pathname = this.queuePathnames[i]
       let item = this.queueItems[i]
-      let { route, resolutionIds } = item.matcher.getResult()
-      let lastRoute = route.lastRemainingRoute || route
-      let cachedLastRoute = item.lastRouteCache
-      item.routeCache = route as JunctionRoute
-      item.lastRouteCache = lastRoute
+      let { segment, resolutionIds } = item.matcher.getResult()
+      let lastSegment = segment.lastRemainingSegment || segment
+      let cachedLastSegment = item.lastSegmentCache
+      item.segmentCache = segment as SwitchSegment
+      item.lastSegmentCache = lastSegment
 
       // If an item in the map cannot be found, throws an error, or is
       // no longer referenced by other items, then remove it from the
@@ -145,8 +144,8 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
       // items, so if an earlier item is removed, its referenced items
       // will still be removed.
       if (
-        lastRoute.status === Status.Error ||
-        (this.options.predicate && !this.options.predicate(lastRoute))
+        lastSegment.status === Status.Error ||
+        (this.options.predicate && !this.options.predicate(lastSegment))
       ) {
         this.removeFromQueue(pathname)
         continue
@@ -156,27 +155,26 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
       // then add the location to the map.
       if (
         this.options.followRedirects &&
-        lastRoute.type === RouteType.Redirect &&
-        lastRoute.status === Status.Ready &&
-        lastRoute.to &&
-        (!cachedLastRoute ||
-          cachedLastRoute.type !== RouteType.Redirect ||
-          cachedLastRoute.status !== Status.Ready ||
-          !cachedLastRoute.to ||
-          cachedLastRoute.to !== lastRoute.to)
+        lastSegment.type === SegmentType.Redirect &&
+        lastSegment.status === Status.Ready &&
+        lastSegment.to &&
+        (!cachedLastSegment ||
+          cachedLastSegment.type !== SegmentType.Redirect ||
+          cachedLastSegment.status !== Status.Ready ||
+          !cachedLastSegment.to ||
+          cachedLastSegment.to !== lastSegment.to)
       ) {
-        this.addToQueue(lastRoute.to, item.depth + 1, pathname)
+        this.addToQueue(lastSegment.to, item.depth + 1, pathname)
       }
 
       if (
-        lastRoute.type === RouteType.Junction &&
-        lastRoute.status === Status.Ready &&
-        (!cachedLastRoute ||
-          cachedLastRoute.type !== RouteType.Junction ||
-          cachedLastRoute.status === Status.Busy ||
-          cachedLastRoute.junction !== lastRoute.junction)
+        lastSegment.type === SegmentType.Switch &&
+        lastSegment.status === Status.Ready &&
+        (!cachedLastSegment ||
+          cachedLastSegment.type !== SegmentType.Switch ||
+          cachedLastSegment.status === Status.Busy)
       ) {
-        let mappings = lastRoute.junction.mappings
+        let mappings = lastSegment.switch.mappings
         for (let j = 0; j < mappings.length; j++) {
           this.addToQueue(
             joinPaths(pathname, mappings[j].pattern),
@@ -199,11 +197,11 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
     for (let i = 0; i < this.queuePathnames.length; i++) {
       let url = this.queuePathnames[i]
       let item = this.queueItems[i]
-      let lastRoute = item.lastRouteCache!
-      if (lastRoute.type !== RouteType.Junction && lastRoute.status !== Status.Error) {
+      let lastSegment = item.lastSegmentCache!
+      if (lastSegment.type !== SegmentType.Switch && lastSegment.status !== Status.Error) {
         this.cachedSiteMap[joinPaths(url, '/')] = createRoute(
           createURLDescriptor(url, { ensureTrailingSlash: false }),
-          item.routeCache!,
+          item.segmentCache!,
         )
       }
     }
@@ -223,7 +221,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
       (!this.options.maxDepth || depth <= this.options.maxDepth)
     ) {
       let url = createURLDescriptor(pathname, { ensureTrailingSlash: false })
-      let rootEnv: RouterEnv = {
+      let rootEnv: Env = {
         context: this.rootContext,
         method: HTTPMethod.Get,
         params: {},
@@ -243,7 +241,7 @@ export class RoutingMapObservable implements Observable<RoutingMapState> {
           url,
           fromPathname,
           depth,
-          matcher: new this.rootJunction({
+          matcher: new this.rootSwitch({
             appendFinalSlash: false,
             env: matchEnv,
             resolver: this.resolver,

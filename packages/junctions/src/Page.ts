@@ -1,15 +1,15 @@
 import { Resolution, Resolvable, undefinedResolver } from './Resolver'
-import { Status, RouteType, PageRoute, createRoute } from './Route'
-import { NodeMatcher, NodeMatcherResult, NodeBase, NodeMatcherOptions } from './Node'
+import { SegmentType, PageSegment, createSegment } from './Segments'
+import { NodeMatcher, NodeMatcherResult, NaviNodeBase, NaviNodeType, NodeMatcherOptions } from './Node'
 
-export interface Page<Meta = any, Content = any, Context = any>
-  extends NodeBase<Context, PageMatcher<Meta, Content, Context>> {
-  type: RouteType.Page
+export interface Page<Context extends object = any, Meta extends object = any, Content = any>
+  extends NaviNodeBase<Context, PageMatcher<Context, Meta, Content>> {
+  type: NaviNodeType.Page
 
   new (options: NodeMatcherOptions<Context>): PageMatcher<
+    Context,
     Meta,
-    Content,
-    Context
+    Content
   >
 
   title: string
@@ -18,13 +18,13 @@ export interface Page<Meta = any, Content = any, Context = any>
 }
 
 
-export class PageMatcher<Meta, Content, Context> extends NodeMatcher<Context> {
-  ['constructor']: Page<Meta, Content, Context>
+export class PageMatcher<Context extends object, Meta extends object, Content> extends NodeMatcher<Context> {
+  ['constructor']: Page<Context, Meta, Content>
 
   static isNode = true
-  static type: RouteType.Page = RouteType.Page
+  static type: NaviNodeType.Page = NaviNodeType.Page
 
-  protected execute(): NodeMatcherResult<PageRoute<Meta, Content>> {
+  protected execute(): NodeMatcherResult<PageSegment<Meta, Content>> {
     let resolvable: Resolvable<Content | undefined> = 
       this.withContent && this.constructor.getContent
         ? this.constructor.getContent
@@ -33,25 +33,25 @@ export class PageMatcher<Meta, Content, Context> extends NodeMatcher<Context> {
     
     return {
       resolutionIds: [resolution.id],
-      route: createRoute(RouteType.Page, this.env, {
-        title: this.constructor.title,
+      segment: createSegment(SegmentType.Page, this.env, {
+        title: this.constructor.title || '',
         meta: this.constructor.meta,
 
         status: resolution.status,
         error: resolution.error,
         content: resolution.value,
 
-        remainingRoutes: [],
+        remainingSegments: [],
       }),
     }
   }
 }
 
-export function createPage<Meta, Content, Context=any>(options: {
+export function createPage<Context extends object, Meta extends object, Content>(options: {
   title: string
   meta?: Meta
-  getContent?: Resolvable<Content>
-}): Page<Meta, Content> {
+  getContent?: Resolvable<Content, Context>
+}): Page<Context, Meta, Content> {
   if (process.env.NODE_ENV !== 'production') {
     let { title, meta, getContent, ...other } = options
 
@@ -71,7 +71,7 @@ export function createPage<Meta, Content, Context=any>(options: {
     }
   }
 
-  return class extends PageMatcher<Meta, Content, Context> {
+  return class extends PageMatcher<Context, Meta, Content> {
     static title = options.title
     static meta = options.meta as Meta
     static getContent = options.getContent

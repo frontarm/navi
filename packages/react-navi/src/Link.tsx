@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { NavigationContext } from './NavigationContext'
+import { NaviContext } from './NaviContext'
 import { URLDescriptor, Navigation, createURLDescriptor } from 'junctions'
 
 
@@ -49,9 +49,9 @@ export interface LinkRendererProps {
 
 export const Link: React.SFC<LinkProps> = function Link(props: LinkProps) {
   return (
-    <NavigationContext.Consumer>
+    <NaviContext.Consumer>
       {context => <InnerLink context={context} {...props} />}
-    </NavigationContext.Consumer>
+    </NaviContext.Consumer>
   )
 }
 
@@ -80,7 +80,7 @@ Link.defaultProps = {
 
 
 interface InnerLinkProps extends LinkProps {
-  context: NavigationContext
+  context: NaviContext
 }
 
 class InnerLink extends React.Component<InnerLinkProps> {
@@ -91,7 +91,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
     let url = this.getURL()
     if (url && url.pathname) {
-      this.props.context.router.pageRoute(url, {
+      this.props.context.router.resolve(url, {
         withContent: !!props.precache,
         followRedirects: true,
       })
@@ -119,12 +119,12 @@ class InnerLink extends React.Component<InnerLinkProps> {
   render() {
     let props = this.props
     let linkURL = this.getURL()
-    let navigaitonURL = this.props.context.url
+    let navigationURL = this.props.context.url
     let active = !!(
       linkURL &&
       (props.exact
-        ? linkURL.pathname === navigaitonURL.pathname
-        : navigaitonURL.pathname.indexOf(linkURL.pathname) === 0)
+        ? linkURL.pathname === navigationURL.pathname
+        : navigationURL.pathname.indexOf(linkURL.pathname) === 0)
     )
 
     return props.render!({

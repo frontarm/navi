@@ -1,5 +1,4 @@
-import { URLDescriptor, createURLDescriptor, joinPaths } from './URLTools'
-import { RouterEnv } from './RouterEnv'
+import { URLDescriptor } from './URLTools'
 
 // See https://stackoverflow.com/questions/30402287/extended-errors-do-not-have-message-or-stack-trace
 export class NaviError extends Error {
@@ -27,12 +26,14 @@ export class NaviError extends Error {
 
 export class NotFoundError extends NaviError {
   pathname: string
-  env: RouterEnv
 
-  constructor(pathname: string) {
+  constructor(pathname?: string) {
     super(`URL not found: ${pathname}`)
 
-    this.pathname = pathname
+    // If you create a NotFoundError without a pathname, the
+    // resolver will catch it and assign the correct pathname.
+    this.pathname = pathname!
+
     this.name = 'NotFoundError'
   }
 }

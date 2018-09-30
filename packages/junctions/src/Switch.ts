@@ -4,16 +4,13 @@ import {
   undefinedResolver,
 } from './Resolver'
 import {
-  Route,
-  JunctionRoute,
-  RouteType,
-  Status,
-  PlaceholderRoute,
-  createRoute,
-  createPlaceholderRoute,
-  createNotFoundRoute,
-} from './Route'
-import { RouterEnv } from './RouterEnv'
+  Segment,
+  SwitchSegment,
+  SegmentType,
+  createSegment,
+  createPlaceholderSegment,
+  createNotFoundSegment,
+} from './Segments'
 import {
   createMapping,
   Mapping,
@@ -22,52 +19,51 @@ import {
 import {
   NodeMatcher,
   NodeMatcherResult,
-  Node,
-  NodeBase,
+  NaviNode,
+  NaviNodeType,
+  NaviNodeBase,
   MaybeResolvableNode,
   ResolvableNode,
   NodeMatcherOptions,
 } from './Node'
-import { NotFoundError } from './Errors'
-import { joinPaths } from './URLTools';
 
-export type JunctionPaths<Context> = {
+export type SwitchPaths<Context extends object> = {
   [pattern: string]: MaybeResolvableNode<Context>
 }
 
-export interface Junction<Meta = any, Content = any, Context = any>
-  extends NodeBase<Context, JunctionMatcher<Meta, Content, Context>> {
-  type: RouteType.Junction
+export interface Switch<Context extends object = any, Meta extends object = any, Content = any>
+  extends NaviNodeBase<Context, SwitchMatcher<Context, Meta, Content>> {
+  type: NaviNodeType.Switch
 
-  new (options: NodeMatcherOptions<Context>): JunctionMatcher<
+  new (options: NodeMatcherOptions<Context>): SwitchMatcher<
+    Context,
     Meta,
-    Content,
-    Context
+    Content
   >
 
   meta: Meta
-  getContent?: ((env: RouterEnv<Context>) => Content | PromiseLike<Content>)
-  paths: JunctionPaths<Context>
+  getContent?: Resolvable<Content, Context>
+  paths: SwitchPaths<Context>
   mappings: Mapping[]
   patterns: string[]
 }
 
-export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<Context> {
+export class SwitchMatcher<Context extends object, Meta extends object, Content> extends NodeMatcher<Context> {
   static isNode = true
-  static type: RouteType.Junction = RouteType.Junction
+  static type: NaviNodeType.Switch = NaviNodeType.Switch
 
   child?: {
     mapping: Mapping,
     matcherOptions: NodeMatcherOptions<Context>
-    maybeResolvableNode: MaybeResolvableNode<Node>
+    maybeResolvableNode: MaybeResolvableNode<NaviNode>
   }
 
   last?: {
     matcher?: NodeMatcher<any>
-    node?: Node
+    node?: NaviNode
   };
 
-  ['constructor']: Junction<Meta, Content, Context>
+  ['constructor']: Switch<Context, Meta, Content>
   constructor(options: NodeMatcherOptions<Context>) {
     super(options, true)
 
@@ -97,7 +93,7 @@ export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<Context
     }
   }
 
-  protected execute(): NodeMatcherResult<JunctionRoute<Meta, Content>> {
+  protected execute(): NodeMatcherResult<SwitchSegment<Meta, Content>> {
     let hasContent = this.withContent && this.constructor.getContent
     let contentResolution: Resolution<Content | undefined>
     let contentResolvable: Resolvable<Content | undefined> = hasContent
@@ -107,15 +103,15 @@ export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<Context
     
     let resolutionIds: number[] = [contentResolution.id]
     let childMatcher: NodeMatcher<any> | undefined
-    let childNodeResolution: Resolution<Node> | undefined
+    let childNodeResolution: Resolution<NaviNode> | undefined
     if (this.child) {
-      let childNode: Node | undefined
+      let childNode: NaviNode | undefined
       if (this.child.maybeResolvableNode.isNode) {
         childNode = this.child.maybeResolvableNode
       } else {
         childNodeResolution = this.resolver.resolve(
           this.env,
-          this.child.maybeResolvableNode as ResolvableNode<Node>,
+          this.child.maybeResolvableNode as ResolvableNode<NaviNode>,
         )
         resolutionIds.push(childNodeResolution.id)
         childNode = childNodeResolution.value
@@ -140,64 +136,64 @@ export class JunctionMatcher<Meta, Content, Context> extends NodeMatcher<Context
       childMatcherResult = childMatcher.getResult()
     }
 
-    let nextRoute: Route | undefined
+    let nextSegment: Segment | undefined
     if (childMatcherResult) {
-      nextRoute = childMatcherResult && childMatcherResult.route
+      nextSegment = childMatcherResult && childMatcherResult.segment
     }
     else if (childNodeResolution) {
-      nextRoute = createPlaceholderRoute(
+      nextSegment = createPlaceholderSegment(
         this.child!.matcherOptions.env, 
         childNodeResolution.error
       )
     }
     else if (this.env.unmatchedPathnamePart) {
-      nextRoute = createNotFoundRoute(this.env)
+      nextSegment = createNotFoundSegment(this.env)
     }
     else {
-      // We've matched the junction exactly, and don't need to match
-      // any child routes - which is useful for creating maps.
+      // We've matched the switch exactly, and don't need to match
+      // any child segments - which is useful for creating maps.
     }
 
-    let remainingRoutes: Route[] = []
-    if (nextRoute) {
-      remainingRoutes = nextRoute.type === RouteType.Junction
-        ? [nextRoute as Route].concat(nextRoute.remainingRoutes)
-        : [nextRoute]
+    let remainingSegments: Segment[] = []
+    if (nextSegment) {
+      remainingSegments = nextSegment.type === SegmentType.Switch
+        ? [nextSegment as Segment].concat(nextSegment.remainingSegments)
+        : [nextSegment]
     }
 
-    // Only create a new route if necessary, to allow for reference-equality
-    // based comparisons on routes
+    // Only create a new segment if necessary, to allow for reference-equality
+    // based comparisons on segments
     return {
       resolutionIds: resolutionIds.concat(childMatcherResult ? childMatcherResult.resolutionIds : []),
-      route: createRoute(RouteType.Junction, this.env, {
+      segment: createSegment(SegmentType.Switch, this.env, {
         status: contentResolution.status,
         error: contentResolution.error,
         content: contentResolution.value,
+        switch: this.constructor,
         meta: this.constructor.meta,
-        junction: this.constructor,
         nextPattern: this.child && this.child.mapping.pattern,
-        nextRoute,
-        lastRemainingRoute: remainingRoutes[remainingRoutes.length - 1],
-        remainingRoutes,
+        nextSegment,
+        lastRemainingSegment: remainingSegments[remainingSegments.length - 1],
+        remainingSegments,
       }),
     }
   }
 }
 
-export function createJunction<Meta, Content, Context>(options: {
-  paths: JunctionPaths<Context>
+export function createSwitch<Context extends object, Meta extends object, Content>(options: {
+  paths: SwitchPaths<Context>
   meta?: Meta
-  getContent?: (env: RouterEnv<Context>) => Content | Promise<Content>
-}): Junction<Meta, Content, Context> {
+  getContent?: Resolvable<Content, Context>
+}): Switch<Context, Meta, Content> {
   if (!options) {
     throw new Error(
-      `createJunction() was supplied a function that doesn't return any value!`,
+      `createSwitch() was supplied a function that doesn't return any value!`,
     )
   }
   if (!options.paths) {
     if (process.env.NODE_ENV !== 'production') {
       console.warn(
-        `createJunction() was called without a "children" option, but a junction without children doesn't make any sense!`,
+        `createSwitch() was called without a "children" option, but a switch without children doesn't make any sense!`,
       )
     }
     options.paths = {} as any
@@ -216,7 +212,7 @@ export function createJunction<Meta, Content, Context>(options: {
     let unknownKeys = Object.keys(other)
     if (unknownKeys.length) {
       console.warn(
-        `createJunction() received unknown options ${unknownKeys
+        `createSwitch() received unknown options ${unknownKeys
           .map(x => `"${x}"`)
           .join(', ')}.`,
       )
@@ -224,11 +220,11 @@ export function createJunction<Meta, Content, Context>(options: {
 
     if (mappings.length === 0) {
       console.warn(
-        `createJunction() was called with an empty object {} for "paths". This doesn't make any sense.`,
+        `createSwitch() was called with an empty object {} for "paths". This doesn't make any sense.`,
       )
     }
 
-    // Check to make sure that none of the junction supplied as patterns
+    // Check to make sure that none of the switch supplied as patterns
     // may intefere with each other.
     let len = mappings.length
     if (mappings.length >= 2) {
@@ -237,25 +233,25 @@ export function createJunction<Meta, Content, Context>(options: {
         let pattern = mappings[i]
 
         // If previous pattern matches this one, and doesn't completely
-        // replace it, and either item is a junction, then there could
+        // replace it, and either item is a switch, then there could
         // be a conflict.
         // TODO: this warning will have false positives when a wildcard
-        // is on a page and the junction is on a more specific element.
+        // is on a page and the switch is on a more specific element.
         let replacedKey = pattern.key.replace(previousPattern.regExp, '')
         if (replacedKey !== pattern.key && replacedKey.length > 0) {
           if (
             (previousPattern.maybeResolvableNode.isNode &&
               previousPattern.maybeResolvableNode.type ===
-                RouteType.Junction) ||
+              NaviNodeType.Switch) ||
             (pattern.maybeResolvableNode.isNode &&
-              pattern.maybeResolvableNode.type === RouteType.Junction)
+              pattern.maybeResolvableNode.type === NaviNodeType.Switch)
           )
             console.warn(
-              `createJunction() received Junctions for patterns "${
+              `createSwitch() received Switchs for patterns "${
                 previousPattern.pattern
               }" and "${
                 pattern.pattern
-              }", but this may lead to multiple junctions sharing the same URL.`,
+              }", but this may lead to multiple switchs sharing the same URL.`,
             )
         }
 
@@ -268,14 +264,14 @@ export function createJunction<Meta, Content, Context>(options: {
       if (!mappings[i].maybeResolvableNode) {
         let pattern = mappings[i].pattern
         console.warn(
-          `createJunction() received "${typeof mappings[i]
+          `createSwitch() received "${typeof mappings[i]
             .maybeResolvableNode}" for pattern "${pattern}"!`,
         )
       }
     }
 
-    // Check that a junction hasn't been supplied at "/", as the junction
-    // could interfere with this junction.
+    // Check that a switch hasn't been supplied at "/", as the switch
+    // could interfere with this switch.
     let indexPattern = mappings.find(pattern => pattern.key === '/')
     if (indexPattern) {
       // Note that if we receive a split, we can't check the type, as we
@@ -283,16 +279,16 @@ export function createJunction<Meta, Content, Context>(options: {
       // still apply!
       if (
         indexPattern.maybeResolvableNode.isNode &&
-        indexPattern.maybeResolvableNode.type === RouteType.Junction
+        indexPattern.maybeResolvableNode.type === NaviNodeType.Switch
       ) {
         console.warn(
-          `createJunction() received a Junction at the "/" pattern, but "/" must be a Page or a Redirect!`,
+          `createSwitch() received a Switch at the "/" pattern, but "/" must be a Page or a Redirect!`,
         )
       }
     }
   }
 
-  return class extends JunctionMatcher<Meta, Content, Context> {
+  return class extends SwitchMatcher<Context, Meta, Content> {
     static paths = options.paths
     static meta = options.meta as Meta
     static mappings = mappings
