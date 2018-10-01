@@ -1,6 +1,6 @@
 {
   "name": "react-navi",
-  "version": "0.7.0-beta.19",
+  "version": "0.7.0-beta.20",
   "description": "A batteries-included router for react.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -14,7 +14,7 @@
     "build:umd": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/react-junctions.js && rimraf dist/umd-intermediate",
     "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/react-junctions.min.js && rimraf dist/umd-intermediate",
     "build": "npm run build:es && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
-    "build:watch": "npm run clean && npm run build:commonjs -- --watch",
+    "build:watch": "npm run clean && npm run build:es -- --watch",
     "prepublish": "npm run clean && npm run build"
   },
   "keywords": [
