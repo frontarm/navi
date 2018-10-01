@@ -151,7 +151,7 @@ export class Router<Context extends object=any> {
                     return route as PageRoute
                 }
             }
-            throw new Error(route.error || 'router error')
+            throw route.error || new Error('router error')
         })
     }
 }
