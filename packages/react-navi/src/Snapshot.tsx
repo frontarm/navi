@@ -6,7 +6,7 @@ export interface SnapshotProps {
   children: (snapshot: NavigationSnapshot) => React.ReactNode,
 }
 
-export function History(props: SnapshotProps) {
+export function Snapshot(props: SnapshotProps) {
   return (
     <NaviContext.Consumer>
       {context => props.children(context)}

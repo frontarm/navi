@@ -151,6 +151,7 @@ export function createSegment<Type extends string, Details>(
   type: Type,
   env: Env,
   details: Details,
+  ensureTrailingSlash = true,
 ) {
   return Object.assign(
     {
@@ -160,7 +161,7 @@ export function createSegment<Type extends string, Details>(
       url: createURLDescriptor({
         pathname: env.pathname,
         query: env.query,
-      }),
+      }, { ensureTrailingSlash }),
       remainingSegments: (details as any).remainingSegments || [],
     },
     details,
@@ -170,11 +171,12 @@ export function createSegment<Type extends string, Details>(
 export function createPlaceholderSegment(
   env: Env,
   error?: any,
+  ensureTrailingSlash = true,
 ): PlaceholderSegment {
   return createSegment(SegmentType.Placeholder, env, {
     status: error ? Status.Error : Status.Busy,
     error: error,
-  })
+  }, ensureTrailingSlash)
 }
 
 export function createNotFoundSegment(env: Env): PlaceholderSegment {

@@ -207,7 +207,7 @@ class InnerConsumeSegment extends React.Component<InnerConsumeSegmentProps, Inne
         unconsumedSegments: this.state.lastReady.childContext.unconsumedSegments!,
         showWaitingIndicator: !!this.state.indicatingBusySince,
         isWaiting: !!this.state.delayedSince,
-        route,
+        route: this.state.lastReady.childContext.route,
         history,
         router,
       }) : ({

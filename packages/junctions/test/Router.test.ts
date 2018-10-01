@@ -19,6 +19,14 @@ describe("pageMap", () => {
         let map = await router.resolvePageMap('/')
         expect(map['/'].content).toBeUndefined()
     })
+
+    test("can map from an intermediate url and exclude its index", async () => {
+        let router = createRouter({ rootSwitch: fixtureSwitch })
+        let map = await router.resolvePageMap('/examples', {
+            predicate: (segment) => segment.url.pathname !== '/examples/'
+        })
+        expect(Object.keys(map).length).toBe(2)
+    })
 })
 
 describe("pageRoute", () => {

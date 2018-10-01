@@ -12,8 +12,8 @@ export interface Page<Context extends object = any, Meta extends object = any, C
     Content
   >
 
-  title: Resolvable<string>
-  meta: Resolvable<Meta>
+  title: string | Resolvable<string>
+  meta: Meta | Resolvable<Meta>
   getContent: Resolvable<Content | undefined>
 }
 
@@ -30,20 +30,35 @@ export class PageMatcher<Context extends object, Meta extends object, Content> e
         ? this.constructor.getContent
         : undefinedResolvable
     let contentResolution: Resolution<Content> = this.resolver.resolve(this.env, contentResolvable)
+    let resolutionIds = [contentResolution.id]
     let { value: content, status, error } = contentResolution
     
-    let titleResolution = this.resolver.resolve(this.env, this.constructor.title)
-    let title = titleResolution.value
-    status = reduceStatuses(status, titleResolution.status)
-    error = error || titleResolution.error
+    let title: string | undefined
+    if (typeof this.constructor.title === 'function') {
+      let titleResolution = this.resolver.resolve(this.env, this.constructor.title)
+      resolutionIds.push(titleResolution.id)
+      title = titleResolution.value
+      status = reduceStatuses(status, titleResolution.status)
+      error = error || titleResolution.error
+    }
+    else {
+      title = this.constructor.title
+    }
     
-    let metaResolution = this.resolver.resolve(this.env, this.constructor.meta)
-    let meta: Meta | undefined = metaResolution.value
-    status = reduceStatuses(status, metaResolution.status)
-    error = error || metaResolution.error
+    let meta: Meta | undefined
+    if (typeof this.constructor.meta === 'function') {
+      let metaResolution = this.resolver.resolve(this.env, this.constructor.meta)
+      resolutionIds.push(metaResolution.id)
+      meta = metaResolution.value
+      status = reduceStatuses(status, metaResolution.status)
+      error = error || metaResolution.error
+    }
+    else {
+      meta = this.constructor.meta
+    }
     
     return {
-      resolutionIds: [contentResolution.id, titleResolution.id, metaResolution.id],
+      resolutionIds: resolutionIds,
       segment: createSegment(SegmentType.Page, this.env, {
         title,
         meta: meta || {},
@@ -81,9 +96,8 @@ export function createPage<Context extends object, Meta extends object, Content>
   }
 
   return class extends PageMatcher<Context, Meta, Content> {
-    // FIXME: I'm not sure why TypeScript isn't working here withouts using `any` :-(
-    static title = typeof options.title === 'function' ? options.title : (() => options.title as any)
-    static meta = typeof options.meta === 'function' ? options.meta : (() => options.meta  as any)
+    static title = options.title
+    static meta = options.meta as Resolvable<Meta>
     static getContent = options.getContent || undefinedResolvable
   }
 }

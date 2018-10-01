@@ -44,7 +44,7 @@ export class RedirectMatcher<Context extends object = any, Meta extends object =
 }
 
 export function createRedirect<Context extends object = any, Meta extends object = any>(
-  to: Resolvable<Partial<URLDescriptor> | string>,
+  to: string | Partial<URLDescriptor> | Resolvable<Partial<URLDescriptor> | string>,
   meta?: Meta | Resolvable<Meta>,
 ): Redirect {
   return class extends RedirectMatcher<Context, Meta> {

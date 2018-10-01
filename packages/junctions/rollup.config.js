@@ -22,7 +22,7 @@ const config = {
 
 if (env === 'development' || env === 'production') {
   config.output = { format: 'umd' }
-  config.name = 'Junctions'
+  config.name = 'Navi'
   config.plugins.push(
     nodeResolve({
       jsnext: true,

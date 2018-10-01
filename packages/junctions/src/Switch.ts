@@ -149,7 +149,8 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
     else if (childNodeResolution) {
       nextSegment = createPlaceholderSegment(
         this.child!.matcherOptions.env, 
-        childNodeResolution.error
+        childNodeResolution.error,
+        this.appendFinalSlash
       )
     }
     else if (this.env.unmatchedPathnamePart) {
@@ -181,7 +182,7 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
         nextSegment,
         lastRemainingSegment: remainingSegments[remainingSegments.length - 1],
         remainingSegments,
-      }),
+      }, this.appendFinalSlash),
     }
   }
 }

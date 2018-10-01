@@ -17,7 +17,7 @@ const config = {
     'react-dom',
   ],
   globals: {
-    'junctions': 'Junctions',
+    'junctions': 'Navi',
     'history': 'History',
     'react': 'React',
     'react-dom': 'ReactDOM',
@@ -28,7 +28,7 @@ const config = {
 
 if (env === 'development' || env === 'production') {
   config.output = { format: 'umd' }
-  config.name = 'ReactJunctions'
+  config.name = 'ReactNavi'
   config.plugins.push(
     nodeResolve({
       jsnext: true,

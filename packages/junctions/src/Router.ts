@@ -46,7 +46,7 @@ export class Router<Context extends object=any> {
     constructor(resolver: Resolver, options: RouterOptions<Context>) {
         if (process.env.NODE_ENV !== "production") {
             if (!options.rootSwitch || options.rootSwitch.type !== NaviNodeType.Switch) {
-                throw new Error(`Expected to receive a Switch object for the "switch" prop, but instead received "${options.rootSwitch}".`)
+                throw new Error(`Expected to receive a Switch object for the "rootSwitch" prop, but instead received "${options.rootSwitch}".`)
             }
         }
 
@@ -101,7 +101,6 @@ export class Router<Context extends object=any> {
             return Promise.resolve([])
         }
 
-        // TODO: reject promises that depend on env when `context` is updated
         let promises = urlDescriptors.map(url => this.getPageRoutePromise(url, options))
         return !Array.isArray(urls) ? promises[0] : Promise.all(promises)
     }
@@ -124,7 +123,7 @@ export class Router<Context extends object=any> {
                         continue
                     }
                 }
-                throw new Error(route.error || 'router error')
+                throw route.error || new Error('router error')
             }
             return {
                 pages: pageMap,

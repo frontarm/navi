@@ -34,39 +34,39 @@ export function areURLDescriptorsEqual(x?: URLDescriptor, y?: URLDescriptor): bo
 const parsePattern = /((((\/?(?:[^\/\?#]+\/+)*)([^\?#]*)))?(\?[^#]+)?)(#.*)?/
 export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescriptor>, { ensureTrailingSlash = true } = {}): URLDescriptor {
   let url: URLDescriptor
+  let pathname: string
+  let query: Params
+  let search: string
+  let hash: string
+  let state: any
   if (typeof urlOrDescriptor === 'string') {
     let matches = parsePattern.exec(urlOrDescriptor)
     if (!matches) {
         throw new Error("Couldn't parse the provided URL.")
     }
-    let search = matches[6] || ''
-    let query = parseQuery(search)
-    url = {
-      pathname: matches[2] || '',
-      query: query,
-      search,
-      hash: matches[7] || '',
-      href: urlOrDescriptor,
-    }
+    pathname = matches[2] || ''
+    search = matches[6] || ''
+    query = parseQuery(search)
+    hash = matches[7] || ''
   }
   else {
-    let pathname = urlOrDescriptor.pathname || ''
-    let query = urlOrDescriptor.query || (urlOrDescriptor.search ? parseQuery(urlOrDescriptor.search) : {})
-    let search = urlOrDescriptor.search || stringifyQuery(query)
-    let hash = urlOrDescriptor.hash || ''
-    url = {
-      pathname,
-      query,
-      search,
-      hash,
-      href: pathname+search+hash,
-      state: urlOrDescriptor.state,
-    }
+    pathname = urlOrDescriptor.pathname || ''
+    query = urlOrDescriptor.query || (urlOrDescriptor.search ? parseQuery(urlOrDescriptor.search) : {})
+    search = urlOrDescriptor.search || stringifyQuery(query)
+    hash = urlOrDescriptor.hash || ''
+    state = urlOrDescriptor.state
   }
-  if (ensureTrailingSlash && url.pathname.substr(-1) !== '/') {
-    url.pathname += '/'
+  if (ensureTrailingSlash && pathname.length && pathname.substr(-1) !== '/') {
+    pathname += '/'
   }
-  return url
+  return url = {
+    pathname,
+    query,
+    search,
+    hash,
+    href: pathname+search+hash,
+    state,
+  }
 }
 
 export function parseQuery(queryString?: string, leadingCharacter='?'): Params {

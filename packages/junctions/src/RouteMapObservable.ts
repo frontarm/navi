@@ -55,6 +55,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
     this.queuePathnames = []
     this.queueItems = []
     this.resolver = resolver
+    this.router = router
     this.rootContext = rootContext
     this.rootSwitch = rootSwitch
     this.rootMapping = rootMapping
