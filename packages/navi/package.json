@@ -7,6 +7,10 @@
   "main": "dist/commonjs/index.js",
   "module": "dist/es/index.js",
   "types": "dist/commonjs/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frontarm/navi.git"
+  },
   "scripts": {
     "clean": "rimraf dist",
     "build:commonjs": "tsc --pretty --declaration --module commonjs --outDir dist/commonjs",
@@ -23,7 +27,7 @@
     "navi",
     "navigation",
     "router",
-    "routing", 
+    "routing",
     "static"
   ],
   "devDependencies": {

@@ -29,5 +29,9 @@
     "navi",
     "routing",
     "static"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frontarm/navi.git"
+  }
 }
