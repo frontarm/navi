@@ -7,9 +7,9 @@ export const fixtureSwitch = createSwitch({
 
     paths: {
         '/': () => createPage({
-            title: 'Junctions',
+            title: 'Navi',
             meta: {
-                description: 'Junctions Is A Router',
+                description: 'Navi Is A Router/Loader',
             },
             getContent: (env: Env) => env.router.resolvePageMap('/examples'),
         }),

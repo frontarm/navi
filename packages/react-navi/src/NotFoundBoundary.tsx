@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { NotFoundError } from 'junctions'
+import { NotFoundError } from 'navi'
 import { NaviContext } from './NaviContext'
 
 export interface NotFoundBoundaryProps {

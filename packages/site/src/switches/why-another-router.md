@@ -25,7 +25,7 @@ If you're building an iPhone or Android app, you can still use Junctions; but re
 <tbody>
 <tr>
 <th></th>
-<th className="junctions">Junctions</th>
+<th className="navi">Navi</th>
 <th className="react-router">react-router</th>
 </tr>
 <tr>

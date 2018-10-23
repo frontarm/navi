@@ -1,6 +1,6 @@
 import { History } from 'history'
 import * as React from 'react'
-import { Route, NaviError, Status, Segment, Router, isSegmentSteady } from 'junctions'
+import { Route, NaviError, Status, Segment, Router, isSegmentSteady } from 'navi'
 import { NaviContext } from './NaviContext'
 
 

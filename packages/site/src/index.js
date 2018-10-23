@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { createBrowserNavigation } from 'junctions'
+import { createBrowserNavigation } from 'navi'
 import { rootSwitch } from './switches'
 import { App } from './App'
 import './index.css'

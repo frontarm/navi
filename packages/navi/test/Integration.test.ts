@@ -73,6 +73,6 @@ describe("integration", () => {
         
         expect(Object.keys(route.lastSegment.content)).toEqual(['/examples/advanced/', '/examples/basic/'])
         expect(route.type).toBe(SegmentType.Page)
-        expect(route.title).toBe('Junctions')
+        expect(route.title).toBe('Navi')
     })
 })

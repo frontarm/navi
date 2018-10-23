@@ -17,7 +17,7 @@ To build a static website with `junctions-static`, you'll first need to define y
 There are a number of approaches you can use to structure your route templates, but I recommend starting out by exporting a root `AppJunctionTemplate` from `App.js`. Here's an example; for more information on defining templates see the documentation on `createJunctionTemplate` and `createPageTemplate`.
 
 ```jsx
-import { createJunctionTemplate, createPageTemplate } from 'junctions'
+import { createJunctionTemplate, createPageTemplate } from 'navi'
 import React, { Component } from 'react'
 import logo from './logo.svg'
 import './App.css'

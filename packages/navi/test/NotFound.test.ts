@@ -4,7 +4,7 @@ describe("pageMap", () => {
   const rootSwitch = createSwitch({
     paths: {
       '/declared/:id': createPage({
-        title: 'Junctions',
+        title: 'Navi',
         async getContent({ params }) {
           if (params.id !== "1") {
             throw new NotFoundError()

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { NavigationSnapshot } from 'junctions'
+import { NavigationSnapshot } from 'navi'
 import { NaviContext } from './NaviContext'
 
 export interface SnapshotProps {

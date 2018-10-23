@@ -1,6 +1,6 @@
 {
   "name": "react-navi",
-  "version": "0.7.0-beta.21",
+  "version": "0.7.0",
   "description": "A batteries-included router for react.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -11,23 +11,23 @@
     "clean": "rimraf dist",
     "build:commonjs": "tsc --pretty --declaration --module commonjs --outDir dist/commonjs",
     "build:es": "tsc --pretty --declaration --module es2015 --outDir dist/es",
-    "build:umd": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/react-junctions.js && rimraf dist/umd-intermediate",
-    "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/react-junctions.min.js && rimraf dist/umd-intermediate",
+    "build:umd": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/react-navi.js && rimraf dist/umd-intermediate",
+    "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/react-navi.min.js && rimraf dist/umd-intermediate",
     "build": "npm run build:es && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
     "build:watch": "npm run clean && npm run build:es -- --watch",
     "prepublish": "npm run clean && npm run build"
   },
   "keywords": [
+    "navi",
+    "navigation",
+    "react",
     "router",
     "routing",
-    "junctions",
-    "static",
-    "navigation",
-    "react"
+    "static"
   ],
   "peerDependencies": {
     "history": "^4.7.2",
-    "junctions": "^0.7.0-beta.2",
+    "navi": "^0.7.0",
     "react": "^16.5.0",
     "react-dom": "^16.5.0"
   },

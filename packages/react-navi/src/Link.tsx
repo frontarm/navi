@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { NaviContext } from './NaviContext'
-import { URLDescriptor, Navigation, createURLDescriptor } from 'junctions'
+import { URLDescriptor, Navigation, createURLDescriptor } from 'navi'
 
 
 export interface LinkProps {

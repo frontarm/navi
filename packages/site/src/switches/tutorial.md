@@ -61,7 +61,7 @@ At the root of every app, you'll need a `JunctionTemplate` that maps URLs to con
 You'll want to add it to `App.js`; the root React component lives there, so it makes sense that the root `JunctionTemplate` will too.
 
 ```js
-import { createJunctionTemplate, createPageTemplate } from 'junctions'
+import { createJunctionTemplate, createPageTemplate } from 'navi'
 
 export const AppJunctionTemplate = createJunctionTemplate({
   children: {

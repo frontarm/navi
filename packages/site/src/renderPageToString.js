@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { createMemoryNavigation } from 'junctions'
+import { createMemoryNavigation } from 'navi'
 import { renderCreateReactAppPageToString } from 'react-navi/create-react-app'
 
 export async function renderPageToString({ $exports, url, dependencies, config }) {

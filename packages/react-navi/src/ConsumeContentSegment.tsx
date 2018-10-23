@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Segment, isSegmentSteady, Status, SegmentType } from 'junctions'
+import { Segment, isSegmentSteady, Status, SegmentType } from 'navi'
 import { ConsumeSegment, ConsumeSegmentOutput } from './ConsumeSegment'
 
 

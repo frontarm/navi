@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { NavigationSnapshot, Segment } from 'junctions'
+import { NavigationSnapshot, Segment } from 'navi'
 
 export const NaviContext = React.createContext<NaviContext>(undefined as any)
 

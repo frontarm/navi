@@ -8,12 +8,12 @@ export const Sidebar = ({ className='' }) =>
   <div className={"Sidebar "+className}>
     <Link href='/' className="Sidebar-brand">
       <img src={logo} className="Sidebar-brand-logo" alt="logo" />
-      <span className="Sidebar-brand-title">Junctions</span>
+      <span className="Sidebar-brand-title">Navi</span>
     </Link>
 
     <nav className="Sidebar-nav">
       <section>
-        <NavLink href="/" className="Sidebar-nav-heading">Junctions</NavLink>
+        <NavLink href="/" className="Sidebar-nav-heading">Navi</NavLink>
         <NavLink href="/why-another-router">Why another router?</NavLink>
         <NavLink href="/why-another-static-site-generator">Why another static generator?</NavLink>
       </section>
@@ -101,7 +101,7 @@ export const Sidebar = ({ className='' }) =>
       </section>
 
       <section>
-        <NavLink href="https://github.com/jamesknelson/junctions" className="Sidebar-nav-heading">GitHub &raquo;</NavLink>
+        <NavLink href="https://github.com/frontarm/navi" className="Sidebar-nav-heading">GitHub &raquo;</NavLink>
       </section>
     </nav>
   </div>

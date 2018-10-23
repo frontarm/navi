@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Navigation, NavigationSnapshot, Subscription, NaviError } from 'junctions'
+import { Navigation, NavigationSnapshot, Subscription, NaviError } from 'navi'
 import { NaviContext } from './NaviContext'
 
 

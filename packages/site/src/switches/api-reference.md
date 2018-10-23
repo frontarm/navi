@@ -83,7 +83,7 @@ Generally, you'll just pass this function an options object. However, if you wan
 
   A component that will be used to render this junction.
 
-  Generally, you can just use the `JunctionActiveChild` component that is exported from the `react-junctions` package -- see the example for details.
+  Generally, you can just use the `JunctionActiveChild` component that is exported from the `react-navi` package -- see the example for details.
   
   You can also specify your own component. It will receive a `junction` prop, with the following keys:
 

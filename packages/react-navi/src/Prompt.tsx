@@ -28,7 +28,7 @@ SOFTWARE.
 */
 
 import * as React from 'react'
-import { Navigation } from 'junctions'
+import { Navigation } from 'navi'
 import { NaviContext } from './NaviContext'
 
 
