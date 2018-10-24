@@ -1,13 +1,16 @@
 {
   "name": "site",
-  "version": "0.7.0",
+  "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "mdx-loader": "^1.0.0-beta.3",
-    "mdxc": "^1.0.0",
-    "react": "^16.5.0",
-    "react-dom": "^16.5.0",
-    "react-scripts": "^1.1.5",
+    "babel-loader": "^8.0.4",
+    "history": "^4.7.2",
+    "mdx-loader": "^1.1.1",
+    "mdxc": "^1.1.2",
+    "prismjs": "^1.15.0",
+    "react": "^16.6.0",
+    "react-dom": "^16.6.0",
+    "react-scripts": "2.0.5",
     "rimraf": "^2.6.2"
   },
   "scripts": {
@@ -17,5 +20,14 @@
     "map": "react-scripts build && navi map -e build/static/js/main.*.js -j -o build/static/js/map.json",
     "test": "react-scripts test --env=jsdom",
     "serve": "navi serve -p 3000"
-  }
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }

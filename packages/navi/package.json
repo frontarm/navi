@@ -31,15 +31,15 @@
     "static"
   ],
   "devDependencies": {
-    "@types/jest": "^22.1.0",
+    "@types/jest": "^23.3.7",
     "cross-env": "^5.0.5",
     "history": "^4.7.2",
-    "jest": "^22.1.4",
+    "jest": "^23.6.0",
     "rimraf": "^2.6.2",
     "rollup": "^0.50.0",
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.0",
-    "ts-jest": "^22.0.1",
+    "ts-jest": "^23.10.4",
     "typescript": "2.8.1"
   },
   "dependencies": {
