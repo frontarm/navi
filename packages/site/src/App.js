@@ -1,17 +1,17 @@
 import React from 'react'
-import * as Navi from 'react-navi'
+import * as Nav from 'react-navi'
 import { AppLayout } from './AppLayout'
 
 
 export function App(props) {
   return (
-    <Navi.Provider navigation={props.navigation}>
-      <Navi.Context.Consumer>
+    <Nav.Provider navigation={props.navigation}>
+      <Nav.Consumer>
         {({ location }) =>
           <InnerApp location={location} />
         }
-      </Navi.Context.Consumer>
-    </Navi.Provider>
+      </Nav.Consumer>
+    </Nav.Provider>
   )
 }
 
@@ -26,18 +26,18 @@ class InnerApp extends React.Component {
 
   render() {
     return (
-      <Navi.ConsumeSegment>
-        {({ showWaitingIndicator }) =>
+      <Nav.Loading>
+        {isLoading =>
           <AppLayout
-            isBusy={showWaitingIndicator}
+            isBusy={isLoading}
             isMenuOpen={this.state.open}
             onToggleMenu={this.handleToggleMenu}>
-            <Navi.NotFoundBoundary render={renderNotFound}>
-              <Navi.ConsumeContentSegment />
-            </Navi.NotFoundBoundary>
+            <Nav.NotFoundBoundary render={renderNotFound}>
+              <Nav.ContentSegment />
+            </Nav.NotFoundBoundary>
           </AppLayout>
         }
-      </Navi.ConsumeSegment>
+      </Nav.Loading>
     )
   }
 

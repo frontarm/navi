@@ -1,14 +1,15 @@
 import { History } from 'history'
 import * as React from 'react'
 import { Route, NaviError, Status, Segment, Router, isSegmentSteady } from 'navi'
-import { NaviContext } from './NaviContext'
+import { NavContext } from './NavContext'
+import { NavLoadingContext } from './NavLoading'
 
 
-export interface ConsumeSegmentProps {
+export interface NavSegmentProps {
   /**
    * A render function that will be used to render the selected segment.
    */
-  children: (output: ConsumeSegmentOutput) => React.ReactNode
+  children: (output: NavSegmentOutput) => React.ReactNode
 
   /**
    * The first segment that matches this will be consumed, along with
@@ -21,15 +22,9 @@ export interface ConsumeSegmentProps {
    * to be traversed. Defaults to checking with `isSegmentSteady()`.
    */
   isReady?: (firstUnconsumedSegment: Segment) => boolean
-
-  /**
-   * Allows for a delay until the `showBusyIndicator` injected property becomes true.
-   * Defaults to 333ms.
-   */
-  waitingIndicatorDelay?: number
 }
 
-export interface ConsumeSegmentOutput {
+export interface NavSegmentOutput {
   /**
    * The segment that was matched by the `where` clause (or the previous one if delayed).
    * If the component has just been mounted and it has not yet encountered a ready
@@ -63,46 +58,44 @@ export interface ConsumeSegmentOutput {
    * The router
    */
   router: Router,
-  
-  /**
-   * If delayed, and `delayBusyIndicator` milliseconds have passed then it will be true
-   * Useful for rendering a loading bar, spinner, etc.
-   */
-  showWaitingIndicator: boolean,
-  
-  /**
-   * If the user has navigated but we haven't resolved all the dependencies yet, then
-   * this will be true.
-   */
-  isWaiting: boolean
 }
 
-export const ConsumeSegment: React.SFC<ConsumeSegmentProps> = function Consume(props: ConsumeSegmentProps) {
+export namespace NavSegment {
+  export type Props = NavSegmentProps
+  export type Output = NavSegmentOutput
+}
+
+export const NavSegment: React.SFC<NavSegmentProps> = function Consume(props: NavSegmentProps) {
   return (
-    <NaviContext.Consumer>
-      {context => <InnerConsumeSegment {...props} context={context} />}
-    </NaviContext.Consumer>
+    <NavContext.Consumer>
+      {context =>
+        <NavLoadingContext.Consumer>
+          {navLoadingContext =>
+            <InnerConsumeSegment {...props} context={context} navLoadingContext={navLoadingContext} />
+          }
+        </NavLoadingContext.Consumer>
+      }
+    </NavContext.Consumer>
   )
 }
-ConsumeSegment.defaultProps = {
+NavSegment.defaultProps = {
   isReady: (segment: Segment) => isSegmentSteady(segment),
-  waitingIndicatorDelay: 333,
 }
 
 
-interface InnerConsumeSegmentProps extends ConsumeSegmentProps {
-  context: NaviContext
+interface InnerConsumeSegmentProps extends NavSegmentProps {
+  context: NavContext
+  navLoadingContext: NavLoadingContext
 }
 
 interface InnerConsumeSegmentState {
   lastReady?: {
-    context: NaviContext,
-    childContext: NaviContext,
+    context: NavContext,
+    childContext: NavContext,
     segment: Segment,
     consumedSegments: Segment[],
   },
-  delayedSince?: number,
-  indicatingBusySince?: number,
+  isReady?: boolean,
   error?: Error
 }
 
@@ -143,8 +136,7 @@ class InnerConsumeSegment extends React.Component<InnerConsumeSegmentProps, Inne
 
     return {
       lastReady,
-      delayedSince: !isReady ? (state.delayedSince || new Date().getTime()) : undefined,
-      indicatingBusySince: !isReady ? state.indicatingBusySince : undefined,
+      isReady,
     }
   }
 
@@ -164,25 +156,15 @@ class InnerConsumeSegment extends React.Component<InnerConsumeSegmentProps, Inne
   }
 
   handleUpdate(prevState?: InnerConsumeSegmentState) {
-    // Delay showing the loading bar for a little, so that we don't show and
-    // then immediately hide the loading bar.
-    let { delayedSince, indicatingBusySince } = this.state
-    if (delayedSince && !indicatingBusySince && !this.showBusyIndicatorTimeout) {
-      this.showBusyIndicatorTimeout = window.setTimeout(
-        () => {
-          delete this.showBusyIndicatorTimeout
-          if (this.state.delayedSince === delayedSince) {
-            this.setState({
-              indicatingBusySince: new Date().getTime()
-            })
-          }
-        },
-        this.props.waitingIndicatorDelay,
-      )
-    }
-
     if (this.state.lastReady && (!prevState || !prevState.lastReady || prevState.lastReady.context !== this.state.lastReady.context)) {
       this.state.lastReady.context.onRendered()
+    }
+
+    if (!this.state.isReady && !this.props.navLoadingContext.isLoading) {
+      this.props.navLoadingContext.setLoading(true)
+    }
+    else if (this.state.isReady && this.props.navLoadingContext.isLoading) {
+      this.props.navLoadingContext.setLoading(false)
     }
   }
 
@@ -200,13 +182,11 @@ class InnerConsumeSegment extends React.Component<InnerConsumeSegmentProps, Inne
 
     let { history, router, route } = this.props.context
 
-    let output: ConsumeSegmentOutput = 
+    let output: NavSegmentOutput = 
       this.state.lastReady ? ({
         segment: this.state.lastReady.segment, 
         consumedSegments: this.state.lastReady.consumedSegments,
         unconsumedSegments: this.state.lastReady.childContext.unconsumedSegments!,
-        showWaitingIndicator: !!this.state.indicatingBusySince,
-        isWaiting: !!this.state.delayedSince,
         route: this.state.lastReady.childContext.route,
         history,
         router,
@@ -214,35 +194,50 @@ class InnerConsumeSegment extends React.Component<InnerConsumeSegmentProps, Inne
         segment: undefined,
         consumedSegments: [],
         unconsumedSegments: [],
-        showWaitingIndicator: !!this.state.indicatingBusySince,
-        isWaiting: true,
         route,
         history,
         router,
       })
     
-    let render: (props: ConsumeSegmentOutput) => React.ReactNode = this.props.children
+    let render: (props: NavSegmentOutput) => React.ReactNode = this.props.children
     if (!render) {
-      throw new Error("<Navi.ConsumeSegment> requires that you specify a `children` function.")
+      throw new Error("<NavSegment> requires that you specify a `children` function.")
     }
     else if (typeof render !== "function") {
-      throw new Error(`<Navi.ConsumeSegment> expects its children or "segment.content" to be a function, but instead received "${render}".`)
+      throw new Error(`<NavSegment> expects its children or "segment.content" to be a function, but instead received "${render}".`)
     }
 
     return (
-      <NaviContext.Provider value={this.state.lastReady ? this.state.lastReady.childContext : this.props.context}>
-        {render(output)}
-      </NaviContext.Provider>
+      <NavSegmentSilencer silenced={this.props.navLoadingContext.isLoading || !this.state.isReady}>
+        <NavContext.Provider value={this.state.lastReady ? this.state.lastReady.childContext : this.props.context}>
+          {render(output)}
+        </NavContext.Provider>
+      </NavSegmentSilencer>
     )
   }
 }
 
 
-export class MissingSegment extends NaviError {
-  context: NaviContext
+/**
+ * Only renders when told to. Allows the parent component to make
+ * changes in componentDidUpdate, without actually rendering them.
+ */
+class NavSegmentSilencer extends React.Component<{ silenced: boolean, children: React.ReactNode }> {
+  shouldComponentUpdate(nextProps) {
+    return !nextProps.silenced
+  }
 
-  constructor(context: NaviContext) {
-    super(`A <ConsumeSegment> component attempted to use a segment that couldn't be found.`)
+  render() {
+    return this.props.children
+  }
+}
+
+
+export class MissingSegment extends NaviError {
+  context: NavContext
+
+  constructor(context: NavContext) {
+    super(`A <NavSegment> component attempted to use a segment that couldn't be found.`)
     this.context = context
   }
 }

@@ -106,9 +106,12 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
     }
     
     private handleURLChange(url: URLDescriptor, force?: boolean) {
-        // Defuse history update loops
+        // Bail without change is the URL hasn't changed
         if (!force && this.lastReceivedURL && areURLDescriptorsEqual(this.lastReceivedURL, url)) {
-            return
+            for (let i = 0; i < this.observers.length; i++) {
+                this.observers[i].next(this.lastRoute)
+            }
+            return 
         }
         this.lastReceivedURL = url
 

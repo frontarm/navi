@@ -35,6 +35,12 @@ export interface BrowserNavigationOptions<Context extends object> {
      */
     disableScrollHandling?: boolean,
 
+    /**
+     * The scroll behavior to use when scrolling between hashes on a
+     * page. Defaults to smooth.
+     */
+    hashScrollBehavior?: 'smooth' | 'instant'
+
     initialRootContext?: Context,
 
     rootSwitch: Switch,
@@ -60,6 +66,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
     private resolver: Resolver
     private receivedRoute: Route
     private renderedRoute?: Route
+    private hashScrollBehavior: 'smooth' | 'instant'
     private currentRouteObservable: CurrentRouteObservable<Context>
 
     constructor(options: BrowserNavigationOptions<Context>) {
@@ -84,6 +91,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         })
         this.currentRouteObservable.subscribe(this.handleChange)
         this.renderedRoute = this.currentRouteObservable.getValue()
+        this.hashScrollBehavior = options.hashScrollBehavior || 'smooth'
     }
 
     setContext(context: Context) {
@@ -95,7 +103,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         this.currentRouteObservable.setRouter(this.router)
     }
 
-    getSnapshot(): NavigationSnapshot {
+    getCurrentValue(): NavigationSnapshot {
         let route = this.currentRouteObservable.getValue()
         return {
             route,
@@ -154,22 +162,32 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
                     prevRoute.url.hash !== nextRoute.url.hash ||
                     prevRoute.url.pathname !== nextRoute.url.pathname)
                 ) {
-                    scrollToHash(nextRoute.url.hash)
+                    scrollToHash(
+                        nextRoute.url.hash,
+                        prevRoute && prevRoute.url && prevRoute.url.pathname === nextRoute.url.pathname
+                            ? this.hashScrollBehavior
+                            : 'instant'
+                    )
                 }
             }
 
             this.renderedRoute = this.receivedRoute
         }
+        else {
+            if (this.receivedRoute.url.hash) {
+                scrollToHash(this.receivedRoute.url.hash, this.hashScrollBehavior)
+            }
+        }
     }
 }
 
 
-function scrollToHash(hash) {
+function scrollToHash(hash, behavior) {
     if (hash) {
         let id = document.getElementById(hash.slice(1))
         if (id) {
             id.scrollIntoView({
-                behavior: 'instant',
+                behavior: behavior,
                 block: 'start'
             })
 

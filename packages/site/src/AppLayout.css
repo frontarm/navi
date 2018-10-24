@@ -109,6 +109,7 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) inset;
   transform: translateY(-4px);
   transition: transform ease-in 300ms, opacity ease-in 300ms;
+  transition-delay: 0;
   animation: App-LoadingIndicator-progress 2s cubic-bezier(.4,.45,.6,.55) infinite;
   opacity: 0;
 }
@@ -120,6 +121,7 @@
 }
 
 .App-LoadingIndicator-loading {
+  transition-delay: 333ms;
   transform: translateY(0);
   opacity: 1;
 }

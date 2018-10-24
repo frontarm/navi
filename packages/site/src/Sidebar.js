@@ -1,15 +1,15 @@
 import React from 'react'
-import { Link } from 'react-navi'
+import * as Nav from 'react-navi'
 import logo from './logo.svg'
 import './Sidebar.css'
 
 
 export const Sidebar = ({ className='' }) =>
   <div className={"Sidebar "+className}>
-    <Link href='/' className="Sidebar-brand">
+    <Nav.Link href='/' className="Sidebar-brand">
       <img src={logo} className="Sidebar-brand-logo" alt="logo" />
       <span className="Sidebar-brand-title">Navi</span>
-    </Link>
+    </Nav.Link>
 
     <nav className="Sidebar-nav">
       <section>
@@ -108,21 +108,21 @@ export const Sidebar = ({ className='' }) =>
 
 
 const NavLink = ({ children, className='', href }) =>
-  <Link
+  <Nav.Link
     activeClassName='Sidebar-NavLink-active'
     className={'Sidebar-NavLink '+className}
     href={href}
     exact>
     {children}
-  </Link>
+  </Nav.Link>
 
 const HashLink = ({ children, className='', href }) =>
-  <Link
+  <Nav.Link
     className={'Sidebar-HashLink '+className}
     href={href}
     exact>
     {children}
-  </Link>
+  </Nav.Link>
 
 const ComponentLink = ({ href, name, props }) =>
   <div className='Sidebar-ComponentLink'>

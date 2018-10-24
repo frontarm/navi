@@ -29,7 +29,7 @@ describe("integration", () => {
 
         nav.history.push('/examples/advanced?referrer=frontarm')
 
-        firstSegment = nav.getSnapshot().route.firstSegment
+        firstSegment = nav.getCurrentValue().route.firstSegment
         let secondSegment = firstSegment.nextSegment
 
         expect(firstSegment.url.query).toEqual({ referrer: 'frontarm' })

@@ -1,5 +1,4 @@
 import React from 'react'
-import * as Navi from 'react-navi'
 import { Sidebar } from './Sidebar'
 import './AppLayout.css'
 

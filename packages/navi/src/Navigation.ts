@@ -10,7 +10,7 @@ export interface Navigation<Context extends object=any> extends Observable<Navig
 
   setContext(context: Context): void;
 
-  getSnapshot(): NavigationSnapshot;
+  getCurrentValue(): NavigationSnapshot;
 
   /**
    * Returns a promise that resolves once `isReady()` returns true.

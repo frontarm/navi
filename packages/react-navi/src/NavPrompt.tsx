@@ -29,20 +29,23 @@ SOFTWARE.
 
 import * as React from 'react'
 import { Navigation } from 'navi'
-import { NaviContext } from './NaviContext'
+import { NavContext } from './NavContext'
 
 
-export interface PromptProps {
+export interface NavPromptProps {
   when?: boolean,
   message: string | (() => string)
 }
 
+export namespace NavPrompt {
+  export type Props = NavPromptProps
+}
 
-export function Prompt(props: PromptProps) {
+export function NavPrompt(props: NavPromptProps) {
   return (
-    <NaviContext.Consumer>
+    <NavContext.Consumer>
       {context => <InnerPrompt context={context} {...props} />}
-    </NaviContext.Consumer>
+    </NavContext.Consumer>
   )
 }
 
@@ -51,7 +54,7 @@ export function Prompt(props: PromptProps) {
  * The public API for prompting the user before navigating away
  * from a screen with a component.
  */
-class InnerPrompt extends React.Component<PromptProps & { context: NaviContext }> {
+class InnerPrompt extends React.Component<NavPromptProps & { context: NavContext }> {
   navigation: Navigation;
   unblock?: () => void;
 

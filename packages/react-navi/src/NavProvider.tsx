@@ -1,21 +1,25 @@
 import * as React from 'react'
 import { Navigation, NavigationSnapshot, Subscription, NaviError } from 'navi'
-import { NaviContext } from './NaviContext'
+import { NavContext } from './NavContext'
 
 
-export interface NaviProviderProps {
+export interface NavProviderProps {
   navigation?: Navigation
   navigationSnapshot?: NavigationSnapshot
 }
 
-export interface NaviProviderState {
+export interface NavProviderState {
   navigationSnapshot?: NavigationSnapshot
 }
 
-export class NaviProvider extends React.Component<NaviProviderProps, NaviProviderState> {
+export namespace NavProvider {
+  export type Props = NavProviderProps
+}
+
+export class NavProvider extends React.Component<NavProviderProps, NavProviderState> {
   subscription?: Subscription
 
-  static getDerivedStateFromProps(props: NaviProviderProps, state: NaviProviderState): null | Partial<NaviProviderState> {
+  static getDerivedStateFromProps(props: NavProviderProps, state: NavProviderState): null | Partial<NavProviderState> {
     if (props.navigationSnapshot) {
       return {
         navigationSnapshot: undefined,
@@ -26,7 +30,7 @@ export class NaviProvider extends React.Component<NaviProviderProps, NaviProvide
         throw new MissingNavigationError
       }
       return {
-        navigationSnapshot: props.navigation.getSnapshot()
+        navigationSnapshot: props.navigation.getCurrentValue()
       }
     }
     else {
@@ -34,7 +38,7 @@ export class NaviProvider extends React.Component<NaviProviderProps, NaviProvide
     }
   }
 
-  constructor(props: NaviProviderProps) {
+  constructor(props: NavProviderProps) {
     super(props)
     this.state = {}
   }
@@ -47,9 +51,9 @@ export class NaviProvider extends React.Component<NaviProviderProps, NaviProvide
     }
 
     return (
-      <NaviContext.Provider value={(this.props.navigationSnapshot || this.state.navigationSnapshot)!}>
+      <NavContext.Provider value={(this.props.navigationSnapshot || this.state.navigationSnapshot)!}>
         {this.props.children}
-      </NaviContext.Provider>
+      </NavContext.Provider>
     )
   }
 
@@ -59,7 +63,7 @@ export class NaviProvider extends React.Component<NaviProviderProps, NaviProvide
     }
   }
 
-  componentDidUpdate(prevProps: NaviProviderProps) {
+  componentDidUpdate(prevProps: NavProviderProps) {
     if (prevProps.navigationSnapshot && !this.props.navigationSnapshot) {
       this.subscribe()
     }
@@ -103,6 +107,6 @@ export class NaviProvider extends React.Component<NaviProviderProps, NaviProvide
 
 export class MissingNavigationError extends NaviError {
   constructor() {
-    super(`A <Navi.Provider> component must receive a "navigation" or "navigationSnapshot" prop.`)
+    super(`A <NavProvider> component must receive a "navigation" or "navigationSnapshot" prop.`)
   }
 }

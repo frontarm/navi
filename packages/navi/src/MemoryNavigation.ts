@@ -62,7 +62,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
         this.currentRouteObservable.setRouter(this.router)
     }
 
-    getSnapshot(): NavigationSnapshot {
+    getCurrentValue(): NavigationSnapshot {
         let route = this.currentRouteObservable.getValue()
         return {
             route,
