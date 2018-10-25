@@ -17,14 +17,14 @@ export class RouteObservable implements Observable<Route> {
     constructor(
         url: URLDescriptor,
         env: Env,
-        rootSwitch: Switch,
+        pages: Switch,
         resolver: Resolver,
         withContent: boolean
     ) {
         this.url = url
         this.resolver = resolver
         this.observers = []
-        this.matcher = new rootSwitch({
+        this.matcher = new pages({
             appendFinalSlash: true,
             env,
             resolver: this.resolver,

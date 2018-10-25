@@ -64,7 +64,7 @@ program
 program.command('build')
   .description("Build html files for each of your apps pages.")
   .option('-r, --root [directory]', configSchema.properties.root.description, defaultConfig.root)
-  .option('-e, --entry [file]', configSchema.properties.entry.description)
+  .option('-e, --entry [file]', configSchema.properties.entry.description, defaultConfig.entry)
   .option('-c, --config [file]', 'Specify a config file.', 'navi.config.js')
   .action(async function (command) {
     let config = await createConfigFromCommand(command)
@@ -85,7 +85,7 @@ program.command('map')
   .description('Output a map of all statically-buildable URLs within your root switch.')
   .option('-j, --json', 'Output the map as json.')
   .option('-r, --root [directory]', configSchema.properties.root.description, defaultConfig.root)
-  .option('-e, --entry [file]', configSchema.properties.entry.description)
+  .option('-e, --entry [file]', configSchema.properties.entry.description, defaultConfig.entry)
   .option('-c, --config [file]', 'Specify a config file.', 'navi.config.js')
   .option('-o, --output [file]', 'Write the map to a file.')
   .action(async function (command) {
@@ -115,7 +115,7 @@ program.command('serve')
           `Set host. Defaults to ${defaultHost}`,
           defaultHost
          )
-  .option('-p, --port <port>', 'Set port. Defaults to 4000', '4000')
+  .option('-p, --port <port>', 'Set port. Defaults to 3000', '3000')
   .option('-r, --root [directory]', 'The directory to serve.', defaultConfig.root)
   .action(function (command) {
     let serve = require('../lib/serve').serve

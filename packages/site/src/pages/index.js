@@ -2,7 +2,7 @@ import * as React from 'react'
 import { createSwitch, createPage } from 'navi'
 import { MDXWrapper } from '../MDXWrapper'
 
-export const root = createSwitch({
+export default createSwitch({
   paths: {
     '/': createPage({
       title: 'Navi',

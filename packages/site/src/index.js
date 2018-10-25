@@ -1,65 +1,40 @@
+import * as Navi from 'navi'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { createBrowserNavigation } from 'navi'
-import { root as rootSwitch } from './pages'
+import pages from './pages'
 import { App } from './App'
 import './index.css'
 
 
-async function main() {
-    let navigation = createBrowserNavigation({ rootSwitch })
+Navi.app({
+    // Specify the pages that navi-app should statically build, by passing
+    // in a Switch object
+    pages,
 
-    // Wait until the content is available before making the first render
-    await navigation.getSteadyValue()
+    // The `exports` object is made available to the `renderPageToString`
+    // function.
+    exports: {
+        App,
+    },
 
-    let content = <App navigation={navigation} />
-    let node = document.getElementById('root')
-    if (process.env.NODE_ENV === 'production') {
-        // React requires us to call "hydrate" if the content already exists in
-        // the DOM, which is the case for statically rendered pages.
-    
-        ReactDOM.hydrate(content, node)
+    async main() {
+        let navigation = Navi.createBrowserNavigation({ pages })
+
+        // Wait until the navigation has loaded the page's content,
+        // or failed to do so. If you want to load other data in parallel
+        // while the initial page is loading, do it before this line.
+        await navigation.steady()
+
+        // React requires that you call `ReactDOM.hydrate` if there is
+        // statically rendered content in the root element, but prefers
+        // us to call `ReactDOM.render` when it is empty.
+        let hasStaticContent = process.env.NODE_ENV === 'production'
+        let renderer = hasStaticContent ? ReactDOM.hydrate : ReactDOM.render
+
+        // Start react.
+        renderer(
+            <App navigation={navigation} />,
+            document.getElementById('root')
+        )
     }
-    else {
-        ReactDOM.render(content, node)
-    }
-}
-
-
-// When building the static version of the app, we don't want to run the
-// `main` function, as there is no DOM to render to.
-if (process.env.NODE_ENV !== 'production') {
-    main()
-}
-
-
-// Make the `root` branch and `main` function available to navi-tool,
-// via a global variable, so that it knows what to render and how to start
-// the app.
-window.$exports = {
-    App,
-    rootSwitch,
-    main,
-}
-
-// NaviApp.run({
-//     root,
-
-//     exports: {
-//         App,
-//     },
-
-//     async main(navigation) {
-//         let content = <App navigation={navigation} />
-//         let node = document.getElementById('root')
-//         if (process.env.NODE_ENV === 'production') {
-//             // React requires us to call "hydrate" if the content already exists in
-//             // the DOM, which is the case for statically rendered pages.
-        
-//             ReactDOM.hydrate(content, node)
-//         }
-//         else {
-//             ReactDOM.render(content, node)
-//         }
-//     }
-// })
+})

@@ -3,7 +3,7 @@ import { Segment, isSegmentSteady, Status, SegmentType } from 'navi'
 import { NavSegment, NavSegmentOutput } from './NavSegment'
 
 
-export interface NavContentSegmentProps {
+export interface NavContentProps {
   /**
    * A render function that will be used to render the selected segment.
    */
@@ -20,12 +20,12 @@ function isContentOrFinalSegment(segment: Segment) {
   return segment.content || segment.status === Status.Busy || segment.type !== SegmentType.Switch
 }
 
-export namespace NavContentSegment {
-  export type Props = NavContentSegmentProps
+export namespace NavContent {
+  export type Props = NavContentProps
   export type Output = NavSegmentOutput
 }
 
-export class NavContentSegment extends React.Component<NavContentSegmentProps> {
+export class NavContent extends React.Component<NavContentProps> {
   static defaultProps = {
     isReady: (Segment: Segment) => isSegmentSteady(Segment),
   }

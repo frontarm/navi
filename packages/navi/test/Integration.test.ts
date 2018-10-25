@@ -5,7 +5,7 @@ describe("integration", () => {
     function createTestNavigation(initialURL) {
         return createMemoryNavigation({
             url: initialURL,
-            rootSwitch: fixtureSwitch,
+            pages: fixtureSwitch,
         })
     }
 

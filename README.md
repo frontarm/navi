@@ -1,5 +1,6 @@
-Navi: a router/loader for React
-===============================
+![Navi Logo](./media/logo-title.png)
+
+**A router/loader for React**
 
 Navi is a new kind of router: as your app's URL changes, it starts fetching the new URL's content, and then it *waits*. It then renders the page *once the content has loaded*.
 

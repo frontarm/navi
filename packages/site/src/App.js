@@ -3,50 +3,52 @@ import * as Nav from 'react-navi'
 import { AppLayout } from './AppLayout'
 
 
-export function App(props) {
-  return (
-    <Nav.Provider navigation={props.navigation}>
-      <Nav.Consumer>
-        {({ location }) =>
-          <InnerApp location={location} />
-        }
-      </Nav.Consumer>
-    </Nav.Provider>
-  )
-}
-
-class InnerApp extends React.Component {
-  state = {
-    open: false,
-  }
-
-  handleToggleMenu = () => {
-    this.setState({ open: !this.state.open })
+export class App extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      open: false,
+    }
   }
 
   render() {
     return (
-      <Nav.Loading>
-        {isLoading =>
-          <AppLayout
-            isBusy={isLoading}
-            isMenuOpen={this.state.open}
-            onToggleMenu={this.handleToggleMenu}>
-            <Nav.NotFoundBoundary render={renderNotFound}>
-              <Nav.ContentSegment />
-            </Nav.NotFoundBoundary>
-          </AppLayout>
-        }
-      </Nav.Loading>
+      <Nav.Provider navigation={this.props.navigation}>
+        <Nav.Loading>
+          {isLoading =>
+            <AppLayout
+              isBusy={isLoading}
+              isMenuOpen={this.state.open}
+              onToggleMenu={this.handleToggleMenu}>
+              <Nav.NotFoundBoundary render={renderNotFound}>
+                <Nav.Content />
+              </Nav.NotFoundBoundary>
+            </AppLayout>
+          }
+        </Nav.Loading>
+      </Nav.Provider>
     )
   }
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.location !== this.props.location && this.state.open) {
-      this.setState({ open: false })
-    }
+  handleToggleMenu = () => {
+    this.setState({
+      open: !this.state.open
+    })
+  }
+
+  componentDidMount() {
+    // Watch for changes to the current location, and close the
+    // nav menu if it is open.
+    this.url = this.props.navigation.getCurrentValue().url
+    this.props.navigation.subscribe(({ url }) => {
+      if (url !== this.url && this.state.open) {
+        this.url = url
+        this.setState({ open: false })
+      }
+    })
   }
 }
+
 
 function renderNotFound() {
   return (

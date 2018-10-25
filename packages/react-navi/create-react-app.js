@@ -7,7 +7,7 @@ let rootDir = process.cwd()
 let templatePath = path.resolve(rootDir, 'build/index.html')
 let template = fs.readFileSync(templatePath, 'utf8')
 
-function renderCreateReactAppPageToString({ replaceTitle, element, config }) {
+function renderCreateReactAppPageToString({ replaceTitle, element }) {
   let html = template
 
   // Replace the <title> tag with the contents of `replaceTitle`,
@@ -26,7 +26,7 @@ function renderCreateReactAppPageToString({ replaceTitle, element, config }) {
   html = html.replace('<div id="root">', '<div id="root">'+content)
 
   // Once all the dependencies have loaded, call `main`
-  html = html.replace('</body>', `<script>window.${config.entryExportsGlobal}.main()</script>`)
+  html = html.replace('</body>')
 
   return html
 }

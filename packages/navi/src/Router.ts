@@ -15,7 +15,7 @@ import { OutOfRootError } from './Errors';
 
 export interface RouterOptions<Context extends object> {
     rootContext?: Context,
-    rootSwitch: Switch,
+    pages: Switch,
     rootPath?: string,
 }
 
@@ -40,20 +40,20 @@ export function createRouter<Context extends object>(options: RouterOptions<Cont
 export class Router<Context extends object=any> {
     private resolver: Resolver
     private rootContext: Context
-    private rootSwitch: Switch<any, any, Context>
+    private pages: Switch<any, any, Context>
     private rootMapping: Mapping
     
     constructor(resolver: Resolver, options: RouterOptions<Context>) {
         if (process.env.NODE_ENV !== "production") {
-            if (!options.rootSwitch || options.rootSwitch.type !== NaviNodeType.Switch) {
-                throw new Error(`Expected to receive a Switch object for the "rootSwitch" prop, but instead received "${options.rootSwitch}".`)
+            if (!options.pages || options.pages.type !== NaviNodeType.Switch) {
+                throw new Error(`Expected to receive a Switch object for the "pages" prop, but instead received "${options.pages}".`)
             }
         }
 
         this.resolver = resolver
         this.rootContext = options.rootContext || {} as any
-        this.rootSwitch = options.rootSwitch
-        this.rootMapping = createRootMapping(options.rootSwitch, options.rootPath)
+        this.pages = options.pages
+        this.rootMapping = createRootMapping(options.pages, options.rootPath)
     }
 
     createObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterResolveOptions = {}): RouteObservable | undefined {
@@ -74,7 +74,7 @@ export class Router<Context extends object=any> {
             return new RouteObservable(
                 url,
                 matchEnv,
-                this.rootSwitch,
+                this.pages,
                 this.resolver,
                 !!options.withContent,
             )
@@ -85,7 +85,7 @@ export class Router<Context extends object=any> {
         return new RouteMapObservable(
             createURLDescriptor(urlOrDescriptor, { ensureTrailingSlash: false }),
             this.rootContext,
-            this.rootSwitch,
+            this.pages,
             this.rootMapping,
             this.resolver,
             this,

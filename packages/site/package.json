@@ -16,10 +16,10 @@
   "scripts": {
     "clean": "rimraf build",
     "start": "react-scripts start",
-    "build": "react-scripts build && navi build -e build/index.html",
-    "map": "react-scripts build && navi map -e build/index.html",
+    "build": "react-scripts build && navi-scripts build",
+    "map": "react-scripts build && navi-scripts map",
     "test": "react-scripts test --env=jsdom",
-    "serve": "navi serve -p 3000"
+    "serve": "navi-scripts serve"
   },
   "eslintConfig": {
     "extends": "react-app"

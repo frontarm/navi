@@ -32,7 +32,7 @@ interface QueueItem {
 export class RouteMapObservable implements Observable<RouteMap> {
   private cachedSiteMap: RouteMap
   private rootContext: any
-  private rootSwitch: Switch
+  private pages: Switch
   private rootMapping: Mapping
   private observers: Observer<RouteMap>[]
   private resolver: Resolver
@@ -45,7 +45,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
   constructor(
     url: URLDescriptor,
     rootContext: any,
-    rootSwitch: Switch,
+    pages: Switch,
     rootMapping: Mapping,
     resolver: Resolver,
     router: Router,
@@ -57,7 +57,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
     this.resolver = resolver
     this.router = router
     this.rootContext = rootContext
-    this.rootSwitch = rootSwitch
+    this.pages = pages
     this.rootMapping = rootMapping
     this.options = options
 
@@ -242,7 +242,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
           url,
           fromPathname,
           depth,
-          matcher: new this.rootSwitch({
+          matcher: new this.pages({
             appendFinalSlash: false,
             env: matchEnv,
             resolver: this.resolver,

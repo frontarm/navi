@@ -41,9 +41,9 @@ export interface BrowserNavigationOptions<Context extends object> {
      */
     hashScrollBehavior?: 'smooth' | 'instant'
 
-    initialRootContext?: Context,
+    initialContext?: Context,
 
-    rootSwitch: Switch,
+    pages: Switch,
     rootPath?: string,
 }
 
@@ -61,7 +61,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
     private setDocumentTitle: false | ((pageTitle?: string) => string)
     private disableScrollHandling: boolean
 
-    private rootSwitch: Switch
+    private pages: Switch
     private rootPath?: string
     private resolver: Resolver
     private receivedRoute: Route
@@ -72,11 +72,11 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
     constructor(options: BrowserNavigationOptions<Context>) {
         this.history = options.history || createBrowserHistory()
         this.resolver = new Resolver
-        this.rootSwitch = options.rootSwitch
+        this.pages = options.pages
         this.rootPath = options.rootPath
         this.router = new Router(this.resolver, {
-            rootContext: options.initialRootContext,
-            rootSwitch: options.rootSwitch,
+            rootContext: options.initialContext,
+            pages: options.pages,
             rootPath: options.rootPath,
         })
 
@@ -97,7 +97,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
     setContext(context: Context) {
         this.router = new Router(this.resolver, {
             rootContext: context,
-            rootSwitch: this.rootSwitch,
+            pages: this.pages,
             rootPath: this.rootPath,
         })
         this.currentRouteObservable.setRouter(this.router)
@@ -112,6 +112,11 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
             router: this.router,
             onRendered: this.handleRendered,
         }
+    }
+
+    async steady() {
+        await this.getSteadyValue()
+        return
     }
 
     async getSteadyValue(): Promise<NavigationSnapshot> {

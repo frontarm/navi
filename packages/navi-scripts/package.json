@@ -1,5 +1,5 @@
 {
-  "name": "navi-tool",
+  "name": "navi-scripts",
   "engine": {
     "node": ">=8.0.0"
   },
@@ -8,7 +8,7 @@
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
   "bin": {
-    "navi": "./bin/navi.js"
+    "navi-scripts": "./bin/navi-scripts.js"
   },
   "main": "lib/index.js",
   "dependencies": {

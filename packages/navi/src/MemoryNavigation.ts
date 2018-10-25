@@ -12,9 +12,9 @@ import { URLDescriptor, createURLDescriptor } from './URLTools';
 export interface MemoryNavigationOptions<Context extends object> extends RouterOptions<Context> {
     url: string | Partial<URLDescriptor>
 
-    initialRootContext?: Context,
+    initialContext?: Context,
 
-    rootSwitch: Switch,
+    pages: Switch,
     rootPath?: string,
 }
 
@@ -29,7 +29,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
 
     readonly history: History
 
-    private rootSwitch: Switch
+    private pages: Switch
     private rootPath?: string
     private resolver: Resolver
 
@@ -40,11 +40,11 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
             initialEntries: [createURLDescriptor(options.url).href],
         })
         this.resolver = new Resolver
-        this.rootSwitch = options.rootSwitch
+        this.pages = options.pages
         this.rootPath = options.rootPath
         this.router = new Router(this.resolver, {
-            rootContext: options.initialRootContext,
-            rootSwitch: this.rootSwitch,
+            rootContext: options.initialContext,
+            pages: this.pages,
             rootPath: this.rootPath,
         })
         this.currentRouteObservable = createCurrentRouteObservable({
@@ -56,7 +56,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
     setContext(context: Context) {
         this.router = new Router(this.resolver, {
             rootContext: context,
-            rootSwitch: this.rootSwitch,
+            pages: this.pages,
             rootPath: this.rootPath,
         })
         this.currentRouteObservable.setRouter(this.router)

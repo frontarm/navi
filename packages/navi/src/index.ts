@@ -1,3 +1,4 @@
+export { app } from './app'
 export { createContext, Context } from './Context'
 export { Env } from './Env'
 export { createSwitch, Switch } from './Switch'
