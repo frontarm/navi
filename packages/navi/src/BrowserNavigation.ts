@@ -114,7 +114,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         }
     }
 
-    async getSteadySnapshot(): Promise<NavigationSnapshot> {
+    async getSteadyValue(): Promise<NavigationSnapshot> {
         return this.currentRouteObservable.getSteadyRoute().then(route => ({
             route,
             url: route.url,

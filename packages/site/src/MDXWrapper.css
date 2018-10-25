@@ -78,7 +78,7 @@ table {
 
 aside {
   font-size: 0.9rem;
-  border: 2px solid #10b068;
+  border: 2px solid #1cde78;
   border-radius: 3px;
   padding: 0.5rem 1.5rem;
   margin: 1.5rem 0;
@@ -108,7 +108,7 @@ aside h4 {
 }
 
 a {
-  color: #10b068;
+  color: #1cde78;
   text-decoration: none;
 }
 a:hover {

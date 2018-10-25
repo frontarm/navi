@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { createBrowserNavigation } from 'navi'
-import { rootSwitch } from './switches'
+import { root as rootSwitch } from './pages'
 import { App } from './App'
 import './index.css'
 
@@ -10,7 +10,7 @@ async function main() {
     let navigation = createBrowserNavigation({ rootSwitch })
 
     // Wait until the content is available before making the first render
-    await navigation.getSteadySnapshot()
+    await navigation.getSteadyValue()
 
     let content = <App navigation={navigation} />
     let node = document.getElementById('root')
@@ -33,7 +33,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 
-// Make the `rooJunction` branch and `main` function available to navi-tool,
+// Make the `root` branch and `main` function available to navi-tool,
 // via a global variable, so that it knows what to render and how to start
 // the app.
 window.$exports = {
@@ -41,3 +41,25 @@ window.$exports = {
     rootSwitch,
     main,
 }
+
+// NaviApp.run({
+//     root,
+
+//     exports: {
+//         App,
+//     },
+
+//     async main(navigation) {
+//         let content = <App navigation={navigation} />
+//         let node = document.getElementById('root')
+//         if (process.env.NODE_ENV === 'production') {
+//             // React requires us to call "hydrate" if the content already exists in
+//             // the DOM, which is the case for statically rendered pages.
+        
+//             ReactDOM.hydrate(content, node)
+//         }
+//         else {
+//             ReactDOM.render(content, node)
+//         }
+//     }
+// })

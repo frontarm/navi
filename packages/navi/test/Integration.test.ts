@@ -12,7 +12,7 @@ describe("integration", () => {
     test("integration", async () => {
         let nav = createTestNavigation('/examples')
 
-        let { route } = await nav.getSteadySnapshot()
+        let { route } = await nav.getSteadyValue()
         let firstSegment = route.firstSegment
         let pageSegment = route.lastSegment as PageSegment
         
@@ -37,7 +37,7 @@ describe("integration", () => {
         expect(firstSegment.status).toEqual(Status.Ready)
         expect(secondSegment.status).toEqual(Status.Busy)
 
-        route = (await nav.getSteadySnapshot()).route
+        route = (await nav.getSteadyValue()).route
         firstSegment = route.firstSegment
         pageSegment = route.lastSegment as PageSegment
 
@@ -50,7 +50,7 @@ describe("integration", () => {
             isAuthenticated: true
         })
 
-        route = (await nav.getSteadySnapshot()).route
+        route = (await nav.getSteadyValue()).route
         firstSegment = route.firstSegment
         pageSegment = firstSegment.lastRemainingSegment as PageSegment
 
@@ -58,7 +58,7 @@ describe("integration", () => {
 
         nav.history.push('/examples/intermediate')
 
-        route = (await nav.getSteadySnapshot()).route
+        route = (await nav.getSteadyValue()).route
         firstSegment = route.firstSegment
         let　junctionSegment = firstSegment.lastRemainingSegment as SwitchSegment
         
@@ -69,7 +69,7 @@ describe("integration", () => {
     test("map-based content", async () => {
         let nav = createTestNavigation('/')
 
-        let { route } = await nav.getSteadySnapshot()
+        let { route } = await nav.getSteadyValue()
         
         expect(Object.keys(route.lastSegment.content)).toEqual(['/examples/advanced/', '/examples/basic/'])
         expect(route.type).toBe(SegmentType.Page)

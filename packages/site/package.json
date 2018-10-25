@@ -16,8 +16,8 @@
   "scripts": {
     "clean": "rimraf build",
     "start": "react-scripts start",
-    "build": "react-scripts build && navi build -e build/static/js/main.*.js",
-    "map": "react-scripts build && navi map -e build/static/js/main.*.js -j -o build/static/js/map.json",
+    "build": "react-scripts build && navi build -e build/index.html",
+    "map": "react-scripts build && navi map -e build/index.html",
     "test": "react-scripts test --env=jsdom",
     "serve": "navi serve -p 3000"
   },

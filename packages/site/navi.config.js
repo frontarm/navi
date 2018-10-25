@@ -1,1 +1,1 @@
-export { renderPageToString } from 'site/src/renderPageToString'
+export { renderPageToString } from './src/renderPageToString'

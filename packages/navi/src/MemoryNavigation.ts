@@ -73,7 +73,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
         }
     }
 
-    async getSteadySnapshot(): Promise<NavigationSnapshot> {
+    async getSteadyValue(): Promise<NavigationSnapshot> {
         return this.currentRouteObservable.getSteadyRoute().then(route => ({
             route,
             url: route.url,

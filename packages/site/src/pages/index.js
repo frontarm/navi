@@ -2,10 +2,10 @@ import * as React from 'react'
 import { createSwitch, createPage } from 'navi'
 import { MDXWrapper } from '../MDXWrapper'
 
-export const rootSwitch = createSwitch({
+export const root = createSwitch({
   paths: {
     '/': createPage({
-      title: 'JuncNavitions',
+      title: 'Navi',
       getContent: async () =>
         <MDXWrapper
           document={await import('!babel-loader!mdx-loader!./landing.md')}

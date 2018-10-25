@@ -17,7 +17,7 @@ export interface Navigation<Context extends object=any> extends Observable<Navig
    * This is useful for implementing static rendering, or for waiting until
    * content is loaded before making the first render.
    */
-  getSteadySnapshot(): Promise<NavigationSnapshot>;
+  getSteadyValue(): Promise<NavigationSnapshot>;
 }
 
 export interface NavigationSnapshot {
