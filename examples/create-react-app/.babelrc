@@ -1,5 +1,0 @@
-{
-    "presets": ["env"],
-    "plugins": ["syntax-dynamic-import", "dynamic-import-node", "transform-class-properties", "transform-object-rest-spread"]
-  }
-  
