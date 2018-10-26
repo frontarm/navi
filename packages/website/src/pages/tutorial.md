@@ -93,11 +93,11 @@ This junction template says a few things:
 3. The two pages have titles, and should be rendered with the specified components.
 
 <aside>
-<markdown>
+
 #### Why call them "templates", and not just "pages" or "junctions"?
 
 Each time the browser's location changes, your templates are used to create new [Page](/api-reference/#Page) and [Junction](/api-reference/#Junction) objects. These contain information that can't be set ahead of time in the templates, including a Page's current URL, or a Junction's active child.
-</markdown>
+
 </aside>
 
 Now that you've defined `AppJunctionTemplate`, your app has the information it needs to render different content for different URLs. But how do you *use* this information?
@@ -147,7 +147,7 @@ Junctions and Pages
 When your `<JunctionNavigation>` component renders the `<App>` component, it passes it a `junction` prop. This prop contains the navigation state for your entire app, and looks a little like this:
 
 <div className="properties">
-<markdown>
+
 #### `Junction`
 
 - **`activeChild`:** Holds a `Page` object, based on the active child from the junction's `children` -- or `undefined` if there is no active child.
@@ -156,7 +156,7 @@ When your `<JunctionNavigation>` component renders the `<App>` component, it pas
 - **`status`:** Either `"ready"`, or `"notfound"`.
 
 [See all properties &raquo;](/api-reference#Junction)
-</markdown>
+
 </div>
 
 Each `Junction` object is based on one of your Junction Templates, but has extra properties that are derived from the browser's current URL -- including `status` and `activeChild`.
@@ -164,7 +164,7 @@ Each `Junction` object is based on one of your Junction Templates, but has extra
 The `activeChild` property is particularly important; it contains a `Page` object, with details on whichever page is selected by the current URL:
 
 <div className="properties">
-<markdown>
+
 #### `Page`
 
 - **`component`:** *Copied from the page template.*
@@ -172,7 +172,7 @@ The `activeChild` property is particularly important; it contains a `Page` objec
 - **`url`:** The URL at which the page is mounted.
 
 [See all properties &raquo;](/api-reference#Page)
-</markdown>
+
 </div>
 
 

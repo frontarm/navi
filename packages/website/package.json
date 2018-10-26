@@ -1,12 +1,11 @@
 {
-  "name": "site",
+  "name": "website",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "babel-loader": "^8.0.4",
+    "mdx-loader": "^2.0.0-3",
     "history": "^4.7.2",
-    "mdx-loader": "^1.1.1",
-    "mdxc": "^1.1.2",
     "prismjs": "^1.15.0",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",

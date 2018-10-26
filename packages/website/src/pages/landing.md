@@ -1,5 +1,10 @@
-Junctions
-=========
+---
+title: Navi
+---
+import { Link } from 'react-navi'
+
+Navi
+====
 
 **A batteries-included router for React.**
 
@@ -19,7 +24,7 @@ And the best part? Junctions is *fast*. It combines code splitting and static si
 *And all without ejecting from create-react-app.*
 
 
-Documentation
+Documentation `test`
 -------------
 
 - [The Tutorial](/tutorial) walks you through building a small documentation website with create-react-app.

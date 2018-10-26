@@ -4,7 +4,7 @@ import './MDXWrapper.css'
 
 
 function createHeadingFactory(type) {
-    return ({ id, ...other }, ...children) => {
+    return ({ id, children, ...other }) => {
         // Change MDX's heading ids by removing anything in parens, and removing
         // any <> characters, as otherwise the API Reference's ids can get a
         // little weird.
@@ -16,7 +16,7 @@ function createHeadingFactory(type) {
                 className: 'MDXWrapper-heading', 
                 ...other,
             },
-            ...children,
+            children,
 
             // Append a hash link to each heading, which will be hidden via
             // CSS until he mouse hovers over the heading.
@@ -25,10 +25,9 @@ function createHeadingFactory(type) {
     }
 }
 
-
 export class MDXWrapper extends React.Component {
-  factories = {
-    a: (props, ...children) => React.createElement(Nav.Link, props, ...children),
+  components = {
+    a: (props) => React.createElement(Nav.Link, props),
 
     h1: createHeadingFactory('h1'),
     h2: createHeadingFactory('h2'),
@@ -36,10 +35,16 @@ export class MDXWrapper extends React.Component {
     h4: createHeadingFactory('h4'),
     h5: createHeadingFactory('h5'),
     h6: createHeadingFactory('h6'),
+
+    inlineCode: (props) => <code {...props} />,
+    code: ({ children, metaString, ...props }) => <code {...props}>{children}</code>,
   }
 
   render() {
     let { document } = this.props
+
+    console.log(document.tableOfContents())
+    console.log(document.frontMatter)
 
     if (document.default) {
         document = document.default
@@ -48,7 +53,7 @@ export class MDXWrapper extends React.Component {
     return (
         <div className='MDXWrapper'>
             {React.createElement(document, {
-                factories: this.factories,
+                components: this.components,
             })}
         </div>
     )
