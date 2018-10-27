@@ -21,7 +21,7 @@ Getting started
 
 After cloning, make sure you run `yarn install`:
 
-```js
+```bash
 git clone git@github.com:frontarm/navi.git
 cd navi/examples/create-react-app
 yarn install
@@ -30,7 +30,7 @@ yarn start
 
 To statically build your site and then start a local server for testing:
 
-```js
+```bash
 yarn build
 yarn serve
 ```
@@ -43,7 +43,7 @@ How to...
 
 Just create a directory under `src/pages/blog` that has a `page.js` and `document.md` file.
 
-```
+```js
 // page.js
 import * as React from 'react'
 import * as Navi from 'navi'
@@ -61,7 +61,7 @@ export default Navi.createPage({
 })
 ```
 
-```
+```mdx
 // document.md
 # A markdown file
 
