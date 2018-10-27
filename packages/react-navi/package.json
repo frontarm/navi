@@ -1,6 +1,6 @@
 {
   "name": "react-navi",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "A batteries-included router for react.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -36,6 +36,8 @@
     "rollup": "^0.50.0",
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-replace": "^2.1.0",
+    "rollup-plugin-uglify": "^6.0.0",
     "typescript": "2.8.1"
   },
   "dependencies": {
