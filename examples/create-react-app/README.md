@@ -62,7 +62,8 @@ export default Navi.createPage({
 ```
 
 ```mdx
-// document.md
+<!-- document.md -->
+
 # A markdown file
 
 You can also import and use components, as the file is compiled with mdx.
