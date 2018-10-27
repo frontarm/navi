@@ -1,7 +1,7 @@
 {
   "name": "navi",
   "version": "0.7.1",
-  "description": "Junction-based routing for JavaScript.",
+  "description": "A router-loader for React.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
