@@ -3,13 +3,13 @@ create-react-blog
 
 A project skeleton for a blog with:
 
-⏩ Paginated index page
-🏷️ Tag pages generated from the post metadata
-🚀 Statically generated HTML for each page
-🔗 Code splitting, so page content isn't loaded until it's needed
-📜 Smooth scrolling to hash links
-🔥 Page loading transition
-📄 MDX content
+⏩ Paginated index page<br />
+🏷️ Tag pages generated from the post metadata<br />
+🚀 Statically generated HTML for each page<br />
+🔗 Code splitting, so page content isn't loaded until it's needed<br />
+📜 Smooth scrolling to hash links<br />
+🔥 Page loading transition<br />
+📄 MDX content<br />
 
 And all without ejecting from create-react-app!
 
