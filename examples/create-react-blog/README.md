@@ -87,7 +87,7 @@ const PAGE_SIZE = 10
 
 ### Change the available tag pages
 
-Tag pages are generated from blog metadata, but you'll need to specify a list of available tags in [src/pages/tags/index.js](src/pages/tags/index.js)
+Tag pages are generated from blog metadata, but you'll need to specify a list of available tags in [src/pages/tags/getTags.js](src/pages/tags/getTags.js)
 
 ```js
 const TAGS = [

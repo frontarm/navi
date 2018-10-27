@@ -13,7 +13,8 @@ export async function getSiteMapInfo({ siteMap, router }) {
     siteMap = await router.resolveSiteMap('/')
   }
 
-  // In production, we add this at build time. But in development
+  // In production, we add this at build time so that the entire page tree
+  // doesn't needed to be loaded to compute a list of tags. But in development
   // mode, we'll need to generate it at runtime.
   return fromPairs(
     toPairs(siteMap.pages)

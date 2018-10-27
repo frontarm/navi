@@ -1,9 +1,8 @@
 import * as Navi from 'navi'
-import * as React from 'react'
 import path from 'path'
 import { chunk, fromPairs, sortBy } from 'lodash'
 import slugify from 'slugify'
-import BlogIndex from './BlogIndex'
+import { createBlogIndexPage } from './createBlogIndexPage'
 
 const PAGE_SIZE = 1
 
@@ -30,6 +29,8 @@ let chunks = chunk(posts, PAGE_SIZE)
 let chunkPagePairs = chunks.map((chunk, i) => [
   '/' + (i + 1),
   async env => {
+    let getPageHref = (pageNumber) => path.join(env.context.blogPathname, 'page', String(pageNumber))
+
     let posts = await Promise.all(
       chunk.map(async post => {
         let href = path.join(env.context.blogPathname, post.slug)
@@ -43,15 +44,11 @@ let chunkPagePairs = chunks.map((chunk, i) => [
       }),
     )
 
-    return Navi.createPage({
-      title: 'Posts',
-      getContent: () =>
-        <BlogIndex
-          getPageHref={(pageNumber) => path.join(env.context.blogPathname, 'page', String(pageNumber))}
-          pageNumber={i+1}
-          pageCount={chunks.length}
-          posts={posts}
-        />,
+    return createBlogIndexPage({
+      getPageHref,
+      pageCount: chunks.length,
+      pageNumber: i+1,
+      pagePosts: posts,
     })
   },
 ])
