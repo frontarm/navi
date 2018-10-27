@@ -25,9 +25,9 @@ export const createTagIndexPage = (tags) =>
     title: 'Tags',
 
     getContent: async env => {
+      // Build a list of pages for each tag from the site map
       let siteMapInfo = await getSiteMapInfo({ router: env.router })
       let tagPages = fromPairs(tags.map(name => [name.toLowerCase(), []]))
-      
       Object.entries(siteMapInfo).forEach(([href, { title, meta }]) => {
         if (meta.tags) {
           meta.tags.forEach(tag => {

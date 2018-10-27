@@ -4,6 +4,7 @@ import { chunk, fromPairs, sortBy } from 'lodash'
 import slugify from 'slugify'
 import { createBlogIndexPage } from './createBlogIndexPage'
 
+// Set the number of posts that'll appear on each index page
 const PAGE_SIZE = 1
 
 // Get a list of all posts, that will not be loaded until the user
@@ -29,8 +30,11 @@ let chunks = chunk(posts, PAGE_SIZE)
 let chunkPagePairs = chunks.map((chunk, i) => [
   '/' + (i + 1),
   async env => {
+    // Pass in a function that can create hrefs for each index
+    // page, no matter where the blog is mounted.
     let getPageHref = (pageNumber) => path.join(env.context.blogPathname, 'page', String(pageNumber))
 
+    // Get metadata for our pages
     let posts = await Promise.all(
       chunk.map(async post => {
         let href = path.join(env.context.blogPathname, post.slug)
@@ -38,6 +42,8 @@ let chunkPagePairs = chunks.map((chunk, i) => [
         return {
           href,
           route: await env.router.resolve(href, {
+            // If you want to show the page content on the index page, set
+            // this to true to be able to access it.
             withContent: false,
           }),
         }

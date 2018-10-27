@@ -18,14 +18,15 @@ function Tag(props) {
   )
 }
 
-export const createTagPage = (tag) =>
-  Navi.createPage({
+export const createTagPage = (tag) => {
+  let lowerCaseTag = tag.toLowerCase()
+
+  return Navi.createPage({
     title: tag,
     getContent: async env => {
+      // Build a list of pages that include the tag from the site map
       let siteMapInfo = await getSiteMapInfo({ router: env.router })
       let pages = []
-      let lowerCaseTag = tag.toLowerCase()
-      
       Object.entries(siteMapInfo).forEach(([href, { title, meta }]) => {
         if ((meta.tags || []).find(metaTag => metaTag.toLowerCase() === lowerCaseTag)) {
           pages.push({ title, href, meta })
@@ -40,3 +41,4 @@ export const createTagPage = (tag) =>
       )
     }
   })
+}

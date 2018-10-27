@@ -9,7 +9,11 @@ export async function renderPageToString({ exports, pages, siteMap, url }) {
   let { route } = await navigation.getSteadyValue()
   
   return renderCreateReactAppPageToString({
+    // The element to render
     element: React.createElement(exports.App, { navigation }),
+
+    // create-react-app's <title> element will be replaced with whatever
+    // content you put here.
     replaceTitle: `
       <title>${route.title || 'Untitled'}</title>
       <meta name="description" content="${route.meta.description || ''}" />
