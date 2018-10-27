@@ -32,7 +32,7 @@ export interface Route {
 
   error?: any
 
-  // Placeholder properties for page/redirect route
+  // Placeholder properties for routes that don't contain them
   to?: any
   title?: any
   meta?: any

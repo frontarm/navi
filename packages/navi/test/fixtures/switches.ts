@@ -5,6 +5,8 @@ export const fixtureSwitch = createSwitch({
         return 'site-layout'
     },
 
+    title: 'Site',
+
     paths: {
         '/': () => createPage({
             title: 'Navi',

@@ -104,7 +104,7 @@ export interface SwitchSegment<Meta extends object = any, Content = any>
   extends GenericSegment {
   type: SegmentType.Switch
   meta: Meta
-  title?: never
+  title?: string
   switch: Switch<any, Meta, Content>
 
   status: Status

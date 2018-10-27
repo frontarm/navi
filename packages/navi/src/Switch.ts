@@ -42,6 +42,7 @@ export interface Switch<Context extends object = any, Meta extends object = any,
     Content
   >
 
+  title: Resolvable<string, Context>
   meta: Resolvable<Meta, Context>
   getContent: Resolvable<Content | undefined, Context>
   paths: SwitchPaths<Context>
@@ -106,6 +107,11 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
     let meta = metaResolution.value
     status = reduceStatuses(status, metaResolution.status)
     error = error || metaResolution.error
+
+    let titleResolution = this.resolver.resolve(this.env, this.constructor.title)
+    let title = titleResolution.value
+    status = reduceStatuses(status, titleResolution.status)
+    error = error || titleResolution.error
 
     let resolutionIds: number[] = [contentResolution.id, metaResolution.id]
     let childMatcher: NodeMatcher<any> | undefined
@@ -177,6 +183,7 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
         error,
         content,
         meta: meta || {},
+        title,
         switch: this.constructor,
         nextPattern: this.child && this.child.mapping.pattern,
         nextSegment,
@@ -190,6 +197,7 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
 export function createSwitch<Context extends object, Meta extends object, Content>(options: {
   paths: SwitchPaths<Context>
   meta?: Meta | Resolvable<Meta>
+  title?: string | Resolvable<string>
   getContent?: Resolvable<Content, Context>
 }): Switch<Context, Meta, Content> {
   if (!options) {
@@ -214,7 +222,7 @@ export function createSwitch<Context extends object, Meta extends object, Conten
     .sort((x, y) => compareStrings(x.key, y.key))
 
   if (process.env.NODE_ENV !== 'production') {
-    let { paths, meta, getContent, ...other } = options
+    let { paths, meta, getContent, title, ...other } = options
 
     let unknownKeys = Object.keys(other)
     if (unknownKeys.length) {
@@ -298,6 +306,7 @@ export function createSwitch<Context extends object, Meta extends object, Conten
   return class extends SwitchMatcher<Context, Meta, Content> {
     static paths = options.paths
     static meta = typeof options.meta === 'function' ? options.meta : (() => options.meta  as any)
+    static title = typeof options.title === 'function' ? options.title : (() => options.title as any)
     static mappings = mappings
     static patterns = mappings.map(mapping => mapping.pattern)
     static getContent = options.getContent || undefinedResolvable

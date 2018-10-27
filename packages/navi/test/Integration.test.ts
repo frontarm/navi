@@ -17,6 +17,7 @@ describe("integration", () => {
         let pageSegment = route.lastSegment as PageSegment
         
         expect(firstSegment.type).toBe(SegmentType.Switch)
+        expect(firstSegment.title).toBe('Site')
         expect(firstSegment.content).toBe('site-layout')
         expect(firstSegment.status).toBe(Status.Ready)
         expect(firstSegment.nextPattern).toBe('/examples')
