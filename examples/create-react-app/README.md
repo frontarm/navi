@@ -73,12 +73,12 @@ You can create separate directories for years/months like `2018/10/06-my-post/pa
 
 In fact, you can even omit the date entirely -- and your posts will be sorted alphabetically instead of by date.
 
-All the post loading/sorting logic takes less than 100 lines in <./src/pages/blog/index.js>. If you want to know more details on how it works, just take a look!
+All the post loading/sorting logic takes less than 100 lines in [src/pages/blog/index.js](src/pages/blog/index.js). If you want to know more details on how it works, just take a look!
 
 
 ### Change the page size of blog index pages
 
-Set the `PAGE_SIZE` constant in <./src/pages/blog/index.js>:
+Set the `PAGE_SIZE` constant in [src/pages/blog/index.js](src/pages/blog/index.js):
 
 ```js
 const PAGE_SIZE = 10
@@ -87,7 +87,7 @@ const PAGE_SIZE = 10
 
 ### Change the available tag pages
 
-Tag pages are generated from blog metadata, but you'll need to specify a list of available tags in <src/pages/tags/index.js>
+Tag pages are generated from blog metadata, but you'll need to specify a list of available tags in [src/pages/tags/index.js](src/pages/tags/index.js)
 
 ```js
 const TAGS = [
@@ -101,7 +101,7 @@ Tags are case insensitive, so you can use whatever capitalization you want the u
 
 ### Handle SEO by changing your document `<head>`
 
-The <./src/renderPageToString.js> file exports the function that is used to render each of your HTML files.
+The [src/renderPageToString.js](src/renderPageToString.js) file exports the function that is used to render each of your HTML files.
 
 For simple changes, like adding `<meta>` tags or adding `<script>` tags to the document head, you can edit the `replaceTitle`. For example, this is where you'd put the output of [react-helmet](https://github.com/nfl/react-helmet)'s `Helmet.renderStatic()` function.
 
@@ -111,4 +111,4 @@ For more complex changes, take a look at the contents of the `renderCreateReactA
 
 ### Add non-blog pages
 
-Just use Navi.createPage, Navi.createSwitch and Navi.createRedirect. For an example, check the pages switch at <./src/pages/index.js>, and the landing page at <./src/pages/landingPage.js>.
+Just use Navi.createPage, Navi.createSwitch and Navi.createRedirect. For an example, check the pages switch at [src/pages/index.js](src/pages/index.js), and the landing page at [src/pages/landingPage.js](src/pages/landingPage.js).
