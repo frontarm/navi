@@ -1,6 +1,6 @@
 .esm-cache
 node_modules
-site/build
-site-old
+website/build
+notes
 *.log
 NOTES.md

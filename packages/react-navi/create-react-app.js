@@ -25,9 +25,6 @@ function renderCreateReactAppPageToString({ replaceTitle, element }) {
   // Inject rendered content into HTML
   html = html.replace('<div id="root">', '<div id="root">'+content)
 
-  // Once all the dependencies have loaded, call `main`
-  html = html.replace('</body>')
-
   return html
 }
 
