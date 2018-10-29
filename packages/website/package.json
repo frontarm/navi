@@ -1,12 +1,12 @@
 {
   "name": "website",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "private": true,
   "dependencies": {
     "babel-loader": "^8.0.4",
     "classnames": "^2.2.6",
     "history": "^4.7.2",
-    "mdx-loader": "^2.0.0-3",
+    "mdx-loader": "^2.0.0-4",
     "node-sass": "^4.9.4",
     "prismjs": "^1.15.0",
     "react": "^16.6.0",
