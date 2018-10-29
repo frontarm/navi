@@ -18,7 +18,7 @@ export function AppLayout(props) {
       <div className={`App-nav ${props.isMenuOpen ? 'App-nav-open' : ''}`}>
         <Sidebar
           className='App-nav-sidebar'
-          siteMap={props.siteMap}
+          pageMap={props.pageMap}
           tableOfContents={props.tableOfContents}
         />
         <button

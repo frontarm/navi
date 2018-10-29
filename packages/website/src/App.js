@@ -21,7 +21,7 @@ export class App extends React.Component {
               <NotFound
                 isBusy={isLoading}
                 isMenuOpen={this.state.open}
-                siteMap={this.props.siteMap}
+                pageMap={this.props.pageMap}
                 onToggleMenu={this.handleToggleMenu}
               />
             }>
@@ -36,13 +36,10 @@ export class App extends React.Component {
                     <AppLayout
                       isBusy={isLoading}
                       isMenuOpen={this.state.open}
-                      siteMap={this.props.siteMap}
+                      pageMap={this.props.pageMap}
                       tableOfContents={tableOfContents}
                       onToggleMenu={this.handleToggleMenu}>
-                      {
-                        route.content &&
-                        <MDXWrapper document={route.content.Document} />
-                      }
+                      <MDXWrapper document={route.content.Document} />
                     </AppLayout>
                   )
                 }}
@@ -79,7 +76,7 @@ function NotFound(props) {
     <AppLayout
       isBusy={props.isLoading}
       isMenuOpen={props.isMenuOpen}
-      siteMap={props.siteMap}
+      pageMap={props.pageMap}
       onToggleMenu={props.onToggleMenu}>
       <div className='App-error'>
         <h1>404 - Not Found</h1>

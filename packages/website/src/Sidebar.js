@@ -16,7 +16,7 @@ export const Sidebar = (props) =>
 
     <nav>
       <NaviBar
-        siteMap={props.siteMap}
+        pageMap={props.pageMap}
         tableOfContents={props.tableOfContents}
         renderSwitch={props => <SidebarSection {...props} />}
         renderPage={props => <SidebarPage {...props} />}

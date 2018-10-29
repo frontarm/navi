@@ -36,7 +36,7 @@ Navi.app({
         renderer(
             <App
                 navigation={navigation}
-                siteMap={await navigation.router.resolveSiteMap('/')}
+                pageMap={await navigation.router.resolvePageMap('/')}
             />,
             document.getElementById('root')
         )

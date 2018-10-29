@@ -57,6 +57,7 @@ export default Navi.createSwitch({
 })
 
 async function getDocumentExports(modulePromise) {
-  let { default: Document, tableOfContents } = await modulePromise
+  let mod = await modulePromise
+  let { default: Document, tableOfContents } = mod
   return { Document, tableOfContents }
 }
