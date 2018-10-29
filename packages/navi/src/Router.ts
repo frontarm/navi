@@ -46,6 +46,7 @@ export class Router<Context extends object=any> {
     constructor(resolver: Resolver, options: RouterOptions<Context>) {
         if (process.env.NODE_ENV !== "production") {
             if (!options.pages || options.pages.type !== NaviNodeType.Switch) {
+                // TODO: support top-level context nodes
                 throw new Error(`Expected to receive a Switch object for the "pages" prop, but instead received "${options.pages}".`)
             }
         }

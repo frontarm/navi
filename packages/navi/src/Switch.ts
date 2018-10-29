@@ -46,7 +46,7 @@ export interface Switch<Context extends object = any, Meta extends object = any,
   meta: Resolvable<Meta, Context>
   getContent: Resolvable<Content | undefined, Context>
   paths: SwitchPaths<Context>
-  mappings: Mapping[]
+  orderedMappings: Mapping[]
   patterns: string[]
 }
 
@@ -72,7 +72,7 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
     // Start from the beginning and take the first result, as child mounts
     // are sorted such that the first matching mount is the the most
     // precise match (and we always want to use the most precise match).
-    let mappings = this.constructor.mappings
+    let mappings = this.constructor.orderedMappings
     for (let i = mappings.length - 1; i >= 0; i--) {
       let mapping = mappings[i]
       let childEnv = matchMappingAgainstPathname(this.env, mapping, this.appendFinalSlash)
@@ -214,10 +214,12 @@ export function createSwitch<Context extends object, Meta extends object, Conten
     options.paths = {} as any
   }
 
+  let patterns = Object.keys(options.paths)
+
   // Wildcards in PatternMap objects are null (\0) characters, so they'll
   // always be sorted to the top. As such, by sorting the patterns, the
   // most specific (i.e. without wildcard) will always be at the bottom.
-  let mappings = Object.keys(options.paths)
+  let mappings = patterns
     .map(pattern => createMapping(pattern, options.paths[pattern]))
     .sort((x, y) => compareStrings(x.key, y.key))
 
@@ -307,8 +309,8 @@ export function createSwitch<Context extends object, Meta extends object, Conten
     static paths = options.paths
     static meta = typeof options.meta === 'function' ? options.meta : (() => options.meta  as any)
     static title = typeof options.title === 'function' ? options.title : (() => options.title as any)
-    static mappings = mappings
-    static patterns = mappings.map(mapping => mapping.pattern)
+    static orderedMappings = mappings
+    static patterns = patterns
     static getContent = options.getContent || undefinedResolvable
   }
 }

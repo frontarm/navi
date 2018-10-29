@@ -15,22 +15,24 @@ import {
 } from './Segments'
 import { RouterMapOptions, Router } from './Router'
 import { RouteMap, isRouteMapSteady } from './Maps'
-import { createRoute } from './Route'
+import { createRoute, Route } from './Route'
 import { Env } from './Env'
 import { Mapping, matchMappingAgainstPathname } from './Mapping'
 import { HTTPMethod } from './HTTPMethod'
 
-interface QueueItem {
+interface MapItem {
   url: URLDescriptor
+  pathname: string
   fromPathname?: string
   depth: number
+  order: string
   matcher: Switch['prototype']
   segmentCache?: SwitchSegment | PlaceholderSegment
   lastSegmentCache?: Segment
 }
 
 export class RouteMapObservable implements Observable<RouteMap> {
-  private cachedSiteMap: RouteMap
+  private cachedRouteMap: RouteMap
   private rootContext: any
   private pages: Switch
   private rootMapping: Mapping
@@ -38,9 +40,9 @@ export class RouteMapObservable implements Observable<RouteMap> {
   private resolver: Resolver
   private router: Router
   private options: RouterMapOptions
-
-  private queuePathnames: string[]
-  private queueItems: QueueItem[]
+  
+  private seenPathnames: Set<string>
+  private mapItems: MapItem[]
 
   constructor(
     url: URLDescriptor,
@@ -52,14 +54,14 @@ export class RouteMapObservable implements Observable<RouteMap> {
     options: RouterMapOptions,
   ) {
     this.observers = []
-    this.queuePathnames = []
-    this.queueItems = []
+    this.mapItems = []
     this.resolver = resolver
     this.router = router
     this.rootContext = rootContext
     this.pages = pages
     this.rootMapping = rootMapping
     this.options = options
+    this.seenPathnames = new Set()
 
     let pathname = url.pathname
 
@@ -106,10 +108,10 @@ export class RouteMapObservable implements Observable<RouteMap> {
   private handleChange = () => {
     this.refresh()
 
-    let isSteady = isRouteMapSteady(this.cachedSiteMap)
+    let isSteady = isRouteMapSteady(this.cachedRouteMap)
     for (let i = 0; i < this.observers.length; i++) {
       let observer = this.observers[i]
-      observer.next(this.cachedSiteMap)
+      observer.next(this.cachedRouteMap)
       if (isSteady && observer.complete) {
         observer.complete()
       }
@@ -118,7 +120,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
       this.resolver.unlisten(this.handleChange)
 
       delete this.rootContext
-      delete this.queueItems
+      delete this.mapItems
       delete this.router
       delete this.observers
       delete this.resolver
@@ -128,9 +130,9 @@ export class RouteMapObservable implements Observable<RouteMap> {
   private refresh = () => {
     let allResolvableIds: number[] = []
     let i = 0
-    while (i < this.queuePathnames.length) {
-      let pathname = this.queuePathnames[i]
-      let item = this.queueItems[i]
+    while (i < this.mapItems.length) {
+      let item = this.mapItems[i]
+      let pathname = item.pathname
       let { segment, resolutionIds } = item.matcher.getResult()
       let lastSegment = segment.lastRemainingSegment || segment
       let cachedLastSegment = item.lastSegmentCache
@@ -148,7 +150,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
         lastSegment.status === Status.Error ||
         (this.options.predicate && !this.options.predicate(lastSegment))
       ) {
-        this.removeFromQueue(pathname)
+        this.removeFromQueue(item)
         continue
       }
 
@@ -165,7 +167,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
           !cachedLastSegment.to ||
           cachedLastSegment.to !== lastSegment.to)
       ) {
-        this.addToQueue(lastSegment.to, item.depth + 1, pathname)
+        this.addToQueue(lastSegment.to, item.depth + 1, pathname, item.order)
       }
 
       if (
@@ -175,12 +177,13 @@ export class RouteMapObservable implements Observable<RouteMap> {
           cachedLastSegment.type !== SegmentType.Switch ||
           cachedLastSegment.status === Status.Busy)
       ) {
-        let mappings = lastSegment.switch.mappings
-        for (let j = 0; j < mappings.length; j++) {
+        let patterns = lastSegment.switch.patterns
+        for (let j = 0; j < patterns.length; j++) {
           this.addToQueue(
-            joinPaths(pathname, mappings[j].pattern),
+            joinPaths(pathname, patterns[j]),
             item.depth + 1,
             pathname,
+            item.order + '.' + j
           )
         }
       }
@@ -194,33 +197,50 @@ export class RouteMapObservable implements Observable<RouteMap> {
     // This will replace any existing listener and its associated resolvables
     this.resolver.listen(this.handleChange, allResolvableIds)
 
-    this.cachedSiteMap = {}
-    for (let i = 0; i < this.queuePathnames.length; i++) {
-      let url = this.queuePathnames[i]
-      let item = this.queueItems[i]
+    let routeMap = [] as [string, Route, string][]
+    for (let i = 0; i < this.mapItems.length; i++) {
+      let item = this.mapItems[i]
       let lastSegment = item.lastSegmentCache!
       if (lastSegment.type !== SegmentType.Switch && lastSegment.status !== Status.Error) {
-        this.cachedSiteMap[joinPaths(url, '/')] = createRoute(
-          createURLDescriptor(url, { ensureTrailingSlash: false }),
-          item.segmentCache!,
-        )
+        routeMap.push([
+          joinPaths(item.pathname, '/'),
+          createRoute(
+            createURLDescriptor(item.pathname, { ensureTrailingSlash: false }),
+            item.segmentCache!,
+          ),
+          item.order
+        ])
       }
     }
-  }
 
-  private removeFromQueue(url) {
-    let i = this.queuePathnames.indexOf(url)
-    if (i !== -1) {
-      this.queuePathnames.splice(i, 1)
-      this.queueItems.splice(i, 1)
+    routeMap.sort((x, y) =>
+      x[2] < y[2] ? -1 :
+      x[2] > y[2] ? 1 :
+      0
+    )
+
+    this.cachedRouteMap = {}
+    for (let i = 0; i < routeMap.length; i++) {
+      let [pathname, route] = routeMap[i]
+      this.cachedRouteMap[pathname] = route
     }
   }
 
-  private addToQueue(pathname: string, depth: number, fromPathname?: string) {
-    if (
-      this.queuePathnames.indexOf(pathname) === -1 &&
-      (!this.options.maxDepth || depth <= this.options.maxDepth)
-    ) {
+  private removeFromQueue(item) {
+    let i = this.mapItems.indexOf(item)
+    if (i !== -1) {
+      this.mapItems.splice(i, 1)
+    }
+  }
+
+  private addToQueue(pathname: string, depth: number, fromPathname?: string, order = '0') {
+    if (this.seenPathnames.has(pathname)) {
+      return
+    }
+
+    if (!this.options.maxDepth || depth <= this.options.maxDepth) {
+      this.seenPathnames.add(pathname)
+
       let url = createURLDescriptor(pathname, { ensureTrailingSlash: false })
       let rootEnv: Env = {
         context: this.rootContext,
@@ -237,11 +257,12 @@ export class RouteMapObservable implements Observable<RouteMap> {
         false,
       )
       if (matchEnv) {
-        this.queuePathnames.push(pathname)
-        this.queueItems.push({
+        this.mapItems.push({
           url,
           fromPathname,
           depth,
+          pathname,
+          order,
           matcher: new this.pages({
             appendFinalSlash: false,
             env: matchEnv,

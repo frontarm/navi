@@ -72,7 +72,7 @@ describe("integration", () => {
 
         let { route } = await nav.getSteadyValue()
         
-        expect(Object.keys(route.lastSegment.content)).toEqual(['/examples/advanced/', '/examples/basic/'])
+        expect(Object.keys(route.lastSegment.content)).toEqual(['/examples/basic/', '/examples/advanced/'])
         expect(route.type).toBe(SegmentType.Page)
         expect(route.title).toBe('Navi')
     })
