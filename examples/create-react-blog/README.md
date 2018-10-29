@@ -35,6 +35,12 @@ yarn build
 yarn serve
 ```
 
+Once you're ready to publish, the `publish` script will push your site online using [surge.sh](https://surge.sh/):
+
+```bash
+yarn publish
+```
+
 
 How to...
 ---------
