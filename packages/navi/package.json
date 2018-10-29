@@ -1,6 +1,6 @@
 {
   "name": "navi",
-  "version": "0.7.1",
+  "version": "0.7.3",
   "description": "A router-loader for React.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
