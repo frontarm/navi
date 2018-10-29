@@ -19,7 +19,7 @@ export interface NaviBarProps<PageMeta = any, SwitchMeta = any> {
   // TODO: once React Suspense works for server side rendering,
   // it'll be possible to pass in a URL and use the router to
   // generate the PageMap automatically.
-  siteMap?: Navi.SiteMap
+  pageMap?: Navi.PageMap
 
   /**
    * A table of contents to display for the current document.
@@ -75,6 +75,10 @@ export interface RenderPageOptions<Meta = any> {
 
 export interface RenderHeadingOptions {
   active: boolean
+
+  // TODO
+  descendantActive: boolean
+
   children: React.ReactNode
   id: string
   level: number
@@ -114,11 +118,11 @@ export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
   activePageRef = React.createRef<HTMLAnchorElement>()
 
   render() {
-    if (!this.props.siteMap) {
+    if (!this.props.pageMap) {
       return this.renderTableOfContents()
     }
 
-    let items = getItems(this.props.siteMap.pages, this.props.comparator)
+    let items = getItems(this.props.pageMap, this.props.comparator)
     if (items.length === 0) {
       return null
     }
@@ -135,6 +139,7 @@ export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
     let childElements = heading.children && heading.children.map(this.renderHeading)
     let headingContent = this.props.renderHeading!({
       active: this.props.activeId === heading.id,
+      descendantActive: false, // TODO
       children: childElements.length ? childElements : null,
       id: heading.id,
       level: heading.level,

@@ -31,14 +31,14 @@ export function getItems(
   let pages = Object.entries(pageMap)
 
   // Find the deepest switch that every page has in common
-  let switchCounts = new Map<Navi.Switch, number>()
-  let switchPositions = [] as Navi.Switch[]
+  let switchCounts = new Map<string, number>()
+  let switchPositions = [] as string[]
   let deepestSwitchIndex = 0
   for (let i = 0; i < pages.length; i++) {
     let pageRoute = pages[i][1]
     let segments = pageRoute.segments.slice(0, -1) as Navi.SwitchSegment[]
     for (let j = 0; j < segments.length; j++) {
-      let naviSwitch = segments[j].switch
+      let naviSwitch = segments[j].url.pathname
       let nextCount = (switchCounts.get(naviSwitch) || 0) + 1
       if (j > deepestSwitchIndex) {
         deepestSwitchIndex = j
@@ -55,7 +55,7 @@ export function getItems(
   let rootSwitchIndex = switchPositions.length - 1
   let rootSwitch = switchPositions[rootSwitchIndex]
   let rootItems: Item[] = []
-  let switchItems = new Map<Navi.Switch, Item[]>([[rootSwitch, rootItems]])
+  let switchItems = new Map<string, Item[]>([[rootSwitch, rootItems]])
 
   // Create a tree by iterating over each segment below the root segment
   // for each route.
@@ -66,7 +66,7 @@ export function getItems(
     for (let j = 0; j < segments.length; j++) {
       let segment = segments[j]
       if (segment.type === Navi.SegmentType.Switch) {
-        let segmentSwitch = segment.switch
+        let segmentSwitch = segment.url.pathname
         if (!switchItems.has(segmentSwitch)) {
           let item: SwitchItem = {
             level: j + 1,
