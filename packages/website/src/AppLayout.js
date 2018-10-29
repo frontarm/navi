@@ -16,7 +16,11 @@ export function AppLayout(props) {
       <AppBusyIndicator show={props.isBusy} />
 
       <div className={`App-nav ${props.isMenuOpen ? 'App-nav-open' : ''}`}>
-        <Sidebar className='App-nav-sidebar' />
+        <Sidebar
+          className='App-nav-sidebar'
+          siteMap={props.siteMap}
+          tableOfContents={props.tableOfContents}
+        />
         <button
           className='App-nav-hamburger'
           onClick={props.onToggleMenu}>
@@ -30,4 +34,3 @@ export function AppLayout(props) {
     </div>
   )
 }
-

@@ -27,7 +27,7 @@ function createHeadingFactory(type) {
 
 export class MDXWrapper extends React.Component {
   components = {
-    a: (props) => React.createElement(Nav.Link, props),
+    a: Nav.Link,
 
     h1: createHeadingFactory('h1'),
     h2: createHeadingFactory('h2'),
@@ -42,13 +42,7 @@ export class MDXWrapper extends React.Component {
 
   render() {
     let { document } = this.props
-
-    console.log(document.tableOfContents())
-    console.log(document.frontMatter)
-
-    if (document.default) {
-        document = document.default
-    }
+    // let tableOfContents = document.tableOfContents()
 
     return (
         <div className='MDXWrapper'>

@@ -5,7 +5,6 @@ import pages from './pages'
 import { App } from './App'
 import './index.css'
 
-
 Navi.app({
     // Specify the pages that navi-app should statically build, by passing
     // in a Switch object
@@ -18,7 +17,9 @@ Navi.app({
     },
 
     async main() {
-        let navigation = Navi.createBrowserNavigation({ pages })
+        let navigation = Navi.createBrowserNavigation({
+            pages,
+        })
 
         // Wait until the navigation has loaded the page's content,
         // or failed to do so. If you want to load other data in parallel
@@ -33,7 +34,10 @@ Navi.app({
 
         // Start react.
         renderer(
-            <App navigation={navigation} />,
+            <App
+                navigation={navigation}
+                siteMap={await navigation.router.resolveSiteMap('/')}
+            />,
             document.getElementById('root')
         )
     }

@@ -4,3 +4,4 @@ website/build
 notes
 *.log
 NOTES.md
+dist

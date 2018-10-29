@@ -1,6 +1,7 @@
 import React from 'react'
 import * as Nav from 'react-navi'
 import { AppLayout } from './AppLayout'
+import { MDXWrapper } from './MDXWrapper';
 
 
 export class App extends React.Component {
@@ -16,14 +17,37 @@ export class App extends React.Component {
       <Nav.Provider navigation={this.props.navigation}>
         <Nav.Loading>
           {isLoading =>
-            <AppLayout
-              isBusy={isLoading}
-              isMenuOpen={this.state.open}
-              onToggleMenu={this.handleToggleMenu}>
-              <Nav.NotFoundBoundary render={renderNotFound}>
-                <Nav.Content />
-              </Nav.NotFoundBoundary>
-            </AppLayout>
+            <Nav.NotFoundBoundary render={() =>
+              <NotFound
+                isBusy={isLoading}
+                isMenuOpen={this.state.open}
+                siteMap={this.props.siteMap}
+                onToggleMenu={this.handleToggleMenu}
+              />
+            }>
+              <Nav.Route>
+                {({ route }) => {
+                  let tableOfContents =
+                    route.content &&
+                    route.content.tableOfContents &&
+                    route.content.tableOfContents()
+
+                  return (
+                    <AppLayout
+                      isBusy={isLoading}
+                      isMenuOpen={this.state.open}
+                      siteMap={this.props.siteMap}
+                      tableOfContents={tableOfContents}
+                      onToggleMenu={this.handleToggleMenu}>
+                      {
+                        route.content &&
+                        <MDXWrapper document={route.content.Document} />
+                      }
+                    </AppLayout>
+                  )
+                }}
+              </Nav.Route>
+            </Nav.NotFoundBoundary>
           }
         </Nav.Loading>
       </Nav.Provider>
@@ -50,10 +74,16 @@ export class App extends React.Component {
 }
 
 
-function renderNotFound() {
+function NotFound(props) {
   return (
-    <div className='App-error'>
-      <h1>404 - Not Found</h1>
-    </div>
+    <AppLayout
+      isBusy={props.isLoading}
+      isMenuOpen={props.isMenuOpen}
+      siteMap={props.siteMap}
+      onToggleMenu={props.onToggleMenu}>
+      <div className='App-error'>
+        <h1>404 - Not Found</h1>
+      </div>
+    </AppLayout>
   )
 } 
