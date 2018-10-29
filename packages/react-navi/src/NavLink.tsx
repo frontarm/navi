@@ -15,6 +15,7 @@ export interface NavLinkProps {
   href: string | Partial<URLDescriptor>,
   id?: string,
   lang?: string,
+  ref?: React.Ref<HTMLAnchorElement>,
   rel?: string,
   style?: object,
   tabIndex?: number,
@@ -45,11 +46,12 @@ export interface NavLinkRendererProps {
 } 
 
 
-const LinkContext = React.createContext<LinkContext>(undefined as any)
+export const LinkContext = React.createContext<LinkContext>(undefined as any)
 
-interface LinkContext {
+export interface LinkContext {
   url: URLDescriptor | undefined;
   handleClick: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+  anchorRef: React.Ref<HTMLAnchorElement>
 
   id?: string;
   lang?: string;
@@ -61,7 +63,7 @@ interface LinkContext {
 }
 
 
-class NavLinkAnchor extends React.Component<React.AnchorHTMLAttributes<HTMLAnchorElement>> {
+export class NavLinkAnchor extends React.Component<React.AnchorHTMLAttributes<HTMLAnchorElement>> {
   render() {
     return <LinkContext.Consumer children={this.renderChildren} />
   }
@@ -82,6 +84,7 @@ class NavLinkAnchor extends React.Component<React.AnchorHTMLAttributes<HTMLAncho
       <a
         id={context.id}
         lang={context.lang}
+        ref={context.anchorRef}
         rel={context.rel}
         tabIndex={context.tabIndex}
         target={context.target}
@@ -102,18 +105,12 @@ export namespace NavLink {
   export type RendererProps = NavLinkRendererProps
 }
 
-export interface NavLink extends React.SFC<NavLinkProps> {
-  Anchor: React.ComponentClass<React.AnchorHTMLAttributes<HTMLAnchorElement>>
-}
-
-export const NavLink: NavLink = Object.assign(
-  function Link(props: NavLinkProps) {
-    return (
-      <NavContext.Consumer>
-        {context => <InnerLink context={context} {...props} />}
-      </NavContext.Consumer>
-    )
-  },
+export const NavLink = Object.assign(
+  React.forwardRef((props: NavLinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => (
+    <NavContext.Consumer>
+      {context => <InnerLink {...props as any} context={context} anchorRef={anchorRef} />}
+    </NavContext.Consumer>
+  )),
   { Anchor: NavLinkAnchor }
 )
 
@@ -143,6 +140,7 @@ NavLink.defaultProps = {
 
 interface InnerLinkProps extends NavLinkProps {
   context: NavContext
+  anchorRef: React.Ref<HTMLAnchorElement>
 }
 
 class InnerLink extends React.Component<InnerLinkProps> {
@@ -182,7 +180,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
     let props = this.props
     let linkURL = this.getURL()
     let navigationURL = this.props.context.url
-    let active = !!(
+    let active = props.active !== undefined ? props.active : !!(
       linkURL &&
       (props.exact
         ? linkURL.pathname === navigationURL.pathname
@@ -199,7 +197,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
     }
 
     return (
-      <LinkContext.Provider value={context}>
+      <LinkContext.Provider value={context} >
         {props.render!({
           active,
           activeClassName: props.activeClassName,

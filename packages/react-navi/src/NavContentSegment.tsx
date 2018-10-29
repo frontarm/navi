@@ -3,7 +3,7 @@ import { Segment, isSegmentSteady, Status, SegmentType } from 'navi'
 import { NavSegment, NavSegmentOutput } from './NavSegment'
 
 
-export interface NavContentProps {
+export interface NavContentSegmentProps {
   /**
    * A render function that will be used to render the selected segment.
    */
@@ -20,12 +20,12 @@ function isContentOrFinalSegment(segment: Segment) {
   return segment.content || segment.status === Status.Busy || segment.type !== SegmentType.Switch
 }
 
-export namespace NavContent {
-  export type Props = NavContentProps
+export namespace NavContentSegment {
+  export type Props = NavContentSegmentProps
   export type Output = NavSegmentOutput
 }
 
-export class NavContent extends React.Component<NavContentProps> {
+export class NavContentSegment extends React.Component<NavContentSegmentProps> {
   static defaultProps = {
     isReady: (Segment: Segment) => isSegmentSteady(Segment),
   }
@@ -45,7 +45,7 @@ export class NavContent extends React.Component<NavContentProps> {
     if (this.props.children) {
       render = this.props.children as (props: NavSegmentOutput) => React.ReactNode
       if (typeof render !== "function") {
-        throw new Error(`<NavRoute> expects its children to be a function, but instead received "${render}".`)
+        throw new Error(`<NavContentSegment> expects its children to be a function, but instead received "${render}".`)
       }
     }
     else if (output.segment && output.segment.content) {
@@ -58,7 +58,7 @@ export class NavContent extends React.Component<NavContentProps> {
       }
     }
     if (!render) {
-      throw new Error("<NavRoute> was not able to find a `children` prop, or a `render` function in the consumed segment's `content`.")
+      throw new Error("<NavContentSegment> was not able to find a `children` prop, or a `render` function in the consumed segment's `content`.")
     }
 
     return render(output)
