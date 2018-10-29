@@ -15,7 +15,7 @@ export class App extends React.Component {
               </nav>
               <main>
                 <Nav.NotFoundBoundary render={renderNotFound}>
-                  <Nav.Content />
+                  <Nav.Route />
                 </Nav.NotFoundBoundary>
               </main>
             </>

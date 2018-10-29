@@ -6560,10 +6560,10 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha1-Sr6/7tdUHywnrPspvbvRXI1bpPc=
 
-navi-scripts@^0.7.2:
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/navi-scripts/-/navi-scripts-0.7.2.tgz#0cf96efecd32182851d911e04b76f1dba3a52836"
-  integrity sha512-hxgJhHQUHpAXBo1i4Pvbo4OicqTwiOcyN+RURZW/RV6VqFGyeTyM1RaetfB/q6cfFvU8WkGphcC5rDdy8AVGPQ==
+navi-scripts@^0.7.3:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/navi-scripts/-/navi-scripts-0.7.3.tgz#8dadc9fedb781d4d3e06e66d60afcd4a73049321"
+  integrity sha512-RFnjdoj2k1ueLZycD5Sz6ZJTU3+g7k0UvMUpc4ZRbyrYRPY+GuSZYZV8IFPavmOsUMq8I+symYX0RW6f6NXo0A==
   dependencies:
     "@babel/core" "^7.1.2"
     "@babel/preset-env" "^7.1.0"
@@ -6578,10 +6578,10 @@ navi-scripts@^0.7.2:
     raf "^3.4.0"
     serve-static "^1.11.2"
 
-navi@^0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/navi/-/navi-0.7.1.tgz#f6fd12a6474241a1c96e8018468e3447edabec6b"
-  integrity sha512-U9AhjBwpEtq8jtxQK1u0nVkETj78MXKhvsIOISKCihRiPv5SQsbmv8162vzc1LsWayPUqduuPzPB95EZJk7B4A==
+navi@^0.7.3:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/navi/-/navi-0.7.3.tgz#42a9da18a0fe0c8b39f92efc467ed90261117b06"
+  integrity sha512-+vV22UgYSp/L7stJUWSF7KXfExrC+m5jxMlqjba33Hw9h048XxG3XFHqbAIJ0ty+WJhMAurCFrV7oz5YGJLQow==
   dependencies:
     "@types/history" "^4.6.2"
     history "^4.7.2"
@@ -8252,10 +8252,10 @@ react-error-overlay@^5.0.5:
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-5.0.5.tgz#716ff1a92fda76bb89a39adf9ce046a5d740e71a"
   integrity sha512-ab0HWBgxdIsngHtMGU8+8gYFdTBXpUGd4AE4lN2VZvOIlBmWx9dtaWEViihuGSIGosCKPeHCnzFoRWB42UtnLg==
 
-react-navi@^0.7.2:
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/react-navi/-/react-navi-0.7.2.tgz#028b5365cb6bab7344e64cdc786ab2211127f5c2"
-  integrity sha512-BdLviVlODRywNSr1UXI+ElybqPLzOb8ld1KjfSI39wHinq483ruJZ2DEO2ECfbNAso2hejurZb87Sm4Euxh8Tw==
+react-navi@^0.7.3:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/react-navi/-/react-navi-0.7.3.tgz#0a76f156adcece263db17fa98fa78f0bf85017da"
+  integrity sha512-jhUReQEr9npZIjw76sz2xmJKu3l3uitW0kl/ZS/Rh5W3B+uFG8U3JPajm6J9vK4zaEDU0BfBT1vEq+f1vA+ucQ==
   dependencies:
     "@types/history" "^4.6.2"
     "@types/react" "^16.4.6"
