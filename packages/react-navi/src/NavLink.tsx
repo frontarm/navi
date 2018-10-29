@@ -105,7 +105,13 @@ export namespace NavLink {
   export type RendererProps = NavLinkRendererProps
 }
 
-export const NavLink = Object.assign(
+// Need to include this type definition, as the automatically generated one
+// is incompatible with some versions of the react typings.
+export const NavLink: (React.ComponentClass<NavLinkProps & React.ClassAttributes<HTMLAnchorElement>> & {
+  Anchor: typeof NavLinkAnchor;
+}) | (React.StatelessComponent<NavLinkProps & React.ClassAttributes<HTMLAnchorElement>> & {
+  Anchor: typeof NavLinkAnchor;
+}) = Object.assign(
   React.forwardRef((props: NavLinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => (
     <NavContext.Consumer>
       {context => <InnerLink {...props as any} context={context} anchorRef={anchorRef} />}
