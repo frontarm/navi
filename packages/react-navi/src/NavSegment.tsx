@@ -2,7 +2,7 @@ import { History } from 'history'
 import * as React from 'react'
 import { Route, NaviError, Status, Segment, Router, isSegmentSteady } from 'navi'
 import { NavContext } from './NavContext'
-import { NavLoadingContext } from './NavLoading'
+import { NavLoadingContext, NavLoading } from './NavLoading'
 
 
 export interface NavSegmentProps {
@@ -208,29 +208,21 @@ class InnerConsumeSegment extends React.Component<InnerConsumeSegmentProps, Inne
     }
 
     return (
-      <NavSegmentSilencer silenced={this.props.navLoadingContext.isLoading || !this.state.isReady}>
+      /*
+        As this segment handles any Loading element up the tree, we need
+        to hide it from any child segments. 
+      */
+      <NavLoadingContext.Provider value={{ isLoading: false, setLoading: noop }}>
         <NavContext.Provider value={this.state.lastReady ? this.state.lastReady.childContext : this.props.context}>
           {render(output)}
         </NavContext.Provider>
-      </NavSegmentSilencer>
+      </NavLoadingContext.Provider>
     )
   }
 }
 
 
-/**
- * Only renders when told to. Allows the parent component to make
- * changes in componentDidUpdate, without actually rendering them.
- */
-class NavSegmentSilencer extends React.Component<{ silenced: boolean, children: React.ReactNode }> {
-  shouldComponentUpdate(nextProps) {
-    return !nextProps.silenced
-  }
-
-  render() {
-    return this.props.children
-  }
-}
+function noop() {}
 
 
 export class MissingSegment extends NaviError {

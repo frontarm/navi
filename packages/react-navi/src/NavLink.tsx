@@ -7,7 +7,7 @@ export interface NavLinkProps {
   active?: boolean,
   activeClassName?: string,
   activeStyle?: object,
-  children: any,
+  children?: any,
   className?: string,
   disabled?: boolean,
   exact?: boolean,
