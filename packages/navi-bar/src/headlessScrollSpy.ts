@@ -92,35 +92,6 @@ export function createScrollSpy(options: ScrollSpyOptions) {
   };
   
 	/**
-	 * On window scroll and resize, debounce events for performance, and to
-   * prevent smoothscroll from updating as it passes every heading.
-	 * @private
-	 * @param  {Function} eventTimeout Timeout function
-	 * @param  {Object} settings
-	 */
-	const eventDebouncer: EventListener = function eventThrottler(event) {
-    if ( eventTimeout ) {
-      clearTimeout(eventTimeout)
-    }
-
-    eventTimeout = setTimeout(function() {
-
-      eventTimeout = null; // Reset timeout
-
-      // If scroll event, get currently active nav
-      if ( event.type === 'scroll' ) {
-        refresh();
-      }
-
-      // If resize event, recalculate distances and then get currently active nav
-      if ( event.type === 'resize' ) {
-        refresh();
-      }
-
-    }, 66);
-  };
-  
-	/**
 	 * Determine which navigation element is currently active and run activation method
 	 * @public
 	 * @returns {Object} The current nav data.
@@ -129,9 +100,10 @@ export function createScrollSpy(options: ScrollSpyOptions) {
 
     // Calculate distances
 		docHeight = getDocumentHeight(); // The document
-		items.forEach(nav => {
-			nav.distance = getOffsetTop(nav.heading); // Each navigation target
-		});
+    for (let i = 0; i < items.length; i++) {
+      let item = items[i]
+			item.distance = getOffsetTop(item.heading); // Each navigation target
+    }
 
 		// When done, organization navigation elements
 		sortNavs();
@@ -158,12 +130,19 @@ export function createScrollSpy(options: ScrollSpyOptions) {
 		changeActive()
 
   }
-  
+
   function changeActive(item?: Item) {
-    if (callback && activeItem !== item) {
-      activeItem = item
-      callback(item)
+    // Debounce the actual changes, as we don't need to re-render on each 
+    // and every change.
+    if (eventTimeout) {
+      clearTimeout(eventTimeout)
     }
+    eventTimeout = setTimeout(() => {
+      if (callback && activeItem !== item) {
+        activeItem = item
+        callback(item)
+      }
+    }, 40)
   }
 
   /**
@@ -172,8 +151,8 @@ export function createScrollSpy(options: ScrollSpyOptions) {
 	 */
 	function dispose() {
     // Remove event listeners
-		container.removeEventListener('resize', eventDebouncer, false);
-		container.removeEventListener('scroll', eventDebouncer, false);
+		container.removeEventListener('resize', refresh, false);
+		container.removeEventListener('scroll', refresh, false);
 
     // Clear out variables
     callback = null;
@@ -215,8 +194,8 @@ export function createScrollSpy(options: ScrollSpyOptions) {
   refresh();
 
   // Listen for events
-  container.addEventListener('resize', eventDebouncer, false);
-  container.addEventListener('scroll', eventDebouncer, false);
+  container.addEventListener('resize', refresh, false);
+  container.addEventListener('scroll', refresh, false);
 
   return {
     dispose,

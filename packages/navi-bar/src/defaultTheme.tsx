@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Anchor } from './Anchor'
 
 export const defaultTheme = {
+  render: ({ children }) => children,
   renderSwitch: ({ active, children, title }) => (
     <div
       className={`NaviBar-switch ${active ? 'NaviBar-switch-active' : ''}`}>

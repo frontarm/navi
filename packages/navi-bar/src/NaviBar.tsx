@@ -5,21 +5,12 @@ import { URLDescriptor } from 'navi'
 import { defaultTheme } from './defaultTheme'
 import { Item, ItemType, getItems } from './items'
 import { Anchor } from './Anchor'
+import { CloseOverlay, CloseOverlayContext } from './CloseOverlay'
 import { ScrollSpy } from './ScrollSpy'
+import { TableOfContents, TableOfContentsItem } from './TableOfContents'
 
-export type TableOfContents = TableOfContentsItem[]
-
-export interface TableOfContentsItem {
-  id
-  level: number
-  title: React.ReactNode
-  children: TableOfContents
-}
 
 export interface NaviBarProps<PageMeta = any, SwitchMeta = any> {
-  // TODO: once React Suspense works for server side rendering,
-  // it'll be possible to pass in a URL and use the router to
-  // generate the PageMap automatically.
   pageMap?: Navi.PageMap
 
   /**
@@ -44,18 +35,27 @@ export interface NaviBarProps<PageMeta = any, SwitchMeta = any> {
    */
   comparator?: (x: Item, y: Item) => -1 | 0 | 1
 
+  render?: (
+    options: NaviBarRendererProps
+  ) => React.ReactElement<any> | null
   renderSwitch?: (
-    options: RenderSwitchOptions<SwitchMeta>,
+    options: NaviBarSwitchRendererProps<SwitchMeta>,
   ) => React.ReactElement<any> | null
   renderPage?: (
-    options: RenderPageOptions<PageMeta>,
+    options: NaviBarPageRendererProps<PageMeta>,
   ) => React.ReactElement<any> | null
   renderHeading?: (
-    options: RenderHeadingOptions,
+    options: NaviBarHeadingRendererProps,
   ) => React.ReactElement<any> | null
 }
 
-export interface RenderSwitchOptions<Meta = any> {
+export interface NaviBarRendererProps {
+  children: React.ReactNode
+  open: boolean
+  toggleOpen: () => void,
+}
+
+export interface NaviBarSwitchRendererProps<Meta = any> {
   active: boolean
   children: React.ReactNode
   href: string
@@ -65,7 +65,7 @@ export interface RenderSwitchOptions<Meta = any> {
   title?: string
 }
 
-export interface RenderPageOptions<Meta = any> {
+export interface NaviBarPageRendererProps<Meta = any> {
   active: boolean
   children: React.ReactNode
   href: string
@@ -74,12 +74,9 @@ export interface RenderPageOptions<Meta = any> {
   title: string
 }
 
-export interface RenderHeadingOptions {
+export interface NaviBarHeadingRendererProps {
   active: boolean
-
-  // TODO
   descendantActive: boolean
-
   children: React.ReactNode
   id: string
   level: number
@@ -89,6 +86,11 @@ export interface RenderHeadingOptions {
 
 export namespace NaviBar {
   export type Props = NaviBarProps
+
+  export type RendererProps = NaviBarRendererProps
+  export type PageRendererProps = NaviBarPageRendererProps
+  export type SwitchRendererProps = NaviBarSwitchRendererProps
+  export type HeadingRendererProps = NaviBarHeadingRendererProps
 }
 
 export const NaviBar = Object.assign(
@@ -111,6 +113,7 @@ export const NaviBar = Object.assign(
   },
   {
     Anchor: Anchor,
+    CloseOverlay: CloseOverlay,
     defaultProps: defaultTheme
   }
 )
@@ -122,7 +125,10 @@ export interface InnerNaviBarProps<PageMeta, SwitchMeta>
   activeParentIds: string[]
 }
 
-export interface InnerNaviBarState {}
+export interface InnerNaviBarState {
+  open: boolean,
+  toggleOpen: () => void,
+}
 
 export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
   InnerNaviBarProps<PageMeta, SwitchMeta>,
@@ -130,16 +136,37 @@ export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
 > {
   activePageRef = React.createRef<HTMLAnchorElement>()
 
-  render() {
-    if (!this.props.pageMap) {
-      return this.renderTableOfContents()
-    }
+  constructor(props: InnerNaviBarProps<PageMeta, SwitchMeta>) {
+    super(props) 
 
-    let items = getItems(this.props.pageMap, this.props.comparator)
-    if (items.length === 0) {
-      return null
+    this.state = {
+      open: false,
+      toggleOpen: this.toggleOpen,
     }
-    return items.map(this.renderItem)
+  }
+
+  toggleOpen = () => {
+    this.setState(state => ({
+      open: !state.open,
+    }))
+  }
+
+  render() {
+    let children: React.ReactNode = null
+    if (!this.props.pageMap) {
+      children = this.renderTableOfContents()
+    }
+    else {
+      let items = getItems(this.props.pageMap, this.props.comparator)
+      if (items.length !== 0) {
+        children = items.map(this.renderItem)
+      }
+    }
+    return (
+      <CloseOverlayContext.Provider value={this.state}>
+        {this.props.render!({ children, ...this.state })}
+      </CloseOverlayContext.Provider>
+    )
   }
 
   renderTableOfContents() {
@@ -227,15 +254,20 @@ export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
   }
 
   componentDidUpdate(prevProps: InnerNaviBarProps<PageMeta, SwitchMeta>) {
-    if (
-      this.props.scrollToActive &&
-      this.props.activeURL.pathname !== prevProps.activeURL.pathname
-    ) {
-      let node = this.activePageRef.current
-      if (node) {
-        node.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
+    if (this.props.activeURL.pathname !== prevProps.activeURL.pathname) {
+      if (this.props.scrollToActive) {
+        let node = this.activePageRef.current
+        if (node) {
+          node.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          })
+        }
+      }
+
+      if (this.state.open) {
+        this.setState({
+          open: false
         })
       }
     }

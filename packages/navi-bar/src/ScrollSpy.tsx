@@ -9,7 +9,7 @@ export interface ScrollSpyProps {
 }
 
 export class ScrollSpy extends React.Component<ScrollSpyProps, Partial<Item>> {
-  spy: IScrollSpy
+  spy?: IScrollSpy
 
   constructor(props: ScrollSpyProps) {
     super(props)
@@ -21,10 +21,12 @@ export class ScrollSpy extends React.Component<ScrollSpyProps, Partial<Item>> {
   componentDidMount() {
     let { children, ...props } = this.props
 
-    this.spy = createScrollSpy({
-      ...props,
-      callback: this.handleUpdate,
-    })
+    if (props.tableOfContents) {
+      this.spy = createScrollSpy({
+        ...props,
+        callback: this.handleUpdate,
+      })
+    }
   }
 
   componentDidUpdate(prevProps: ScrollSpyProps) {
@@ -33,14 +35,18 @@ export class ScrollSpy extends React.Component<ScrollSpyProps, Partial<Item>> {
       this.props.tableOfContents !== prevProps.tableOfContents ||
       this.props.offset !== prevProps.offset) {
       let { children, ...props } = this.props
-      this.spy!.dispose()
-      this.spy = createScrollSpy({
-        ...props,
-        callback: this.handleUpdate,
-      })
+      if (this.spy) {
+        this.spy.dispose()
+      }
+      if (props.tableOfContents) {
+        this.spy = createScrollSpy({
+          ...props,
+          callback: this.handleUpdate,
+        })
+      }
     }
-    else {
-      this.spy!.refresh()
+    else if (this.spy) {
+      this.spy.refresh()
     }
   }
 
@@ -52,7 +58,11 @@ export class ScrollSpy extends React.Component<ScrollSpyProps, Partial<Item>> {
   }
 
   handleUpdate = (item: Item) => {
-    this.setState(item)
+    this.setState(item || {
+      id: null,
+      parentIds: [],
+      heading: null,
+    })
   }
 
   render() {
