@@ -5,6 +5,7 @@ import { URLDescriptor } from 'navi'
 import { defaultTheme } from './defaultTheme'
 import { Item, ItemType, getItems } from './items'
 import { Anchor } from './Anchor'
+import { ScrollSpy } from './ScrollSpy'
 
 export type TableOfContents = TableOfContentsItem[]
 
@@ -93,9 +94,19 @@ export namespace NaviBar {
 export const NaviBar = Object.assign(
   function NaviBar<PageMeta, SwitchMeta>(props: NaviBarProps<PageMeta, SwitchMeta>) {
     return (
-      <NavConsumer>
-        {nav => <InnerNaviBar activeURL={nav.url} {...props} />}
-      </NavConsumer>
+      <ScrollSpy tableOfContents={props.tableOfContents || []}>
+        {({id, parentIds}) =>
+          <NavConsumer>
+            {nav =>
+              <InnerNaviBar
+                activeURL={nav.url} {...props}
+                activeId={id}
+                activeParentIds={parentIds || []}
+              />
+            }
+          </NavConsumer>
+        }
+      </ScrollSpy>
     )
   },
   {
@@ -107,6 +118,8 @@ export const NaviBar = Object.assign(
 export interface InnerNaviBarProps<PageMeta, SwitchMeta>
   extends NaviBarProps<PageMeta, SwitchMeta> {
   activeURL: Navi.URLDescriptor
+  activeId?: string
+  activeParentIds: string[]
 }
 
 export interface InnerNaviBarState {}
@@ -139,7 +152,7 @@ export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
     let childElements = heading.children && heading.children.map(this.renderHeading)
     let headingContent = this.props.renderHeading!({
       active: this.props.activeId === heading.id,
-      descendantActive: false, // TODO
+      descendantActive: this.props.activeParentIds.indexOf(heading.id) !== -1,
       children: childElements.length ? childElements : null,
       id: heading.id,
       level: heading.level,
@@ -159,7 +172,7 @@ export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
   renderItem = (item: Item, index: number) => {
     let active =
       this.props.activeURL.pathname.indexOf(item.url.pathname) === 0 &&
-      Math.abs(this.props.activeURL.pathname.length - item.url.pathname.length) <= 1
+      (item.type === 'switch' || Math.abs(this.props.activeURL.pathname.length - item.url.pathname.length) <= 1)
 
     if (item.type === ItemType.Page) {
       let pageContent = this.props.renderPage!({

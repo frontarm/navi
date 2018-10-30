@@ -17,9 +17,13 @@ export const defaultTheme = {
       {children && <div className="NaviBar-page-children">{children}</div>}
     </div>
   ),
-  renderHeading: ({ active, children, title }) => (
+  renderHeading: ({ active, children, descendantActive, title }) => (
     <div
-      className={`NaviBar-heading ${active ? 'NaviBar-heading-active' : ''}`}>
+      className={`
+        NaviBar-heading
+        ${active ? 'NaviBar-heading-active' : ''}
+        ${descendantActive ? 'NaviBar-heading-descendant-active' : ''}`
+      }>
       <div className="NaviBar-heading-link">
         <Anchor>{title}</Anchor>
       </div>
