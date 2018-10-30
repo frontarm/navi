@@ -1,6 +1,6 @@
 {
   "name": "navi-bar",
-  "version": "0.7.6",
+  "version": "0.7.8",
   "description": "A nav bar component for React and Navi.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
