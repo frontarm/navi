@@ -60,7 +60,7 @@ export interface RenderSwitchOptions<Meta = any> {
   href: string
   level: number
   meta: Meta
-  order: number
+  index: number
   title?: string
 }
 
@@ -69,7 +69,7 @@ export interface RenderPageOptions<Meta = any> {
   children: React.ReactNode
   href: string
   meta: Meta
-  order: number
+  index: number
   title: string
 }
 
@@ -82,7 +82,7 @@ export interface RenderHeadingOptions {
   children: React.ReactNode
   id: string
   level: number
-  order: number
+  index: number
   title: React.ReactNode
 }
 
@@ -143,7 +143,7 @@ export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
       children: childElements.length ? childElements : null,
       id: heading.id,
       level: heading.level,
-      order: index,
+      index: index,
       title: heading.title,
     })
 
@@ -167,7 +167,7 @@ export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
         children: active ? this.renderTableOfContents() : null,
         href: item.url.href,
         meta: item.meta,
-        order: index,
+        index: index,
         title: item.title,
       })
 
@@ -190,7 +190,7 @@ export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
         href: item.url.href,
         level: item.level,
         meta: item.meta,
-        order: index,
+        index: index,
         title: item.title,
       })
 
