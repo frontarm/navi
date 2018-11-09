@@ -5,7 +5,7 @@
   "dependencies": {
     "babel-loader": "^8.0.4",
     "lodash": "^4.2.0",
-    "mdx-loader": "^2.0.0-3",
+    "mdx-loader": "^2.0.2",
     "navi": "^0.7.3",
     "navi-scripts": "^0.7.3",
     "prismjs": "^1.15.0",
