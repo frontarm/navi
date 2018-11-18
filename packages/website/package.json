@@ -1,6 +1,6 @@
 {
   "name": "website",
-  "version": "0.7.13",
+  "version": "0.7.14",
   "private": true,
   "dependencies": {
     "babel-loader": "^8.0.4",
