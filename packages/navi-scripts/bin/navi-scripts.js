@@ -29,14 +29,20 @@ require("@babel/register")({
 async function createConfigFromCommand(command) {
   let cwd = process.cwd()
   let config
+  let configFile = command.config || 'navi.config.js'
   try {
     // Load the config file as an ES6 module
     config = require(path.resolve(cwd, command.config))
   }
   catch (e) {
-    console.error(chalk.red("[ohshit] ")+`Couldn't read config file "${command.config}". Aborting.`)
-    console.error(e.message)
-    process.exit(1)
+    if (command.config) {
+      console.error(chalk.red("[ohshit] ")+`Couldn't read config file "${command.config}". Aborting.`)
+      console.error(e.message)
+      process.exit(1)
+    }
+    else {
+      config = {}
+    }
   }
 
   if (command.root) {
@@ -65,7 +71,7 @@ program.command('build')
   .description("Build html files for each of your apps pages.")
   .option('-r, --root [directory]', configSchema.properties.root.description, defaultConfig.root)
   .option('-e, --entry [file]', configSchema.properties.entry.description, defaultConfig.entry)
-  .option('-c, --config [file]', 'Specify a config file.', 'navi.config.js')
+  .option('-c, --config [file]', 'Specify a config file.')
   .action(async function (command) {
     let config = await createConfigFromCommand(command)
     let build = require('../lib/build').build
@@ -86,7 +92,7 @@ program.command('map')
   .option('-j, --json', 'Output the map as json.')
   .option('-r, --root [directory]', configSchema.properties.root.description, defaultConfig.root)
   .option('-e, --entry [file]', configSchema.properties.entry.description, defaultConfig.entry)
-  .option('-c, --config [file]', 'Specify a config file.', 'navi.config.js')
+  .option('-c, --config [file]', 'Specify a config file.')
   .option('-o, --output [file]', 'Write the map to a file.')
   .action(async function (command) {
     let config = await createConfigFromCommand(command)
