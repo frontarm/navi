@@ -232,8 +232,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
     // - A `target` property is set (which may cause the browser to open the
     //   link in another tab)
     if (event.button === 0 &&
-        !(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) &&
-        !this.props.target) {
+        !(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)) {
 
       if (this.props.disabled) {
         event.preventDefault()
@@ -242,6 +241,11 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
       if (this.props.onClick) {
         this.props.onClick(event)
+      }
+      
+      // Let the browser handle targets natively
+      if (this.props.target) {
+        return
       }
       
       let url = this.getURL()
