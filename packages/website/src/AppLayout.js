@@ -1,5 +1,5 @@
 import React from 'react'
-import { Sidebar } from './Sidebar'
+import { AppNav } from './AppNav'
 import './AppLayout.css'
 
 
@@ -15,22 +15,15 @@ export function AppLayout(props) {
     <div className="App">
       <AppBusyIndicator show={props.isBusy} />
 
-      <div className={`App-nav ${props.isMenuOpen ? 'App-nav-open' : ''}`}>
-        <Sidebar
-          className='App-nav-sidebar'
-          pageMap={props.pageMap}
-          tableOfContents={props.tableOfContents}
-        />
-        <button
-          className='App-nav-hamburger'
-          onClick={props.onToggleMenu}>
-          <div className='App-nav-hamburger-icon' />
-        </button>
-      </div>
-
       <main className="App-content">
         {props.children}
       </main>
+
+      <AppNav
+        className='App-nav'
+        pageMap={props.pageMap}
+        tableOfContents={props.tableOfContents}
+      />
     </div>
   )
 }

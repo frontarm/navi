@@ -5,13 +5,6 @@ import { MDXWrapper } from './MDXWrapper';
 
 
 export class App extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      open: false,
-    }
-  }
-
   render() {
     return (
       <Nav.Provider navigation={this.props.navigation}>
@@ -20,9 +13,7 @@ export class App extends React.Component {
             <Nav.NotFoundBoundary render={() =>
               <NotFound
                 isBusy={isLoading}
-                isMenuOpen={this.state.open}
                 pageMap={this.props.pageMap}
-                onToggleMenu={this.handleToggleMenu}
               />
             }>
               <Nav.Route>
@@ -35,10 +26,8 @@ export class App extends React.Component {
                   return (
                     <AppLayout
                       isBusy={isLoading}
-                      isMenuOpen={this.state.open}
                       pageMap={this.props.pageMap}
-                      tableOfContents={tableOfContents}
-                      onToggleMenu={this.handleToggleMenu}>
+                      tableOfContents={tableOfContents}>
                       <MDXWrapper document={route.content.Document} />
                     </AppLayout>
                   )
@@ -50,24 +39,6 @@ export class App extends React.Component {
       </Nav.Provider>
     )
   }
-
-  handleToggleMenu = () => {
-    this.setState({
-      open: !this.state.open
-    })
-  }
-
-  componentDidMount() {
-    // Watch for changes to the current location, and close the
-    // nav menu if it is open.
-    this.url = this.props.navigation.getCurrentValue().url
-    this.props.navigation.subscribe(({ url }) => {
-      if (url !== this.url && this.state.open) {
-        this.url = url
-        this.setState({ open: false })
-      }
-    })
-  }
 }
 
 
@@ -75,9 +46,7 @@ function NotFound(props) {
   return (
     <AppLayout
       isBusy={props.isLoading}
-      isMenuOpen={props.isMenuOpen}
-      pageMap={props.pageMap}
-      onToggleMenu={props.onToggleMenu}>
+      pageMap={props.pageMap}>
       <div className='App-error'>
         <h1>404 - Not Found</h1>
       </div>

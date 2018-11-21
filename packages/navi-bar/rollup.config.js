@@ -12,12 +12,14 @@ const env = process.env.NODE_ENV
 const config = {
   external: [
     'navi',
+    'react-navi',
     'history',
     'react',
     'react-dom',
   ],
   globals: {
     'navi': 'Navi',
+    'react-navi': 'ReactNavi',
     'history': 'History',
     'react': 'React',
     'react-dom': 'ReactDOM',

@@ -16,43 +16,44 @@ export default Navi.createSwitch({
       getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./tutorial.md')),
     }),
 
-    '/important-concepts': Navi.createPage({
-      title: 'What you need to know',
-      getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./concepts.md')),
-    }),
+    // '/important-concepts': Navi.createPage({
+    //   title: 'What you need to know',
+    //   getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./important-concepts.md')),
+    // }),
 
-    '/examples': Navi.createSwitch({
-      title: 'Examples',
-      paths: {
-        '/basic': Navi.createPage({
-          title: 'Basic',
-        }),
-        '/site-map': Navi.createPage({
-          title: 'Site Map',
-        }),
-      }
-    }),
+    // '/examples': Navi.createSwitch({
+    //   title: 'Examples',
+    //   paths: {
+    //     '/basic': Navi.createPage({
+    //       title: 'Basic',
+    //       getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./examples/basic.md')),
+    //     }),
+    //     '/site-map': Navi.createPage({
+    //       title: 'Site Map',
+    //     }),
+    //   }
+    // }),
 
-    '/api-reference': Navi.createSwitch({
-      title: 'API Reference',
-      paths: {
-        '/defining-pages': Navi.createPage({
-          title: 'Defining pages',
-        }),
-        '/react-components': Navi.createPage({
-          title: 'Components',
-        }),
-        '/route': Navi.createPage({
-          title: 'Routes and Segments',
-        }),
-        '/navigation': Navi.createPage({
-          title: 'Navigation',
-        }),
-        '/router': Navi.createPage({
-          title: 'Router',
-        }),
-      }
-    }),
+    // '/api-reference': Navi.createSwitch({
+    //   title: 'API Reference',
+    //   paths: {
+    //     '/defining-pages': Navi.createPage({
+    //       title: 'Defining pages',
+    //     }),
+    //     '/react-components': Navi.createPage({
+    //       title: 'Components',
+    //     }),
+    //     '/route': Navi.createPage({
+    //       title: 'Routes and Segments',
+    //     }),
+    //     '/navigation': Navi.createPage({
+    //       title: 'Navigation',
+    //     }),
+    //     '/router': Navi.createPage({
+    //       title: 'Router',
+    //     }),
+    //   }
+    // }),
   },
 })
 
