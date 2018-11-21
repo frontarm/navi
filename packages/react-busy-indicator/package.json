@@ -1,0 +1,37 @@
+{
+  "name": "react-busy-indicator",
+  "version": "0.7.16",
+  "description": "A stand-alone busy indicator for React.",
+  "author": "James K Nelson <james@jamesknelson.com>",
+  "license": "MIT",
+  "main": "dist/commonjs/BusyIndicator.js",
+  "module": "dist/es/BusyIndicator.js",
+  "types": "dist/commonjs/BusyIndicator.d.ts",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build:commonjs": "tsc --pretty --declaration --module commonjs --outDir dist/commonjs",
+    "build:es": "tsc --pretty --declaration --module es2015 --outDir dist/es",
+    "build": "npm run build:es && npm run build:commonjs",
+    "build:watch": "npm run clean && npm run build:es -- --watch",
+    "prepublish": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "navigation",
+    "react",
+    "loading",
+    "busy",
+    "indicator"
+  ],
+  "peerDependencies": {
+    "react": "^16.5.0"
+  },
+  "devDependencies": {
+    "@types/react": "^16.4.6",
+    "rimraf": "^2.6.2",
+    "typescript": "2.8.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frontarm/navi.git"
+  }
+}

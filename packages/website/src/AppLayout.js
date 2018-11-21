@@ -1,4 +1,5 @@
 import React from 'react'
+import BusyIndicator from 'react-busy-indicator'
 import { AppNav } from './AppNav'
 import './AppLayout.css'
 
@@ -13,7 +14,7 @@ const AppBusyIndicator = ({ show }) =>
 export function AppLayout(props) {
   return (
     <div className="App">
-      <AppBusyIndicator show={props.isBusy} />
+      <BusyIndicator show={props.isBusy} />
 
       <main className="App-content">
         {props.children}
