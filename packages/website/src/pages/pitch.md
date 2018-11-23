@@ -1,12 +1,9 @@
 ---
 title: Navi
 ---
-import { Link } from 'react-navi'
 
 Navi
 ====
-
-<Link href="/404">Test 404</Link>
 
 Blazing fast websites with vanilla create-react-app.
 

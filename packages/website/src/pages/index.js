@@ -11,10 +11,10 @@ export default Navi.createSwitch({
       },
     }),
 
-    '/tutorial': Navi.createPage({
-      title: 'Make a blog',
-      getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./tutorial.md')),
-    }),
+    // '/tutorial': Navi.createPage({
+    //   title: 'Make a blog',
+    //   getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./tutorial.md')),
+    // }),
 
     // '/important-concepts': Navi.createPage({
     //   title: 'What you need to know',
@@ -34,26 +34,31 @@ export default Navi.createSwitch({
     //   }
     // }),
 
-    // '/api-reference': Navi.createSwitch({
-    //   title: 'API Reference',
-    //   paths: {
-    //     '/defining-pages': Navi.createPage({
-    //       title: 'Defining pages',
-    //     }),
-    //     '/react-components': Navi.createPage({
-    //       title: 'Components',
-    //     }),
-    //     '/route': Navi.createPage({
-    //       title: 'Routes and Segments',
-    //     }),
-    //     '/navigation': Navi.createPage({
-    //       title: 'Navigation',
-    //     }),
-    //     '/router': Navi.createPage({
-    //       title: 'Router',
-    //     }),
-    //   }
-    // }),
+    '/api-reference': Navi.createSwitch({
+      title: 'API Reference',
+      paths: {
+        '/defining-pages': Navi.createPage({
+          title: 'Defining pages',
+          getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./api/defining-pages.md')),
+        }),
+        '/react-components': Navi.createPage({
+          title: 'Components',
+          getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./api/components.md')),
+        }),
+        '/route': Navi.createPage({
+          title: 'Routes and Segments',
+          getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./api/routes-and-segments.md')),
+        }),
+        '/navigation': Navi.createPage({
+          title: 'Navigation',
+          getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./api/navigation.md')),
+        }),
+        '/router': Navi.createPage({
+          title: 'Router',
+          getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./api/router.md')),
+        }),
+      }
+    }),
   },
 })
 
