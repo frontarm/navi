@@ -1,7 +1,7 @@
 import {
   Resolution,
   Resolvable,
-  undefinedResolvable,
+  Status,
   reduceStatuses,
 } from './Resolver'
 import {
@@ -42,9 +42,13 @@ export interface Switch<Context extends object = any, Meta extends object = any,
     Content
   >
 
-  title: Resolvable<string, Context>
-  meta: Resolvable<Meta, Context>
-  getContent: Resolvable<Content | undefined, Context>
+  title?: string
+  getTitle?: Resolvable<string, Context>
+  meta?: Meta
+  getMeta?: Resolvable<Meta, Context>
+  content?: Content
+  getContent?: Resolvable<Content, Context>
+
   paths: SwitchPaths<Context>
   orderedMappings: Mapping[]
   patterns: string[]
@@ -97,23 +101,47 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
 
   protected execute(): NodeMatcherResult<SwitchSegment<Meta, Content>> {
     let hasContent = this.withContent && this.constructor.getContent
-    let contentResolvable: Resolvable<Content | undefined> = hasContent
-      ? this.constructor.getContent!
-      : undefinedResolvable
-    let contentResolution = this.resolver.resolve(this.env, contentResolvable)
-    let { value: content, status, error } = contentResolution
+
+    let resolutionIds: number[] = []
+    let status: Status = Status.Ready
+    let error: any
+
+    let content: Content | undefined
+    if (this.withContent && this.constructor.getContent) {
+      let contentResolution = this.resolver.resolve(this.env, this.constructor.getContent)
+      resolutionIds.push(contentResolution.id)
+      content = contentResolution.value
+      status = reduceStatuses(status, contentResolution.status)
+      error = error || contentResolution.error
+    }
+    else {
+      content = this.constructor.content
+    }
     
-    let metaResolution = this.resolver.resolve(this.env, this.constructor.meta)
-    let meta = metaResolution.value
-    status = reduceStatuses(status, metaResolution.status)
-    error = error || metaResolution.error
+    let title: string | undefined
+    if (this.constructor.getTitle) {
+      let titleResolution = this.resolver.resolve(this.env, this.constructor.getTitle)
+      resolutionIds.push(titleResolution.id)
+      title = titleResolution.value
+      status = reduceStatuses(status, titleResolution.status)
+      error = error || titleResolution.error
+    }
+    else {
+      title = this.constructor.title
+    }
+    
+    let meta: Meta | undefined
+    if (this.constructor.getMeta) {
+      let metaResolution = this.resolver.resolve(this.env, this.constructor.getMeta)
+      resolutionIds.push(metaResolution.id)
+      meta = metaResolution.value
+      status = reduceStatuses(status, metaResolution.status)
+      error = error || metaResolution.error
+    }
+    else {
+      meta = this.constructor.meta
+    }
 
-    let titleResolution = this.resolver.resolve(this.env, this.constructor.title)
-    let title = titleResolution.value
-    status = reduceStatuses(status, titleResolution.status)
-    error = error || titleResolution.error
-
-    let resolutionIds: number[] = [contentResolution.id, metaResolution.id]
     let childMatcher: NodeMatcher<any> | undefined
     let childNodeResolution: Resolution<NaviNode> | undefined
     if (this.child) {
@@ -196,8 +224,11 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
 
 export function createSwitch<Context extends object, Meta extends object, Content>(options: {
   paths: SwitchPaths<Context>
-  meta?: Meta | Resolvable<Meta>
-  title?: string | Resolvable<string>
+  meta?: Meta
+  getMeta?: Resolvable<Meta>
+  title?: string
+  getTitle?: Resolvable<string>
+  content?: Content
   getContent?: Resolvable<Content, Context>
 }): Switch<Context, Meta, Content> {
   if (!options) {
@@ -224,7 +255,18 @@ export function createSwitch<Context extends object, Meta extends object, Conten
     .sort((x, y) => compareStrings(x.key, y.key))
 
   if (process.env.NODE_ENV !== 'production') {
-    let { paths, meta, getContent, title, ...other } = options
+    let {
+        paths,
+        
+        title,
+        getTitle,
+        meta,
+        getMeta,
+        content,
+        getContent,
+
+        ...other
+    } = options
 
     let unknownKeys = Object.keys(other)
     if (unknownKeys.length) {
@@ -264,7 +306,7 @@ export function createSwitch<Context extends object, Meta extends object, Conten
               pattern.maybeResolvableNode.type === NaviNodeType.Switch)
           )
             console.warn(
-              `createSwitch() received Switchs for patterns "${
+              `createSwitch() received Switches for patterns "${
                 previousPattern.pattern
               }" and "${
                 pattern.pattern
@@ -307,11 +349,16 @@ export function createSwitch<Context extends object, Meta extends object, Conten
 
   return class extends SwitchMatcher<Context, Meta, Content> {
     static paths = options.paths
-    static meta = typeof options.meta === 'function' ? options.meta : (() => options.meta  as any)
-    static title = typeof options.title === 'function' ? options.title : (() => options.title as any)
+
+    static meta = options.meta
+    static getMeta = options.getMeta
+    static title = options.title
+    static getTitle = options.getTitle
+    static content = options.content
+    static getContent = options.getContent
+
     static orderedMappings = mappings
     static patterns = patterns
-    static getContent = options.getContent || undefinedResolvable
   }
 }
 

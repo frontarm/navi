@@ -29,8 +29,6 @@ export function reduceStatuses(x: Status, y: Status) {
   return Status.Ready
 }
 
-export const undefinedResolvable = () => undefined
-
 export class Resolver {
   private nextId: number
   private results: WeakMap<Env<any>, Map<Function, Resolution<any>>>

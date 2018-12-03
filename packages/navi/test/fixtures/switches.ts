@@ -36,8 +36,8 @@ export const fixtureSwitch = createSwitch({
                         }),
 
                         '/advanced': createPage({
-                            title: () => 'Advanced example',
-                            meta: () => ({
+                            getTitle: () => 'Advanced example',
+                            getMeta: () => ({
                                 isPaywalled: true,
                             }),
                             async getContent(env: Env) {
