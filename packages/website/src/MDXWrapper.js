@@ -1,6 +1,6 @@
 import React from 'react'
 import * as Nav from 'react-navi'
-import './MDXWrapper.css'
+import './MDXWrapper.scss'
 
 
 function createHeadingFactory(type) {

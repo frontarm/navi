@@ -103,21 +103,9 @@ export class ContextMatcher<ParentContext extends object, ChildContext extends o
 
 export function createContext<ParentContext extends object=any, ChildContext extends object=any>(
   maybeChildContextResolvable: ((env: Env<ParentContext>) => Promise<ChildContext> | ChildContext) | ChildContext,
-  maybeChildNodeResolvable: MaybeResolvableNode<ChildContext>,
-  options: { useParams?: string[] } = {}
+  maybeChildNodeResolvable: MaybeResolvableNode<ChildContext>
 ): Context<ParentContext, ChildContext> {
   if (process.env.NODE_ENV !== 'production') {
-    let { useParams, ...other } = options
-
-    let unknownKeys = Object.keys(other)
-    if (unknownKeys.length) {
-      console.warn(
-        `createContext() received unknown options ${unknownKeys
-          .map(x => `"${x}"`)
-          .join(', ')}.`,
-      )
-    }
-
     if (maybeChildContextResolvable === undefined) {
       console.warn(
         `The first argument to createContext() should be the child context, but it was undefined. If you want to define an empty context, instead pass null.`,

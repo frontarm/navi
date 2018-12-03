@@ -4,6 +4,10 @@
 
   .AppNav {
     transition: transform 180ms cubic-bezier(0.165, 0.840, 0.440, 1.000);
+
+    a {
+      text-decoration: none;
+    }
   }
 
   .Sidebar {
@@ -24,16 +28,16 @@
       height: 32px;
       margin: 0 auto;
       line-height: 32px;
-      vertical-align: -11px;
+      vertical-align: -10px;
     }
     .name {
       display: inline-block;
       color: #444444;
-      font-family: Inconsolata, sans-serif;
+      font-family: Lato, sans-serif;
       font-weight: bold;
       font-size: 18px;
       line-height: 32px;
-      margin-left: 0.25rem;
+      margin-left: 0.125rem;
     }
   }
 

@@ -171,3 +171,19 @@ export interface SwitchSegment<Meta extends object = any, Content = any>
   lastRemainingSegment?: Segment
 }
 ```
+
+## URL Descriptors
+
+URL Descriptors are object that store the parts of a URL that can correspond to a a specific screen within your application.
+
+```typescript
+export type URLDescriptor = {
+  pathname: string,
+  search: string,
+  hash: string,
+  query: Params,
+  href: string,
+
+  state?: object,
+}
+```
