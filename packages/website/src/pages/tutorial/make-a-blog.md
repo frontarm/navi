@@ -470,7 +470,7 @@ export function App(props) {
 }
 ```
 
-As always, you can check the solution if you get stuck. And once you're done, let's figure out how to automate the creation of this list in the home page. Because seriously, ain't nobody gonna use a blog where you need to manually update a list each time you write a post.
+As always, you can check the solution if you get stuck. And once you're done, let's figure out how to automate the creation of this list in the home page. Because seriously, ain't nobody gonna use a blog where you need to update a stinkin' list with each post.
 
 
 Generating a list of posts
