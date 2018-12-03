@@ -67,6 +67,7 @@ export class Router<Context extends object=any> {
             params: url.query,
             pathname: '',
             query: url.query,
+            search: url.search,
             router: this,
             unmatchedPathnamePart: url.pathname,
         }

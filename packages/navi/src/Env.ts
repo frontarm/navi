@@ -8,6 +8,7 @@ export interface Env<Context extends object=any> {
   readonly params: Params
   readonly pathname: string
   readonly query: Params
+  readonly search: string
   readonly router: Router<Context>
   readonly unmatchedPathnamePart: string
 }

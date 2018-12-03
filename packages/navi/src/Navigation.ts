@@ -18,6 +18,8 @@ export interface Navigation<Context extends object=any> extends Observable<Navig
    * content is loaded before making the first render.
    */
   getSteadyValue(): Promise<NavigationSnapshot>;
+
+  steady(): Promise<void>;
 }
 
 export interface NavigationSnapshot {

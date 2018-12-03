@@ -138,6 +138,7 @@ export function matchMappingAgainstPathname<Context extends object>(env: Env<Con
         params: { ...env.params, ...params },
         pathname: joinPaths(env.pathname, matchedPathname),
         query: env.query,
+        search: env.search,
         router: env.router,
         unmatchedPathnamePart: env.unmatchedPathnamePart.slice(matchedPathname.length) || (appendFinalSlash ? '/' : ''),
     }

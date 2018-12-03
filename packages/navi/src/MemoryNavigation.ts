@@ -83,11 +83,15 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
         }))
     }
 
+    async steady() {
+        await this.getSteadyValue()
+        return
+    }
+
     /**
      * If you're using code splitting, you'll need to subscribe to changes to
      * the snapshot, as the route may change as new code chunks are received.
      */
-    subsc
     subscribe(
         onNextOrObserver: Observer<NavigationSnapshot> | ((value: NavigationSnapshot) => void),
         onError?: (error: any) => void,

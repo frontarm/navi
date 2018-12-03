@@ -248,6 +248,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
         params: {},
         pathname: '',
         query: url.query,
+        search: url.search,
         router: this.router,
         unmatchedPathnamePart: url.pathname,
       }
