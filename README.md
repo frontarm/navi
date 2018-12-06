@@ -74,7 +74,7 @@ export default function Reference() {
 
 Navi does all of the hard work within a `Navigation` object. This is where Navi watches for history events, matches URLs to pages and content, and turns all this info into an object that you can use.
 
-To create a `Navigation`, just call `createBrowserNavigation()` within `index.js`, passing in the `pages` object that you defined earlier.
+To create a `Navigation`, just call `createBrowserNavigation()` within `index.js`, passing in the `pages` object that you defined earlier. Once you have a `Navigation`, wait for the content to be ready -- and then just render it!
 
 ```js
 // index.js
@@ -84,12 +84,20 @@ import { createBrowserNavigation } from 'navi'
 import pages from './pages'
 import App from './App'
 
-let navigation = createBrowserNavigation({ pages })
+async function main() {
+  let navigation = createBrowserNavigation({ pages })
 
-ReactDOM.render(
-  <App navigation={navigation} />,
-  document.getElementById('root')
-);
+  // Wait until async content is ready, or has failed.
+  await navigation.steady()
+
+  ReactDOM.render(
+    <App navigation={navigation} />,
+    document.getElementById('root')
+  );
+}
+
+// Start the app
+main()
 ```
 
 
