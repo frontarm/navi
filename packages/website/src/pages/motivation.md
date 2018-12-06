@@ -34,7 +34,7 @@ If you take a look around the industry, **the vast majority of real-world apps r
 
 In fact, there's a whole ecosystem of [routing](https://github.com/ReactTraining/react-router) [tooling](https://npmjs.com/package/react-helmet) that relies on component state to handle asynchronous data. But here's the thing: **outside of the browser, component state just plain doesn't work** -- and neither do the tools that rely on it.
 
-But Navi? It works *perfectly* without component state. It's built with vanilla JavaScript, and is asynchronous to its core. **Navi works with async data both in *and* out of a browser** -- and this is crucial when generating HTML for crawlers.
+But Navi? It works perfectly *without* component state. It's core is built with vanilla JavaScript. And most importantly, **Navi makes it easy to use async data on the server** -- which is crucial when generating HTML for crawlers.
 
 
 Crawlers need HTML

@@ -8,24 +8,7 @@ export interface NavRouteProps {
   /**
    * A render function that will be used to render the selected segment.
    */
-  children?: (output: NavRouteOutput) => React.ReactNode
-}
-
-export interface NavRouteOutput {
-  /**
-   * The full route that contains the consumed segment.
-   */
-  route: Route,
-  
-  /**
-   * The history object
-   */
-  history: History,
-
-  /**
-   * The router
-   */
-  router: Router,
+  children?: (route: Route) => React.ReactNode
 }
 
 function isFinalSegment(segment: Segment) {
@@ -38,7 +21,6 @@ function isReady(segment: Segment)  {
 
 export namespace NavRoute {
   export type Props = NavRouteProps
-  export type Output = NavRouteOutput
 }
 
 export class NavRoute extends React.Component<NavRouteProps> {
@@ -53,9 +35,9 @@ export class NavRoute extends React.Component<NavRouteProps> {
   }
 
   renderChildren = (output: NavSegmentOutput): React.ReactNode => {
-    let render: undefined | ((props: NavRouteOutput) => React.ReactNode)
+    let render: undefined | ((route: Route) => React.ReactNode)
     if (this.props.children) {
-      render = this.props.children as (props: NavRouteOutput) => React.ReactNode
+      render = this.props.children as (route: Route) => React.ReactNode
       if (typeof render !== "function") {
         throw new Error(`<NavRoute> expects its children to be a function, but instead received "${render}".`)
       }
@@ -73,6 +55,6 @@ export class NavRoute extends React.Component<NavRouteProps> {
       throw new Error("<NavRoute> was not able to find a `children` prop, or a `render` function in the consumed segment's `content`.")
     }
 
-    return render(output)
+    return render(output.route)
   }
 }
