@@ -141,6 +141,9 @@ export async function renderPageToString({
   
   // The `pages` switch passed to `Navi.app()`
   pages,
+
+  // An object containing all rendered pages and redirects
+  siteMap,
 }) {
   // Create an in-memory Navigation object with the given URL
   let navigation = Navi.createMemoryNavigation({ pages, url })
