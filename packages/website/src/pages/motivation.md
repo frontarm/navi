@@ -1,7 +1,7 @@
 The Motivation behind Navi
 ==========================
 
-Navi lets you create big, fast, CDN-delivered websites with great SEO & SMO, and all with vanilla create-react-app. But *why*? To find out, let's talk business.
+Navi lets you create big, fast, CDN-delivered websites with great SEO & SMO, and all with vanilla create-react-app. And if it sounds like this might meet your business requirements, well, that's because **Navi was built for business**.
 
 
 It's Business Time
@@ -92,7 +92,7 @@ There's just one last thing: while this sounds great and all, how do you know th
 
 - Twitter embed
 
-[Continute to core concepts &raquo;](/core-concepts)
+[Jump into the Minimal Example &raquo;](/guides/minimal-example)
 
 
 

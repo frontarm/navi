@@ -47,7 +47,7 @@ A switch's `paths` object is how you declare the app's routing tree. It maps URL
   // When the user accesses the `./create-switch` path relative to the
   // URL at which the switch is mounted, they'll see this page.
   '/create-switch': Navi.createPage({
-    title: 'The createSwitch() function`,
+    title: 'The createSwitch() function',
     getContent: () => import('./createSwitch.mdx'),
   }),
 

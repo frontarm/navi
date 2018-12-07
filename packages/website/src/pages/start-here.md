@@ -3,7 +3,7 @@ Navi
 
 *Blazing fast websites with vanilla create-react-app.*
 
-🚀 Optimize SEO with static HTML for each page<br />
+🚀 Easy SEO with static HTML for each page<br />
 🔥 Ergonomic code splitting and page loading transitions<br />
 🗺️ Generate JSON site maps at runtime or build time<br />
 👌 A dead-simple API<br />
@@ -14,10 +14,11 @@ Navi
 
 *Just getting started?*
 
-- [See if Navi is a match for your project &raquo;](/motivation)
-- [Walk through creating a blog from scratch &raquo;](/tutorial)
-- [Try the demoboard &raquo;](https://frontarm.com/demoboard/?id=1229d493-ffaf-4133-b384-0f7dfec85af5)
-- [Dive in with create-navi-app &raquo;]()
+- [Why Navi?](/motivation)
+- [Jump into the minimal example &raquo;](/guides/minimal-example)
+- [Play with the demoboard &raquo;](https://frontarm.com/demoboard/?id=1229d493-ffaf-4133-b384-0f7dfec85af5)
+
+<!-- - [Start a project with create-navi-app &raquo;]() -->
 
 Packages
 --------
@@ -41,7 +42,7 @@ The `react-navi` package provides a bunch of helpful React components.
 npm install --save react-navi
 ```
 
-For more details, check out the [components reference &raquo;](/reference/components)
+For more details, check out the [components reference &raquo;](/reference/react-components)
 
 
 ### navi-scripts
@@ -55,7 +56,7 @@ npm install --save-dev navi-scripts
 
 If you're using `create-react-app`, **setting up `navi-scripts` just takes a one line change in your package.json**. To learn how, click through to the [static rendering guide &raquo;](/guides/static-rendering)
 
-
+<!--
 ### create-navi-app
 
 TODO
@@ -69,12 +70,13 @@ TODO
 - comes with a `/pages` directory and an index route
 - renders the current route within `<App>`
 - adds the required bootstrap code to `index.js`
+-->
 
 Who uses Navi?
 --------------
 
 - [Frontend Armory](https://frontarm.com)
-- *Do you use Navi? [Let me know!](mailto:james@frontarm.com)*
+- *Do you use Navi? [Edit this page!](https://github.com/frontarm/navi/edit/master/packages/website/src/pages/start-here.md)*
 
 
 License

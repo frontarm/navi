@@ -16,33 +16,33 @@ export default Navi.createSwitch({
       getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./motivation.md')),
     }),
 
-    // TODO: get this added back in ASAP
     // '/core-concepts': Navi.createPage({
     //   title: 'Core concepts',
     //   getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./core-concepts.md')),
     // }),
 
-    '/tutorial': Navi.createPage({
-      title: 'Tutorial: Make a blog',
-      getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./tutorial/make-a-blog.md')),
-    }),
+    // this really is a short course... probably should just add a redirect to it
+    // '/tutorial': Navi.createPage({
+    //   title: 'Tutorial: Make a blog',
+    //   getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./tutorial/make-a-blog.md')),
+    // }),
 
     '/guides': Navi.createSwitch({
       title: 'Guides',
 
       paths: {
-        '/quick-start': Navi.createPage({
-          title: 'Quick start',
-          getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./guides/quick-start.md')),
+        '/minimal-example': Navi.createPage({
+          title: 'A Minimal Example',
+          getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./guides/minimal-example.md')),
         }),
 
         '/static-rendering': Navi.createPage({
-          title: 'Static rendering',
+          title: 'Static Rendering',
           getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./guides/static-rendering.md')),
         }),
 
         '/authenticated-routes': Navi.createPage({
-          title: 'Authenticated routes',
+          title: 'Authenticated Routes',
           getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./guides/authenticated-routes.md')),
         }),
 
@@ -52,7 +52,7 @@ export default Navi.createSwitch({
         }),
 
     //     '/integrating-express': Navi.createPage({
-    //       title: 'Integrating with Express',
+    //       title: 'Server Rendering with Express',
     //       getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./guides/integrating-express.md')),
     //     }),
       }
@@ -61,16 +61,16 @@ export default Navi.createSwitch({
     '/reference': Navi.createSwitch({
       title: 'API Reference',
       paths: {
-        '/defining-pages': Navi.createPage({
+        '/declarations': Navi.createPage({
           title: 'Declaring pages',
           getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./reference/defining-pages.md')),
         }),
         '/navigation': Navi.createPage({
-          title: 'Navigation objects',
+          title: 'Navigation',
           getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./reference/navigation.md')),
         }),
         '/react-components': Navi.createPage({
-          title: 'React components',
+          title: 'Components',
           getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./reference/components.md')),
         }),
         '/route': Navi.createPage({

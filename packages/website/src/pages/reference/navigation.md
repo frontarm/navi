@@ -12,7 +12,17 @@ Whichever way you create a Navigation object, they both implement the same `Navi
 
 #### `navigation.history`
 
-A history object -- see the [history](https://npmjs.com/package/history) package for details.
+An interface to the browser history. You can use this object's `push()` and `replace()` to navigate programatically:
+
+```js
+// Push a URL onto the browser history
+history.push(path, state?)
+
+// Replace the current URL
+history.replace(path, state?)
+```
+
+This object is managed by the [history](https://npmjs.com/package/history) package -- the same package used by react-router. This makes it possible to [use both Navi and react-router]() in the same project.
 
 #### `navigation.router`
 
@@ -41,6 +51,8 @@ Returns a promise to a steady state `NavigationSnapshot` object.
 ```typescript
 navigation.setContext(context)
 ```
+
+Sets the top-level [Env object](./declarations/#env-objects)'s context and recomputes any getter functions in your declarations.
 
 #### `navigation.steady()`
 
