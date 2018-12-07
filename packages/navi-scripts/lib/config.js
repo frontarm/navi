@@ -120,14 +120,17 @@ async function processConfig(config) {
       const ReactDOMServer = require('react-dom/server')
       const he = require('he')
       
-      config.renderPageToString = async function renderPageToString({ exports, pages, url }) {
+      config.renderPageToString = async function renderPageToString({ exports, pages, siteMap, url }) {
         let navigation = Navi.createMemoryNavigation({ pages, url })
         let { route } = await navigation.getSteadyValue()
 
-        return reactNaviCreateReactApp.renderCreateReactAppPageToString({
+        return reactNaviCreateReactApp.renderCreateReactAppTemplate({
           insertIntoRootDiv:
             ReactDOMServer.renderToString(
-              React.createElement(exports, { navigation })
+              React.createElement(exports, {
+                navigation,
+                siteMap,
+              })
             ),
           replaceTitleWith:
             `\n<title>${route.title || 'Untitled'}</title>\n` +
