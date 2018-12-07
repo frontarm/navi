@@ -20,6 +20,8 @@ export interface Navigation<Context extends object=any> extends Observable<Navig
   getSteadyValue(): Promise<NavigationSnapshot>;
 
   steady(): Promise<void>;
+
+  dispose(): void;
 }
 
 export interface NavigationSnapshot {

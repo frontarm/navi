@@ -40,14 +40,32 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
     private lastURL: URLDescriptor
     private lastRoute: Route
     private observableSubscription?: Subscription
+    private unlisten: () => void
 
     constructor(history: History, router: Router<Context>) {
         this.observers = []
         this.router = router
         this.history = history
         this.lastURL = createURLDescriptor(this.history.location)
-        this.history.listen(location => this.handleURLChange(createURLDescriptor(location)))
+        this.unlisten = this.history.listen(location => this.handleURLChange(createURLDescriptor(location)))
         this.refresh()
+    }
+
+    dispose() {
+        this.observers.length = 0
+
+        this.unlisten()
+        delete this.unlisten
+        delete this.history
+
+        if (this.observableSubscription) {
+            this.observableSubscription.unsubscribe()
+        }
+        delete this.observableSubscription
+
+        delete this.router
+        delete this.waitUntilSteadyDeferred
+        delete this.lastRoute
     }
 
     refresh() {

@@ -33,11 +33,13 @@ export class Resolver {
   private nextId: number
   private results: WeakMap<Env<any>, Map<Function, Resolution<any>>>
   private listenerIds: Map<Function, number[]>
+  private isDisposed: boolean
 
   constructor() {
     this.listenerIds = new Map()
     this.nextId = 1
     this.results = new WeakMap()
+    this.isDisposed = false
   }
 
   listen(listener: () => void, resolutionIds: number[]) {

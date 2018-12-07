@@ -65,6 +65,8 @@ describe("integration", () => {
         
         expect(junctionSegment.error && junctionSegment.error).toBeInstanceOf(NotFoundError)
         expect(junctionSegment.error && junctionSegment.error.pathname).toBe("/examples/intermediate/")
+
+        nav.dispose()
     })
 
     test("map-based content", async () => {

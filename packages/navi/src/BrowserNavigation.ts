@@ -41,10 +41,10 @@ export interface BrowserNavigationOptions<Context extends object> {
      */
     hashScrollBehavior?: 'smooth' | 'instant'
 
-    initialContext?: Context,
+    context?: Context,
 
     pages: Switch,
-    rootPath?: string,
+    basename?: string,
 }
 
 
@@ -56,13 +56,13 @@ export function createBrowserNavigation<Context extends object>(options: Browser
 export class BrowserNavigation<Context extends object> implements Navigation<Context> {
     router: Router<Context>
 
-    readonly history: History
+    history: History
 
     private setDocumentTitle: false | ((pageTitle?: string) => string)
     private disableScrollHandling: boolean
 
     private pages: Switch
-    private rootPath?: string
+    private basename?: string
     private resolver: Resolver
     private receivedRoute: Route
     private renderedRoute?: Route
@@ -73,11 +73,11 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         this.history = options.history || createBrowserHistory()
         this.resolver = new Resolver
         this.pages = options.pages
-        this.rootPath = options.rootPath
+        this.basename = options.basename
         this.router = new Router(this.resolver, {
-            rootContext: options.initialContext,
+            rootContext: options.context,
             pages: options.pages,
-            rootPath: options.rootPath,
+            basename: options.basename,
         })
 
         if (options.setDocumentTitle !== false) {
@@ -94,11 +94,28 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         this.hashScrollBehavior = options.hashScrollBehavior || 'smooth'
     }
 
+    dispose() {
+        this.currentRouteObservable.dispose()
+        delete this.currentRouteObservable
+
+        this.router.dispose()
+        delete this.router
+
+        delete this.history
+        delete this.resolver
+        delete this.pages
+        delete this.setDocumentTitle
+        delete this.receivedRoute
+        delete this.renderedRoute
+
+    }
+
     setContext(context: Context) {
+        this.router.dispose()
         this.router = new Router(this.resolver, {
             rootContext: context,
             pages: this.pages,
-            rootPath: this.rootPath,
+            basename: this.basename,
         })
         this.currentRouteObservable.setRouter(this.router)
     }

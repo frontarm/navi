@@ -12,10 +12,10 @@ import { URLDescriptor, createURLDescriptor } from './URLTools';
 export interface MemoryNavigationOptions<Context extends object> extends RouterOptions<Context> {
     url: string | Partial<URLDescriptor>
 
-    initialContext?: Context,
+    context?: Context,
 
     pages: Switch,
-    rootPath?: string,
+    basename?: string,
 }
 
 
@@ -30,7 +30,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
     readonly history: History
 
     private pages: Switch
-    private rootPath?: string
+    private basename?: string
     private resolver: Resolver
 
     private currentRouteObservable: CurrentRouteObservable<Context>
@@ -41,11 +41,11 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
         })
         this.resolver = new Resolver
         this.pages = options.pages
-        this.rootPath = options.rootPath
+        this.basename = options.basename
         this.router = new Router(this.resolver, {
-            rootContext: options.initialContext,
+            rootContext: options.context,
             pages: this.pages,
-            rootPath: this.rootPath,
+            basename: this.basename,
         })
         this.currentRouteObservable = createCurrentRouteObservable({
             history: this.history,
@@ -53,11 +53,23 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
         })
     }
 
+    dispose() {
+        this.currentRouteObservable.dispose()
+        delete this.currentRouteObservable
+
+        this.router.dispose()
+        delete this.router
+
+        delete this.resolver
+        delete this.pages
+
+    }
+
     setContext(context: Context) {
         this.router = new Router(this.resolver, {
             rootContext: context,
             pages: this.pages,
-            rootPath: this.rootPath,
+            basename: this.basename,
         })
         this.currentRouteObservable.setRouter(this.router)
     }

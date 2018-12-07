@@ -16,7 +16,7 @@ import { OutOfRootError } from './Errors';
 export interface RouterOptions<Context extends object> {
     rootContext?: Context,
     pages: Switch,
-    rootPath?: string,
+    basename?: string,
 }
 
 export interface RouterResolveOptions {
@@ -54,10 +54,29 @@ export class Router<Context extends object=any> {
         this.resolver = resolver
         this.rootContext = options.rootContext || {} as any
         this.pages = options.pages
-        this.rootMapping = createRootMapping(options.pages, options.rootPath)
+
+        let basename = options.basename
+        if (basename && basename.slice(-1) === '/') {
+            basename = basename.slice(0, -1)
+        }
+
+        this.rootMapping = createRootMapping(options.pages, basename)
+    }
+
+    dispose() {
+        delete this.rootMapping
+        delete this.pages
+        delete this.rootContext
+        delete this.resolver
     }
 
     createObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterResolveOptions = {}): RouteObservable | undefined {
+        if (process.env.NODE_ENV !== "production") {
+            if (!this.resolver) {
+                throw new Error("Can't create an observable after the Router has been disposed.")
+            }
+        }
+
         // need to somehow keep track of which promises in the resolver correspond to which observables,
         // so that I don't end up updating observables which haven't actually changed.
         let url = createURLDescriptor(urlOrDescriptor)
@@ -84,6 +103,12 @@ export class Router<Context extends object=any> {
     }
 
     createMapObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): RouteMapObservable {
+        if (process.env.NODE_ENV !== "production") {
+            if (!this.resolver) {
+                throw new Error("Can't create an observable after the Router has been disposed.")
+            }
+        }
+
         return new RouteMapObservable(
             createURLDescriptor(urlOrDescriptor, { ensureTrailingSlash: false }),
             this.rootContext,
