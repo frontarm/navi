@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { join as pathJoin } from 'path'
 import { URLDescriptor, Navigation, createURLDescriptor } from 'navi'
 import { NavContext } from './NavContext'
 
@@ -163,7 +164,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
       })
         .catch(() => {
           console.warn(
-            `A <NavLink> referred to href "${url!.pathname}", but the` +
+            `A <NavLink> referred to href "${url!.pathname}", but the ` +
             `router could not find this path.`
           )
         })
@@ -177,6 +178,12 @@ class InnerLink extends React.Component<InnerLinkProps> {
     // response will be used.
     if (!href || typeof href === 'string' && (href.indexOf('://') !== -1 || href.indexOf('mailto:') === 0)) {
       return
+    }
+
+    // The route `pathname` should always end with a `/`, so this
+    // will give us a consistent behavior for `.` and `..` links.
+    if (typeof href === 'string' && href[0] === '.') {
+      href = pathJoin(this.props.context.route.url.pathname, href)
     }
 
     return createURLDescriptor(href)
