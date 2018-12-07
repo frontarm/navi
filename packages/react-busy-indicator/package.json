@@ -1,6 +1,6 @@
 {
   "name": "react-busy-indicator",
-  "version": "0.7.19",
+  "version": "0.8.0",
   "description": "A stand-alone busy indicator for React.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
