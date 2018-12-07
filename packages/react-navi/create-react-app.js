@@ -1,13 +1,12 @@
 const fs = require('fs')
 const path = require('path')
-const ReactDOMServer = require('react-dom/server')
 
 let rootDir = process.cwd()
 
 let templatePath = path.resolve(rootDir, 'build/index.html')
 let template = fs.readFileSync(templatePath, 'utf8')
 
-function renderCreateReactAppPageToString({ replaceTitle, element }) {
+function renderCreateReactAppTemplate({ replaceTitleWith, insertIntoRootDiv }) {
   let html = template
 
   // Replace the <title> tag with the contents of `replaceTitle`,
@@ -16,18 +15,15 @@ function renderCreateReactAppPageToString({ replaceTitle, element }) {
   let titleStart = html.indexOf('<title>')
   let titleEnd = html.indexOf(END)
   if (titleStart !== -1 && titleEnd !== -1) {
-    html = html.slice(0, titleStart) + replaceTitle + html.slice(titleEnd + END.length)
+    html = html.slice(0, titleStart) + replaceTitleWith + html.slice(titleEnd + END.length)
   }
 
-  // Render the page content using React
-  let content = ReactDOMServer.renderToString(element)
-
   // Inject rendered content into HTML
-  html = html.replace('<div id="root">', '<div id="root">'+content)
+  html = html.replace('<div id="root">', '<div id="root">'+insertIntoRootDiv)
 
   return html
 }
 
 module.exports = {
-  renderCreateReactAppPageToString,
+  renderCreateReactAppTemplate,
 }

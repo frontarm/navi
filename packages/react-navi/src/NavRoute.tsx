@@ -51,6 +51,14 @@ export class NavRoute extends React.Component<NavRouteProps> {
         return content
       }
     }
+
+    // If the route content is still loading, just render nothing --
+    // this allows SPAs to get away without waiting for `navigation.steady()`
+    // on the initial load.
+    if (output.route && output.route.status === Status.Busy) {
+      return null
+    }
+
     if (!render) {
       throw new Error("<NavRoute> was not able to find a `children` prop, or a `render` function in the consumed segment's `content`.")
     }

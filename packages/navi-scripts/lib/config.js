@@ -19,7 +19,7 @@ const defaultConfig = {
   getRedirectPathname: ({ url }) => {
     return url === '/' ? 'index.html' : path.join(url.pathname.slice(1), 'index.html')
   },
-  context: undefined,
+  context: {},
   root: 'build',
   entry: 'build/index.html',
   appGlobal: 'NaviApp',
@@ -117,16 +117,19 @@ async function processConfig(config) {
 
       const Navi = require('navi')
       const React = require('react')
+      const ReactDOMServer = require('react-dom/server')
       const he = require('he')
       
       config.renderPageToString = async function renderPageToString({ exports, pages, url }) {
         let navigation = Navi.createMemoryNavigation({ pages, url })
-
         let { route } = await navigation.getSteadyValue()
 
         return reactNaviCreateReactApp.renderCreateReactAppPageToString({
-          element: React.createElement(exports.App, { navigation }),
-          replaceTitle:
+          insertIntoRootDiv:
+            ReactDOMServer.renderToString(
+              React.createElement(exports, { navigation })
+            ),
+          replaceTitleWith:
             `\n<title>${route.title || 'Untitled'}</title>\n` +
             Object.entries(route.meta || {}).map(([key, value]) =>
               `<meta name="${he.encode(key)}" content="${he.encode(value)}" />`
