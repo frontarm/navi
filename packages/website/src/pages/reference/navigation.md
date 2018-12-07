@@ -26,7 +26,7 @@ This object is managed by the [history](https://npmjs.com/package/history) packa
 
 #### `navigation.router`
 
-A [Router](http://localhost:3000/reference/router/) object, which can be used to resolves URLs to [Route` objects](./route/#route) or site maps.
+A [Router](http://localhost:3000/reference/router/) object, which can be used to resolves URLs to [`Route` objects](../routes-segments-urls/#route) or site maps.
 
 ### Methods
 
@@ -52,7 +52,7 @@ Returns a promise to a steady state `NavigationSnapshot` object.
 navigation.setContext(context)
 ```
 
-Sets the top-level [Env object](./declarations/#env-objects)'s context and recomputes any getter functions in your declarations.
+Sets the top-level [Env object](../declarations/#env-objects)'s context and recomputes any getter functions in your declarations.
 
 #### `navigation.steady()`
 

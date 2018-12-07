@@ -174,7 +174,7 @@ createRedirect(
 
 Redirects can be mapped to one of switch's paths to declare that any visits to that path will automatically navigate to a `to` path.
 
-For the `to` path, you can specify either an absolute path, a [partial URL descriptor](./routes-and-segments#url-descriptors), or a getter function that returns either of these.
+For the `to` path, you can specify either an absolute path, a [partial URL descriptor](../routes-segments-urls/#url-descriptors), or a getter function that returns either of these.
 
 ### Examples
 

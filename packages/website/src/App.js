@@ -1,5 +1,5 @@
 import React from 'react'
-import * as Nav from 'react-navi'
+import { NavProvider, NavLoading, NavNotFoundBoundary, NavRoute } from 'react-navi'
 import { AppLayout } from './AppLayout'
 import { MDXWrapper } from './MDXWrapper';
 
@@ -7,17 +7,17 @@ import { MDXWrapper } from './MDXWrapper';
 export class App extends React.Component {
   render() {
     return (
-      <Nav.Provider navigation={this.props.navigation}>
-        <Nav.Loading>
+      <NavProvider navigation={this.props.navigation}>
+        <NavLoading>
           {isLoading =>
-            <Nav.NotFoundBoundary render={() =>
+            <NavNotFoundBoundary render={() =>
               <NotFound
                 isBusy={isLoading}
-                pageMap={this.props.pageMap}
+                pageMap={this.props.siteMap.pages}
               />
             }>
-              <Nav.Route>
-                {({ route }) => {
+              <NavRoute>
+                {route => {
                   let tableOfContents =
                     route.content &&
                     route.content.tableOfContents &&
@@ -26,17 +26,17 @@ export class App extends React.Component {
                   return (
                     <AppLayout
                       isBusy={isLoading}
-                      pageMap={this.props.pageMap}
+                      pageMap={this.props.siteMap.pages}
                       tableOfContents={tableOfContents}>
                       <MDXWrapper document={route.content.Document} />
                     </AppLayout>
                   )
                 }}
-              </Nav.Route>
-            </Nav.NotFoundBoundary>
+              </NavRoute>
+            </NavNotFoundBoundary>
           }
-        </Nav.Loading>
-      </Nav.Provider>
+        </NavLoading>
+      </NavProvider>
     )
   }
 }

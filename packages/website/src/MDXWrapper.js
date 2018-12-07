@@ -1,5 +1,5 @@
 import React from 'react'
-import * as Nav from 'react-navi'
+import { NavLink } from 'react-navi'
 import './MDXWrapper.scss'
 
 
@@ -20,14 +20,14 @@ function createHeadingFactory(type) {
 
             // Append a hash link to each heading, which will be hidden via
             // CSS until he mouse hovers over the heading.
-            <Nav.Link className='MDXWrapper-heading-link' href={'#'+simpleId}>#</Nav.Link>
+            <NavLink className='MDXWrapper-heading-link' href={'#'+simpleId}>#</NavLink>
         )
     }
 }
 
 export class MDXWrapper extends React.Component {
   components = {
-    a: Nav.Link,
+    a: NavLink,
 
     h1: createHeadingFactory('h1'),
     h2: createHeadingFactory('h2'),

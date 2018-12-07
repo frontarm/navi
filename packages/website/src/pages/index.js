@@ -1,4 +1,3 @@
-import * as React from 'react'
 import * as Navi from 'navi'
 
 export default Navi.createSwitch({
@@ -73,7 +72,7 @@ export default Navi.createSwitch({
           title: 'Components',
           getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./reference/components.md')),
         }),
-        '/route': Navi.createPage({
+        '/routes-segments-urls': Navi.createPage({
           title: 'Routes, Segments and URL Descriptors',
           getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./reference/routes-and-segments.md')),
         }),

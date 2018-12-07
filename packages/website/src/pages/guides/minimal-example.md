@@ -190,6 +190,6 @@ The `<NavLoading>` component accepts a render function as its children, to which
 What next?
 ----------
 
-If you'd like your site's content to be indexed by search engines and shared on social media, take a look at the [Static Rendering](../guides/static-rendering) guide -- it'll only take you 2 minutes to complete!
+If you'd like your site's content to be indexed by search engines and shared on social media, take a look at the [Static Rendering](../static-rendering) guide -- it'll only take you 2 minutes to complete!
 
-But Navi isn't just for websites -- it works great for Single Page Apps too! So if you're building an SPA, head on over to the [Authenticated Routes](../guides/authenticated-routes) guide and learn how to hide protected content from unauthenticated users.
+But Navi isn't just for websites -- it works great for Single Page Apps too! So if you're building an SPA, head on over to the [Authenticated Routes](../authenticated-routes) guide and learn how to hide protected content from unauthenticated users.

@@ -4,17 +4,10 @@ import { AppNav } from './AppNav'
 import './AppLayout.css'
 
 
-const AppBusyIndicator = ({ show }) =>
-    <div className={`
-        App-LoadingIndicator
-        App-LoadingIndicator-${show ? 'loading' : 'done'}
-    `} />
-
-
 export function AppLayout(props) {
   return (
     <div className="App">
-      <BusyIndicator show={props.isBusy} />
+      <BusyIndicator isBusy={props.isBusy} />
 
       <main className="App-content">
         {props.children}

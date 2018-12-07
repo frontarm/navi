@@ -17,7 +17,7 @@ createSwitch({
 })
 ```
 
-Whenever a Page or Switch specifies something as a function of the environment, that function will receive an [Env object](/404) -- which contains a configurable `context` property. By storing the current authentication state on this object, it's possible to make content that varies with authentication state.
+Whenever a Page or Switch specifies something as a function of the environment, that function will receive an [Env object](../../reference/declarations/#env-objects) -- which contains a configurable `context` property. By storing the current authentication state on this object, it's possible to make content that varies with authentication state.
 
 
 ## Setting authentation state
