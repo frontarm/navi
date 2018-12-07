@@ -12,8 +12,7 @@ style.innerHTML = `
   top: 0;
   left: 0;
   right: 0;
-  background-image: linear-gradient(-45deg, rgba(255,255,255,0.2) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.2) 75%, transparent 75%, transparent);
-  background-color: #1cde78;
+  background-image: linear-gradient(-45deg, rgba(255,255,255,0.25) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0.25) 75%, transparent 75%, transparent);
   background-size: 35px 35px;
   z-index: 1000;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) inset;
@@ -22,12 +21,6 @@ style.innerHTML = `
   transition-delay: 0;
   animation: ${baseClass} 2s cubic-bezier(.4,.45,.6,.55) infinite;
   opacity: 0;
-}
-
-.${baseClass}-visible {
-  transition-delay: 333ms;
-  transform: translateY(0);
-  opacity: 1;
 }
 
 @keyframes ${baseClass} {
@@ -43,19 +36,23 @@ document.getElementsByTagName('head')[0].appendChild(style);
 
 interface BusyIndicatorProps extends React.HTMLAttributes<any> {
   color?: string
-  show?: boolean
+  delayMs?: number
+  isBusy?: boolean
 }
 
-export default function BusyIndicator({ className, color, show, style, ...props }) {
+export default function BusyIndicator({ className, color, isBusy, delayMs, style, ...props }) {
   return React.createElement('div', {
     ...props,
-    className: `
-      ${baseClass}
-      ${show ? baseClass+'-visible' : ''}
-      ${className || ''}
-    `,
+    className: `${baseClass} ${className || ''}`,
     style: {
       backgroundColor: color,
+
+      ...(isBusy ? {
+        transitionDelay: (delayMs || 0)+'ms',
+        transform: 'translateY(0)',
+        opacity: 1,
+      } : {}),
+
       ...style
     }
   })
@@ -63,4 +60,5 @@ export default function BusyIndicator({ className, color, show, style, ...props 
 
 (BusyIndicator as any).defaultProps = {
   color: '#1cde78',
+  delayMs: 333,
 }
