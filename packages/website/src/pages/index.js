@@ -4,7 +4,10 @@ import { Layout } from './Layout'
 
 export default Navi.createSwitch({
   getContent: async env =>
-    <Layout siteMap={await env.router.resolveSiteMap('/')} />,
+    <Layout
+      rootPathname={env.pathname}
+      siteMap={await env.router.resolveSiteMap(env.pathname)}
+    />,
 
   paths: {
     '/': Navi.createPage({
@@ -74,10 +77,6 @@ export default Navi.createSwitch({
           title: 'Navigation',
           getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./reference/navigation.md')),
         }),
-        '/react-components': Navi.createPage({
-          title: 'Components',
-          getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./reference/components.md')),
-        }),
         '/routes-segments-urls': Navi.createPage({
           title: 'Routes, Segments and URL Descriptors',
           getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./reference/routes-and-segments.md')),
@@ -85,6 +84,10 @@ export default Navi.createSwitch({
         '/router': Navi.createPage({
           title: 'Router',
           getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./reference/router.md')),
+        }),
+        '/usage-with-react': Navi.createPage({
+          title: 'Usage with React',
+          getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./reference/usage-with-react.md')),
         }),
       }
     }),

@@ -1,9 +1,12 @@
 import React from 'react'
 import { NavContentSegment, NavLink } from 'react-navi'
+import { StickyContainer, Sticky } from 'react-sticky'
 import { MDXProvider } from '@mdx-js/tag'
+import classNames from 'classnames/bind'
 import { Nav } from './Nav'
-import './Layout.scss'
+import styles from './Layout.module.scss'
 
+const cx = classNames.bind(styles)
 
 export class Layout extends React.Component {
   constructor(props) {
@@ -19,7 +22,7 @@ export class Layout extends React.Component {
       h5: createHeadingFactory('h5'),
       h6: createHeadingFactory('h6'),
 
-      wrapper: props => <div className='MDXWrapper'>{props.children}</div>,
+      wrapper: props => <div className={cx('MDXWrapper')}>{props.children}</div>,
 
       inlineCode: (props) => <code {...props} />,
       code: ({ children, metaString, ...props }) => <code {...props}>{children}</code>,
@@ -39,20 +42,35 @@ export class Layout extends React.Component {
             route.content.tableOfContents()
 
           return (
+            <StickyContainer className={cx("App")}>
+              <Sticky disableCompensation disableHardwareAcceleration>
+                {({ style: { width, ...style } }) =>
+                  <Nav
+                    className={cx('nav')}
+                    style={{
+                      position: 'absolute',
+                      ...style,
+                    }}
+                    pageMap={this.props.siteMap.pages}
+                    rootPathname={this.props.rootPathname}
+                    tableOfContents={tableOfContents}
+                    renderToggle={({onToggleOpen, isOpen}) =>
+                      <button
+                        className={cx('hamburger')}
+                        onClick={onToggleOpen}>
+                        <div className={cx('icon')} />
+                      </button>
+                    }
+                  />
+                }
+              </Sticky>
 
-            <div className="App">
-              <main className="App-content">
+              <main className={cx("content")}>
                 <MDXProvider components={this.mdxComponents}>
                   {route && <route.content.Component/>}
                 </MDXProvider>
               </main>
-
-              <Nav
-                className='App-nav'
-                pageMap={this.props.siteMap.pages}
-                tableOfContents={tableOfContents}
-              />
-            </div>
+            </StickyContainer>
           )
         }}
       </NavContentSegment>
@@ -71,14 +89,14 @@ function createHeadingFactory(type) {
           type,
           {
               id: simpleId,
-              className: 'MDXWrapper-heading', 
+              className: styles.heading,
               ...other,
           },
           children,
 
           // Append a hash link to each heading, which will be hidden via
           // CSS until he mouse hovers over the heading.
-          <NavLink className='MDXWrapper-heading-link' href={'#'+simpleId}>#</NavLink>
+          <NavLink className={cx('hash-link')} href={'#'+simpleId}>#</NavLink>
       )
   }
 }

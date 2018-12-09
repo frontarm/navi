@@ -1,4 +1,4 @@
-# Components
+# Usage with React
 
 
 ## `<NavProvider>`

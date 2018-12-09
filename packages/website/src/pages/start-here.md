@@ -14,8 +14,8 @@ Navi
 
 *Just getting started?*
 
-- [Why Navi?](/motivation)
-- [Jump into the minimal example &raquo;](/guides/minimal-example)
+- [Why Navi?](./motivation)
+- [Jump into the minimal example &raquo;](./guides/minimal-example)
 - [Play with the demoboard &raquo;](https://frontarm.com/demoboard/?id=1229d493-ffaf-4133-b384-0f7dfec85af5)
 
 <!-- - [Start a project with create-navi-app &raquo;]() -->

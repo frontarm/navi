@@ -3,11 +3,11 @@ import { NavLink } from 'react-navi'
 import { NaviBar } from 'navi-bar'
 import classNames from 'classnames/bind'
 import logo from './logo.svg'
-import styles from './Nav.scss'
+import styles from './Nav.module.scss'
 
 const cx = classNames.bind(styles)
 
-export const Nav = (props) =>
+export const Nav = React.forwardRef((props, ref) =>
   <NaviBar
     pageMap={props.pageMap}
     tableOfContents={props.tableOfContents}
@@ -17,11 +17,11 @@ export const Nav = (props) =>
     render={({ children, open, toggleOpen }) =>
       <React.Fragment>
         <NaviBar.CloseOverlay />
-        <div className={cx('Nav', { open }) + " " + props.className}>
-          <div className={cx('Sidebar')} style={props.style}>
-            <NavLink href='/' className={cx("brand")}>
+        <div className={cx('Nav', { open }) + " " + props.className} style={props.style} ref={ref}>
+          <nav className={cx('Sidebar')}>
+            <NavLink href={props.rootPathname} className={cx("brand")}>
               <img src={logo} className={cx("logo")} alt="logo" />
-              <span className={cx("name")}>Navi</span>
+              <span className={cx("name")}>Navi.js</span>
             </NavLink>
 
             <nav>
@@ -31,7 +31,7 @@ export const Nav = (props) =>
                 <a href="https://github.com/frontarm/navi" className={cx('link')}>GitHub &raquo;</a>
               </section>
             </nav>
-          </div>
+          </nav>
           <button
             className={cx('hamburger')}
             onClick={toggleOpen}>
@@ -41,6 +41,7 @@ export const Nav = (props) =>
       </React.Fragment>
     }
   />
+)
 
 export const SidebarSection = ({ active, children, meta, title }) => (
   <section className={cx('section', { active })}>
