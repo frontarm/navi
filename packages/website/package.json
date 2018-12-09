@@ -1,6 +1,6 @@
 {
   "name": "navi-website",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "private": true,
   "dependencies": {
     "babel-loader": "^8.0.4",
