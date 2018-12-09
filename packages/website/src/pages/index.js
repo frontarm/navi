@@ -1,10 +1,16 @@
+import React from 'react'
 import * as Navi from 'navi'
+import { Layout } from './Layout'
 
 export default Navi.createSwitch({
+  getContent: async env =>
+    <Layout siteMap={await env.router.resolveSiteMap('/')} />,
+
   paths: {
     '/': Navi.createPage({
       title: "Start Here",
-      getContent: env => getDocumentExports(import('!babel-loader!mdx-loader!./start-here.md')),
+      getContent: env =>
+        getDocumentExports(import('!babel-loader!mdx-loader!./start-here.md')),
       meta: {
         description: 'A batteries-included router for React.',
       },
@@ -87,6 +93,6 @@ export default Navi.createSwitch({
 
 async function getDocumentExports(modulePromise) {
   let mod = await modulePromise
-  let { default: Document, tableOfContents } = mod
-  return { Document, tableOfContents }
+  let { default: Component, tableOfContents } = mod
+  return { Component, tableOfContents }
 }

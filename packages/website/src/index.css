@@ -14,7 +14,3 @@ body {
   font-size: 16px;
   line-height: 1.5rem;
 }
-
-code[class*="language-"], pre[class*="language-"] {
-  font-size: 0.8rem;
-}

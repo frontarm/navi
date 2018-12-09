@@ -32,10 +32,7 @@ Navi.app({
 
         // Start react.
         renderer(
-            <App
-                navigation={navigation}
-                siteMap={await navigation.router.resolveSiteMap('/')}
-            />,
+            <App navigation={navigation} />,
             document.getElementById('root')
         )
     }

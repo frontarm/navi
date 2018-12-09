@@ -154,9 +154,13 @@ export async function renderPageToString({
   // Get the `title` and `meta` for the matched page
   let { title, meta } = navigation.getCurrentValue()
 
-  // Render the <App navigation={navigation}> element to a string
+  // Render the <App> element to a string, passing in
+  // `navigation` and `siteMap` objects as props
   let appHTML = ReactDOMServer.renderToString(
-    React.createElement(exports.App, { navigation })
+    React.createElement(exports.App, {
+      navigation,
+      siteMap,
+    })
   )
 
   // Generate metadata 

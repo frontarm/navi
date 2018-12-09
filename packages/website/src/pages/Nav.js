@@ -3,11 +3,11 @@ import { NavLink } from 'react-navi'
 import { NaviBar } from 'navi-bar'
 import classNames from 'classnames/bind'
 import logo from './logo.svg'
-import styles from './AppNav.scss'
+import styles from './Nav.scss'
 
 const cx = classNames.bind(styles)
 
-export const AppNav = (props) =>
+export const Nav = (props) =>
   <NaviBar
     pageMap={props.pageMap}
     tableOfContents={props.tableOfContents}
@@ -17,7 +17,7 @@ export const AppNav = (props) =>
     render={({ children, open, toggleOpen }) =>
       <React.Fragment>
         <NaviBar.CloseOverlay />
-        <div className={cx('AppNav', { open }) + " " + props.className}>
+        <div className={cx('Nav', { open }) + " " + props.className}>
           <div className={cx('Sidebar')} style={props.style}>
             <NavLink href='/' className={cx("brand")}>
               <img src={logo} className={cx("logo")} alt="logo" />
