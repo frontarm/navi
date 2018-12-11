@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css?family=Lato:300,400,400i,700,900|Inconsolata:400,700');
 @import '~prismjs/themes/prism.css';
 
+* {
+  box-sizing: border-box;
+}
+
 html {
   font-family: Lato, sans-serif;
   font-size: 8px;

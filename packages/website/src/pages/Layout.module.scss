@@ -2,7 +2,7 @@
   $primary: #1ee79e;
   $sidebarWidth: 250px;
 
-  .App {
+  .Layout {
     position: relative;
     min-height: 100%;
 
@@ -44,10 +44,9 @@
     }
   }
 
-  .MDXWrapper {
+  .document {
     margin: 4rem 2rem 8rem;
-    max-width: 650px;
-
+    
     // Wide
     @media only screen and (min-width: 768px) {
       margin-left: 5rem;
@@ -68,7 +67,12 @@
     }
     pre code { font-size: 1.6rem; white-space: pre-wrap; }
     code { font-size: 2rem; }
-    h1 { font-family: Lato, monospace; line-height: 4rem; margin: 6rem 0 4rem; font-size: 200%; }
+    h1 {
+      font-family: Lato, monospace;
+      line-height: 4rem;
+      margin: 6rem 0 4rem;
+      font-size: 200%;
+    }
     h2 {
       font-family: Lato, sans-serif;
       margin: 5rem 0 4rem 0;
@@ -151,7 +155,6 @@
       border: 2px solid $primary;
       border-radius: 3px;
       padding: 1rem 3rem;
-      margin: 3rem 0;
     }
     aside h4 {
       margin-top: 2rem;
@@ -166,16 +169,19 @@
       text-decoration: underline;
     }
 
-    .heading {
-      .hash-link {
+    h1, h2, h3, h4, h5, h6 {
+      .headingLink {
+        position: absolute;
         padding: 0 1rem;
+        font-size: 18px;
+        left: -24px;
         text-decoration: none;
         font-weight: normal;
         color: #aaa;
         visibility: hidden;
       }
 
-      &:hover .hash-link {
+      &:hover .headingLink {
         visibility: visible;
       }
     }

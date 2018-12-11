@@ -9,11 +9,12 @@
     "mdx-loader": "2.0.2",
     "node-sass": "^4.9.4",
     "prismjs": "^1.15.0",
-    "react": "^16.6.0",
-    "react-dom": "^16.6.0",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
     "react-scripts": "2.1.1",
     "react-sticky": "6.0.3",
-    "rimraf": "^2.6.2"
+    "rimraf": "^2.6.2",
+    "typescript": "^3.2.2"
   },
   "scripts": {
     "clean": "rimraf build",

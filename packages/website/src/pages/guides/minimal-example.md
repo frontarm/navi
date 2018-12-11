@@ -16,7 +16,7 @@ Step 1: Declare some pages
 To declare your pages, you'll use Navi's `createSwitch()` and `createPage()` functions. Switches are used to map URL paths to pages. Pages represent individual locations that you can navigate to.
 
 ```js
-// pages/index.js
+//--- pages.js
 import { createPage, createSwitch } from 'navi'
 import * as React from 'react'
 import { NavLink } from 'react-navi'
@@ -149,7 +149,7 @@ Now that you have a working app, let's add a one more tweak as a bonus step...
 Bonus: Loading indicators
 -------------------------
 
-As Navi doesn't render the new page until it has loaded, there can sometimes be a large delay between clicking a link seeing the result. In cases like this, it's important to keep the user in the loop. And to do so, you can wrap your route with a `<NavLoading>` component:
+Navi doesn't render the new pages until they have loaded, so there can sometimes be a large delay between clicking a link seeing the result. In cases like this, it's important to keep the user in the loop. And to do so, you can wrap your route with a `<NavLoading>` component:
 
 ```js
 import React from 'react'

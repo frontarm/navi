@@ -5,7 +5,9 @@ import { Layout } from './Layout'
 export default Navi.createSwitch({
   getContent: async env =>
     <Layout
-      rootPathname={env.pathname}
+      currentUser={{}}
+      isPro={true}
+      rootPathname={env.pathname || '/'}
       siteMap={await env.router.resolveSiteMap(env.pathname)}
     />,
 
@@ -96,6 +98,6 @@ export default Navi.createSwitch({
 
 async function getDocumentExports(modulePromise) {
   let mod = await modulePromise
-  let { default: Component, tableOfContents } = mod
-  return { Component, tableOfContents }
+  let { default: Component, demoboardHelpers, tableOfContents } = mod
+  return { Component, demoboardHelpers, tableOfContents }
 }

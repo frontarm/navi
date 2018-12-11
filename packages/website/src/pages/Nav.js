@@ -21,7 +21,7 @@ export const Nav = React.forwardRef((props, ref) =>
           <nav className={cx('Sidebar')}>
             <NavLink href={props.rootPathname} className={cx("brand")}>
               <img src={logo} className={cx("logo")} alt="logo" />
-              <span className={cx("name")}>Navi.js</span>
+              <span className={cx("name")}>Navi</span>
             </NavLink>
 
             <nav>

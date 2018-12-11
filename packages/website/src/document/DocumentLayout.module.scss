@@ -1,0 +1,116 @@
+:local {
+  $body-width: 650px;
+  $column: 69px;
+  $gutter: 32px;
+  $small-gutter: 20px;
+
+  $body-width: $column*6 + $gutter*6;
+
+  $max-responsive-width: 1240px;
+  $max-single-column-width: 1100px;
+  $max-mobile-width: 550px;
+
+  @mixin full-width {
+    @media (min-width: #{$max-responsive-width + 1px}) {
+      @content;
+    }
+  }
+  @mixin responsive-width {
+    @media (min-width: #{$max-single-column-width + 1px}) and (max-width: #{$max-responsive-width}) {
+      @content;
+    }
+  }
+  @mixin single-column-width {
+    @media (min-width: #{$max-mobile-width + 1px}) and (max-width: #{$max-single-column-width}) {
+      @content;
+    }
+  }
+  @mixin mobile-width {
+    @media (max-width: #{$max-mobile-width}) {
+      @content;
+    }
+  }
+
+  @mixin left-column {
+    @include full-width {
+      width: 100%;
+      max-width: $body-width;
+    }
+    @include responsive-width {
+      width: calc( (100vw - 120px - #{$small-gutter}*11)/12 * 6 + #{$small-gutter} * 5);
+      max-width: $body-width;
+    }
+    @include single-column-width {
+      width: $body-width;
+      max-width: 100%;
+    }
+    @include mobile-width {
+      width: 100%;
+      max-width: calc(100vw - 40px); 
+    }
+  }
+
+  .Document {
+    position: relative; 
+  
+    p, h1,h2,h3,h4,h5,h6, ul, ol, img, pre, hr, blockquote, .Block {
+      @include left-column;
+    }
+  }
+
+  .Aside {
+    max-width: $gutter*3 + $column*4;
+
+    @include full-width {
+      position: absolute;
+      left: $body-width + $gutter;
+      width: calc(100% - #{$body-width} - #{$gutter});
+    }
+    @include responsive-width {
+      position: absolute;
+      left: calc( (100vw - 120px - 20px*11)/12 * 6 + 20px * 6);
+      width: calc( 100% - ( (100vw - 120px - #{$small-gutter}*11)/12 * 6 + #{$small-gutter} * 4));
+    }
+    @include single-column-width {
+      width: $body-width;
+      max-width: 100%;
+    }
+    @include mobile-width {
+      width: 100%;
+      margin: 2rem 0;
+    }
+  }
+
+  .AsideOrAfter {
+    position: relative;
+
+    > .aside {
+      max-width: $gutter*3 + $column*4;
+
+      @include full-width {
+        position: absolute;
+        top: 0;
+        left: $body-width + $gutter;
+        width: calc(100% - #{$body-width} - #{$gutter});
+      }
+      @include responsive-width {
+        position: absolute;
+        top: 0;
+        left: calc( (100vw - 120px - 20px*11)/12 * 6 + 20px * 6);
+        width: calc( 100% - ( (100vw - 120px - #{$small-gutter}*11)/12 * 6 + #{$small-gutter} * 4));
+      }
+      @include single-column-width {
+        width: $body-width;
+        max-width: 100%;
+      }
+      @include mobile-width {
+        width: 100%;
+        margin: 2rem 0;
+      }
+    }
+  }
+
+  .FullWidth{
+    width: 100%;
+  }
+}
