@@ -100,11 +100,16 @@ interface InnerConsumeSegmentState {
 }
 
 class InnerConsumeSegment extends React.Component<InnerConsumeSegmentProps, InnerConsumeSegmentState> {
-  static getDerivedStateFromProps(props: InnerConsumeSegmentProps, state: InnerConsumeSegmentState): Partial<InnerConsumeSegmentState> {
+  static getDerivedStateFromProps(props: InnerConsumeSegmentProps, state: InnerConsumeSegmentState): Partial<InnerConsumeSegmentState> | null {
     let unconsumedSegments = props.context.unconsumedSegments || props.context.route.segments
+    let lastReady = state.lastReady
+
+    // Bail if nothing has changed
+    if (lastReady && lastReady.context === props.context) {
+      return null
+    }
 
     let isReady = props.isReady!(unconsumedSegments[0])
-    let lastReady = state.lastReady
 
     if (isReady) {
       let index = props.where ? unconsumedSegments.findIndex(props.where!) : 0
