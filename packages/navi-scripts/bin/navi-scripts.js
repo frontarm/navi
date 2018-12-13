@@ -14,6 +14,7 @@ let defaultHost = process.platform === 'win32'
 // recent JavaScript features.
 require("@babel/register")({
   babelrc: false,
+  configFile: false,
   presets: [
     [
       "@babel/preset-env",
