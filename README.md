@@ -1,4 +1,6 @@
-![Navi Logo](./media/logo-title.png)
+# <a href='https://frontarm.com/navi/'><img src='/frontarm/navi/raw/master/media/logo-title.png' height='100' alt='Navi Logo' aria-label='frontarm.com/navi' /></a>
+
+[![NPM](https://img.shields.io/npm/v/navi.svg)](https://www.npmjs.com/package/navi)
 
 Navi lets you create big, fast, CDN-delivered websites with great SEO & SMO, and all with vanilla create-react-app.
 
