@@ -2,7 +2,7 @@
 
 [![NPM](https://img.shields.io/npm/v/navi.svg)](https://www.npmjs.com/package/navi)
 
-Navi lets you create big, fast, CDN-delivered websites with great SEO & SMO, and all with vanilla create-react-app.
+**Navi lets you create big, fast, CDN-delivered websites with great SEO & SMO, and all with vanilla create-react-app.**
 
 🚀 Optimize SEO with static HTML for each page<br />
 🔥 Ergonomic code splitting and page loading transitions<br />
@@ -13,15 +13,27 @@ Navi lets you create big, fast, CDN-delivered websites with great SEO & SMO, and
 ♿️ Page `<title>` management for accessibility<br />
 ⚠️ Console warnings when a `<Link>` points to a 404<br />
 
+Just getting started?
 
-The minimal example
--------------------
+- [View the docs &raquo;](https://frontarm.com/navi/)
+- [Why Navi?](https://frontarm.com/navi/motivation/)
+- [Play with the demoboard &raquo;](https://frontarm.com/demoboard/?id=1229d493-ffaf-4133-b384-0f7dfec85af5)
 
-After spinning up a fresh app with [create-react-app](https://github.com/facebook/create-react-app), start by installing the Navi packages:
+
+Install it
+----------
 
 ```bash
 npm install --save navi react-navi
 ```
+
+
+The minimal example
+-------------------
+
+*You can view [this example with live editors](https://frontarm.com/navi/guides/minimal-example/) on the documentation website.*
+
+After spinning up a fresh app with [create-react-app](https://github.com/facebook/create-react-app) and installing `navi` and `react-navi`, there are just three steps to getting a basic app running:
 
 ### 1. Declare some pages
 
