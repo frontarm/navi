@@ -61,7 +61,7 @@ import * as React from 'react'
 import { Link } from 'react-navi'
 
 export default function Reference() {
-  retrun (
+  return (
     <div>
       <h2>Reference</h2>
       <p>Coming soon.</p>
@@ -113,7 +113,7 @@ import * as React from 'react'
 import { NavLink, NavProvider, NavRoute } from 'react-navi'
 import './App.css'
 
-class App extends Component {
+class App extends React.Component {
   render() {
     return (
       <NavProvider navigation={this.props.navigation}>
@@ -143,7 +143,7 @@ In fact, let's add a couple real-world tweaks as a bonus step, just to see how e
 As Navi doesn't render the new page until it has loaded, there can sometimes be a large delay between clicking a link seeing the result. In cases like this, it's important to keep the user in the loop. And to do so, you can wrap your route with a `<NavLoading>` component:
 
 ```js
-class App extends Component {
+class App extends React.Component {
   render() {
     return (
       <NavProvider navigation={this.props.navigation}>
@@ -175,7 +175,7 @@ The `<NavLoading>` component accepts a render function as its children, to which
 ### Handling 404s
 
 ```js
-class App extends Component {
+class App extends React.Component {
   render() {
     return (
       <NavProvider navigation={this.props.navigation}>
