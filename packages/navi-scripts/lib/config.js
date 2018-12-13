@@ -124,6 +124,8 @@ async function processConfig(config) {
         let navigation = Navi.createMemoryNavigation({ pages, url })
         let { route } = await navigation.getSteadyValue()
 
+        let canonicalURLBase = process.env.CANONICAL_URL || process.env.PUBLIC_URL || ''
+
         return reactNaviCreateReactApp.renderCreateReactAppTemplate({
           insertIntoRootDiv:
             ReactDOMServer.renderToString(
@@ -134,6 +136,7 @@ async function processConfig(config) {
             ),
           replaceTitleWith:
             `\n<title>${route.title || 'Untitled'}</title>\n` +
+            `<link rel="canonical" href="${canonicalURLBase+url.href}" />\n`+
             Object.entries(route.meta || {}).map(([key, value]) =>
               `<meta name="${he.encode(key)}" content="${he.encode(value)}" />`
             ).concat('').join('\n'),

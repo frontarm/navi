@@ -24,6 +24,10 @@ async function createScriptRunner(config) {
             }
 
             async fetch(url, fetchOptions) {
+                if (process.env.PUBLIC_URL) {
+                    url = url.replace(process.env.PUBLIC_URL, '')
+                }
+
                 let relativePathname = url[0] === '/' ? url.slice(1) : url
                 let filesystemPath = path.join(config.root, relativePathname)
 

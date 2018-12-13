@@ -32,15 +32,18 @@ async function createConfigFromCommand(command) {
   let configFile = command.config || 'navi.config.js'
   try {
     // Load the config file as an ES6 module
-    config = require(path.resolve(cwd, command.config))
+    let configPath = path.resolve(cwd, configFile)
+    config = require(configPath)
+    console.log(chalk.green('navi-scripts:')+' Using config at '+configPath)
   }
   catch (e) {
     if (command.config) {
-      console.error(chalk.red("[ohshit] ")+`Couldn't read config file "${command.config}". Aborting.`)
+      console.error(chalk.green('navi-scripts:')+chalk.red("[ohshit] ")+`Couldn't read config file "${command.config}". Aborting.`)
       console.error(e.message)
       process.exit(1)
     }
     else {
+      console.log(chalk.green('navi-scripts:')+' No config file found, using default config.')
       config = {}
     }
   }
