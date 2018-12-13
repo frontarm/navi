@@ -56,13 +56,9 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
     dispose() {
         this.currentRouteObservable.dispose()
         delete this.currentRouteObservable
-
-        this.router.dispose()
         delete this.router
-
         delete this.resolver
         delete this.pages
-
     }
 
     setContext(context: Context) {
@@ -110,7 +106,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
         onComplete?: () => void
     ): SimpleSubscription {
         let navigationObserver = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
-        let mapObserver = new MapObserver(navigationObserver, this.history, this.router)
+        let mapObserver = new MapObserver(navigationObserver, this)
         return this.currentRouteObservable.subscribe(mapObserver)
     }
 }
@@ -120,22 +116,20 @@ const noop = () => {}
 
 
 class MapObserver implements Observer<Route> {
-    history: History
-    router: Router<any>
+    navigation: MemoryNavigation<any>
     observer: Observer<NavigationSnapshot>
 
-    constructor(observer: Observer<NavigationSnapshot>, history: History, router: Router<any>) {
+    constructor(observer: Observer<NavigationSnapshot>, navigation: MemoryNavigation<any>) {
         this.observer = observer
-        this.history = history
-        this.router = router
+        this.navigation = navigation
     }
 
     next(route: Route): void {
         this.observer.next({
             route,
             url: route.url,
-            history: this.history,
-            router: this.router,
+            history: this.navigation.history,
+            router: this.navigation.router,
             onRendered: noop,
         })
     }

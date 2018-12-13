@@ -97,21 +97,16 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
     dispose() {
         this.currentRouteObservable.dispose()
         delete this.currentRouteObservable
-
-        this.router.dispose()
         delete this.router
-
         delete this.history
         delete this.resolver
         delete this.pages
         delete this.setDocumentTitle
         delete this.receivedRoute
         delete this.renderedRoute
-
     }
 
     setContext(context: Context) {
-        this.router.dispose()
         this.router = new Router(this.resolver, {
             rootContext: context,
             pages: this.pages,
@@ -156,7 +151,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         onComplete?: () => void
     ): SimpleSubscription {
         let navigationObserver = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
-        let mapObserver = new MapObserver(navigationObserver, this.history, this.router, this.handleRendered)
+        let mapObserver = new MapObserver(navigationObserver, this, this.handleRendered)
         return this.currentRouteObservable.subscribe(mapObserver)
     }
 
@@ -229,15 +224,13 @@ function scrollToHash(hash, behavior) {
 
 
 class MapObserver implements Observer<Route> {
-    history: History
-    router: Router<any>
+    navigation: BrowserNavigation<any>
     observer: Observer<NavigationSnapshot>
     onRendered: () => void
 
-    constructor(observer: Observer<NavigationSnapshot>, history: History, router: Router<any>, onRendered: () => void) {
+    constructor(observer: Observer<NavigationSnapshot>, navigation: BrowserNavigation<any>, onRendered: () => void) {
+        this.navigation = navigation
         this.observer = observer
-        this.history = history
-        this.router = router
         this.onRendered = onRendered
     }
 
@@ -245,8 +238,8 @@ class MapObserver implements Observer<Route> {
         this.observer.next({
             route,
             url: route.url,
-            history: this.history,
-            router: this.router,
+            history: this.navigation.history,
+            router: this.navigation.router,
             onRendered: this.onRendered,
         })
     }
