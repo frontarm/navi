@@ -1,0 +1,3 @@
+[submodule "packages/navi-website"]
+	path = packages/navi-website
+	url = git@github.com:frontarm/navi-website
