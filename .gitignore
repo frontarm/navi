@@ -6,3 +6,4 @@ notes
 *.log
 NOTES.md
 dist
+packages/navi-website
