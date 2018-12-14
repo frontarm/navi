@@ -72,7 +72,7 @@ But what about the `/reference` page? It's not returning an element or component
 ```js
 // pages/reference.js
 import * as React from 'react'
-import { Link } from 'react-navi'
+import { NavLink } from 'react-navi'
 
 export default function Reference() {
   return (
