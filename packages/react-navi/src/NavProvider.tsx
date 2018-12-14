@@ -46,7 +46,7 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
   render() {
     if (process.env.NODE_ENV !== 'production') {
       if (this.props.navigationSnapshot && this.props.navigation) {
-        console.warn(`A <Navi.Provider> component has received values for both its "navigation" and "navigationSnapshot" props. Navi will use the "navigationSnapshot" value.`)
+        console.warn(`A <NavProvider> component has received values for both its "navigation" and "navigationSnapshot" props. Navi will use the "navigationSnapshot" value.`)
       }
     }
 
