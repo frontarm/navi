@@ -150,7 +150,7 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
         childNode = this.child.maybeResolvableNode
       } else {
         childNodeResolution = this.resolver.resolve(
-          this.env,
+          this.child.matcherOptions.env,
           this.child.maybeResolvableNode as ResolvableNode<NaviNode>,
         )
         resolutionIds.push(childNodeResolution.id)
