@@ -10,12 +10,27 @@ import { URLDescriptor, createURLDescriptor } from './URLTools';
 
 
 export interface MemoryNavigationOptions<Context extends object> extends RouterOptions<Context> {
+    /**
+     * The Switch that declares your app's pages.
+     */
+    pages: Switch,
+
+    /**
+     * The initial URL to match.
+     */
     url: string | Partial<URLDescriptor>
 
-    context?: Context,
-
-    pages: Switch,
+    /**
+     * If provided, this part of any URLs will be ignored. This is useful
+     * for mounting a Navi app in a subdirectory on a domain.
+     */
     basename?: string,
+
+    /**
+     * This will be made available within your `pages` Switch through
+     * the `env` object passed to any getter functions.
+     */
+    context?: Context,
 }
 
 

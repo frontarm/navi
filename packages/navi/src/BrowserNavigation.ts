@@ -11,6 +11,35 @@ import { areURLDescriptorsEqual } from './URLTools';
 
 export interface BrowserNavigationOptions<Context extends object> {
     /**
+     * The Switch that declares your app's pages.
+     */
+    pages: Switch,
+
+    /**
+     * If provided, this part of any URLs will be ignored. This is useful
+     * for mounting a Navi app in a subdirectory on a domain.
+     */
+    basename?: string,
+
+    /**
+     * This will be made available within your `pages` Switch through
+     * the `env` object passed to any getter functions.
+     */
+    context?: Context,
+
+    /**
+   * If `true`, Navi won't perform any scrolling when navigating between
+   * pages.
+   */
+    disableScrollHandling?: boolean,
+
+    /**
+     * The scroll behavior to use when scrolling between hashes on a
+     * page. Defaults to smooth.
+     */
+    hashScrollBehavior?: 'smooth' | 'instant'
+
+    /**
      * You can manually supply a history object. This is useful for
      * integration with react-router.
      * 
@@ -28,23 +57,6 @@ export interface BrowserNavigationOptions<Context extends object> {
      * Defaults to `true`.
      */
     setDocumentTitle?: boolean | ((pageTitle?: string) => string),
-
-    /**
-     * If `true`, this will not scroll the user when navigating between
-     * pages.
-     */
-    disableScrollHandling?: boolean,
-
-    /**
-     * The scroll behavior to use when scrolling between hashes on a
-     * page. Defaults to smooth.
-     */
-    hashScrollBehavior?: 'smooth' | 'instant'
-
-    context?: Context,
-
-    pages: Switch,
-    basename?: string,
 }
 
 

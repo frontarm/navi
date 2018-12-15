@@ -3,12 +3,46 @@
  * a specific screen within your application.
  */
 export type URLDescriptor = {
+  /**
+   * The URL's pathname part, starting from the first `/`, and ending
+   * before any search string.
+   * 
+   * E.g. `/documents/hidden/`
+   */
   pathname: string,
+
+  /**
+   * The URL's query part, including any `?` character. When there
+   * is no query, it defaults to an empty string.
+   * 
+   * E.g. `?q=pants`.
+   */
   search: string,
+
+  /**
+   * The URL's hash part, including any `#` character. When there
+   * is no hash, it defaults to an empty string.
+   * 
+   * E.g. `#top`.
+   */
   hash: string,
+
+  /**
+   * An object containing string values of parameters extracted from
+   * the `pathname` or `search` properties. 
+   */
   query: Params,
+
+  /**
+   * The full string URL. If this URL Descriptor was created from a
+   * string that you passed in, then this will match your provided
+   * string.
+   */
   href: string,
 
+  /**
+   * The `state` object, as stored in your browser's `history` object.
+   */
   state?: object,
 }
 
