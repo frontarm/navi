@@ -1,4 +1,4 @@
-import { URLDescriptor, createURLDescriptor } from './URLTools'
+import { URLDescriptor, createURLDescriptor, joinPaths } from './URLTools'
 import { Resolvable, reduceStatuses } from './Resolver'
 import { SegmentType, RedirectSegment, createSegment } from './Segments'
 import { NodeMatcher, NodeMatcherResult, NaviNodeBase, NaviNodeType, NodeMatcherOptions } from './Node'
@@ -30,10 +30,24 @@ export class RedirectMatcher<Context extends object = any, Meta extends object =
     status = reduceStatuses(status, metaResolution.status)
     error = error || metaResolution.error
     
+    // TODO: support all relative URLs
+    let toHref: string | undefined
+    if (typeof to === 'string') {
+      if (to.slice(0, 2) === './') {
+        toHref = joinPaths(this.env.pathname.split('/').slice(0, -1).join('/'), to.slice(2))
+      }
+      else {
+        toHref = to
+      }
+    }
+    else if (to) {
+      toHref = createURLDescriptor(to).href
+    }
+
     return {
       resolutionIds: [toResolution.id, metaResolution.id],
       segment: createSegment(SegmentType.Redirect, this.env, {
-        to: to && (typeof to === 'string' ? to : createURLDescriptor(to).href),
+        to: toHref,
         meta: meta || emptyObject,
         status,
         error,
