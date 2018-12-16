@@ -1,19 +1,24 @@
 import * as Navi from 'navi'
-import * as React from 'react'
 
 export default Navi.createSwitch({
   paths: {
     '/': Navi.createPage({
-      title: "MyApp",
+      title: "React Site",
+      meta: {
+        // This will be added to your page <head> during static rendering.
+        description: "My great site",
+      },
       getContent: () => import('./index.mdx')
     }),
       
-    '/create-react-site': Navi.createPage({
-      title: "About create-react-site",
+    '/getting-started': Navi.createPage({
+      title: "Getting Started",
       getContent: async () => {
+        // This simulates some async content loading, so that
+        // you can test the site's loading bar.
         await new Promise(resolve => setTimeout(resolve, 1000))
 
-        return import('./create-react-site.mdx')
+        return import('./getting-started.mdx')
       }
     }),
   }

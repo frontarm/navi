@@ -353,19 +353,6 @@ function run(
     );
   }
 
-  if (!template) {
-    template = 
-      path.dirname(
-        require.resolve(
-          path.join(
-            'navi-scripts',
-            (useTypescript ? 'template-typescript' : 'template'),
-            'README.md'
-          )
-        )
-      )
-  }
-
   console.log('Installing packages. This might take a couple of minutes.');
   getPackageName(packageToInstall)
     .then(packageName =>
@@ -400,6 +387,16 @@ function run(
       const pnpPath = path.resolve(process.cwd(), '.pnp.js');
 
       const nodeArgs = fs.existsSync(pnpPath) ? ['--require', pnpPath] : [];
+
+      if (!template) {
+        template =
+          path.join(
+            root,
+            'node_modules',
+            'navi-scripts',
+            (useTypescript ? 'template-typescript' : 'template')
+          )
+      }
 
       await executeNodeScript(
         {
