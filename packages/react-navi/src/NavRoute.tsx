@@ -45,6 +45,9 @@ export class NavRoute extends React.Component<NavRouteProps> {
     else if (output.route && output.route.content) {
       let content = output.route.content
       if (typeof content === 'function') {
+        if (content.prototype instanceof React.Component) {
+          return React.createElement(content as any, output.route)
+        }
         render = output.route.content
       }
       else if (React.isValidElement(content)) {
