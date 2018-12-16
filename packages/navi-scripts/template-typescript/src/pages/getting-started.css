@@ -1,0 +1,10 @@
+.GettingStarted {
+  margin: 1.5rem;
+}
+
+.GettingStarted h1 {
+  color: #333;
+  font-size: 2rem;
+  margin-top: 3rem;
+  line-height: 2.5rem;
+}
