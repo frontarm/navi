@@ -34,7 +34,8 @@ Navi.app({
     let navigation = Navi.createBrowserNavigation({
       pages,
       
-      //
+      // Disable Navi's title management so that it doesn't get in the way
+      // of react-helmet.
       setDocumentTitle: false,
     });
 
