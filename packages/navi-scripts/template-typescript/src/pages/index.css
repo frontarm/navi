@@ -23,12 +23,12 @@
 }
 .Index-logo-navi {
   animation: Index-logo-navi-spin infinite 20s linear;
-  left: 245px;
+  left: 212px;
   top: 1px;
 }
 .Index-logo-react {
   animation: Index-logo-react-spin infinite 20s linear;
-  left: 11px;
+  left: -22px;
   top: 1px;
 }
 
