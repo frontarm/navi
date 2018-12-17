@@ -51,6 +51,9 @@ export class NavContentSegment extends React.Component<NavContentSegmentProps> {
     else if (output.segment && output.segment.content) {
       let content = output.segment.content
       if (typeof content === 'function') {
+        if (content.prototype instanceof React.Component) {
+          return React.createElement(content as any, output.route)
+        }
         render = output.segment.content
       }
       else if (React.isValidElement(content)) {
