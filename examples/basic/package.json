@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "react-dom": "^16.6.3",
     "react-scripts-mdx": "2.1.2"
   },
   "scripts": {

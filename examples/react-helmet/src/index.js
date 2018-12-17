@@ -15,11 +15,16 @@ Navi.app({
   // Switch object.
   pages,
 
-  // The default create-react-app renderer needs access to the App component.
-  // Learn about custom static renderers at:
+  // These exports will be passed to the `renderPageToString()` function in
+  // navi.config.js. Learn more about `renderPageToString()` at
   // https://frontarm.com/navi/guides/static-rendering/
   exports: {
     App,
+
+    // react-helmet stores each rendered page's <head> data directly within
+    // the `Helmet` variable, so you'll need to export it too. Note that you
+    // can't just import this within the renderer, as it'll re-import it as
+    // completely separate object.
     Helmet,
   },
 
@@ -27,8 +32,10 @@ Navi.app({
   // be called when performing static generation.
   async main() {
     let navigation = Navi.createBrowserNavigation({
-      setDocumentTitle: false,
       pages,
+      
+      //
+      setDocumentTitle: false,
     });
 
     // Wait until the navigation has loaded the page's content, or failed to do
