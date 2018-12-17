@@ -52,6 +52,10 @@ class InnerNotFoundBoundary extends React.Component<InnerNotFoundBoundaryProps, 
   componentDidCatch(error, info) {
     if (error instanceof NotFoundError) {
       this.setState({ current: { error, info } })
+      
+      if (this.props.loadingContext.isLoading) {
+        this.props.loadingContext.setLoading(false)
+      }
     }
     else {
       throw error
