@@ -35,7 +35,7 @@ Navi.app({
 
 By default, Navi doesn't know how to use the exported Helmet object -- so you'll need to teach it. To do so, you'll need to add a `renderPageToString()` function to your `navi.config.js`.
 
-```
+```js
 import * as Navi from 'navi'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
