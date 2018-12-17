@@ -1,6 +1,6 @@
 {
   "name": "react-navi",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "A batteries-included router for react.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -26,7 +26,7 @@
     "static"
   ],
   "peerDependencies": {
-    "navi": "^0.8.0",
+    "navi": "^0.9.0",
     "react": "^16.5.0",
     "react-dom": "^16.5.0"
   },

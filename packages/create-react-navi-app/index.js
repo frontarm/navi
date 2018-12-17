@@ -48,11 +48,11 @@ if (major < 8) {
       'You are running Node ' +
         currentNodeVersion +
         '.\n' +
-        'Create React Site requires Node 8 or higher. \n' +
+        'Create Navi App requires Node 8 or higher. \n' +
         'Please update your version of Node.'
     )
   );
   process.exit(1);
 }
 
-require('./createReactSite');
+require('./createReactNaviApp');

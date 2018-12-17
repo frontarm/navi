@@ -1,5 +1,5 @@
 {
-  "name": "create-react-site",
+  "name": "create-react-navi-app",
   "version": "0.9.0",
   "keywords": [
     "react"
@@ -15,11 +15,11 @@
   },
   "files": [
     "index.js",
-    "createReactSite.js",
+    "createReactNaviApp.js",
     "yarn.lock.cached"
   ],
   "bin": {
-    "create-react-site": "./index.js"
+    "create-react-navi-app": "./index.js"
   },
   "dependencies": {
     "chalk": "1.1.3",

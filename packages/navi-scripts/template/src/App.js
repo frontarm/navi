@@ -49,7 +49,7 @@ class App extends Component {
   }
 }
 
-// Note that create-react-site will always show an error screen when this
+// Note that create-react-navi-app will always show an error screen when this
 // is called. This is because the underlying react-scripts package show
 // the error screen when a NotFoundError is thrown, even though it's caught
 // by <NavNotFoundBoundary>. To see the error rendered by this function,

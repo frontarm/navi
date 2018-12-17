@@ -132,7 +132,7 @@ if (program.info) {
         Binaries: ['Node', 'npm', 'Yarn'],
         Browsers: ['Chrome', 'Edge', 'Internet Explorer', 'Firefox', 'Safari'],
         npmPackages: ['react', 'react-dom', 'react-scripts-mdx'],
-        npmGlobalPackages: ['create-react-site'],
+        npmGlobalPackages: ['create-react-navi-app'],
       },
       {
         clipboard: false,

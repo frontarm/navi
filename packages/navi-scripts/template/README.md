@@ -1,12 +1,12 @@
-This project was bootstrapped with [Create React Site](https://github.com/frontarm/create-react-site).
+This project was bootstrapped with [Create React/Navi App](https://github.com/frontarm/navi/tree/master/packages/create-react-navi-app).
 
-Create React Site is an extension to [Create React App](https://facebook.github.io/create-react-app/docs/getting-started), with the following features:
+Create React/Navi App is an extension to [Create React App](https://facebook.github.io/create-react-app/docs/getting-started), with the following features:
 
-- [MDX](https://mdxjs.com/) files can be imported, allowing you write your site's contents with a mix of Markdown and JSX.
+- [MDX](https://mdxjs.com/) files can be imported, allowing you to write your site's contents with a mix of Markdown and JSX.
 - The initial template includes the [Navi](https://frontarm.com/navi/) router, with two example routes included in the `src/pages` directory.
-- The `npm run build` script has been extended to [statically render](https://frontarm.com/articles/static-vs-server-rendering/) for each page, improving SEO and SMO.
+- The `npm run build` script has been extended to [statically render](https://frontarm.com/articles/static-vs-server-rendering/) each of your URLs, facilitating faster loading time and improved SEO for any static content.
 
-Othewise, create-react-site is identical to create-react-app! So here's the default create-react-app documentation:
+Otherwise, create-react-navi-app is identical to create-react-app! So here's the default create-react-app documentation:
 
 ## Available Scripts
 
