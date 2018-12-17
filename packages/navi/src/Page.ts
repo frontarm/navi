@@ -101,12 +101,6 @@ export function createPage<Context extends object, Meta extends object, Content>
           .join(', ')}.`,
       )
     }
-
-    if (title === undefined && getTitle === undefined) {
-      console.warn(
-        `createPage() should be called with a "title" or "getTitle" option. If you're sure you don't want to set a title, you can silence this warning by passing "null" as the title.`,
-      )
-    }
   }
 
   return class extends PageMatcher<Context, Meta, Content> {
