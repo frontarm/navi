@@ -27,6 +27,12 @@ import {
   ResolvableNode,
   NodeMatcherOptions,
 } from './Node'
+// import {
+//   PageMatcher
+// } from './Page'
+// import {
+//   RedirectMatcher
+// } from './Redirect'
 
 export type SwitchPaths<Context extends object> = {
   [pattern: string]: MaybeResolvableNode<Context>
@@ -246,6 +252,28 @@ export function createSwitch<Context extends object, Meta extends object, Conten
   }
 
   let patterns = Object.keys(options.paths)
+  
+  // initial idea was this, but several tests failed as they are raw functions
+  // which take an env => any
+  /*
+  let notInstanceOf = x => y => !(x instanceof y)
+  let invalidPaths = patterns.filter(pattern => {
+    let proto = options.paths[pattern].prototype
+    const not = notInstanceOf(proto)
+    return not(NodeMatcher) &&
+      not(PageMatcher) &&
+      not(SwitchMatcher) &&
+      not(RedirectMatcher)
+  }
+  */
+
+  let invalidPaths = patterns.filter(
+    pattern => !options.paths[pattern].prototype
+  )
+  if (invalidPaths.length > 0) {
+    let singular = invalidPaths.length === 1
+    throw new TypeError(`The given ${singular ? 'path' : 'paths'}: ${invalidPaths.join(', ')} ${singular ? 'is' : 'are'} invalid. Path should be an instance of Switch, Page, Redirect, Context or a function. See https://frontarm.com/navi/reference/declarations/#declaring-pages`)
+  }
 
   // Wildcards in PatternMap objects are null (\0) characters, so they'll
   // always be sorted to the top. As such, by sorting the patterns, the
