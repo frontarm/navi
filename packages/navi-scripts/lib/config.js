@@ -134,7 +134,7 @@ async function processConfig(config) {
         return reactNaviCreateReactApp.renderCreateReactAppTemplate({
           insertIntoRootDiv:
             ReactDOMServer.renderToString(
-              React.createElement(exports, {
+              React.createElement(typeof exports === 'function' ? exports : exports.App, {
                 navigation,
                 siteMap,
               })

@@ -17,7 +17,9 @@ Navi.app({
   // The default create-react-app renderer needs access to the App component.
   // Learn about custom static renderers at:
   // https://frontarm.com/navi/guides/static-rendering/
-  exports: App,
+  exports: {
+    App,
+  },
 
   // This will only be called when loading your app in the browser. It won't
   // be called when performing static generation.
@@ -38,7 +40,10 @@ Navi.app({
     let renderer = hasStaticContent ? ReactDOM.hydrate : ReactDOM.render;
 
     // Start react.
-    renderer(<App navigation={navigation} />, document.getElementById("root"));
+    renderer(
+      <App navigation={navigation} />,
+      document.getElementById("root")
+    );
 
     // If you want your app to work offline and load faster, you can change
     // unregister() to register() below. Note this comes with some pitfalls.
