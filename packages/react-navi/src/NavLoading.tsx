@@ -1,8 +1,9 @@
 import * as React from 'react'
+import { Route } from 'navi';
 import { NavContext } from './NavContext';
 
 export interface NavLoadingProps {
-  children: (isLoading: boolean) => React.ReactNode,
+  children: (busyRoute?: Route) => React.ReactNode,
 }
 
 export namespace NavLoading {
@@ -14,7 +15,7 @@ export namespace NavLoading {
 export function NavLoading(props: NavLoadingProps) {
   return (
     <NavContext.Consumer>
-      {context => props.children(!!context.busyRoute)}
+      {context => props.children(context.busyRoute)}
     </NavContext.Consumer>
   )
 }
