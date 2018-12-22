@@ -1,15 +1,17 @@
 import * as React from 'react'
-import { Navigation, NavigationSnapshot, Subscription, NaviError } from 'navi'
+import { Navigation, NavigationSnapshot, Subscription, NaviError, Status, Route } from 'navi'
 import { NavContext } from './NavContext'
 
 
 export interface NavProviderProps {
-  navigation?: Navigation
-  navigationSnapshot?: NavigationSnapshot
+  navigation: Navigation
 }
 
 export interface NavProviderState {
-  navigationSnapshot?: NavigationSnapshot
+  navigation: Navigation
+
+  steadyRoute?: Route
+  busyRoute?: Route
 }
 
 export namespace NavProvider {
@@ -19,56 +21,62 @@ export namespace NavProvider {
 export class NavProvider extends React.Component<NavProviderProps, NavProviderState> {
   subscription?: Subscription
 
-  static getDerivedStateFromProps(props: NavProviderProps, state: NavProviderState): null | Partial<NavProviderState> {
-    if (props.navigationSnapshot) {
-      return {
-        navigationSnapshot: undefined,
-      } 
+  static getDerivedStateFromProps(props: NavProviderProps, state: NavProviderState): NavProviderState | null {
+    if (state.navigation !== props.navigation) {
+      let route = props.navigation.getCurrentValue().route
+
+      return (
+        (!route.isSteady)
+          ? { steadyRoute: undefined, busyRoute: route, navigation: props.navigation }
+          : { steadyRoute: route, busyRoute: undefined, navigation: props.navigation }
+      )
     }
-    else if (!state.navigationSnapshot) {
-      if (!props.navigation) {
-        throw new MissingNavigationError
-      }
-      return {
-        navigationSnapshot: props.navigation.getCurrentValue()
-      }
-    }
-    else {
-      return null
-    }
+    return null
   }
 
   constructor(props: NavProviderProps) {
     super(props)
-    this.state = {}
+    this.state = {} as any
   }
 
   render() {
-    if (process.env.NODE_ENV !== 'production') {
-      if (this.props.navigationSnapshot && this.props.navigation) {
-        console.warn(`A <NavProvider> component has received values for both its "navigation" and "navigationSnapshot" props. Navi will use the "navigationSnapshot" value.`)
-      }
-    }
+    let context = {
+      ...this.state,
 
-    return (
-      <NavContext.Provider value={(this.props.navigationSnapshot || this.state.navigationSnapshot)!}>
+      history: this.props.navigation.history,
+      router: this.props.navigation.router,
+
+      onRendered: this.props.navigation.getCurrentValue().onRendered,
+    }
+    
+    let result = (
+      <NavContext.Provider value={context}>
         {this.props.children}
       </NavContext.Provider>
     )
+
+    // If <Suspense> is supported, wrap one around the application so that
+    // it doesn't have to be manually added, given that there's still not
+    // a huge amount of awareness around it
+    //
+    // When server rendered suspense is released, this will need to be
+    // removed.
+    let Suspense: React.ComponentType<any> = (React as any).Suspense
+    if (Suspense) {
+      result = <Suspense fallback={null}>{result}</Suspense>
+    }
+
+    return result
   }
 
   componentDidMount() {
-    if (!this.props.navigationSnapshot) {
-      this.subscribe()
-    }
+    this.subscribe()
   }
 
   componentDidUpdate(prevProps: NavProviderProps) {
-    if (prevProps.navigationSnapshot && !this.props.navigationSnapshot) {
-      this.subscribe()
-    }
-    else if (!prevProps.navigationSnapshot && this.props.navigationSnapshot) {
+    if (prevProps.navigation !== this.props.navigation) {
       this.unsubscribe()
+      this.subscribe()
     }
   }
 
@@ -78,7 +86,7 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
 
   subscribe() {
     if (!this.props.navigation) {
-      throw new MissingNavigationError
+      throw new Error(`A <NavProvider> component must receive a "navigation" prop.`)
     }
 
     this.subscription = this.props.navigation.subscribe(
@@ -94,19 +102,21 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
     }
   }
 
-  handleNavigationSnapshot = (navigationSnapshot: NavigationSnapshot) => {
-    this.setState({
-      navigationSnapshot
-    })
+  handleNavigationSnapshot = ({ route }: NavigationSnapshot) => {
+    if (route.isSteady) {
+      this.setState({
+        steadyRoute: route,
+        busyRoute: undefined,
+      })
+    }
+    else {
+      this.setState({
+        busyRoute: route,
+      })
+    }
   }
 
   handleError = (error: any) => {
     throw error
-  }
-}
-
-export class MissingNavigationError extends NaviError {
-  constructor() {
-    super(`A <NavProvider> component must receive a "navigation" or "navigationSnapshot" prop.`)
   }
 }

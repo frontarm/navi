@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { NotFoundError } from 'navi'
 import { NavContext } from './NavContext'
-import { NavLoadingContext } from './NavLoading'
 
 export interface NavNotFoundBoundaryProps {
   render: (error: NotFoundError) => React.ReactNode,
@@ -14,17 +13,7 @@ export namespace NavNotFoundBoundary {
 export const NavNotFoundBoundary: React.SFC<NavNotFoundBoundaryProps> = function ErrorBoundary(props: NavNotFoundBoundaryProps) {
   return (
     <NavContext.Consumer>
-      {context =>
-        <NavLoadingContext.Consumer>
-          {loadingContext =>
-            <InnerNotFoundBoundary
-              context={context}
-              loadingContext={loadingContext}
-              {...props}
-            />
-          }
-        </NavLoadingContext.Consumer>
-      }
+      {context => <InnerNotFoundBoundary context={context} {...props} />}
     </NavContext.Consumer>
   )
 }
@@ -32,64 +21,53 @@ export const NavNotFoundBoundary: React.SFC<NavNotFoundBoundaryProps> = function
 
 interface InnerNotFoundBoundaryProps extends NavNotFoundBoundaryProps {
   context: NavContext
-  loadingContext: NavLoadingContext
 }
 
 interface InnerNotFoundBoundaryState {
-  awaitingSteady?: boolean
-  current?: {
-    error: NotFoundError,
-    info: any,
-  }
+  error?: NotFoundError,
+  errorPathname?: string
+  errorInfo?: any,
 }
 
 class InnerNotFoundBoundary extends React.Component<InnerNotFoundBoundaryProps, InnerNotFoundBoundaryState> {
+  static getDerivedStateFromProps(props: InnerNotFoundBoundaryProps, state: InnerNotFoundBoundaryState): Partial<InnerNotFoundBoundaryState> | null {
+    if (state.error && props.context.steadyRoute!.url.pathname !== state.errorPathname) {
+      return {
+        error: undefined,
+        errorPathname: undefined,
+        errorInfo: undefined,
+      }
+    }
+    return null
+  }
+
   constructor(props) {
     super(props)
     this.state = {}
   }
 
-  componentDidCatch(error, info) {
+  componentDidCatch(error, errorInfo) {
     if (error instanceof NotFoundError) {
-      this.setState({ current: { error, info } })
-      
-      if (this.props.loadingContext.isLoading) {
-        this.props.loadingContext.setLoading(false)
-      }
+      this.setState({
+        error,
+        errorInfo,
+        errorPathname: this.props.context.steadyRoute!.url.pathname,
+      })
     }
     else {
       throw error
     }
   }
 
-  componentDidUpdate(prevProps: InnerNotFoundBoundaryProps, prevState) {
-    if (this.props.context.url.pathname !== prevProps.context.url.pathname && this.state.current) {
-      if (this.props.context.route.isSteady) {
-        this.setState({
-          current: undefined
-        })
-      }
-      else {
-        this.setState({
-          awaitingSteady: true
-        })
-        this.props.loadingContext.setLoading(true)
-      }
-    }
-    else if (this.state.awaitingSteady && this.props.context.route.isSteady) {
-      this.setState({
-        awaitingSteady: false,
-        current: undefined,
-      })
-    }
-    else if (this.state.current && !prevState.current) {
+  componentDidUpdate(prevProps: InnerNotFoundBoundaryProps, prevState: InnerNotFoundBoundaryState) {
+    if (this.state.error && !prevState.error && this.props.context.onRendered) {
       this.props.context.onRendered()
     }
   }
 
   render() {
-    if (this.state.current) {
-      return this.props.render(this.state.current.error)
+    if (this.state.error) {
+      return this.props.render(this.state.error)
     }
     return this.props.children
   }

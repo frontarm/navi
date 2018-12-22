@@ -1,71 +1,65 @@
 import * as React from 'react'
-import { History } from 'history'
-import { Route, Router, Segment, isSegmentSteady, Status, SegmentType } from 'navi'
-import { NavSegment, NavSegmentOutput } from './NavSegment'
+import { Route } from 'navi'
+import { NavContext } from './NavContext'
 
 
 export interface NavRouteProps {
   /**
-   * A render function that will be used to render the selected segment.
+   * A render function that can be used to access the current route.
    */
-  children?: (route: Route) => React.ReactNode
-}
-
-function isFinalSegment(segment: Segment) {
-  return segment.status === Status.Busy || segment.type !== SegmentType.Switch
-}
-
-function isReady(segment: Segment)  {
-  return isSegmentSteady(segment)
+  children: (route: Route) => React.ReactNode
 }
 
 export namespace NavRoute {
   export type Props = NavRouteProps
 }
 
-export class NavRoute extends React.Component<NavRouteProps> {
-  render() {
-    return (
-      <NavSegment
-        where={isFinalSegment}
-        isReady={isReady}
-        children={this.renderChildren}
-      />
-    )
+export const NavRoute: React.SFC<NavRouteProps> = function NavRoute(props: NavRouteProps) {
+  if (!props.children) {
+    console.warn(`Deprecation Warning: From Navi 0.10, the <NavRoute> component will no longer have a default renderer, and will throw any errors on the route object. Consider switching to <NavContent> instead.`)
   }
 
-  renderChildren = (output: NavSegmentOutput): React.ReactNode => {
-    let render: undefined | ((route: Route) => React.ReactNode)
-    if (this.props.children) {
-      render = this.props.children as (route: Route) => React.ReactNode
-      if (typeof render !== "function") {
-        throw new Error(`<NavRoute> expects its children to be a function, but instead received "${render}".`)
-      }
-    }
-    else if (output.route && output.route.content) {
-      let content = output.route.content
-      if (typeof content === 'function') {
-        if (content.prototype instanceof React.Component) {
-          return React.createElement(content as any, output.route)
+  return (
+    <NavContext.Consumer>
+      {context => {
+        let route = (context.steadyRoute || context.busyRoute)!
+
+        let content: React.ReactNode
+        let render: undefined | ((route: Route) => React.ReactNode)
+        if (props.children) {
+          render = props.children as (route: Route) => React.ReactNode
+          if (typeof render !== "function") {
+            throw new Error(`<NavRoute> expects its children to be a function, but instead received "${render}".`)
+          }
         }
-        render = output.route.content
-      }
-      else if (React.isValidElement(content)) {
+        else if (route && route.content) {
+          if (typeof route.content === 'function') {
+            if (route.content.prototype instanceof React.Component) {
+              content = React.createElement(content as any, route)
+            }
+            else {
+              render = route.content
+            }
+          }
+          else if (React.isValidElement(route.content)) {
+            content = route.content
+          }
+        }
+
+        if (render) {
+          content = render(route)
+        }
+        if (content === undefined) {
+          if (context.steadyRoute) {
+            throw new Error("<NavContent> was not able to find a `children` prop, or a `render` function in the consumed RouteSegment's `content`.")
+          }
+          else {
+            content = null
+          }
+        }
+
         return content
-      }
-    }
-
-    // If the route content is still loading, just render nothing --
-    // this allows SPAs to get away without waiting for `navigation.steady()`
-    // on the initial load.
-    if (output.route && output.route.status === Status.Busy) {
-      return null
-    }
-
-    if (!render) {
-      throw new Error("<NavRoute> was not able to find a `children` prop, or a `render` function in the consumed segment's `content`.")
-    }
-
-    return render(output.route)
-  }
+      }}
+    </NavContext.Consumer>
+  )
 }

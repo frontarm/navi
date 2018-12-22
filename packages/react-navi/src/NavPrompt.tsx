@@ -67,7 +67,7 @@ class InnerPrompt extends React.Component<NavPromptProps & { context: NavContext
       this.unblock()
     }
 
-    this.unblock = this.props.context.history.block(message)
+    this.unblock = this.props.context.navigation.history.block(message)
   }
 
   disable() {

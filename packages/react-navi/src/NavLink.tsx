@@ -158,7 +158,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
     let url = this.getURL()
     if (url && url.pathname) {
-      this.props.context.router.resolve(url, {
+      this.props.context.navigation.router.resolve(url, {
         withContent: !!props.precache,
         followRedirects: true,
       })
@@ -169,6 +169,12 @@ class InnerLink extends React.Component<InnerLinkProps> {
           )
         })
     }
+  }
+
+  getNavigationURL() {
+    let context = this.props.context
+    let route = (context.steadyRoute || context.busyRoute)!
+    return route.url
   }
 
   getURL(): URLDescriptor | undefined  {
@@ -183,7 +189,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
     // The route `pathname` should always end with a `/`, so this
     // will give us a consistent behavior for `.` and `..` links.
     if (typeof href === 'string' && href[0] === '.') {
-      href = pathJoin(this.props.context.route.url.pathname, href)
+      href = pathJoin(this.getNavigationURL().pathname, href)
     }
 
     return createURLDescriptor(href)
@@ -191,8 +197,8 @@ class InnerLink extends React.Component<InnerLinkProps> {
   
   render() {
     let props = this.props
+    let navigationURL = this.getNavigationURL()
     let linkURL = this.getURL()
-    let navigationURL = this.props.context.url
     let active = props.active !== undefined ? props.active : !!(
       linkURL &&
       (props.exact
@@ -259,14 +265,14 @@ class InnerLink extends React.Component<InnerLinkProps> {
       if (!event.defaultPrevented && url) {
         event.preventDefault()
 
-        let currentURL = this.props.context.url
+        let currentURL = (this.props.context.busyRoute || this.props.context.steadyRoute)!.url
         let isSamePathname = url.pathname === currentURL.pathname
         if (!isSamePathname || url.hash !== currentURL.hash) {
-          this.props.context.history.push(url)
+          this.props.context.navigation.history.push(url)
         }
         else {
           // Don't keep pushing the same URL onto the history.
-          this.props.context.history.replace(url)
+          this.props.context.navigation.history.replace(url)
         }
       }
     }

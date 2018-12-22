@@ -13,7 +13,7 @@ export namespace NavHistory {
 export function NavHistory(props: NavHistoryProps) {
   return (
     <NavContext.Consumer>
-      {context => props.children(context.history)}
+      {context => props.children(context.navigation.history)}
     </NavContext.Consumer>
   )
 }
