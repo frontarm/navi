@@ -244,6 +244,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
       let url = createURLDescriptor(pathname, { ensureTrailingSlash: false })
       let rootEnv: Env = {
         context: this.rootContext,
+        hash: '',
         method: HTTPMethod.Get,
         params: {},
         pathname: '',

@@ -134,6 +134,7 @@ export function matchMappingAgainstPathname<Context extends object>(env: Env<Con
 
     return {
         context: env.context,
+        hash: env.hash,
         method: env.method,
         params: { ...env.params, ...params },
         pathname: joinPaths(env.pathname, matchedPathname),

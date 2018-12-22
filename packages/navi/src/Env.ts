@@ -4,6 +4,7 @@ import { HTTPMethod } from './HTTPMethod'
 
 export interface Env<Context extends object=any> {
   readonly context: Context
+  readonly hash: string
   readonly method: HTTPMethod
   readonly params: Params
   readonly pathname: string

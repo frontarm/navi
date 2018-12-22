@@ -69,6 +69,7 @@ export class Router<Context extends object=any> {
         let url = createURLDescriptor(urlOrDescriptor)
         let rootEnv = {
             context: this.rootContext,
+            hash: url.hash,
             method: options.method || HTTPMethod.Get,
             params: url.query,
             pathname: '',
