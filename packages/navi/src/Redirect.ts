@@ -62,7 +62,7 @@ export function createRedirect<Context extends object = any, Meta extends object
   meta?: Meta | Resolvable<Meta>,
 ): Redirect {
   return class extends RedirectMatcher<Context, Meta> {
-    static to = typeof to === 'function' ? to : () => to
-    static meta = typeof meta === 'function' ? meta : () => meta
+    static to = typeof to === 'function' ? (to as Resolvable<Partial<URLDescriptor> | string>) : () => to
+    static meta = typeof meta === 'function' ? (meta as Resolvable<Meta>) : () => meta
   }
 }

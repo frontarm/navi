@@ -31,6 +31,7 @@
     "static"
   ],
   "devDependencies": {
+    "@types/history": "^4.6.2",
     "@types/jest": "^23.3.7",
     "cross-env": "^5.0.5",
     "jest": "^23.6.0",
@@ -44,7 +45,6 @@
     "typescript": "^3.2.1"
   },
   "dependencies": {
-    "@types/history": "^4.6.2",
     "history": "^4.7.2"
   },
   "jest": {

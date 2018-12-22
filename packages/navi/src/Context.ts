@@ -117,7 +117,9 @@ export function createContext<ParentContext extends object=any, ChildContext ext
     maybeChildNodeResolvable.isNode ? (() => maybeChildNodeResolvable) : (maybeChildNodeResolvable as Resolvable<NaviNode>)
 
   let childContextResolvable: Resolvable<ChildContext> =
-    (typeof maybeChildContextResolvable !== 'function') ? (() => maybeChildContextResolvable) : maybeChildContextResolvable
+    (typeof maybeChildContextResolvable !== 'function')
+      ? (() => maybeChildContextResolvable)
+      : (maybeChildContextResolvable as any)
 
   return class extends ContextMatcher<ParentContext, ChildContext> {
     static childNodeResolvable = childNodeResolvable
