@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as Navi from 'navi'
-import { NavConsumer, NavLink } from 'react-navi'
-import { URLDescriptor } from 'navi'
+import { NavRoute, NavLink } from 'react-navi'
 import { defaultTheme } from './defaultTheme'
 import { Item, ItemType, getItems } from './items'
 import { Anchor } from './Anchor'
@@ -98,15 +97,15 @@ export const NaviBar = Object.assign(
     return (
       <ScrollSpy tableOfContents={props.tableOfContents || []}>
         {({id, parentIds}) =>
-          <NavConsumer>
-            {nav =>
+          <NavRoute>
+            {route =>
               <InnerNaviBar
-                activeURL={nav.url} {...props}
+                activeURL={route.url} {...props}
                 activeId={id}
                 activeParentIds={parentIds || []}
               />
             }
-          </NavConsumer>
+          </NavRoute>
         }
       </ScrollSpy>
     )
@@ -246,7 +245,7 @@ export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
       let node = this.activePageRef.current
       if (node) {
         node.scrollIntoView({
-          behavior: 'instant',
+          behavior: 'auto',
           block: 'center',
         })
       }
