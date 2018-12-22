@@ -125,12 +125,17 @@ async function processConfig(config) {
       const ReactDOMServer = require('react-dom/server')
       const he = require('he')
       
-      config.renderPageToString = async function renderPageToString({ exports, pages, siteMap, url }) {
+      config.renderPageToString = async function renderPageToString({ exports, pages, siteMap, dependencies, url }) {
         let navigation = Navi.createMemoryNavigation({ pages, url })
         let { route } = await navigation.getSteadyValue()
-
         let canonicalURLBase = process.env.CANONICAL_URL || process.env.PUBLIC_URL || ''
+        
+        console.log(dependencies)
 
+        let stylesheetTags = Array.from(dependencies.stylesheets)
+          .map(pathname => `<link rel="stylesheet" href="${pathname}" />`)
+          .join('')
+        
         return reactNaviCreateReactApp.renderCreateReactAppTemplate({
           insertIntoRootDiv:
             ReactDOMServer.renderToString(
@@ -143,8 +148,9 @@ async function processConfig(config) {
             `\n<title>${route.title || 'Untitled'}</title>\n` +
             `<link rel="canonical" href="${canonicalURLBase+url.href}" />\n`+
             Object.entries(route.meta || {}).map(([key, value]) =>
-              `<meta name="${he.encode(key)}" content="${he.encode(value)}" />`
-            ).concat('').join('\n'),
+              `<meta name="${he.encode(key)}" content="${he.encode(typeof value === 'string' ? value : String(value))}" />`
+            ).concat('').join('\n')+
+            stylesheetTags,
         })
       }
     }

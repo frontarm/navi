@@ -68,6 +68,9 @@ async function createScriptRunner(config) {
                 window.HTMLHeadElement.prototype.appendChild = function(...args) {
                     let result = appendChild.apply(this, args)
                     if (args[0] instanceof window.HTMLLinkElement && args[0].onload) {
+                        if (args[0].rel === "stylesheet" && options.onStyleSheetLoaded) {
+                            options.onStyleSheetLoaded(args[0].href)
+                        }
                         args[0].onload()
                     }
                     return result

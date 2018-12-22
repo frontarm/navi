@@ -9,9 +9,13 @@ async function build(config) {
     let scriptRunner = await createScriptRunner(config)
 
     for (let { url } of Object.values(siteMap.pages)) {
-        let dependencies = []
+        let dependencies = {
+            scripts: new Set,
+            stylesheets: new Set,
+        }
         let app = await scriptRunner({
-            onScriptLoaded: (pathname) => dependencies.push(pathname),
+            onScriptLoaded: (pathname) => dependencies.scripts.add(pathname),
+            onStyleSheetLoaded: (pathname) => dependencies.stylesheets.add(pathname),
         })
         let options = {
             app,
