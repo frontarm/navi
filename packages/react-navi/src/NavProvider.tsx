@@ -1,10 +1,17 @@
+import { canUseDOM } from 'exenv'
 import * as React from 'react'
-import { Navigation, NavigationSnapshot, Subscription, NaviError, Status, Route } from 'navi'
+import { getApp, Navigation, NavigationSnapshot, Subscription, Route } from 'navi'
 import { NavContext } from './NavContext'
-
 
 export interface NavProviderProps {
   navigation: Navigation
+
+  /**
+   * Navi will attempt to detect a non browser environment in order to
+   * prevent rendering of <Suspense>, but if it fails, you can manually
+   * set `fallback` to `undefined`.
+   */
+  fallback?: React.ReactNode | undefined
 }
 
 export interface NavProviderState {
@@ -55,15 +62,21 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
       </NavContext.Provider>
     )
 
-    // If <Suspense> is supported, wrap one around the application so that
-    // it doesn't have to be manually added, given that there's still not
-    // a huge amount of awareness around it
-    //
-    // When server rendered suspense is released, this will need to be
-    // removed.
+    // If <Suspense> is supported and the app is being rendered in a browser,
+    // then wrap the app with a <Suspense> with an empty fallback, so that
+    // the fallback doesn't need to be provided manually.
     let Suspense: React.ComponentType<any> = (React as any).Suspense
     if (Suspense) {
-      result = <Suspense fallback={null}>{result}</Suspense>
+      let fallback = this.props.fallback
+      if (!('fallback' in this.props) && canUseDOM && !getApp().isBuild) {
+        fallback = null
+      }
+      if (fallback !== undefined) {
+        result = <Suspense fallback={fallback}>{result}</Suspense>
+      }
+    }
+    else if (this.props.fallback !== undefined) {
+      console.warn(`You supplied a "fallback" prop to your <NavProvider>, but the version of React that you're using doesn't support Suspense. To use the "fallback" prop, upgrade to React 16.6 or later.`)
     }
 
     return result

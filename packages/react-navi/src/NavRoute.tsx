@@ -35,7 +35,7 @@ export const NavRoute: React.SFC<NavRouteProps> = function NavRoute(props: NavRo
         else if (route && route.content) {
           if (typeof route.content === 'function') {
             if (route.content.prototype instanceof React.Component) {
-              content = React.createElement(content as any, route)
+              content = React.createElement(route.content as any, route)
             }
             else {
               render = route.content

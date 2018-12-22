@@ -139,7 +139,7 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
     else if (segment && segment.content) {
       if (typeof segment.content === 'function') {
         if (segment.content.prototype instanceof React.Component) {
-          content = React.createElement(content as any, { segment, route: this.props.context.steadyRoute })
+          content = React.createElement(segment.content as any, { segment, route: this.props.context.steadyRoute })
         }
         else {
           render = segment.content
