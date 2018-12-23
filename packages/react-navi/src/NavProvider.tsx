@@ -34,7 +34,7 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
 
       return (
         (!route.isSteady)
-          ? { steadyRoute: undefined, busyRoute: route, navigation: props.navigation }
+          ? { steadyRoute: state.steadyRoute, busyRoute: route, navigation: props.navigation }
           : { steadyRoute: route, busyRoute: undefined, navigation: props.navigation }
       )
     }
@@ -49,10 +49,6 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
   render() {
     let context = {
       ...this.state,
-
-      history: this.props.navigation.history,
-      router: this.props.navigation.router,
-
       onRendered: this.props.navigation.getCurrentValue().onRendered,
     }
     
