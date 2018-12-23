@@ -3,7 +3,7 @@ const init = require('initit')
 
 const [name = 'react-blog'] = process.argv.slice(2)
 
-init({ name, template: `frontarm/navi/examples/create-react-blog` })
+init({ name, template: `frontarm/navi/examples/blog` })
   .then(res => process.exit(0))
   .catch(err => {
     console.log(err)

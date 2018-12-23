@@ -1,7 +1,7 @@
 {
   "name": "create-react-blog",
-  "description": "Initialize a React blog with create-react-app, MDX and Navi",
-  "version": "0.7.3",
+  "description": "Initialize a React blog with create-react-app, MDX, and Navi",
+  "version": "0.10.0",
   "license": "MIT",
   "author": "James K Nelson <james@frontarm.com>",
   "bin": {
