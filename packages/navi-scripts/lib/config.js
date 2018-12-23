@@ -129,8 +129,6 @@ async function processConfig(config) {
         let navigation = Navi.createMemoryNavigation({ pages, url })
         let { route } = await navigation.getSteadyValue()
         let canonicalURLBase = process.env.CANONICAL_URL || process.env.PUBLIC_URL || ''
-        
-        console.log(dependencies)
 
         let stylesheetTags = Array.from(dependencies.stylesheets)
           .map(pathname => `<link rel="stylesheet" href="${pathname}" />`)
