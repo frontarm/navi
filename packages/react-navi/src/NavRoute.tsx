@@ -16,7 +16,7 @@ export namespace NavRoute {
 
 export const NavRoute: React.SFC<NavRouteProps> = function NavRoute(props: NavRouteProps) {
   if (!props.children) {
-    console.warn(`Deprecation Warning: From Navi 0.10, the <NavRoute> component will no longer have a default renderer, and will throw any errors on the route object. Consider switching to <NavContent> instead.`)
+    console.warn(`Deprecation Warning: From Navi 0.11, the <NavRoute> component will no longer have a default renderer, and will throw any errors on the route object. Consider switching to <NavContent> instead.`)
   }
 
   return (
