@@ -1,0 +1,51 @@
+.Index {
+  text-align: center;
+  padding-top: 1rem;
+}
+.Index p {
+  font-weight: bold;
+  position: relative;
+}
+.Index code {
+  font-family: Inconsolata;
+}
+.Index-logo {
+  position: relative;
+  height: 256px;
+  left: 0;
+  margin: 0 auto;
+  width: 512px;
+}
+.Index-logo-navi,
+.Index-logo-react {
+  height: 256px;
+  position: absolute;
+}
+.Index-logo-navi {
+  animation: Index-logo-navi-spin infinite 20s linear;
+  left: 212px;
+  top: 1px;
+}
+.Index-logo-react {
+  animation: Index-logo-react-spin infinite 20s linear;
+  left: -22px;
+  top: 1px;
+}
+
+@keyframes Index-logo-navi-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes Index-logo-react-spin {
+  from {
+    transform: rotate(330deg);
+  }
+  to {
+    transform: rotate(-30deg);
+  }
+}
