@@ -56,6 +56,9 @@ const configSchema = {
     context: {
       description: `The Navi context that will be used when building a site map.`,
     },
+    resolveSiteMapOptions: {
+      description: `The options object that will be passed as the second argument to router.resolveSiteMapOptions() when building a list of the URLs which should have static HTML generated.`,
+    },
     
     appGlobal: {
       description: `The property of the "window" object where your entry file places its exports.`,

@@ -32,11 +32,12 @@ interface MapItem {
 }
 
 export class RouteMapObservable implements Observable<RouteMap> {
-  private cachedRouteMap: RouteMap
   private rootContext: any
   private pages: Switch
   private rootMapping: Mapping
   private observers: Observer<RouteMap>[]
+  private isRefreshScheduled: boolean
+  private isRefreshing: boolean
   private resolver: Resolver
   private router: Router
   private options: RouterMapOptions
@@ -93,9 +94,19 @@ export class RouteMapObservable implements Observable<RouteMap> {
     this.observers.push(observer)
     let subscription = new SimpleSubscription(this.handleUnsubscribe, observer)
     if (this.observers.length === 1) {
-      this.handleChange()
+      this.refresh()
     }
     return subscription
+  }
+
+  private async expandPatterns(pattern: string) {
+    if (this.options.expandPattern) {
+      let expandedPatterns = await this.options.expandPattern(pattern, this.router)
+      if (expandedPatterns) {
+        return expandedPatterns
+      }
+    }
+    return [pattern].filter(pattern => !/\/:/.test(pattern))
   }
 
   private handleUnsubscribe = (observer: Observer<RouteMap>) => {
@@ -105,29 +116,19 @@ export class RouteMapObservable implements Observable<RouteMap> {
     }
   }
 
-  private handleChange = () => {
-    this.refresh()
-
-    let isSteady = isRouteMapSteady(this.cachedRouteMap)
-    for (let i = 0; i < this.observers.length; i++) {
-      let observer = this.observers[i]
-      observer.next(this.cachedRouteMap)
-      if (isSteady && observer.complete) {
-        observer.complete()
-      }
+  private handleResolverUpdate = () => {
+    if (!this.isRefreshing) {
+      this.refresh()
     }
-    if (isSteady) {
-      this.resolver.unlisten(this.handleChange)
-
-      delete this.rootContext
-      delete this.mapItems
-      delete this.router
-      delete this.observers
-      delete this.resolver
+    else if (!this.isRefreshScheduled) {
+      this.isRefreshScheduled = true
     }
   }
 
-  private refresh = () => {
+  private refresh = async () => {
+    this.isRefreshScheduled = false
+    this.isRefreshing = true
+
     let allResolvableIds: number[] = []
     let i = 0
     while (i < this.mapItems.length) {
@@ -179,12 +180,15 @@ export class RouteMapObservable implements Observable<RouteMap> {
       ) {
         let patterns = lastSegment.switch.patterns
         for (let j = 0; j < patterns.length; j++) {
-          this.addToQueue(
-            joinPaths(pathname, patterns[j]),
-            item.depth + 1,
-            pathname,
-            item.order + '.' + j
-          )
+          let expandedPatterns = await this.expandPatterns(joinPaths(pathname, patterns[j]))
+          for (let k = 0; k < expandedPatterns.length; k++) {
+            this.addToQueue(
+              expandedPatterns[k],
+              item.depth + 1,
+              pathname,
+              item.order + '.' + j
+            )
+          }
         }
       }
 
@@ -194,15 +198,12 @@ export class RouteMapObservable implements Observable<RouteMap> {
       i++
     }
 
-    // This will replace any existing listener and its associated resolvables
-    this.resolver.listen(this.handleChange, allResolvableIds)
-
-    let routeMap = [] as [string, Route, string][]
+    let routeMapArray = [] as [string, Route, string][]
     for (let i = 0; i < this.mapItems.length; i++) {
       let item = this.mapItems[i]
       let lastSegment = item.lastSegmentCache!
       if (lastSegment.type !== SegmentType.Switch && lastSegment.status !== Status.Error) {
-        routeMap.push([
+        routeMapArray.push([
           joinPaths(item.pathname, '/'),
           createRoute(
             createURLDescriptor(item.pathname, { ensureTrailingSlash: false }),
@@ -213,16 +214,44 @@ export class RouteMapObservable implements Observable<RouteMap> {
       }
     }
 
-    routeMap.sort((x, y) =>
+    // This will replace any existing listener and its associated resolvables
+    this.resolver.listen(this.handleResolverUpdate, allResolvableIds)
+
+    routeMapArray.sort((x, y) =>
       x[2] < y[2] ? -1 :
       x[2] > y[2] ? 1 :
       0
     )
 
-    this.cachedRouteMap = {}
-    for (let i = 0; i < routeMap.length; i++) {
-      let [pathname, route] = routeMap[i]
-      this.cachedRouteMap[pathname] = route
+    if (this.isRefreshScheduled) {
+      this.refresh()
+    }
+    else {
+      let routeMap: RouteMap = {}
+      for (let i = 0; i < routeMapArray.length; i++) {
+        let [pathname, route] = routeMapArray[i]
+        routeMap[pathname] = route
+      }
+      
+      let isSteady = isRouteMapSteady(routeMap)
+      for (let i = 0; i < this.observers.length; i++) {
+        let observer = this.observers[i]
+        observer.next(routeMap)
+        if (isSteady && observer.complete) {
+          observer.complete()
+        }
+      }
+      if (isSteady) {
+        this.resolver.unlisten(this.handleResolverUpdate)
+
+        delete this.rootContext
+        delete this.mapItems
+        delete this.router
+        delete this.observers
+        delete this.resolver
+      }
+
+      this.isRefreshing = false
     }
   }
 
@@ -245,13 +274,16 @@ export class RouteMapObservable implements Observable<RouteMap> {
       let rootEnv: Env = {
         context: this.rootContext,
         hash: '',
+        headers: {},
         method: HTTPMethod.Get,
         params: {},
         pathname: '',
+        mountname: '',
         query: url.query,
         search: url.search,
         router: this.router,
         unmatchedPathnamePart: url.pathname,
+        url: url,
       }
       let matchEnv = matchMappingAgainstPathname(
         rootEnv,

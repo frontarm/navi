@@ -29,6 +29,7 @@ export interface RouterMapOptions {
     followRedirects?: boolean,
     maxDepth?: number,
     predicate?: (segment: Segment) => boolean,
+    expandPattern?: (pattern: string, router: Router) => undefined | string[] | Promise<undefined | string[]>,
 }
   
 
@@ -70,12 +71,15 @@ export class Router<Context extends object=any> {
         let rootEnv = {
             context: this.rootContext,
             hash: url.hash,
+            headers: {},
             method: options.method || HTTPMethod.Get,
+            mountname: '',
             params: url.query,
             pathname: '',
             query: url.query,
             search: url.search,
             router: this,
+            url: url,
             unmatchedPathnamePart: url.pathname,
         }
         let matchEnv = matchMappingAgainstPathname(rootEnv, this.rootMapping, true)

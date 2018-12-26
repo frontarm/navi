@@ -29,6 +29,7 @@ async function createMap(config) {
 
     return await router.resolveSiteMap('/', {
         followRedirects: true,
+        ...config.resolveSiteMapOptions,
     })
 }
 

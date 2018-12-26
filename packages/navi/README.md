@@ -130,12 +130,12 @@ main()
 
 The `navigation` object that you just passed to `<App>` contains all of the information that you need to render your app. And while you *could* consume all of that information yourself, it's far simpler to just use Navi's built in components.
 
-To start out, you'll only need two components: `<NavProvider>`, and `<NavRoute>`. You'll want to wrap `<NavProvider>` around your entire App, and then place `<NavRoute>` wherever the content should go.
+To start out, you'll only need two components: `<NavProvider>`, and `<NavContent>`. You'll want to wrap `<NavProvider>` around your entire App, and then place `<NavContent>` wherever the content should go.
 
 ```js
 // App.js
 import * as React from 'react'
-import { NavLink, NavProvider, NavRoute } from 'react-navi'
+import { NavLink, NavProvider, NavContent } from 'react-navi'
 import './App.css'
 
 class App extends React.Component {
@@ -148,7 +148,7 @@ class App extends React.Component {
               <NavLink href='/'>Navi</NavLink>
             </h1>
           </header>
-          <NavRoute />
+          <NavContent />
         </div>
       </NavProvider>
     );
@@ -160,7 +160,7 @@ export default App;
 
 And that's it --- you've built a working app with asynchronous routes! Of course, this tiny app is just an example, but Navi handles real-world apps with ease. In fact, [Frontend Armory](https://frontarm.com) is built with Navi.
 
-In fact, let's add a couple real-world tweaks as a bonus step, just to see how easy it can be.
+To finish off, let's add a couple real-world tweaks as a bonus step, just to see how easy it can be.
 
 
 ### Loading indicators
@@ -173,10 +173,10 @@ class App extends React.Component {
     return (
       <NavProvider navigation={this.props.navigation}>
         <NavLoading>
-          {isLoading =>
+          {loadingRoute =>
             <div className="App">
               {
-                isLoading &&
+                loadingRoute &&
                 <div className="App-loading-bar" />
               }
               <header className="App-header">
@@ -184,7 +184,7 @@ class App extends React.Component {
                   <NavLink href='/'>Navi</NavLink>
                 </h1>
               </header>
-              <NavRoute />
+              <NavContent />
             </div>
           }
         </NavLoading>
@@ -194,7 +194,7 @@ class App extends React.Component {
 }
 ```
 
-The `<NavLoading>` component accepts a render function as its children, to which it passes the loading state of the content rendered by its nested `<NavRoute>` component. You can use this to show a loading bar or some other indicator.
+The `<NavLoading>` component accepts a render function as its children, to which it passes any route whose content is still being fetched, or `undefined` if the curent URL has fully loaded. You can use this to show a loading bar or some other indicator.
 
 
 ### Handling 404s
@@ -205,10 +205,10 @@ class App extends React.Component {
     return (
       <NavProvider navigation={this.props.navigation}>
         <NavLoading>
-          {isLoading =>
+          {loadingRoute =>
             <div className="App">
               {
-                isLoading &&
+                loadingRoute &&
                 <div className="App-loading-bar" />
               }
               <header className="App-header">
@@ -217,7 +217,7 @@ class App extends React.Component {
                 </h1>
               </header>
               <NavNotFoundBoundary render={renderNotFound}>
-                <NavRoute />
+                <NavContent />
               </NavNotFoundBoundary>
             </div>
           }

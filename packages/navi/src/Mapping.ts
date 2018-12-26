@@ -124,24 +124,30 @@ export function matchMappingAgainstPathname<Context extends object>(env: Env<Con
     let matchedPathname = match[0]
 
     // Set path params using RegExp match
-    let params = {}
+    let params = env.params
     if (mapping.pathParamNames) {
+        params = { ...env.params }
         for (let i = 0; i < mapping.pathParamNames.length; i++) {
             let paramName = mapping.pathParamNames[i]
             params[paramName] = match[i+1]
         }
     }
 
+    let mountname = joinPaths(env.mountname, matchedPathname)
+
     return {
         context: env.context,
         hash: env.hash,
+        headers: {},
         method: env.method,
-        params: { ...env.params, ...params },
-        pathname: joinPaths(env.pathname, matchedPathname),
+        params: params,
+        pathname: mountname,
+        mountname: mountname,
         query: env.query,
         search: env.search,
         router: env.router,
         unmatchedPathnamePart: env.unmatchedPathnamePart.slice(matchedPathname.length) || (appendFinalSlash ? '/' : ''),
+        url: env.url,
     }
 }
     

@@ -1,4 +1,4 @@
-import { createRouter } from '../src'
+import { createRouter, createSwitch, createPage } from '../src'
 import { fixtureSwitch } from './fixtures/switches'
 
 describe("pageMap", () => {
@@ -26,6 +26,45 @@ describe("pageMap", () => {
             predicate: (segment) => segment.url.pathname !== '/examples/'
         })
         expect(Object.keys(map).length).toBe(2)
+    })
+
+    test("supports expandPattern()", async () => {
+        let router = createRouter({
+            pages: createSwitch({
+                paths: {
+                    '/about': createPage({
+                        title: 'About',
+                    }),
+                    '/tags/:name': createPage({
+                        getTitle: env => `${env.params.name} Tag`
+                    })
+                }
+            })
+        })
+        let map = await router.resolveSiteMap('/', {
+            expandPattern: pattern =>
+                pattern !== '/tags/:name'
+                    ? [pattern]
+                    : ['/tags/react', '/tags/navi']
+        })
+        expect(Object.keys(map.pages).length).toBe(3)
+    })
+
+    test("excludes patterns with wildcards when expandPattern() is not supplied", async () => {
+        let router = createRouter({
+            pages: createSwitch({
+                paths: {
+                    '/about': createPage({
+                        title: 'About',
+                    }),
+                    '/tags/:name': createPage({
+                        getTitle: env => `${env.params.name} Tag`
+                    })
+                }
+            })
+        })
+        let map = await router.resolveSiteMap('/')
+        expect(Object.keys(map.pages).length).toBe(1)
     })
 })
 
