@@ -4,8 +4,8 @@
   "private": true,
   "dependencies": {
     "lodash-es": "^4.17.11",
-    "navi": "^0.10.0",
-    "navi-scripts": "^0.10.1",
+    "navi": "^0.10.4",
+    "navi-scripts": "^0.10.4",
     "prismjs": "^1.15.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",

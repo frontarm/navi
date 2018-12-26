@@ -2,13 +2,13 @@ import * as Navi from 'navi'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import { renderCreateReactAppTemplate } from 'react-navi/create-react-app'
-import getPageDetailsMap from './getPageDetailsMap'
+import renderRSSFeed from './renderRSSFeed'
 
 /**
  * navi-scripts will call this function for each of your site's pages
  * to produce its statically rendered HTML.
  */
-export async function renderPageToString({
+async function renderPageToString({
   // The URL to be rendered
   url,
 
@@ -21,9 +21,6 @@ export async function renderPageToString({
   
   // The `pages` switch passed to `Navi.app()`
   pages,
-
-  // An object containing all rendered pages and redirects
-  siteMap,
 }) {
   // Create an in-memory Navigation object with the given URL
   let navigation = Navi.createMemoryNavigation({
@@ -34,13 +31,14 @@ export async function renderPageToString({
   // Wait for any asynchronous content to finish fetching
   let { route } = await navigation.getSteadyValue()
 
-  // Render the <App> element to a string, passing in
-  // `navigation` and `siteMap` objects as props
+  // RSS feed is a special case that doesn't use React
+  if (url.pathname === '/rss') {
+    return renderRSSFeed(route.content)
+  }
+
+  // Render the <App> element to a string, passing in `navigation` as a prop
   let appHTML = ReactDOMServer.renderToString(
-    React.createElement(exports.App, {
-      navigation,
-      siteMap,
-    })
+    React.createElement(exports.App, { navigation })
   )
 
   // Add any stylesheets that were loaded to this page to the head, to avoid
@@ -53,9 +51,6 @@ export async function renderPageToString({
   let headHTML = `
     <title>${route.title || 'Untitled'}</title>
     <link rel="canonical" href="${canonicalURLBase+url.href}" />
-    <script>
-      window.pageDetailsMap = ${JSON.stringify(await getPageDetailsMap({ siteMap }))}
-    </script>
     ${stylesheetTags}
   `
 
@@ -78,3 +73,5 @@ export async function renderPageToString({
     replaceTitleWith: headHTML,
   })
 }
+
+export default renderPageToString
