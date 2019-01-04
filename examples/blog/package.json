@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "feed": "^2.0.2",
+    "import-all.macro": "^2.0.3",
     "lodash": "^4.17.11",
     "navi": "^0.10.5",
     "navi-scripts": "^0.10.5",

@@ -1,3 +1,4 @@
+import importAll from 'import-all.macro'
 import * as Navi from 'navi'
 import { join } from 'path'
 import { sortBy } from 'lodash'
@@ -5,8 +6,9 @@ import slugify from 'slugify'
 
 // Get a list of all posts, that will not be loaded until the user
 // requests them.
-const requirePost = require.context('.', true, /post.jsx?$/, 'lazy')
-const postPathnames = requirePost.keys()
+const postModules = importAll.deferred('./**/post.js')
+const importPost = (pathname) => postModules[pathname]()
+const postPathnames = Object.keys(postModules)
 const datePattern = /^((\d{1,4})-(\d{1,4})-(\d{1,4}))[/-]/
 
 let postDetails = postPathnames.map(pathname => {
@@ -36,19 +38,19 @@ postDetails = sortBy(postDetails, ['slug']).reverse()
 // that can be used to load and return the post's Page object.
 let posts = postDetails.map(({ slug, pathname, date }, i) => ({
   getPage: async () => {
-    let { default: post } = await requirePost(pathname)
+    let { default: post } = await importPost(pathname)
     let { title, getContent, ...meta } = post
     let previousSlug, previousPost, nextSlug, nextPost
 
     if (i !== 0) {
       let previousPostDetails = postDetails[i - 1]
-      previousPost = (await requirePost(previousPostDetails.pathname)).default
+      previousPost = (await importPost(previousPostDetails.pathname)).default
       previousSlug = previousPostDetails.slug
     }
 
     if (i + 1 < postDetails.length) {
       let nextPostDetails = postDetails[i + 1]
-      nextPost = (await requirePost(nextPostDetails.pathname)).default
+      nextPost = (await importPost(nextPostDetails.pathname)).default
       nextSlug = nextPostDetails.slug
     }
 

@@ -2043,6 +2043,14 @@ babel-plugin-macros@2.4.2:
     cosmiconfig "^5.0.5"
     resolve "^1.8.1"
 
+babel-plugin-macros@^2.0.0:
+  version "2.4.4"
+  resolved "https://registry.yarnpkg.com/babel-plugin-macros/-/babel-plugin-macros-2.4.4.tgz#d7bb55ba6473094ac0e1087fbceb062ebfd2337f"
+  integrity sha512-PODLcF8vhB2eC0zZ5s67sBQPLlT0YdINd4/2erTgtyVG5q5cLfsxtSmP8wleeFDH8SZpeLXAStqqFOyfIqccqg==
+  dependencies:
+    cosmiconfig "^5.0.5"
+    resolve "^1.8.1"
+
 babel-plugin-named-asset-import@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/babel-plugin-named-asset-import/-/babel-plugin-named-asset-import-0.3.0.tgz#3289ec622d19cd1cc84df8d784b41f1b048bd524"
@@ -5314,6 +5322,14 @@ immer@1.7.2:
   version "1.7.2"
   resolved "https://registry.yarnpkg.com/immer/-/immer-1.7.2.tgz#a51e9723c50b27e132f6566facbec1c85fc69547"
   integrity sha512-4Urocwu9+XLDJw4Tc6ZCg7APVjjLInCFvO4TwGsAYV5zT6YYSor14dsZR0+0tHlDIN92cFUOq+i7fC00G5vTxA==
+
+import-all.macro@^2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/import-all.macro/-/import-all.macro-2.0.3.tgz#3e5de28920eb7237badb85acf15eb71c8d5b04f6"
+  integrity sha512-uOdSLEY4/DQ2L7AWlx/NbX/qseStklzBD525oeWFPRvb5ScHQXouu37ItQi0RB0pG01WtmLYMLsfoQcyTHOFxA==
+  dependencies:
+    babel-plugin-macros "^2.0.0"
+    glob "^7.1.2"
 
 import-cwd@^2.0.0:
   version "2.1.0"
