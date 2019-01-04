@@ -19,9 +19,9 @@ import styles from './document.module.scss'
 
 **To change the site's colors,** edit the `:root` block in `src/index.module.css`.
 
-**To create a new post,** add a new directory to `src/pages/posts` that is prefixed with the new post's publication date, then create a `post.js` file:
+**To create a new post,** add a new directory to `src/pages/posts` that is prefixed with the new post's publication date, then create a `post.js` file inside it:
 
-```jsx{5}
+```jsx
 export default {
   title: `Learn How To Build This Blog From Scratch`,
   tags: ['react', 'navi'],
@@ -29,6 +29,12 @@ export default {
   getContent: () => import('./document.mdx'),
 }
 ```
+
+**To set the maximum number of posts on an index page,**, set the `indexPageSize` property of the object exported by `src/siteMetadata.js`.
+
+**To modify the generated HTML,** update the `src/renderPageToString.js` file.
+
+**To add non-blog pages,** just use [`Navi.createPage()`](https://frontarm.com/navi/reference/declarations/#createpage), [`Navi.createSwitch()`](https://frontarm.com/navi/reference/declarations/#createswitch) and [`Navi.createRedirect()`](https://frontarm.com/navi/reference/declarations/#createredirect). For an example, check the about page at [src/pages/about/index.js](src/pages/about/index.js). If you create a page, remember to add it to the root switch at [src/pages/index.js](src/pages/index.js).
 
 **To brush up on React's fundamentals,** check out the [React (without the buzzwords)](https://frontarm.com/courses/learn-raw-react/) and [Asynchronous JavaScript](https://frontarm.com/courses/async-javascript/) courses.
 
