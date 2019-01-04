@@ -17,20 +17,6 @@ describe("Switch", () => {
     expect(route.url.pathname).toBe('/to/')
     expect(route.url.query.from).toBe('/from')
   })
-  test("Fails on non-function as path", async () => {
-    try {
-      await createMemoryNavigation({
-        url: '/from',
-        pages: createSwitch({
-          paths: {
-            '/fail': {title: 'this fails'}
-          }
-        })
-      })
-    } catch (e) {
-      expect(e.message).toMatch('The given path: /fail is invalid. Path should be an instance of Switch, Page, Redirect, Context or a function. See https://frontarm.com/navi/reference/declarations/#declaring-pages');
-    }
-  })
   test("Fails on multiple non-functions as paths", async () => {
     try {
       await createMemoryNavigation({
@@ -43,7 +29,8 @@ describe("Switch", () => {
         })
       })
     } catch (e) {
-      expect(e.message).toMatch('The given paths: /fail, /this-also-fails are invalid. Path should be an instance of Switch, Page, Redirect, Context or a function. See https://frontarm.com/navi/reference/declarations/#declaring-pages');
+      expect(e.message.indexOf('/this-also-fails') > -1).toBeTruthy()
+      expect(e.message.indexOf('/fail') > -1).toBeTruthy()
     }
   })
 })
