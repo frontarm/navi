@@ -1,15 +1,18 @@
-create-react-blog
-=================
+npm init react-blog
+===================
 
-A project skeleton for a blog based on create-react-app, with:
+Create a blog with **create-react-app**, **MDX**, and **Navi**.<br />
+Themed after Gatsby's blog starter and Dan Abramov's overreacted.io.
 
-⏩ Paginated index page<br />
-🏷️ Tag pages generated from the post metadata<br />
-🚀 Statically generated HTML for each page<br />
-🔗 Code splitting, so page content isn't loaded until it's needed<br />
+Comes with:
+
+📡 RSS feed generation<br />
+🏷️ Tagged posts<br />
+🚀 HTML files for each URL<br />
 📜 Smooth scrolling to hash links<br />
-🔥 Page loading transition<br />
-📄 MDX content<br />
+🔥 Animated page loading transition<br />
+🔗 Easy code splitting with `import()`<br />
+⏩ Paginated index page
 
 
 Getting started
