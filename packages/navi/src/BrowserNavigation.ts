@@ -202,10 +202,8 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
 
             this.renderedRoute = this.receivedRoute
         }
-        else {
-            if (this.receivedRoute.url.hash) {
-                scrollToHash(this.receivedRoute.url.hash, this.hashScrollBehavior)
-            }
+        else if (this.receivedRoute && this.receivedRoute.url.hash) {
+            scrollToHash(this.receivedRoute.url.hash, this.hashScrollBehavior)
         }
     }
 }

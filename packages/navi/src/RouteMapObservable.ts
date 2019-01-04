@@ -301,6 +301,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
             appendFinalSlash: false,
             env: matchEnv,
             resolver: this.resolver,
+            withContent: this.options.withContent,
           }),
         })
       }

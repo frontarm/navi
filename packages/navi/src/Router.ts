@@ -30,6 +30,7 @@ export interface RouterMapOptions {
     maxDepth?: number,
     predicate?: (segment: Segment) => boolean,
     expandPattern?: (pattern: string, router: Router) => undefined | string[] | Promise<undefined | string[]>,
+    withContent?: boolean,
 }
   
 
