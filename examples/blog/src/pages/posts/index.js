@@ -1,4 +1,5 @@
 import * as Navi from 'navi'
+import { join } from 'path'
 import { sortBy } from 'lodash-es'
 import slugify from 'slugify'
 
@@ -8,9 +9,7 @@ const requirePost = require.context('.', true, /post.jsx?$/, 'lazy')
 const postPathnames = requirePost.keys()
 const datePattern = /^((\d{1,4})-(\d{1,4})-(\d{1,4}))[/-]/
 
-// Create url-friendly slugs from post pathnames, and a `getPage()` function
-// that can be used to load and return the post's Page object.
-let posts = postPathnames.map(pathname => {
+let postDetails = postPathnames.map(pathname => {
   let slug = slugify(
     pathname.replace(/post.jsx?$/, '').replace(/(\d)\/(\d)/, '$1-$2'),
   )
@@ -24,26 +23,58 @@ let posts = postPathnames.map(pathname => {
   }
 
   return {
-    pathname,
-    getPage: async () => {
-      let { default: post } = await requirePost(pathname)
-      let { title, getContent, ...meta } = post
-      return Navi.createPage({
-        title,
-        meta: {
-          date,
-          pathname,
-          slug,
-          ...meta,
-        },
-        getContent,
-      })
-    },
     slug,
+    pathname,
+    date,
   }
 })
 
 // Sort the pages by slug (which contain the dates)
-posts = sortBy(posts, ['slug']).reverse()
+postDetails = sortBy(postDetails, ['slug']).reverse()
+
+// Create url-friendly slugs from post pathnames, and a `getPage()` function
+// that can be used to load and return the post's Page object.
+let posts = postDetails.map(({ slug, pathname, date }, i) => ({
+  getPage: async () => {
+    let { default: post } = await requirePost(pathname)
+    let { title, getContent, ...meta } = post
+    let previousSlug, previousPost, nextSlug, nextPost
+
+    if (i !== 0) {
+      let previousPostDetails = postDetails[i - 1]
+      previousPost = (await requirePost(previousPostDetails.pathname)).default
+      previousSlug = previousPostDetails.slug
+    }
+
+    if (i + 1 < postDetails.length) {
+      let nextPostDetails = postDetails[i + 1]
+      nextPost = (await requirePost(nextPostDetails.pathname)).default
+      nextSlug = nextPostDetails.slug
+    }
+
+    return Navi.createPage({
+      title,
+      getMeta: env => ({
+        date,
+        pathname,
+        slug,
+        previousDetails: previousPost && {
+          title: previousPost.title,
+          href: join(env.pathname, '../..', previousSlug),
+        },
+        nextDetails: nextPost && {
+          title: nextPost.title,
+          href: join(env.pathname, '../..', nextSlug)
+        },
+        ...meta,
+      }),
+      getContent: async () => {
+        let { default: MDXComponent, ...other } = await getContent()
+        return { MDXComponent, ...other }
+      },
+    })
+  },
+  slug,
+}))
 
 export default posts

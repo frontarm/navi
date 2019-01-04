@@ -4,7 +4,20 @@ import { NavLink } from 'react-navi'
 import { formatDate } from '../utils/formats'
 import styles from './ArticleMeta.module.scss'
 
-function ArticleMeta({ blogPathname, meta }) {
+function ArticleMeta({ blogPathname, meta, readingTime }) {
+  let readingTimeElement
+  if (readingTime) {
+    let minutes = Math.max(Math.round(readingTime.minutes), 1)
+    let cups = Math.round(minutes / 5);
+    readingTimeElement =
+      <React.Fragment>
+        {' '}&bull;{' '}
+        <span className={styles.readingTime}>
+          {new Array(cups || 1).fill('☕️').join('')} {minutes} min read
+        </span>
+      </React.Fragment>
+  }
+      
   return (
     <small className={styles.ArticleMeta}>
       <time dateTime={meta.date.toUTCString()}>{formatDate(meta.date)}</time>
@@ -22,6 +35,7 @@ function ArticleMeta({ blogPathname, meta }) {
           </ul>
         </>
       }
+      {readingTimeElement || null}
     </small>
   )
 }

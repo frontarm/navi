@@ -5,6 +5,7 @@
   "dependencies": {
     "feed": "^2.0.2",
     "lodash-es": "^4.17.11",
+    "mdx-loader": "2.2.0",
     "navi": "^0.10.4",
     "navi-scripts": "^0.10.4",
     "prismjs": "^1.15.0",

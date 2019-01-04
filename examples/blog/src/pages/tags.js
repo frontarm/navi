@@ -61,7 +61,7 @@ const tagsSwitch = Navi.createSwitch({
         })
         let routes = []
         Object.entries(siteMap.pages).forEach(([href, route]) => {
-          let tags = route.meta && route.meta.tags || []
+          let tags = (route.meta && route.meta.tags) || []
           if (tags.find(metaTag => metaTag.toLowerCase() === lowerCaseTag)) {
             routes.push(route)
           }

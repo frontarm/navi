@@ -6801,6 +6801,35 @@ mdx-loader@2.1.1:
     typographic-quotes "^1.2.1"
     unist-util-visit "^1.4.0"
 
+mdx-loader@2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/mdx-loader/-/mdx-loader-2.2.0.tgz#a9fee86c885d17e938e7d357e0c226bc03745eb6"
+  integrity sha512-MG5fZJTPk6OjLoYX9e8AfxsnwzU5L0jooTPfUg5P20xpZnS8L0SznkQdA9A4EsJiTV99VqOQpz/Jrbq8I+YZ/w==
+  dependencies:
+    "@mdx-js/mdx" "^0.16.0"
+    "@mdx-js/tag" "^0.16.0"
+    gray-matter "^4.0.1"
+    hast-util-to-string "^1.0.1"
+    loader-utils "^1.1.0"
+    lodash "^4.17.11"
+    mdx-constant "^0.1.0"
+    mdx-table-of-contents "^0.1.0"
+    parse-numeric-range "^0.0.2"
+    prismjs "^1.15.0"
+    reading-time "^1.1.3"
+    remark-emoji "^2.0.2"
+    remark-images "^0.8.1"
+    remark-slug "^5.1.0"
+    remark-textr "^3.0.2"
+    textr "^0.3.0"
+    typographic-apostrophes "^1.1.1"
+    typographic-apostrophes-for-possessive-plurals "^1.0.5"
+    typographic-ellipses "^1.0.11"
+    typographic-em-dashes "^1.0.2"
+    typographic-en-dashes "^1.0.1"
+    typographic-quotes "^1.2.1"
+    unist-util-visit "^1.4.0"
+
 mdx-table-of-contents@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/mdx-table-of-contents/-/mdx-table-of-contents-0.1.0.tgz#a09dce9424ddff084ab07b7a6f3dcba5ed456fb3"
@@ -7678,6 +7707,11 @@ parse-json@^4.0.0:
   dependencies:
     error-ex "^1.3.1"
     json-parse-better-errors "^1.0.1"
+
+parse-numeric-range@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/parse-numeric-range/-/parse-numeric-range-0.0.2.tgz#b4f09d413c7adbcd987f6e9233c7b4b210c938e4"
+  integrity sha1-tPCdQTx6282Yf26SM8e0shDJOOQ=
 
 parse-passwd@^1.0.0:
   version "1.0.0"
@@ -8962,6 +8996,11 @@ readdirp@^2.0.0:
     graceful-fs "^4.1.11"
     micromatch "^3.1.10"
     readable-stream "^2.0.2"
+
+reading-time@^1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/reading-time/-/reading-time-1.1.3.tgz#47de143074245be6f65e2b3c9b63b78d9ab8ec7a"
+  integrity sha512-SYy+cuoGy1MTLjIbgwTZ+DkDiDq/dE1OnqBQFYytXgNWRZROuqtBdu7HoJ+HbGMnoAinOHnHnqbEUYnpSho5aA==
 
 realpath-native@^1.0.0:
   version "1.0.2"
