@@ -1,6 +1,6 @@
 import * as Navi from 'navi'
 import { join } from 'path'
-import { sortBy } from 'lodash-es'
+import { sortBy } from 'lodash'
 import slugify from 'slugify'
 
 // Get a list of all posts, that will not be loaded until the user
