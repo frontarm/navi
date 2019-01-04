@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "feed": "^2.0.2",
-    "lodash-es": "^4.17.11",
+    "lodash": "^4.17.11",
     "navi": "^0.10.5",
     "navi-scripts": "^0.10.5",
     "node-sass": "^4.11.0",

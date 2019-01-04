@@ -1,7 +1,7 @@
 import * as Navi from 'navi'
 import React from 'react'
 import { join } from 'path'
-import { chunk, fromPairs } from 'lodash-es'
+import { chunk, fromPairs } from 'lodash'
 import BlogIndexPage from '../components/BlogIndexPage'
 import BlogLayout from '../components/BlogLayout'
 import BlogPostLayout from '../components/BlogPostLayout'

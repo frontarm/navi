@@ -1,7 +1,7 @@
 import React from 'react'
 import * as Navi from 'navi'
 import { join } from 'path'
-import { fromPairs } from 'lodash-es'
+import { fromPairs } from 'lodash'
 import TagIndexPage from '../components/TagIndexPage'
 import TagPage from '../components/TagPage'
 import getTagsFromSiteMap from '../utils/getTagsFromSiteMap'
