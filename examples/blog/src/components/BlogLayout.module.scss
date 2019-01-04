@@ -1,0 +1,22 @@
+:local {
+  .BlogLayout {
+    margin: 0 auto;
+    max-width: 42rem;
+    padding: 2.625rem 1.3125rem;
+
+    > header > h3 {
+      font-family: Montserrat, sans-serif;
+      font-size: 1.44rem;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-top: 0;
+      margin-bottom: 0;
+      text-rendering: optimizeLegibility;
+    }
+
+    > header > h3 > a {
+      color: var(--primary-color-light);
+      text-decoration: none;
+    }
+  }
+}

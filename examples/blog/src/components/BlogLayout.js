@@ -3,7 +3,7 @@ import { NavContent, NavLink, NavLoading, NavNotFoundBoundary } from 'react-navi
 import siteMetadata from '../siteMetadata'
 import NotFoundPage from './NotFoundPage'
 import LoadingIndicator from './LoadingIndicator'
-import styles from './BlogLayout.module.css'
+import styles from './BlogLayout.module.scss'
 
 function BlogLayout({ blogPathname, isViewingIndex }) {
   return (

@@ -1,6 +1,6 @@
 export default {
   title: `Congratulations on Your New Blog!`,
-  tags: ['react', 'navi'],
+  tags: ['example'],
   spoiler: "A test post about Navi",
   getContent: () => import('./document.mdx'),
 }

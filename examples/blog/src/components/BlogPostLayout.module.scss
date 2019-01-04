@@ -1,0 +1,154 @@
+:local {
+  .BlogPostLayout {
+    > header {
+      margin-bottom: 2.4rem;  
+    }
+    > header > h1 {
+      font-family: Montserrat, sans-serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-top: 1.7rem;
+      margin-bottom: 0;
+      text-rendering: optimizeLegibility;
+    }
+    > header > h1 > a {
+      color: black;
+      text-decoration: none;
+    }
+
+    hr {
+      background: hsla(0,0%,0%,0.2);
+      border: none;
+      height: 1px;
+    }
+
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-weight: 900;
+      line-height: 1.1;
+      margin-top: 3.5rem;
+      text-rendering: optimizeLegibility;
+    }
+    
+    /**
+    * Based on copypasta from Remy Bach and Sarah Drasner
+    */
+    code,
+    pre {
+      color: white;
+      font-family: Consolas,Menlo,Monaco,source-code-pro,Courier New,monospace;
+      font-feature-settings: normal;
+      text-align: left;
+      white-space: pre;
+      word-spacing: normal;
+      word-break: normal;
+      word-wrap: normal;
+      line-height: 1.5;
+      tab-size: 4;
+      hyphens: none;
+    }
+    
+    /* Code blocks */
+    pre {
+      overflow: auto;
+      padding: 1em;
+    }
+
+    :not(pre) > code,
+    pre {
+      background: hsla(0,0%,0%,0.9);
+    }
+    
+    pre::-moz-selection,
+    pre::selection {
+      background: hsl(207, 4%, 16%);
+    }
+    
+    /* Text Selection colour */
+    pre::-moz-selection, pre ::-moz-selection {
+      text-shadow: none;
+      background: hsla(0, 0%, 100%, 0.15);
+    }
+    
+    pre::selection, pre ::selection {
+      text-shadow: none;
+      background: hsla(0, 0%, 100%, 0.15);
+    }
+    
+    /* Inline code */
+    :not(pre) > code {
+      border-radius: .3em;
+      background: rgba(255,229,100,0.2);
+      color: #1a1a1a;
+      padding: .15em .2em .05em;
+      white-space: normal;
+    }
+
+    :global {
+      .token.attr-name {
+        color: rgb(173, 219, 103);
+        font-style: italic;
+      }
+      
+      .token.comment {
+        color: rgb(99, 119, 119);
+      }
+      
+      .token.string,
+      .token.url {
+        color: rgb(173, 219, 103);
+      }
+      
+      .token.variable {
+        color: rgb(214, 222, 235);
+      }
+      
+      .token.number {
+        color: rgb(247, 140, 108);
+      }
+      
+      .token.builtin,
+      .token.char,
+      .token.constant,
+      .token.function {
+        color: rgb(130, 170, 255);
+      }
+      
+      .token.punctuation {
+        color: rgb(199, 146, 234);
+      }
+      
+      .token.selector,
+      .token.doctype {
+        color: rgb(199, 146, 234);
+        font-style: 'italic';
+      }
+      
+      .token.class-name {
+        color: rgb(255, 203, 139);
+      }
+      
+      .token.tag,
+      .token.operator,
+      .token.keyword {
+        color: #ffa7c4;
+      }
+      
+      .token.boolean {
+        color: rgb(255, 88, 116);
+      }
+      
+      .token.property {
+        color: rgb(128, 203, 196);
+      }
+      
+      .token.namespace {
+        color: rgb(178, 204, 214);
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import React from 'react'
-import styles from './NotFoundPage.module.css'
+import styles from './NotFoundPage.module.scss'
 
 // Note that create-react-navi-app will always show an error screen when this
 // is rendered. This is because the underlying react-scripts package shows

@@ -1,6 +1,6 @@
 import React from 'react'
 import ArticleSummary from './ArticleSummary'
-import styles from './TagPage.module.css'
+import styles from './TagPage.module.scss'
 
 function TagPage({ blogPathname, name, routes }) {
   return (

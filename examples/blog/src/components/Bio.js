@@ -1,5 +1,5 @@
 import React from 'react'
-import styles from './Bio.module.css'
+import styles from './Bio.module.scss'
 import bioPic from './bio-pic.jpg'
 
 class Bio extends React.Component {

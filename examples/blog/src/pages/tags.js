@@ -69,7 +69,7 @@ const tagsSwitch = Navi.createSwitch({
 
         return (
           <TagPage
-            blogPathname={join(env.pathname, '..')}
+            blogPathname={join(env.pathname, '..', '..')}
             name={env.params.tag}
             routes={routes}
           />

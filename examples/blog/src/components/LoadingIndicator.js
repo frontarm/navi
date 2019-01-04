@@ -1,5 +1,5 @@
 import React from 'react'
-import styles from './LoadingIndicator.module.css'
+import styles from './LoadingIndicator.module.scss'
 
 const LoadingIndicator = ({
   active,

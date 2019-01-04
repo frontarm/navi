@@ -1,0 +1,13 @@
+:local {
+  .Pagination {
+    display: block;
+    margin: 4.375rem 0 7rem;
+    
+    .previous {
+      margin-right: 0.5rem;
+    }
+    .next {
+      margin-left: 0.5rem;
+    }
+  }
+}

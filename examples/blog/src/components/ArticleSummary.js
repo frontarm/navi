@@ -1,7 +1,7 @@
 import React from 'react'
 import { NavLink } from 'react-navi'
 import ArticleMeta from './ArticleMeta'
-import styles from './ArticleSummary.module.css'
+import styles from './ArticleSummary.module.scss'
 
 function ArticleSummary({ blogPathname, route }) {
   return (

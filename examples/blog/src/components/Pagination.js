@@ -1,7 +1,7 @@
 import { join } from 'path'
 import React from 'react'
 import { NavLink } from 'react-navi'
-import styles from './Pagination.module.css'
+import styles from './Pagination.module.scss'
 
 function Pagination({ blogPathname, pageCount, pageNumber }) {
   return (

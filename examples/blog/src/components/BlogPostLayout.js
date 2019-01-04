@@ -2,7 +2,7 @@ import React from 'react'
 import { NavContent, NavLink } from 'react-navi'
 import { MDXProvider } from '@mdx-js/tag'
 import ArticleMeta from './ArticleMeta'
-import styles from './BlogPostLayout.module.css'
+import styles from './BlogPostLayout.module.scss'
 
 function BlogPostLayout({ blogPathname }) {
   return (

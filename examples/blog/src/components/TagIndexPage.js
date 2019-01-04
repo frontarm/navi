@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink } from 'react-navi'
-import styles from './TagIndexPage.module.css'
+import styles from './TagIndexPage.module.scss'
 
 function TagIndexPage(props) {
   return (
