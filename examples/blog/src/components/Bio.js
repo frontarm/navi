@@ -11,9 +11,8 @@ class Bio extends React.Component {
           alt='James K Nelson'
         />
         <p>
-          A clone of Dan Abramov's <a href="https://overreacted.io/">overreacted.io</a>{' '}
-          blog using create-react-app-mdx and Navi, by{' '}
-          <a href="https://mobile.twitter.com/james_k_nelson">James K Nelson</a>.
+          Create a blog with a single command, by <a href="https://twitter.com/james_k_nelson/">James K Nelson</a>.<br />
+          Based on create-react-app, <a href="https://mdxjs.com/">MDX</a>, <a href="https://frontarm.com/navi/">Navi</a>, and Dan Abramov's <a href="https://overreacted.io/">overreacted.io</a> theme.
         </p>
       </div>
     )

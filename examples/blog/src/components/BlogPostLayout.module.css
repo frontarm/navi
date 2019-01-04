@@ -1,0 +1,33 @@
+:local .BlogPostLayout > header {
+  margin-bottom: 2.4rem;  
+}
+:local .BlogPostLayout > header > h1 {
+  font-family: Montserrat, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-top: 1.7rem;
+  margin-bottom: 0;
+  text-rendering: optimizeLegibility;
+}
+:local .BlogPostLayout > header > h1 > a {
+  color: black;
+  text-decoration: none;
+}
+
+:local .BlogPostLayout hr {
+  background: hsla(0,0%,0%,0.2);
+  border: none;
+  height: 1px;
+}
+
+:local .BlogPostLayout h2,
+:local .BlogPostLayout h3,
+:local .BlogPostLayout h4,
+:local .BlogPostLayout h5,
+:local .BlogPostLayout h6 {
+  font-weight: 900;
+  line-height: 1.1;
+  margin-top: 3.5rem;
+  text-rendering: optimizeLegibility;
+}

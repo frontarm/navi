@@ -1,61 +1,55 @@
 import React from 'react'
 import { NavLink } from 'react-navi'
-import BlogContext from '../BlogContext'
+import siteMetadata from '../siteMetadata'
+import ArticleSummary from './ArticleSummary'
+import Bio from './Bio'
+import Pagination from './Pagination'
 import styles from './BlogIndexPage.module.css'
 
-function BlogIndexPage(props) {
+function BlogIndexPage({ blogPathname, pageCount, pageNumber, postRoutes }) {
   return (
-    <BlogContext.Consumer>
-      {({pathname, title}) =>
-        <div styles={styles.BlogIndexPage}>
-          <h1>
-            <NavLink href={pathname}>{title}</NavLink>
-          </h1>
-          <ul>
-            {props.posts.map(post =>
-              <li key={post.href}>
-                <NavLink href={post.href}>{post.route.title}</NavLink>
-              </li>  
-            )}
-          </ul>
-          <footer>
-            <div className={styles.pagination}>
-              <p>Page {props.pageNumber} / {props.pageCount}</p>
-              {
-                props.pageCount > 1 &&
-                <p>
-                  {
-                    props.pageNumber !== 1 &&
-                    <NavLink href={props.getPageHref(props.pageNumber - 1)}>&laquo; Previous </NavLink>
-                  }
-                  {
-                    props.pageNumber < props.pageCount &&
-                    <NavLink href={props.getPageHref(props.pageNumber + 1)}> Next &raquo;</NavLink>
-                  }
-                </p>
-              }
-            </div>
-            <div className={styles.links}>
-              <a
-                href='./rss.xml'
-                target='_blank'
-                style={{ float: 'right' }}>
-                RSS
-              </a>
-              <NavLink href='./about'>
-                About
-              </NavLink> &bull;{' '}
-              <NavLink href='./tags'>
-                Tags
-              </NavLink> &bull;{' '}
-              <a href='https://github.com/frontarm/navi/tree/master/examples/blog'>
-                Source
-              </a>
-            </div>
-          </footer>
-        </div>
+    <div className={styles.BlogIndexPage}>
+      <header>
+        <h1>
+          <NavLink href={blogPathname}>{siteMetadata.title}</NavLink>
+        </h1>
+        <Bio />
+      </header>
+      <ul className={styles.articles}>
+        {postRoutes.map(route =>
+          <li key={route.url.href}>
+            <ArticleSummary blogPathname={blogPathname} route={route} />
+          </li>
+        )}
+      </ul>
+      {
+        pageCount > 1 &&
+        <Pagination
+          blogPathname={blogPathname}
+          pageCount={pageCount}
+          pageNumber={pageNumber}
+        />
       }
-    </BlogContext.Consumer>
+      <footer>
+        <div className={styles.links}>
+          <a
+            href='./rss.xml'
+            target='_blank'
+            style={{ float: 'right' }}>
+            RSS
+          </a>
+          <NavLink href='./about'>
+            About
+          </NavLink> &bull;{' '}
+          <NavLink href='./tags'>
+            Tags
+          </NavLink> &bull;{' '}
+          <a href='https://github.com/frontarm/navi/tree/master/examples/blog'>
+            Source
+          </a>
+        </div>
+      </footer>
+    </div>
   )
 }
 

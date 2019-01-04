@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css?family=Merriweather:400,400i,700,700i,900|Montserrat:900');
+
+:root {
+  --primary-color: #d23669;
+  --primary-color-light: rgb(255, 167, 196);
+}
+
+:global {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    color: rgba(0, 0, 0, 0.9);
+    font: 100%/1.75 Morriweather, Georgia, serif;
+  }
+
+  body {
+    font-kerning: normal;
+    font-family: 'Merriweather','Georgia',serif;
+    font-feature-settings: "kern", "liga", "clig", "calt";
+    font-weight: 400;
+    margin: 0;
+    padding: 0;
+    word-wrap: break-word;
+  }
+
+  pre, code {
+    font-family: Consolas, Menlo, Monaco, source-code-pro, "Courier New", monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  pre {
+    border-radius: 10px;
+    overflow: auto;
+    padding: 1em;
+  }
+
+  a {
+    color: var(--primary-color);
+  }
+  a:hover {
+    text-decoration: none;
+  }
+
+  p, pre, ul, ol {
+    margin-top: 0;
+    margin-bottom: 1.75rem;
+  }
+
+
+  /**
+  * Based on copypasta from Remy Bach and Sarah Drasner
+  */
+  code[class*="language-"],
+  pre[class*="language-"] {
+    font-family: Consolas,Menlo,Monaco,source-code-pro,Courier New,monospace;
+    font-feature-settings: normal;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+  
+    -moz-tab-size: 4;
+    -o-tab-size: 4;
+    tab-size: 4;
+  
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+  }
+  
+  /* Code blocks */
+  pre[class*="language-"] {
+    overflow: auto;
+    padding: 1em;
+  }
+
+  :not(pre) > code,
+  pre {
+    background: #f8fbfe;
+  }
+  
+  pre[class*="language-"]::-moz-selection,
+  pre[class*="language-"]::selection {
+    background: hsl(207, 4%, 16%);
+  }
+  
+  /* Text Selection colour */
+  pre[class*="language-"]::-moz-selection, pre[class*="language-"] ::-moz-selection {
+    text-shadow: none;
+    background: hsla(0, 0%, 100%, 0.15);
+  }
+  
+  pre[class*="language-"]::selection, pre[class*="language-"] ::selection {
+    text-shadow: none;
+    background: hsla(0, 0%, 100%, 0.15);
+  }
+  
+  /* Inline code */
+  :not(pre) > code {
+    border-radius: .3em;
+    background: rgba(255,229,100,0.2);
+    color: #1a1a1a;
+    padding: .15em .2em .05em;
+    white-space: normal;
+  }
+
+  .token.comment,
+  .token.block-comment,
+  .token.prolog,
+  .token.doctype,
+  .token.cdata {
+    color: #8a8ab5;
+  }
+
+  .token.punctuation {
+    color: #0f0035;
+  }
+
+  .token.tag{
+    color: #0e998e;
+  }
+  .token.attr-name,
+  .token.namespace,
+  .token.deleted,
+  .token.function-name,
+  .token.boolean,
+  .token.number,
+  .token.function {
+    color: #c42255;
+  }
+
+  .token.property,
+  .token.class-name,
+  .token.constant,
+  .token.symbol {
+    color: #4400c9;
+  }
+
+  .token.selector,
+  .token.important,
+  .token.atrule,
+  .token.keyword,
+  .token.builtin {
+    color: #10b1a4;
+  }
+
+  .token.string,
+  .token.char,
+  .token.attr-value,
+  .token.regex,
+  .token.variable {
+    color: #6300ff;
+  }
+
+  .token.operator,
+  .token.entity,
+  .token.url {
+    color: #F54391;
+  }
+
+  .token.important,
+  .token.bold {
+    font-weight: bold;
+  }
+  .token.italic {
+    font-style: italic;
+  }
+
+  .token.entity {
+    cursor: help;
+  }
+
+  .token.inserted {
+    color: #12c8ba;
+  }
+}

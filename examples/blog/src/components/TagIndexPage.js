@@ -9,7 +9,7 @@ function TagIndexPage(props) {
       <ul>
         {props.tags.map(tag =>
           <li key={tag.href}>
-            <NavLink href={tag.href}>{tag.name}</NavLink>
+            <NavLink href={tag.href}>{tag.name} ({tag.count})</NavLink>
           </li>  
         )}
       </ul>

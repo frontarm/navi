@@ -18,13 +18,14 @@ const tagsSwitch = Navi.createSwitch({
           predicate: segment => segment.url.pathname.indexOf(tagsPathname) === -1,
         })
         let tags = getTagsFromSiteMap(siteMap)
-        let tagPages = fromPairs(tags.map(name => [name.toLowerCase(), []]))
-        Object.entries(siteMap.pages).forEach(([href, { title, meta }]) => {
+        let tagRoutes = fromPairs(tags.map(name => [name.toLowerCase(), []]))
+        Object.entries(siteMap.pages).forEach(([href, route]) => {
+          let meta = route.meta
           if (meta && meta.tags) {
             meta.tags.forEach(tag => {
               tag = tag.toLowerCase()
-              if (tagPages[tag]) {
-                tagPages[tag].push({ title, href, meta })
+              if (tagRoutes[tag]) {
+                tagRoutes[tag].push(route)
               }
               else {
                 console.warn(`The page at "${href}" used unindexed tag "${tag}".`)
@@ -35,11 +36,12 @@ const tagsSwitch = Navi.createSwitch({
   
         return (
           <TagIndexPage
+            blogPathname={join(env.pathname, '..')}
             tags={
               tags.map(name => ({
                 name,
                 href: join(env.mountname, name.toLowerCase()),
-                pages: tagPages[name.toLowerCase()]
+                count: (tagRoutes[name] || []).length
               }))
             }
           />
@@ -57,17 +59,19 @@ const tagsSwitch = Navi.createSwitch({
         let siteMap = await env.router.resolveSiteMap('/', {
           predicate: segment => segment.url.pathname.indexOf(tagsPathname) === -1,
         })
-        let pages = []
-        Object.entries(siteMap.pages).forEach(([href, { title, meta }]) => {
-          if (((meta && meta.tags) || []).find(metaTag => metaTag.toLowerCase() === lowerCaseTag)) {
-            pages.push({ title, href, meta })
+        let routes = []
+        Object.entries(siteMap.pages).forEach(([href, route]) => {
+          let tags = route.meta && route.meta.tags || []
+          if (tags.find(metaTag => metaTag.toLowerCase() === lowerCaseTag)) {
+            routes.push(route)
           }
         })
 
         return (
           <TagPage
+            blogPathname={join(env.pathname, '..')}
             name={env.params.tag}
-            pages={pages}
+            routes={routes}
           />
         )
       }

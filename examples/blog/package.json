@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "feed": "^2.0.2",
     "lodash-es": "^4.17.11",
     "navi": "^0.10.4",
     "navi-scripts": "^0.10.4",

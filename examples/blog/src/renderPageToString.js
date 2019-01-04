@@ -2,7 +2,7 @@ import * as Navi from 'navi'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import { renderCreateReactAppTemplate } from 'react-navi/create-react-app'
-import renderRSSFeed from './renderRSSFeed'
+import renderRSSFeedToString from './renderRSSFeedToString'
 
 /**
  * navi-scripts will call this function for each of your site's pages
@@ -12,14 +12,14 @@ async function renderPageToString({
   // The URL to be rendered
   url,
 
-  // The `exports` object passed to `Navi.app()`
+  // The `exports` object passed to the call to `Navi.app()` in index.js
   exports,
 
   // Sets of JavaScript and CSS files that were used while rendering this
   // page
   dependencies,
   
-  // The `pages` switch passed to `Navi.app()`
+  // The `pages` switch passed to the call to `Navi.app()` in index.js
   pages,
 }) {
   // Create an in-memory Navigation object with the given URL
@@ -31,9 +31,9 @@ async function renderPageToString({
   // Wait for any asynchronous content to finish fetching
   let { route } = await navigation.getSteadyValue()
 
-  // RSS feed is a special case that doesn't use React
+  // The feed is a special case
   if (url.pathname === '/rss') {
-    return renderRSSFeed(route.content)
+    return await renderRSSFeedToString(route.content)
   }
 
   // Render the <App> element to a string, passing in `navigation` as a prop

@@ -1,15 +1,15 @@
 import React from 'react'
-import { NavLink } from 'react-navi'
+import ArticleSummary from './ArticleSummary'
 import styles from './TagPage.module.css'
 
-function TagPage(props) {
+function TagPage({ blogPathname, name, routes }) {
   return (
     <div className={styles.TagPage}>
-      <h1>{props.name} Tag</h1>
+      <h1>{name} posts</h1>
       <ul>
-        {props.pages.map(page =>
-          <li key={page.href}>
-            <NavLink href={page.href}>{page.title}</NavLink>
+        {routes.map(route =>
+          <li key={route.url.href}>
+            <ArticleSummary blogPathname={blogPathname} route={route} />
           </li>  
         )}
       </ul>

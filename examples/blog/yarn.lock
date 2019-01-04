@@ -4249,6 +4249,14 @@ fb-watchman@^2.0.0:
   dependencies:
     bser "^2.0.0"
 
+feed@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/feed/-/feed-2.0.2.tgz#8b6cc2f4d9187eac6f6fada8322de43c414c17aa"
+  integrity sha512-AskLRGhPuY82HQbRDV3DLG/2f/jicqT6naUgrWm/PsIIsA36ErCr1yRcw2sMMcPcef6MZGylKTq32vaHLT15lw==
+  dependencies:
+    luxon "^1.3.3"
+    xml "^1.0.1"
+
 figgy-pudding@^3.1.0, figgy-pudding@^3.5.1:
   version "3.5.1"
   resolved "https://registry.yarnpkg.com/figgy-pudding/-/figgy-pudding-3.5.1.tgz#862470112901c727a0e495a80744bd5baa1d6790"
@@ -6634,6 +6642,11 @@ lru-cache@^4.0.1, lru-cache@^4.1.1, lru-cache@^4.1.3:
   dependencies:
     pseudomap "^1.0.2"
     yallist "^2.1.2"
+
+luxon@^1.3.3:
+  version "1.8.3"
+  resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.8.3.tgz#6c76b50319b3a91a357002ca2e96576bb3bfe26d"
+  integrity sha512-hICQcGmUl5e9VUnf5PtHAma+tpiwL/wMBV9/6/M/6iSpzWFHdEElK2Rj4IZx8kbk2/baJvYftgb+n/I2wJ7RXQ==
 
 make-dir@^1.0.0:
   version "1.3.0"
@@ -11211,6 +11224,11 @@ xml-name-validator@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/xml-name-validator/-/xml-name-validator-3.0.0.tgz#6ae73e06de4d8c6e47f9fb181f78d648ad457c6a"
   integrity sha512-A5CUptxDsvxKJEU3yO6DuWBSJz/qizqzJKOMIfUJHETbBw/sFaDxgd6fxm1ewUaM0jZ444Fc5vC5ROYurg/4Pw==
+
+xml@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/xml/-/xml-1.0.1.tgz#78ba72020029c5bc87b8a81a3cfcd74b4a2fc1e5"
+  integrity sha1-eLpyAgApxbyHuKgaPPzXS0ovweU=
 
 xmlchars@^1.3.1:
   version "1.3.1"
