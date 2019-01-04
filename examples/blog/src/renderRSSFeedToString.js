@@ -29,7 +29,7 @@ function renderRSSFeed(siteMap) {
     // Each post's content is just an MDX component, which can be rendered
     // independently of the rest of the app.
     let content = ReactDOMServer.renderToStaticMarkup(
-      React.createElement(route.content)
+      React.createElement(route.content.MDXComponent)
     )
 
     // todo: add a date

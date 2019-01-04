@@ -7284,10 +7284,10 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha1-Sr6/7tdUHywnrPspvbvRXI1bpPc=
 
-navi-scripts@^0.10.4:
-  version "0.10.4"
-  resolved "https://registry.yarnpkg.com/navi-scripts/-/navi-scripts-0.10.4.tgz#fee85cccd6d5f32822f854453c67ceb53c585205"
-  integrity sha512-tyOb1XIZyNHUzXJRspiEKjKbLhMQXCZtHUKhZHOqm3ZX1FjMa5wZ7DnnatdOn5iGCdDtLimxVEA962YIJYf40A==
+navi-scripts@^0.10.5:
+  version "0.10.5"
+  resolved "https://registry.yarnpkg.com/navi-scripts/-/navi-scripts-0.10.5.tgz#49cb1bb931ca8e419d9d74e07cb477e06f2356c6"
+  integrity sha512-dj+OLo10RZHUCRokxQ4rXTYQtSIPHZBw59lLY7kuyfEkFV2Zip8MqNhzfcPRGR7AwP6ceII585thgEbjQiMUCg==
   dependencies:
     "@babel/core" "^7.1.2"
     "@babel/preset-env" "^7.1.0"
@@ -7303,10 +7303,10 @@ navi-scripts@^0.10.4:
     raf "^3.4.0"
     serve-static "^1.11.2"
 
-navi@^0.10.4:
-  version "0.10.4"
-  resolved "https://registry.yarnpkg.com/navi/-/navi-0.10.4.tgz#5fa2ea49ae58992e81ce3663fa9a4e4a140b9e2b"
-  integrity sha512-Sk4iqsmJ2BETytgfmyl7CtgrMwxwyOgwivnmY4Td+A31pthLexH15pe0h0MQsWRWgFKBOM1JnurUZkqrmb1/VQ==
+navi@^0.10.5:
+  version "0.10.5"
+  resolved "https://registry.yarnpkg.com/navi/-/navi-0.10.5.tgz#c68d373b31d95ca01d3f6ee104cab6126604c115"
+  integrity sha512-9XNNcMV85q6SuD8GxjOa0s7dmecsmtuUkCUbYzvl+sClJ0kdz9/Q4r1XsuNXoIIPxbWy8TtgSSWO4IQFEJz9Eg==
   dependencies:
     history "^4.7.2"
 

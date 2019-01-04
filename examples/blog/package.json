@@ -5,8 +5,8 @@
   "dependencies": {
     "feed": "^2.0.2",
     "lodash-es": "^4.17.11",
-    "navi": "^0.10.4",
-    "navi-scripts": "^0.10.4",
+    "navi": "^0.10.5",
+    "navi-scripts": "^0.10.5",
     "node-sass": "^4.11.0",
     "prismjs": "^1.15.0",
     "react": "^16.7.0",
