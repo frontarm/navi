@@ -31,22 +31,24 @@ async function createConfigFromCommand(command) {
   let cwd = process.cwd()
   let config
   let configFile = command.config || 'navi.config.js'
-  try {
-    // Load the config file as an ES6 module
-    let configPath = path.resolve(cwd, configFile)
-    config = require(configPath)
-    console.log(chalk.green('navi-scripts:')+' Using config at '+configPath)
-  }
-  catch (e) {
-    if (command.config) {
-      console.error(chalk.green('navi-scripts:')+chalk.red("[ohshit] ")+`Couldn't read config file "${command.config}". Aborting.`)
+  // Load the config file as an ES6 module
+  let configPath = path.resolve(cwd, configFile)
+  let configFileExists = fs.existsSync(configPath)
+
+  if (configFileExists) {
+    try {
+      config = require(configPath)
+    }
+    catch (e) {
+      console.error(chalk.green('navi-scripts:')+chalk.red("[ohshit] ")+`Couldn't read config file "${configPath}". Aborting.`)
       console.error(e.message)
       process.exit(1)
     }
-    else {
-      console.log(chalk.green('navi-scripts:')+' No config file found, using default config.')
-      config = {}
-    }
+    console.log(chalk.green('navi-scripts:')+' Using config at '+configPath)
+  }
+  else {
+    console.log(chalk.green('navi-scripts:')+' No config file found, using default config.')
+    config = {}
   }
 
   if (command.root) {
