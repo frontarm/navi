@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { NaviError, Route, Status, Segment, SegmentType } from 'navi'
 import { NavContext } from './NavContext'
+import { stat } from 'fs';
 
 
 export interface NavContentProps {
@@ -55,7 +56,8 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
     }
 
     // Bail if nothing has changed
-    if (state.steadyRoute === props.context.steadyRoute) {
+    if (state.steadyRoute === props.context.steadyRoute &&
+        state.childContext && state.childContext.busyRoute === props.context.busyRoute) {
       return null
     }
 
@@ -85,6 +87,7 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
       steadyRoute: props.context.steadyRoute,
       childContext: {
         ...props.context,
+        busyRoute: props.context.busyRoute,
         unconsumedSteadyRouteSegments: unconsumedSegments.slice(index + 1),
       },
     }
@@ -159,7 +162,13 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
 
     return (
       <NavContext.Provider value={this.state.childContext!}>
-        {content}
+        {
+          // Clone the content to force a re-render even if content hasn't
+          // changed, as Provider is a PureComponent.
+          React.isValidElement(content)
+            ? React.cloneElement(content)
+            : content
+        }
       </NavContext.Provider>
     )
   }
