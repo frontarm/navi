@@ -2,7 +2,7 @@ import { join } from 'path'
 import React from 'react'
 import { NavLink } from 'react-navi'
 import { formatDate } from '../utils/formats'
-import styles from './ArticleMeta.module.scss'
+import styles from './ArticleMeta.module.css'
 
 function ArticleMeta({ blogPathname, meta, readingTime }) {
   let readingTimeElement

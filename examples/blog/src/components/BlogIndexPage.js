@@ -4,18 +4,18 @@ import siteMetadata from '../siteMetadata'
 import ArticleSummary from './ArticleSummary'
 import Bio from './Bio'
 import Pagination from './Pagination'
-import styles from './BlogIndexPage.module.scss'
+import styles from './BlogIndexPage.module.css'
 
 function BlogIndexPage({ blogPathname, pageCount, pageNumber, postRoutes }) {
   return (
-    <div className={styles.BlogIndexPage}>
+    <div>
       <header>
-        <h1>
+        <h1 className={styles.title}>
           <NavLink href={blogPathname}>{siteMetadata.title}</NavLink>
         </h1>
         <Bio />
       </header>
-      <ul className={styles.articles}>
+      <ul className={styles.articlesList}>
         {postRoutes.map(route =>
           <li key={route.url.href}>
             <ArticleSummary blogPathname={blogPathname} route={route} />
@@ -30,8 +30,8 @@ function BlogIndexPage({ blogPathname, pageCount, pageNumber, postRoutes }) {
           pageNumber={pageNumber}
         />
       }
-      <footer>
-        <div className={styles.links}>
+      <footer className={styles.footer}>
+        <div>
           <a
             href='./rss.xml'
             target='_blank'

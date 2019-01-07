@@ -1,7 +1,7 @@
 import * as Navi from "navi";
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.module.scss";
+import "./index.module.css";
 import pages from "./pages";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";

@@ -4,7 +4,7 @@ import { MDXProvider } from '@mdx-js/tag'
 import siteMetadata from '../siteMetadata'
 import ArticleMeta from './ArticleMeta'
 import Bio from './Bio'
-import styles from './BlogPostLayout.module.scss'
+import styles from './BlogPostLayout.module.css'
 
 function BlogPostLayout({ blogPathname }) {
   return (
@@ -13,9 +13,9 @@ function BlogPostLayout({ blogPathname }) {
         // The content for posts is an MDX component, so we'll need
         // to use <MDXProvider> to ensure that links are rendered
         // with <NavLink>, and thus use pushState.
-        <article className={styles.BlogPostLayout}>
-          <header>
-            <h1>
+        <article className={styles.container}>
+          <header className={styles.header}>
+            <h1 className={styles.title}>
               <NavLink href={url.pathname}>{title}</NavLink>
             </h1>
             <ArticleMeta
@@ -33,8 +33,8 @@ function BlogPostLayout({ blogPathname }) {
           }}>
             <MDXComponent />
           </MDXProvider>
-          <footer>
-            <h3>
+          <footer className={styles.footer}>
+            <h3 className={styles.title}>
               <NavLink href={blogPathname}>
                 {siteMetadata.title}
               </NavLink>

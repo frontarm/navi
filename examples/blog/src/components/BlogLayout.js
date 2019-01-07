@@ -3,7 +3,7 @@ import { NavContent, NavLink, NavLoading, NavNotFoundBoundary } from 'react-navi
 import siteMetadata from '../siteMetadata'
 import NotFoundPage from './NotFoundPage'
 import LoadingIndicator from './LoadingIndicator'
-import styles from './BlogLayout.module.scss'
+import styles from './BlogLayout.module.css'
 
 function BlogLayout({ blogPathname, isViewingIndex }) {
   return (
@@ -11,7 +11,7 @@ function BlogLayout({ blogPathname, isViewingIndex }) {
     // with the new `useLoadingRoute` hooks.
     <NavLoading>
       {loadingRoute =>
-        <div className={styles.BlogLayout}>
+        <div className={styles.container}>
           <LoadingIndicator active={!!loadingRoute} />
 
           {
@@ -19,7 +19,7 @@ function BlogLayout({ blogPathname, isViewingIndex }) {
             // header.
             !isViewingIndex &&
             <header>
-              <h3>
+              <h3 className={styles.title}>
                 <NavLink href={blogPathname}>
                   {siteMetadata.title}
                 </NavLink>
