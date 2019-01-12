@@ -233,19 +233,28 @@ export function createSwitch<Context extends object, Meta extends object, Conten
 }): Switch<Context, Meta, Content> {
   if (!options) {
     throw new Error(
-      `createSwitch() was supplied a function that doesn't return any value!`,
+      `createSwitch() must be supplied with an options object.`,
     )
   }
+  
   if (!options.paths) {
     if (process.env.NODE_ENV !== 'production') {
       console.warn(
-        `createSwitch() was called without a "children" option, but a switch without children doesn't make any sense!`,
+        `createSwitch() was called without a "paths" option, but "paths" is required.`,
       )
     }
     options.paths = {} as any
   }
 
   let patterns = Object.keys(options.paths)
+  
+  let invalidPaths = patterns.filter(
+    pattern => typeof options.paths[pattern] !== 'function'
+  )
+  if (invalidPaths.length > 0) {
+    let singular = invalidPaths.length === 1
+    throw new TypeError(`The given ${singular ? 'path' : 'paths'}: ${invalidPaths.join(', ')} ${singular ? 'is' : 'are'} invalid. Path should be an instance of Switch, Page, Redirect, Context or a function. See https://frontarm.com/navi/reference/declarations/#declaring-pages`)
+  }
 
   // Wildcards in PatternMap objects are null (\0) characters, so they'll
   // always be sorted to the top. As such, by sorting the patterns, the
