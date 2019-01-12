@@ -12,6 +12,8 @@ class Bio extends React.Component {
         />
         <p>
           Create a blog with a single command, by <a href="https://twitter.com/james_k_nelson/">James K Nelson</a>.<br />
+
+          Themed after Gatsby's blog starter and Dan Abramov's overreacted.io.<br />
           Based on create-react-app, <a href="https://mdxjs.com/">MDX</a>, <a href="https://frontarm.com/navi/">Navi</a>, and Dan Abramov's <a href="https://overreacted.io/">overreacted.io</a> theme.
         </p>
       </div>
