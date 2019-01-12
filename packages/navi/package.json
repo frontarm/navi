@@ -49,7 +49,7 @@
   },
   "jest": {
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "testEnvironment": "node",
+    "testEnvironment": "jsdom",
     "moduleFileExtensions": [
       "js",
       "json",
