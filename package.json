@@ -11,5 +11,9 @@
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "exenv": "^1.2.2",
+    "history": "^4.7.2"
+  }
 }
