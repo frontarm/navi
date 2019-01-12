@@ -1,4 +1,4 @@
-import { createMemoryNavigation, createSwitch, createRedirect, createPage } from '../src'
+import { createMemoryNavigation, isValidSwitch, createSwitch, createRedirect, createPage } from '../src'
 
 describe("Switch", () => {
   test("Passes correct pathname into path getter function", async () => {
@@ -16,5 +16,24 @@ describe("Switch", () => {
     
     expect(route.url.pathname).toBe('/to/')
     expect(route.url.query.from).toBe('/from')
+  })
+
+  test("is a valid switch", () => {
+    let x = createSwitch({
+      paths: {
+        '/test': createPage({
+          title: 'test'
+        })
+      }
+    })
+
+    expect(isValidSwitch(x)).toBe(true)
+  })
+})
+
+describe("isValidSwitch()", () => {
+  test("returns false for a Page", () => {
+    let page = createPage({ title: 'test' })
+    expect(isValidSwitch(page)).toBe(false)
   })
 })

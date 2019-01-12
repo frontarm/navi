@@ -112,3 +112,7 @@ export function createPage<Context extends object, Meta extends object, Content>
     static getContent = options.getContent
   }
 }
+
+export function isValidPage(x: any): x is Page {
+  return x && x.prototype && x.prototype instanceof PageMatcher
+}

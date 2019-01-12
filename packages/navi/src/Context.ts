@@ -126,3 +126,7 @@ export function createContext<ParentContext extends object=any, ChildContext ext
     static childContextResolvable = childContextResolvable
   }
 }
+
+export function isValidContext(x: any): x is Context {
+  return x && x.prototype && x.prototype instanceof ContextMatcher
+}

@@ -362,6 +362,10 @@ export function createSwitch<Context extends object, Meta extends object, Conten
   }
 }
 
+export function isValidSwitch(x: any): x is Switch {
+  return x && x.prototype && x.prototype instanceof SwitchMatcher
+}
+
 function compareStrings(a, b) {
   return a < b ? -1 : a > b ? 1 : 0
 }

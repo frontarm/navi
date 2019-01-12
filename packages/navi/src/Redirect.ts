@@ -66,3 +66,7 @@ export function createRedirect<Context extends object = any, Meta extends object
     static meta = typeof meta === 'function' ? (meta as Resolvable<Meta>) : () => meta
   }
 }
+
+export function isValidRedirect(x: any): x is Redirect {
+  return x && x.prototype && x.prototype instanceof RedirectMatcher
+}
