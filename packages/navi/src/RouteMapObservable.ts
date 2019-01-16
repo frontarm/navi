@@ -25,7 +25,7 @@ interface MapItem {
   pathname: string
   fromPathname?: string
   depth: number
-  order: string
+  order: number[]
   matcher: Switch['prototype']
   segmentCache?: SwitchSegment | PlaceholderSegment
   lastSegmentCache?: Segment
@@ -186,7 +186,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
               expandedPatterns[k],
               item.depth + 1,
               pathname,
-              item.order + '.' + j
+              item.order.concat(j, k)
             )
           }
         }
@@ -198,7 +198,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
       i++
     }
 
-    let routeMapArray = [] as [string, Route, string][]
+    let routeMapArray = [] as [string, Route, number[]][]
     for (let i = 0; i < this.mapItems.length; i++) {
       let item = this.mapItems[i]
       let lastSegment = item.lastSegmentCache!
@@ -217,11 +217,28 @@ export class RouteMapObservable implements Observable<RouteMap> {
     // This will replace any existing listener and its associated resolvables
     this.resolver.listen(this.handleResolverUpdate, allResolvableIds)
 
-    routeMapArray.sort((x, y) =>
-      x[2] < y[2] ? -1 :
-      x[2] > y[2] ? 1 :
-      0
-    )
+    routeMapArray.sort((itemX, itemY) => {
+      let x = itemX[2]
+      let y = itemY[2]
+    
+      if (x.length < y.length) {
+        return -1
+      }
+      if (x.length > y.length) {
+        return 1
+      }
+    
+      for (let i = 0; i < x.length; i++) {
+        if (x[i] < y[i]) {
+          return -1
+        }
+        if (x[i] > y[i]) {
+          return 1
+        }
+      }
+      
+      return 0
+    })
 
     if (this.isRefreshScheduled) {
       this.refresh()
@@ -262,7 +279,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
     }
   }
 
-  private addToQueue(pathname: string, depth: number, fromPathname?: string, order = '0') {
+  private addToQueue(pathname: string, depth: number, fromPathname?: string, order = [0]) {
     if (this.seenPathnames.has(pathname)) {
       return
     }
