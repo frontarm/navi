@@ -87,8 +87,8 @@ export namespace NaviBar {
   export type Props = NaviBarProps
 
   export type RendererProps = NaviBarRendererProps
-  export type PageRendererProps<Meta extends object> = NaviBarPageRendererProps<Meta>
-  export type SwitchRendererProps<Meta extends object> = NaviBarSwitchRendererProps<Meta>
+  export type PageRendererProps<Meta extends object = any> = NaviBarPageRendererProps<Meta>
+  export type SwitchRendererProps<Meta extends object = any> = NaviBarSwitchRendererProps<Meta>
   export type HeadingRendererProps = NaviBarHeadingRendererProps
 }
 
