@@ -4,17 +4,17 @@ export interface RouteMap {
   [url: string]: Route
 }
 
-export interface SiteMap {
-  redirects: RedirectMap
-  pages: PageMap
+export interface SiteMap<Meta extends object = any, Content extends object = any> {
+  redirects: RedirectMap<any>
+  pages: PageMap<Meta, Content>
 }
 
-export interface PageMap {
-  [url: string]: PageRoute
+export interface PageMap<Meta extends object = any, Content extends object = any> {
+  [url: string]: PageRoute<Meta, Content>
 }
 
-export interface RedirectMap {
-  [url: string]: RedirectRoute
+export interface RedirectMap<Meta extends object = any> {
+  [url: string]: RedirectRoute<Meta>
 }
 
 export function isRouteMapSteady(routeMap: RouteMap): boolean {
