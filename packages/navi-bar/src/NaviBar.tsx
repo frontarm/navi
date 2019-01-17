@@ -9,8 +9,8 @@ import { ScrollSpy } from './ScrollSpy'
 import { TableOfContents, TableOfContentsItem } from './TableOfContents'
 
 
-export interface NaviBarProps<PageMeta = any, SwitchMeta = any> {
-  pageMap?: Navi.PageMap
+export interface NaviBarProps<PageMeta extends object = any, SwitchMeta extends object = any> {
+  pageMap?: Navi.PageMap<PageMeta, any>
 
   /**
    * A table of contents to display for the current document.
@@ -87,13 +87,13 @@ export namespace NaviBar {
   export type Props = NaviBarProps
 
   export type RendererProps = NaviBarRendererProps
-  export type PageRendererProps = NaviBarPageRendererProps
-  export type SwitchRendererProps = NaviBarSwitchRendererProps
+  export type PageRendererProps<Meta extends object> = NaviBarPageRendererProps<Meta>
+  export type SwitchRendererProps<Meta extends object> = NaviBarSwitchRendererProps<Meta>
   export type HeadingRendererProps = NaviBarHeadingRendererProps
 }
 
 export const NaviBar = Object.assign(
-  function NaviBar<PageMeta, SwitchMeta>(props: NaviBarProps<PageMeta, SwitchMeta>) {
+  function NaviBar<PageMeta extends object = any, SwitchMeta extends object = any>(props: NaviBarProps<PageMeta, SwitchMeta>) {
     return (
       <ScrollSpy tableOfContents={props.tableOfContents || []}>
         {({id, parentIds}) =>
@@ -117,7 +117,7 @@ export const NaviBar = Object.assign(
   }
 )
 
-export interface InnerNaviBarProps<PageMeta, SwitchMeta>
+export interface InnerNaviBarProps<PageMeta extends object = any, SwitchMeta extends object = any>
   extends NaviBarProps<PageMeta, SwitchMeta> {
   activeURL: Navi.URLDescriptor
   activeId?: string
@@ -129,7 +129,7 @@ export interface InnerNaviBarState {
   toggleOpen: () => void,
 }
 
-export class InnerNaviBar<PageMeta, SwitchMeta> extends React.Component<
+export class InnerNaviBar<PageMeta extends object = any, SwitchMeta extends object = any> extends React.Component<
   InnerNaviBarProps<PageMeta, SwitchMeta>,
   InnerNaviBarState
 > {
