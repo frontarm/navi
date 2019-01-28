@@ -4,10 +4,10 @@
     "lerna": "^3.3.2"
   },
   "scripts": {
-    "build": "lerna run --parallel build",
-    "build:watch": "lerna run --parallel build:watch",
-    "test": "lerna run --parallel test",
-    "test:watch": "lerna run --parallel test:watch"
+    "build": "lerna run --stream build",
+    "build:watch": "lerna run --stream build:watch",
+    "test": "lerna run --stream test",
+    "test:watch": "lerna run --stream test:watch"
   },
   "workspaces": [
     "packages/*"
