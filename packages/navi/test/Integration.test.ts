@@ -55,7 +55,9 @@ describe("integration", () => {
         firstSegment = route.firstSegment
         pageSegment = firstSegment.lastRemainingSegment as PageSegment
 
-        expect(pageSegment.content).toBe('advanced-example')
+        expect(pageSegment.content.dat).toEqual({
+            isPaywalled: true,
+        })
 
         nav.history.push('/examples/intermediate')
 

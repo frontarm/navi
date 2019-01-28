@@ -13,11 +13,11 @@ export interface Page<Context extends object = any, Meta extends object = any, C
   >
 
   title?: string
-  getTitle?: Resolvable<string>
+  getTitle?: Resolvable<string, Context, Meta>
   meta?: Meta
-  getMeta?: Resolvable<Meta>
+  getMeta?: Resolvable<Meta, Context>
   content?: Content
-  getContent?: Resolvable<Content>
+  getContent?: Resolvable<Content, Context, Meta>
 }
 
 
@@ -31,10 +31,31 @@ export class PageMatcher<Context extends object, Meta extends object, Content> e
     let resolutionIds: number[] = []
     let status: Status = Status.Ready
     let error: any
+    
+    // Meta must come first, as the promise to its result can be used by
+    // the subsequent resolvables.
+    let meta: Meta | undefined
+    if (this.constructor.getMeta) {
+      let metaResolution = this.resolver.resolve(
+        this.env,
+        this.constructor.getMeta
+      )
+      resolutionIds.push(metaResolution.id)
+      meta = metaResolution.value
+      status = reduceStatuses(status, metaResolution.status)
+      error = error || metaResolution.error
+    }
+    else {
+      meta = this.constructor.meta
+    }
 
     let content: Content | undefined
     if (this.withContent && this.constructor.getContent) {
-      let contentResolution = this.resolver.resolve(this.env, this.constructor.getContent)
+      let contentResolution = this.resolver.resolve(
+        this.env,
+        this.constructor.getContent,
+        this.constructor.getMeta
+      )
       resolutionIds.push(contentResolution.id)
       content = contentResolution.value
       status = reduceStatuses(status, contentResolution.status)
@@ -46,7 +67,11 @@ export class PageMatcher<Context extends object, Meta extends object, Content> e
     
     let title: string | undefined
     if (this.constructor.getTitle) {
-      let titleResolution = this.resolver.resolve(this.env, this.constructor.getTitle)
+      let titleResolution = this.resolver.resolve(
+        this.env,
+        this.constructor.getTitle,
+        this.constructor.getMeta
+      )
       resolutionIds.push(titleResolution.id)
       title = titleResolution.value
       status = reduceStatuses(status, titleResolution.status)
@@ -54,18 +79,6 @@ export class PageMatcher<Context extends object, Meta extends object, Content> e
     }
     else {
       title = this.constructor.title
-    }
-    
-    let meta: Meta | undefined
-    if (this.constructor.getMeta) {
-      let metaResolution = this.resolver.resolve(this.env, this.constructor.getMeta)
-      resolutionIds.push(metaResolution.id)
-      meta = metaResolution.value
-      status = reduceStatuses(status, metaResolution.status)
-      error = error || metaResolution.error
-    }
-    else {
-      meta = this.constructor.meta
     }
     
     return {
@@ -84,11 +97,11 @@ export class PageMatcher<Context extends object, Meta extends object, Content> e
 
 export function createPage<Context extends object, Meta extends object, Content>(options: {
   title?: string
-  getTitle?: Resolvable<string>
+  getTitle?: Resolvable<string, Context, Meta>
   meta?: Meta
-  getMeta?: Resolvable<Meta>
+  getMeta?: Resolvable<Meta, Context>
   content?: Content
-  getContent?: Resolvable<Content, Context>
+  getContent?: Resolvable<Content, Context, Meta>
 }): Page<Context, Meta, Content> {
   if (process.env.NODE_ENV !== 'production') {
     let { title, getTitle, meta, getMeta, content, getContent, ...other } = options

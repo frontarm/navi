@@ -37,15 +37,17 @@ export const fixtureSwitch = createSwitch({
 
                         '/advanced': createPage({
                             getTitle: () => 'Advanced example',
-                            getMeta: () => ({
+                            getMeta: async () => ({
                                 isPaywalled: true,
                             }),
-                            async getContent(env: Env) {
-                                return (env.context.contextName === 'examples' && env.context.isAuthenticated) ? (
-                                    'advanced-example'
-                                ) : (
-                                    'please-login'
-                                )
+                            async getContent(env: Env, metaPromise) {
+                                if (env.context.contextName !== 'examples' || !env.context.isAuthenticated) {
+                                    return 'please-login'
+                                }
+                                
+                                return {
+                                    dat: await metaPromise
+                                }
                             }
                         })
                     }
