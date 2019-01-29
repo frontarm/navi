@@ -1,6 +1,6 @@
 {
   "name": "react-navi",
-  "version": "0.10.12-alpha.0",
+  "version": "0.10.12",
   "description": "A batteries-included router for react.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -35,7 +35,7 @@
     "exenv": "^1.2.2"
   },
   "devDependencies": {
-    "navi": "^0.10.12-alpha.0"
+    "navi": "^0.10.12"
   },
   "repository": {
     "type": "git",
