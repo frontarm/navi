@@ -31,5 +31,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/frontarm/navi.git"
-  }
+  },
+  "gitHead": "28176b6b17d75627cde9585dbfe76d5d32eeb1e2"
 }
