@@ -13,9 +13,9 @@
     "build:es": "tsc --pretty --declaration --module es2015 --outDir dist/es",
     "build:umd": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/react-navi.js && rimraf dist/umd-intermediate",
     "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/react-navi.min.js && rimraf dist/umd-intermediate",
-    "build": "npm run build:es && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
-    "build:watch": "npm run clean && npm run build:es -- --watch",
-    "prepublish": "npm run clean && npm run build"
+    "build": "yarn build:es && yarn build:commonjs && yarn build:umd && yarn build:umd:min",
+    "build:watch": "yarn run clean && yarn build:es -- --watch",
+    "prepublish": "yarn run clean && yarn build"
   },
   "keywords": [
     "navi",
@@ -26,21 +26,9 @@
     "static"
   ],
   "peerDependencies": {
-    "navi": "^0.10.12-0",
+    "navi": "^0.10.0",
     "react": "^16.5.0",
     "react-navi": "^0.10.0"
-  },
-  "devDependencies": {
-    "cross-env": "^5.0.5",
-    "navi": "^0.10.12-0",
-    "react": "^16.5.0",
-    "rimraf": "^2.6.2",
-    "rollup": "^0.50.0",
-    "rollup-plugin-commonjs": "^8.2.6",
-    "rollup-plugin-node-resolve": "^3.0.0",
-    "rollup-plugin-replace": "^2.1.0",
-    "rollup-plugin-uglify": "^6.0.0",
-    "typescript": "^3.2.1"
   },
   "dependencies": {
     "@types/history": "^4.6.2",

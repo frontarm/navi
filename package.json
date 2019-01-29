@@ -1,7 +1,20 @@
 {
   "private": true,
   "devDependencies": {
-    "lerna": "^3.3.2"
+    "lerna": "^3.3.2",
+    "@types/jest": "^23.3.7",
+    "cross-env": "^5.0.5",
+    "jest": "^23.6.0",
+    "react": "^16.5.0",
+    "react-dom": "^16.5.0",
+    "rimraf": "^2.6.2",
+    "rollup": "^1.1.2",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-replace": "^2.1.0",
+    "rollup-plugin-terser": "^4.0.3",
+    "ts-jest": "^23.10.4",
+    "typescript": "^3.2.1"
   },
   "scripts": {
     "build": "lerna run --stream build",
@@ -11,9 +24,5 @@
   },
   "workspaces": [
     "packages/*"
-  ],
-  "dependencies": {
-    "exenv": "^1.2.2",
-    "history": "^4.7.2"
-  }
+  ]
 }

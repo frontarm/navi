@@ -6,7 +6,7 @@
 import nodeResolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import replace from 'rollup-plugin-replace'
-import { uglify } from 'rollup-plugin-uglify'
+import { terser } from 'rollup-plugin-terser'
 
 const env = process.env.NODE_ENV
 const config = {
@@ -16,20 +16,26 @@ const config = {
     'react',
     'react-dom',
   ],
-  globals: {
-    'navi': 'Navi',
-    'history': 'History',
-    'react': 'React',
-    'react-dom': 'ReactDOM',
-  },
   input: 'dist/umd-intermediate/index.js',
-  plugins: []
-}
-
-if (env === 'development' || env === 'production') {
-  config.output = { format: 'umd' }
-  config.name = 'ReactNavi'
-  config.plugins.push(
+  output: {
+    format: 'umd',
+    globals: {
+      'navi': 'Navi',
+      'history': 'History',
+      'react': 'React',
+      'react-dom': 'ReactDOM',
+    },
+    name: 'ReactNavi',
+  },
+  onwarn: function (warning) {
+    // Suppress warning caused by TypeScript classes using "this"
+    // https://github.com/rollup/rollup/wiki/Troubleshooting#this-is-undefined
+    if (warning.code === 'THIS_IS_UNDEFINED') {
+      return
+    }
+    console.error(warning.message);
+  },
+  plugins: [
     nodeResolve({
       jsnext: true,
       main: true
@@ -47,19 +53,12 @@ if (env === 'development' || env === 'production') {
     replace({
       'process.env.NODE_ENV': JSON.stringify(env)
     })
-  )
+  ]
 }
 
 if (env === 'production') {
   config.plugins.push(
-    uglify({
-      compress: {
-        pure_getters: true,
-        unsafe: true,
-        unsafe_comps: true,
-        warnings: false
-      }
-    })
+    terser()
   )
 }
 
