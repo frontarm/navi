@@ -11,9 +11,9 @@
     "clean": "rimraf dist",
     "build:commonjs": "tsc --pretty --declaration --module commonjs --outDir dist/commonjs",
     "build:es": "tsc --pretty --declaration --module es2015 --outDir dist/es",
-    "build": "npm run build:es && npm run build:commonjs",
-    "build:watch": "npm run clean && npm run build:es -- --watch",
-    "prepublish": "npm run clean && npm run build"
+    "build": "yarn build:es && yarn build:commonjs",
+    "build:watch": "yarn run clean && yarn build:es -- --watch",
+    "prepublish": "yarn run clean && yarn build"
   },
   "keywords": [
     "navigation",

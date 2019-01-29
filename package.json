@@ -1,7 +1,7 @@
 {
   "private": true,
   "devDependencies": {
-    "lerna": "^3.3.2",
+    "lerna": "^3.10.7",
     "@types/jest": "^23.3.7",
     "cross-env": "^5.0.5",
     "jest": "^23.6.0",
@@ -19,6 +19,7 @@
   "scripts": {
     "build": "lerna run --stream build",
     "build:watch": "lerna run --stream build:watch",
+    "publish": "lerna publish",
     "test": "lerna run --stream test",
     "test:watch": "lerna run --stream test:watch"
   },

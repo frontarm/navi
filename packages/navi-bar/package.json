@@ -35,6 +35,10 @@
     "@types/react": "^16.4.6",
     "@types/react-dom": "^16.0.6"
   },
+  "devDependencies": {
+    "navi": "^0.10.0",
+    "react-navi": "^0.10.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/frontarm/navi.git"
