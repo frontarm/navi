@@ -287,10 +287,12 @@ export class RouteMapObservable implements Observable<RouteMap> {
     if (!this.options.maxDepth || depth <= this.options.maxDepth) {
       this.seenPathnames.add(pathname)
 
-      let url = createURLDescriptor(pathname, { ensureTrailingSlash: false })
+      let url = createURLDescriptor(pathname, {
+        ensureTrailingSlash: false,
+        removeHash: true,
+      })
       let rootEnv: Env = {
         context: this.rootContext,
-        hash: '',
         headers: {},
         method: HTTPMethod.Get,
         params: {},

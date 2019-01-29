@@ -15,9 +15,8 @@ export interface Env<Context extends object=any> {
   readonly headers: { [name: string]: string }
   readonly method: HTTPMethod
 
-  // TODO: deprecate in favor of url.*
+  // TODO: deprecate in favor of url.* (except hash, as changes to that aren't picked up)
   readonly pathname: string
-  readonly hash: string
   readonly query: Params
   readonly search: string
 

@@ -58,7 +58,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
         this.pages = options.pages
         this.basename = options.basename
         this.router = new Router(this.resolver, {
-            rootContext: options.context,
+            context: options.context,
             pages: this.pages,
             basename: this.basename,
         })
@@ -78,7 +78,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
 
     setContext(context: Context) {
         this.router = new Router(this.resolver, {
-            rootContext: context,
+            context: context,
             pages: this.pages,
             basename: this.basename,
         })

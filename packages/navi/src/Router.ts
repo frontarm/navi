@@ -14,7 +14,7 @@ import { OutOfRootError } from './Errors';
 
 
 export interface RouterOptions<Context extends object> {
-    rootContext?: Context,
+    context?: Context,
     pages: Switch,
     basename?: string,
 }
@@ -41,7 +41,7 @@ export function createRouter<Context extends object>(options: RouterOptions<Cont
 
 export class Router<Context extends object=any> {
     private resolver: Resolver
-    private rootContext: Context
+    private context: Context
     private pages: Switch<any, any, Context>
     private rootMapping: Mapping
     
@@ -54,7 +54,7 @@ export class Router<Context extends object=any> {
         }
 
         this.resolver = resolver
-        this.rootContext = options.rootContext || {} as any
+        this.context = options.context || {} as any
         this.pages = options.pages
 
         let basename = options.basename
@@ -68,10 +68,9 @@ export class Router<Context extends object=any> {
     createObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterResolveOptions = {}): RouteObservable | undefined {
         // need to somehow keep track of which promises in the resolver correspond to which observables,
         // so that I don't end up updating observables which haven't actually changed.
-        let url = createURLDescriptor(urlOrDescriptor)
+        let url = createURLDescriptor(urlOrDescriptor, { removeHash: true })
         let rootEnv = {
-            context: this.rootContext,
-            hash: url.hash,
+            context: this.context,
             headers: {},
             method: options.method || HTTPMethod.Get,
             mountname: '',
@@ -98,7 +97,7 @@ export class Router<Context extends object=any> {
     createMapObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): RouteMapObservable {
         return new RouteMapObservable(
             createURLDescriptor(urlOrDescriptor, { ensureTrailingSlash: false }),
-            this.rootContext,
+            this.context,
             this.pages,
             this.rootMapping,
             this.resolver,

@@ -66,7 +66,7 @@ export function areURLDescriptorsEqual(x?: URLDescriptor, y?: URLDescriptor): bo
 }
 
 const parsePattern = /((((\/?(?:[^\/\?#]+\/+)*)([^\?#]*)))?(\?[^#]+)?)(#.*)?/
-export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescriptor>, { ensureTrailingSlash = true } = {}): URLDescriptor {
+export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescriptor>, { ensureTrailingSlash = true, removeHash = false } = {}): URLDescriptor {
   let url: URLDescriptor
   let pathname: string
   let query: Params
@@ -97,7 +97,7 @@ export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescrip
     pathname,
     query,
     search,
-    hash,
+    hash: removeHash ? '' : hash,
     href: pathname+search+hash,
     state,
   }

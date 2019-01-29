@@ -87,7 +87,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         this.pages = options.pages
         this.basename = options.basename
         this.router = new Router(this.resolver, {
-            rootContext: options.context,
+            context: options.context,
             pages: options.pages,
             basename: options.basename,
         })
@@ -120,7 +120,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
 
     setContext(context: Context) {
         this.router = new Router(this.resolver, {
-            rootContext: context,
+            context: context,
             pages: this.pages,
             basename: this.basename,
         })
