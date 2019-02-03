@@ -9,7 +9,7 @@ export interface RegisterOptions {
   /**
    * An object that will be passed to renderPageString().
    */
-  exports: any,
+  exports?: any,
 
   /**
    * Whether the app is being built, or being run in the browser. This is

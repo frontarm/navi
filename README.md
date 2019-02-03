@@ -2,7 +2,7 @@
 
 [![NPM](https://img.shields.io/npm/v/navi.svg)](https://www.npmjs.com/package/navi)
 
-**Navi lets you create big, fast, CDN-delivered websites with great SEO & SMO, and all with vanilla create-react-app.**
+**Navi lets you create big, fast, CDN-delivered websites with great SEO & SMO, and all without ejecting from create-react-app.**
 
 📡 Effortlessly fetch async content from anywhere<br />
 🔥 Built-in code splitting and page loading transitions<br />
@@ -24,7 +24,13 @@ Just getting started?
 Quick Start
 -----------
 
-Get started with [Create React/Navi App](https://frontarm.com/navi/create-react-navi-app/):
+At it's core, Navi is just a router. You can use it with any React app – just add the `navi` and `react-navi` packages to your project:
+
+```bash
+npm install --save navi react-navi
+```
+
+If you'd like a more full featured starter, you can get started with [Create React/Navi App](https://frontarm.com/navi/create-react-navi-app/):
 
 ```bash
 npx create-react-navi-app my-app
@@ -32,10 +38,12 @@ cd my-app
 npm start
 ```
 
-Navi also works great as a standalone router for your React app. Just add the `navi` and `react-navi` packages to your project:
+Or if you want to create a blog, use [create-react-blog](https://github.com/frontarm/create-react-blog):
 
 ```bash
-npm install --save navi react-navi
+npx create-react-blog react-blog
+cd react-blog
+npm start
 ```
 
 
@@ -99,12 +107,13 @@ export default function Reference() {
 
 Navi does all of the hard work within a `Navigation` object. This is where Navi watches for history events, matches URLs to pages and content, and turns all this info into an object that you can use.
 
-To create a `Navigation`, just call `createBrowserNavigation()` within `index.js`, passing in the `pages` object that you defined earlier. Once you have a `Navigation`, wait for the content to be ready -- and then just render it!
+To create a `Navigation`, just call `createBrowserNavigation()` within `index.js`, passing in the `pages` object that you defined earlier. Once you have a `Navigation`, wait for the content to be ready -- and then just render it, using `<NavProvider>` and any old `<App>` component.
 
 ```js
 // index.js
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+import { NavProvider } from 'react-navi
 import { createBrowserNavigation } from 'navi'
 import pages from './pages'
 import App from './App'
@@ -116,7 +125,11 @@ async function main() {
   await navigation.steady()
 
   ReactDOM.render(
-    <App navigation={navigation} />,
+    // The NavProvider adds navigation state to context, which
+    // is required to make Navi's other components work.
+    <NavProvider navigation={navigation}>
+      <App />
+    </NavProvider>,
     document.getElementById('root')
   );
 }
@@ -128,31 +141,27 @@ main()
 
 ### 3. Render the content within `<App>`
 
-The `navigation` object that you just passed to `<App>` contains all of the information that you need to render your app. And while you *could* consume all of that information yourself, it's far simpler to just use Navi's built in components.
+The `navigation` object that you just passed to `<NavProvider>` contains all of the information that you need to render your app. And while you *could* consume all of that information yourself, it's far simpler to just use Navi's built in components.
 
-To start out, you'll only need two components: `<NavProvider>`, and `<NavContent>`. You'll want to wrap `<NavProvider>` around your entire App, and then place `<NavContent>` wherever the content should go.
+To start out, you'll only need one component: `<NavContent>`. All it does is render the first value of the first `content` or `getContent()` option in your route declarations.
 
 ```js
 // App.js
 import * as React from 'react'
-import { NavLink, NavProvider, NavContent } from 'react-navi'
+import { NavContent, NavLink } from 'react-navi'
 import './App.css'
 
-class App extends React.Component {
-  render() {
-    return (
-      <NavProvider navigation={this.props.navigation}>
-        <div className="App">
-          <header className="App-header">
-            <h1 className="App-title">
-              <NavLink href='/'>Navi</NavLink>
-            </h1>
-          </header>
-          <NavContent />
-        </div>
-      </NavProvider>
-    );
-  }
+function App() {
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h1 className="App-title">
+          <NavLink href='/'>Navi</NavLink>
+        </h1>
+      </header>
+      <NavContent />
+    </div>
+  );
 }
 
 export default App;
@@ -165,66 +174,62 @@ To finish off, let's add a couple real-world tweaks as a bonus step, just to see
 
 ### Loading indicators
 
-As Navi doesn't render the new page until it has loaded, there can sometimes be a large delay between clicking a link seeing the result. In cases like this, it's important to keep the user in the loop. And to do so, you can wrap your route with a `<NavLoading>` component:
+As Navi doesn't render the new page until it has loaded, there can sometimes be a large delay between clicking a link seeing the result. In cases like this, it's important to keep the user in the loop. To do so, you can check if there's a currently loading route using the `useLoadingRoute()` hook, and if there is, you can show a loading bar or some other indicator.
 
 ```js
-class App extends React.Component {
-  render() {
-    return (
-      <NavProvider navigation={this.props.navigation}>
-        <NavLoading>
-          {loadingRoute =>
-            <div className="App">
-              {
-                loadingRoute &&
-                <div className="App-loading-bar" />
-              }
-              <header className="App-header">
-                <h1 className="App-title">
-                  <NavLink href='/'>Navi</NavLink>
-                </h1>
-              </header>
-              <NavContent />
-            </div>
-          }
-        </NavLoading>
-      </NavProvider>
-    );
-  }
+import { NavContent, NavLink, useLoadingRoute } from 'react-navi'
+
+function App() {
+  let loadingRoute = useLoadingRoute()
+
+  return (
+    <div className="App">
+      {
+        // If `loadingRoute` isn't undefined, show a loading bar.
+        loadingRoute &&
+        <div className="App-loading-bar" />
+      }
+      <header className="App-header">
+        <h1 className="App-title">
+          <NavLink href='/'>Navi</NavLink>
+        </h1>
+      </header>
+      <NavContent />
+    </div>
+  );
 }
 ```
-
-The `<NavLoading>` component accepts a render function as its children, to which it passes any route whose content is still being fetched, or `undefined` if the curent URL has fully loaded. You can use this to show a loading bar or some other indicator.
 
 
 ### Handling 404s
 
 ```js
-class App extends React.Component {
-  render() {
-    return (
-      <NavProvider navigation={this.props.navigation}>
-        <NavLoading>
-          {loadingRoute =>
-            <div className="App">
-              {
-                loadingRoute &&
-                <div className="App-loading-bar" />
-              }
-              <header className="App-header">
-                <h1 className="App-title">
-                  <NavLink href='/'>Navi</NavLink>
-                </h1>
-              </header>
-              <NavNotFoundBoundary render={renderNotFound}>
-                <NavContent />
-              </NavNotFoundBoundary>
-            </div>
-          }
-        </NavLoading>
-      </NavProvider>
-    );
-  }
+import {
+  NavContent,
+  NavLink,
+  NavNotFoundBoundary,
+  useLoadingRoute
+} from 'react-navi'
+
+function App() {
+  let loadingRoute = useLoadingRoute()
+
+  return (
+    <div className="App">
+      {
+        loadingRoute &&
+        <div className="App-loading-bar" />
+      }
+      <header className="App-header">
+        <h1 className="App-title">
+          <NavLink href='/'>Navi</NavLink>
+        </h1>
+      </header>
+      <NavNotFoundBoundary render={renderNotFound}>
+        <NavContent />
+      </NavNotFoundBoundary>
+    </div>
+  );
 }
 
 function renderNotFound() {
@@ -235,6 +240,12 @@ function renderNotFound() {
   )
 } 
 ```
+
+
+More details
+------------
+
+This README only goes into the beginning of what you can do with Navi. For more details, see the [documentation website](https://frontarm.com/navi/). 
 
 
 License
