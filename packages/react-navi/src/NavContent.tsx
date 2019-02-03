@@ -140,12 +140,7 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
     }
     else if (segment && segment.content) {
       if (typeof segment.content === 'function') {
-        if (segment.content.prototype instanceof React.Component) {
-          content = React.createElement(segment.content as any, { segment, route: this.props.context.steadyRoute })
-        }
-        else {
-          render = segment.content
-        }
+        content = React.createElement(segment.content as any, { segment, route: this.props.context.steadyRoute })
       }
       else if (typeof segment.content === 'string' || React.isValidElement(segment.content)) {
         content = segment.content
@@ -156,7 +151,7 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
       content = render(segment.content, segment, this.props.context.steadyRoute!)
     }
     if (content === undefined) {
-      throw new Error("<NavContent> was not able to find a `children` prop, or a `render` function in the consumed RouteSegment's `content`.")
+      throw new Error("<NavContent> was not able to find a `children` prop, and was unable to find any content in the consumed RouteSegment's `content`.")
     }
 
     return (
