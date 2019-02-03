@@ -1,6 +1,5 @@
-import { canUseDOM } from 'exenv'
 import * as React from 'react'
-import { getApp, Navigation, NavigationSnapshot, Subscription, Route } from 'navi'
+import { BrowserNavigation, Navigation, NavigationSnapshot, Subscription, Route } from 'navi'
 import { NavContext } from './NavContext'
 
 export interface NavProviderProps {
@@ -64,7 +63,7 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
     let Suspense: React.ComponentType<any> = (React as any).Suspense
     if (Suspense) {
       let fallback = this.props.fallback
-      if (!('fallback' in this.props) && canUseDOM && !getApp().isBuild) {
+      if (!('fallback' in this.props) && this.props.navigation instanceof BrowserNavigation) {
         fallback = null
       }
       if (fallback !== undefined) {

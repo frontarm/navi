@@ -1,4 +1,3 @@
-export { app, getApp } from './app'
 export { createContext, isValidContext, Context } from './Context'
 export { Env } from './Env'
 export { isValidDeclaration } from './isValidDeclaration'

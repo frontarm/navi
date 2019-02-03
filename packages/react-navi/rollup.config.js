@@ -3,6 +3,7 @@
  * Copyright (c) 2015-present Dan Abramov
  */
 
+import nodeBuiltins from 'rollup-plugin-node-builtins'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 import replace from 'rollup-plugin-replace'
@@ -36,6 +37,8 @@ const config = {
     console.error(warning.message);
   },
   plugins: [
+    nodeBuiltins(),
+
     nodeResolve({
       jsnext: true,
       main: true

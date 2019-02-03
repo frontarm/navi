@@ -1,30 +1,24 @@
-import React, { Component } from 'react';
-import { NavLink, NavLoading, NavProvider, NavRoute, NavNotFoundBoundary } from 'react-navi';
+import React from 'react';
+import { NavLink, NavContent, NavNotFoundBoundary, useLoadingRoute } from 'react-navi';
 import { MDXProvider } from '@mdx-js/tag';
 import './App.css';
 
-class App extends Component {
-  render() {
-    return (
-      <NavProvider navigation={this.props.navigation}>
-        <NavLoading>
-          {isLoading =>
-            <AppLayout isLoading={isLoading}>
-              <NavNotFoundBoundary render={renderNotFound}>
-                <MDXProvider components={{
-                  // Use Navi's <NavLink> component to render links in
-                  // Markdown files, ensuring navigation is handled by Navi.
-                  a: NavLink,
-                }}>
-                  <NavRoute />
-                </MDXProvider>
-              </NavNotFoundBoundary>
-            </AppLayout>
-          }
-        </NavLoading>
-      </NavProvider>
-    );
-  }
+function App() {
+  let loadingRoute = useLoadingRoute()
+  
+  return (
+    <AppLayout isLoading={!!loadingRoute}>
+      <NavNotFoundBoundary render={renderNotFound}>
+        <MDXProvider components={{
+          // Use Navi's <NavLink> component to render links in
+          // Markdown files, ensuring navigation is handled by Navi.
+          a: NavLink,
+        }}>
+          <NavContent />
+        </MDXProvider>
+      </NavNotFoundBoundary>
+    </AppLayout>
+  )
 }
 
 function AppLayout({ children, isLoading }) {

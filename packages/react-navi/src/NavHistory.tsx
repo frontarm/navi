@@ -2,6 +2,12 @@ import * as React from 'react'
 import { History } from 'history'
 import { NavContext } from './NavContext'
 
+
+export function useHistory() {
+  return React.useContext(NavContext).navigation.history
+}
+
+
 export interface NavHistoryProps {
   children: (history: History) => React.ReactNode,
 }

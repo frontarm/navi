@@ -8,7 +8,8 @@ async function build(config) {
     let siteMap = await createMap(config)
     let scriptRunner = await createScriptRunner(config)
 
-    for (let { url } of Object.values(siteMap.pages)) {
+    for (let route of Object.values(siteMap.pages)) {
+        let url = route.url
         let dependencies = {
             scripts: new Set,
             stylesheets: new Set,
@@ -25,10 +26,48 @@ async function build(config) {
             siteMap,
             dependencies,
             config,
+            route,
         }
-        let pathname = config.getPagePathname(options)
-        console.log(chalk.blue("[html]     ")+pathname)
-        let html = await config.renderPageToString(options)
+
+        let html, pathname
+        let resolvedModulesNames = []
+        let nodeEnv = process.env.NODE_ENV
+        let oldCacheKeys = new Set(Object.keys(require.cache))
+        try {
+            for (let moduleName of Object.keys(app.sharedModules || {})) {
+                let resolvedName = require.resolve(moduleName)
+                resolvedModulesNames.push(resolvedName)
+                require.cache[resolvedName] = {
+                    id: resolvedName,
+                    filename: resolvedName,
+                    loaded: true,
+                    exports: app.sharedModules[moduleName]
+                };
+            }
+
+            pathname = config.getPagePathname(options)
+            console.log(chalk.blue("[html]     ")+pathname)
+
+            process.env.NODE_ENV = app.environment
+
+            let renderPageToStringModule = require(config.renderPageToString)
+            let renderPageToString = renderPageToStringModule.default || renderPageToStringModule
+            
+            html = await renderPageToString(options)
+        }
+        catch (e) {
+            throw e
+        }
+        finally {
+            process.env.NODE_ENV = nodeEnv
+
+            for (let key of Object.keys(require.cache)) {
+                if (!oldCacheKeys.has(key)) {
+                    delete require.cache[key]
+                }
+            }
+        }
+
         let filesystemPath = path.resolve(config.root, pathname)
 
         await fs.ensureDir(path.dirname(filesystemPath))

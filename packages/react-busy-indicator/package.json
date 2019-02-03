@@ -23,10 +23,8 @@
     "indicator"
   ],
   "peerDependencies": {
+    "@types/react": "^16.8.1",
     "react": "^16.5.0"
-  },
-  "dependencies": {
-    "@types/react": "^16.4.6"
   },
   "repository": {
     "type": "git",

@@ -19,7 +19,7 @@ async function createMap(config) {
     let app = await scriptRunner()
 
     if (!app.pages) {
-        throw new Error(`Couldn't find window.NaviApp - did you call Navi.app()?`)
+        throw new Error(`Couldn't find window.NaviScripts - did you call register()?`)
     }
 
     let router = createRouter({

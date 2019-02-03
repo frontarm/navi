@@ -1,16 +1,18 @@
+import register from "navi-scripts/register";
 import * as Navi from "navi";
 import React from "react";
 import ReactDOM from "react-dom";
 import Helmet from "react-helmet";
+import { NavProvider } from "react-navi";
 import "./index.css";
 import pages from "./pages";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
-// `Navi.app()` is responsible for exporting your app's pages and App
+// `register()` is responsible for exporting your app's pages and App
 // component to the static renderer, and for starting the app with the
 // `main()` function when running within a browser.
-Navi.app({
+register({
   // Specify the pages that navi-app should statically build, by passing in a
   // Switch object.
   pages,
@@ -51,7 +53,12 @@ Navi.app({
     let renderer = hasStaticContent ? ReactDOM.hydrate : ReactDOM.render;
 
     // Start react.
-    renderer(<App navigation={navigation} />, document.getElementById("root"));
+    renderer(
+      <NavProvider navigation={navigation}>
+        <App />
+      </NavProvider>,
+      document.getElementById("root")
+    );
 
     // If you want your app to work offline and load faster, you can change
     // unregister() to register() below. Note this comes with some pitfalls.

@@ -13,7 +13,7 @@ async function createScriptRunner(config) {
     let fs = config.fs
 
     let ext = path.extname(config.entry).slice(1)
-    let source = await fs.readFile(path.resolve(config.root, config.entry))
+    let source = (await fs.readFile(path.resolve(config.root, config.entry))).toString('utf8')
     let factory
 
     async function createDOM(html='', options) {
@@ -40,7 +40,7 @@ async function createScriptRunner(config) {
                         options.onScriptLoaded(url)
                     }
                     
-                    return Buffer.from('"use strict";\n' + data);
+                    return data;
                 }
                 else {
                     return Buffer.from('')

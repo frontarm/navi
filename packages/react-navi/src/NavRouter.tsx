@@ -2,6 +2,12 @@ import * as React from 'react'
 import { Router } from 'navi'
 import { NavContext } from './NavContext'
 
+
+export function useRouter() {
+  return React.useContext(NavContext).navigation.router
+}
+
+
 export interface NavRouterProps {
   children: (router: Router) => React.ReactNode,
 }

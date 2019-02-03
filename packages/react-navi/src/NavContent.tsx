@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { NaviError, Route, Status, Segment, SegmentType } from 'navi'
 import { NavContext } from './NavContext'
-import { stat } from 'fs';
 
 
 export interface NavContentProps {
@@ -148,7 +147,7 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
           render = segment.content
         }
       }
-      else if (React.isValidElement(segment.content)) {
+      else if (typeof segment.content === 'string' || React.isValidElement(segment.content)) {
         content = segment.content
       }
     }

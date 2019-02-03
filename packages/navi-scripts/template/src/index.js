@@ -1,6 +1,8 @@
+import register from "navi-scripts/register";
 import * as Navi from "navi";
 import React from "react";
 import ReactDOM from "react-dom";
+import { NavProvider } from "react-navi";
 import "./index.css";
 import pages from "./pages";
 import App from "./App";
@@ -9,7 +11,7 @@ import * as serviceWorker from "./serviceWorker";
 // `Navi.app()` is responsible for exporting your app's pages and App
 // component to the static renderer, and for starting the app with the
 // `main()` function when running within a browser.
-Navi.app({
+register({
   // Specify the pages that navi-app should statically build, by passing in a
   // Switch object.
   pages,
@@ -42,7 +44,9 @@ Navi.app({
     // Start react, passing in the current navigation state via the
     // NavProvider.
     renderer(
-      <App navigation={navigation} />,
+      <NavProvider navigation={navigation}>
+        <App />
+      </NavProvider>,
       document.getElementById("root")
     );
 

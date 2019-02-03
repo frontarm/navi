@@ -31,9 +31,9 @@ const defaultConfig = {
   context: {},
   root: 'build',
   entry: 'build/index.html',
-  appGlobal: 'NaviApp',
+  appGlobal: 'NaviScripts',
   fs: {
-    readFile: (pathname) => fs.readFile(pathname, "utf8"),
+    readFile: fs.readFile,
     writeFile: fs.writeFile,
     ensureDir: fs.ensureDir,
     exists: fs.exists,
@@ -50,7 +50,7 @@ const configSchema = {
       type: 'string',
     },
     entry: {
-      description: `The file that sets "window.$exports", relative to root.`,
+      description: `The file that sets "window.exports", relative to root.`,
       type: 'string',
     },
     context: {
@@ -65,11 +65,11 @@ const configSchema = {
       type: 'string',
     },
     renderPageToString: {
-      description: `A function that accepts an { $exports, url, siteMap, dependencies } object, and returns the page's contents as a string.`,
-      typeof: 'function',
+      description: `The path to a module that exports a default function that accepts an { exports, url, siteMap, dependencies } object, and returns the page's contents as a string.`,
+      type: 'string',
     },
     getPagePathname: {
-      description: `A function that accepts an { $exports, url, siteMap } object, and returns the path under the root directory where the page's contents will be written to.`,
+      description: `A function that accepts an { exports, url, siteMap } object, and returns the path under the root directory where the page's contents will be written to.`,
       typeof: 'function',
     },
     createRedirectFiles: {
@@ -116,44 +116,13 @@ async function processConfig(config) {
   if (!config.renderPageToString) {
     let reactNaviCreateReactApp
     try {
-      reactNaviCreateReactApp = require('react-navi/create-react-app')
+      reactNaviCreateReactApp = require.resolve('react-navi/create-react-app')
     }
     catch (e) {}
 
     if (reactNaviCreateReactApp) {
       console.log('Using create-react-app renderer...')
-
-      const Navi = require('navi')
-      const React = require('react')
-      const ReactDOMServer = require('react-dom/server')
-      const he = require('he')
-      
-      config.renderPageToString = async function renderPageToString({ exports, pages, siteMap, dependencies, url }) {
-        let navigation = Navi.createMemoryNavigation({ pages, url })
-        let { route } = await navigation.getSteadyValue()
-        let canonicalURLBase = process.env.CANONICAL_URL || process.env.PUBLIC_URL || ''
-
-        let stylesheetTags = Array.from(dependencies.stylesheets)
-          .map(pathname => `<link rel="stylesheet" href="${pathname}" />`)
-          .join('')
-        
-        return reactNaviCreateReactApp.renderCreateReactAppTemplate({
-          insertIntoRootDiv:
-            ReactDOMServer.renderToString(
-              React.createElement(typeof exports === 'function' ? exports : exports.App, {
-                navigation,
-                siteMap,
-              })
-            ),
-          replaceTitleWith:
-            `\n<title>${route.title || 'Untitled'}</title>\n` +
-            `<link rel="canonical" href="${canonicalURLBase+url.href}" />\n`+
-            Object.entries(route.meta || {}).map(([key, value]) =>
-              `<meta name="${he.encode(key)}" content="${he.encode(typeof value === 'string' ? value : String(value))}" />`
-            ).concat('').join('\n')+
-            stylesheetTags,
-        })
-      }
+      config.renderPageToString = reactNaviCreateReactApp
     }
   }
 
@@ -164,8 +133,22 @@ async function processConfig(config) {
   let exists = config.fs.exists
   let entry = path.resolve(config.root, config.entry)
 
+  if (!(await exists(config.renderPageToString))) {
+    throw new Error(`Could not read the renderPageToString file "${config.renderPageToString}".`)
+  }
+
   if (!(await exists(entry))) {
     throw new Error(`Could not read the entry file "${entry}".`)
+  }
+
+  let originalReadfile = config.fs.readFile
+  let cache = {}
+  config.fs.readFile = (pathname) => {
+    let cached = cache[pathname] 
+    if (!cached) {
+      cached = cache[pathname] = originalReadfile(pathname)
+    }
+    return cached
   }
 
   return Object.freeze(config)

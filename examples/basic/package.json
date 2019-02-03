@@ -8,6 +8,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build && navi-scripts build",
+    "build:static": "navi-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "serve": "navi-scripts serve"

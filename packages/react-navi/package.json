@@ -26,12 +26,13 @@
     "static"
   ],
   "peerDependencies": {
+    "@types/react": "^16.8.1",
+    "@types/react-dom": "^16.0.11",
     "navi": "^0.10.0",
     "react": "^16.5.0"
   },
   "dependencies": {
     "@types/history": "^4.6.2",
-    "@types/react": "^16.4.6",
     "exenv": "^1.2.2"
   },
   "devDependencies": {

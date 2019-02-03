@@ -1,6 +1,12 @@
 import * as React from 'react'
-import { Route } from 'navi';
-import { NavContext } from './NavContext';
+import { Route } from 'navi'
+import { NavContext } from './NavContext'
+
+
+export function useLoadingRoute() {
+  return React.useContext(NavContext).busyRoute
+}
+
 
 export interface NavLoadingProps {
   children: (busyRoute?: Route) => React.ReactNode,

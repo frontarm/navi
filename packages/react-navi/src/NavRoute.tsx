@@ -3,6 +3,12 @@ import { Route } from 'navi'
 import { NavContext } from './NavContext'
 
 
+export function useCurrentRoute() {
+  let { steadyRoute, busyRoute } = React.useContext(NavContext)
+  return steadyRoute || busyRoute
+}
+
+
 export interface NavRouteProps {
   /**
    * A render function that can be used to access the current route.
@@ -51,7 +57,7 @@ export const NavRoute: React.SFC<NavRouteProps> = function NavRoute(props: NavRo
         }
         if (content === undefined) {
           if (context.steadyRoute) {
-            throw new Error("<NavContent> was not able to find a `children` prop, or a `render` function in the consumed RouteSegment's `content`.")
+            throw new Error("<NavRoute> was not able to find a `children` prop, or a `render` function in the consumed RouteSegment's `content`.")
           }
           else {
             content = null

@@ -1,57 +1,45 @@
-import React, { Component } from 'react';
-import * as Navi from 'navi';
-import { NavLink, NavLoading, NavProvider, NavContent, NavNotFoundBoundary } from 'react-navi';
+import React from 'react';
+import { NavLink, NavContent, NavNotFoundBoundary, useLoadingRoute } from 'react-navi';
 import { MDXProvider } from '@mdx-js/tag';
 import './App.css';
 
-interface AppProps {
-  navigation: Navi.Navigation
-}
+function App() {
+  let loadingRoute = useLoadingRoute()
+  return (
+    <div className="App">
+      <header className="App-header">
+        <nav className="App-nav">
+          <NavLink href='/' activeClassName='active' exact>
+            Home
+          </NavLink>
+          <NavLink href='/getting-started/' activeClassName='active'>
+            Getting Started
+          </NavLink>
+        </nav>
+      </header>
 
-class App extends Component<AppProps> {
-  render() {
-    return (
-      <NavProvider navigation={this.props.navigation}>
-        <NavLoading>
-          {loadingRoute =>
-            <div className="App">
-              <header className="App-header">
-                <nav className="App-nav">
-                  <NavLink href='/' activeClassName='active' exact>
-                    Home
-                  </NavLink>
-                  <NavLink href='/getting-started/' activeClassName='active'>
-                    Getting Started
-                  </NavLink>
-                </nav>
-              </header>
-
-              <main>
-                <NavNotFoundBoundary render={renderNotFound}>
-                  <div
-                    // Only add the `active` class to this element while the
-                    // next page is loading, triggering a CSS animation to
-                    // show or hide the loading bar.
-                    className={`
-                      App-loading-indicator
-                      ${loadingRoute ? 'active' : ''}
-                    `}
-                  />
-                  <MDXProvider components={{
-                    // Use Navi's <NavLink> component to render links in
-                    // Markdown files, ensuring navigation is handled by Navi.
-                    a: NavLink,
-                  }}>
-                    <NavContent />
-                  </MDXProvider>
-                </NavNotFoundBoundary>
-              </main>
-            </div>
-          }
-        </NavLoading>
-      </NavProvider>
-    );
-  }
+      <main>
+        <NavNotFoundBoundary render={renderNotFound}>
+          <div
+            // Only add the `active` class to this element while the
+            // next page is loading, triggering a CSS animation to
+            // show or hide the loading bar.
+            className={`
+              App-loading-indicator
+              ${loadingRoute ? 'active' : ''}
+            `}
+          />
+          <MDXProvider components={{
+            // Use Navi's <NavLink> component to render links in
+            // Markdown files, ensuring navigation is handled by Navi.
+            a: NavLink,
+          }}>
+            <NavContent />
+          </MDXProvider>
+        </NavNotFoundBoundary>
+      </main>
+    </div>
+  )
 }
 
 // Note that create-react-navi-app will always show an error screen when this
