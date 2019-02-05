@@ -14,10 +14,10 @@ describe("pageMap", () => {
         expect(Object.keys(map).length).toBe(4)
     })
 
-    test("doesn't include content", async () => {
+    test("does not include contents", async () => {
         let router = createRouter({ pages: fixtureSwitch })
         let map = await router.resolvePageMap('/')
-        expect(map['/'].content).toBeUndefined()
+        expect(map['/'].contents.length).toBe(0)
     })
 
     test("can map from an intermediate url and exclude its index", async () => {

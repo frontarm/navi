@@ -1,7 +1,6 @@
 import { History } from 'history'
 import { OutOfRootError } from './Errors'
 import { URLDescriptor, areURLDescriptorsEqual, createURLDescriptor } from './URLTools'
-import { SegmentType } from './Segments'
 import { Router } from './Router'
 import { Route } from './Route'
 import { Deferred } from './Deferred';
@@ -163,7 +162,7 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
             this.observableSubscription.unsubscribe()
         }
 
-        let observable = this.router.createObservable(url, { withContent: true })
+        let observable = this.router.createObservable(url)
         if (observable) {
             this.observableSubscription = observable.subscribe(this.update)
         }
@@ -178,7 +177,7 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
         let nextRoute = route || this.lastRoute
         let lastSegment = route && route.lastSegment
 
-        if (lastSegment && lastSegment.type === SegmentType.Redirect && lastSegment.to) {
+        if (lastSegment && lastSegment.type === 'redirect' && lastSegment.to) {
             // No need to notify any listeners of a ready redirect,
             // as we can take the appropriate action ourselves
             this.history.replace(lastSegment.to)

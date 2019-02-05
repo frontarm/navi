@@ -2,14 +2,13 @@ import { Switch } from './Switch'
 import { createRootMapping, matchMappingAgainstPathname, Mapping } from './Mapping'
 import { RouteObservable } from './RouteObservable'
 import { RouteMapObservable } from './RouteMapObservable'
-import { Resolver, Status } from './Resolver'
-import { PageRoute, RouteType, RedirectRoute } from './Route'
-import { Segment } from './Segments'
+import { Resolver } from './Resolver'
+import { PageRoute, RedirectRoute } from './Route'
+import { RouteSegment } from './Segments'
 import { SiteMap, PageMap, RedirectMap } from './Maps'
 import { createPromiseFromObservable } from './Observable';
 import { createURLDescriptor, URLDescriptor } from './URLTools';
 import { HTTPMethod } from './HTTPMethod';
-import { NaviNodeType } from './Node';
 import { OutOfRootError } from './Errors';
 
 
@@ -21,16 +20,17 @@ export interface RouterOptions<Context extends object> {
 
 export interface RouterResolveOptions {
     followRedirects?: boolean,
-    withContent?: boolean,
+    body?: any,
+    headers?: { [name: string]: string },
     method?: HTTPMethod,
 }
 
 export interface RouterMapOptions {
     followRedirects?: boolean,
     maxDepth?: number,
-    predicate?: (segment: Segment) => boolean,
+    predicate?: (segment: RouteSegment) => boolean,
     expandPattern?: (pattern: string, router: Router) => undefined | string[] | Promise<undefined | string[]>,
-    withContent?: boolean,
+    method?: 'GET' | 'HEAD',
 }
   
 
@@ -47,8 +47,8 @@ export class Router<Context extends object=any> {
     
     constructor(resolver: Resolver, options: RouterOptions<Context>) {
         if (process.env.NODE_ENV !== "production") {
-            if (!options.pages || options.pages.type !== NaviNodeType.Switch) {
-                // TODO: support top-level context nodes
+            if (!options.pages || options.pages.type !== 'switch') {
+                // TODO: support top-level context matchers
                 throw new Error(`Expected to receive a Switch object for the "pages" prop, but instead received "${options.pages}".`)
             }
         }
@@ -70,10 +70,12 @@ export class Router<Context extends object=any> {
         // so that I don't end up updating observables which haven't actually changed.
         let url = createURLDescriptor(urlOrDescriptor, { removeHash: true })
         let rootEnv = {
+            body: options.body,
             context: this.context,
-            headers: {},
-            method: options.method || HTTPMethod.Get,
+            headers: options.headers || {},
+            method: options.method || 'GET',
             mountname: '',
+            mountedPathname: '',
             params: url.query,
             pathname: '',
             query: url.query,
@@ -89,7 +91,6 @@ export class Router<Context extends object=any> {
                 matchEnv,
                 this.pages,
                 this.resolver,
-                !!options.withContent,
             )
         }
     }
@@ -102,7 +103,7 @@ export class Router<Context extends object=any> {
             this.rootMapping,
             this.resolver,
             this,
-            options
+            options,
         )
     }
 
@@ -126,12 +127,12 @@ export class Router<Context extends object=any> {
             for (let i = 0; i < urls.length; i++) {
                 let url = urls[i]
                 let route = routeMap[url]
-                if (route.status === Status.Ready) {
-                    if (route.type === RouteType.Page) {
+                if (route.status === 'ready') {
+                    if (route.type === 'page') {
                         pageMap[url] = route as PageRoute
                         continue
                     }
-                    else if (route.type === RouteType.Redirect) {
+                    else if (route.type === 'redirect') {
                         redirectMap[url] = route as RedirectRoute
                         continue
                     }
@@ -156,11 +157,11 @@ export class Router<Context extends object=any> {
         }
 
         return createPromiseFromObservable(observable).then(route => {
-            if (route.status === Status.Ready) {
-                if (route.type === RouteType.Redirect && options.followRedirects) {
+            if (route.status === 'ready') {
+                if (route.type === 'redirect' && options.followRedirects) {
                     return this.getPageRoutePromise(createURLDescriptor(route.to), options)
                 }
-                else if (route.type === RouteType.Page) {
+                else if (route.type === 'page') {
                     return route as PageRoute
                 }
             }

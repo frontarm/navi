@@ -1,4 +1,4 @@
-import { SwitchSegment, createMemoryNavigation, PageSegment, Status, SegmentType, NotFoundError } from '../src'
+import { SwitchSegment, createMemoryNavigation, PageSegment, Status, NotFoundError } from '../src'
 import { fixtureSwitch } from './fixtures/switches'
 
 describe("basename", () => {
@@ -9,7 +9,7 @@ describe("basename", () => {
       pages: fixtureSwitch,
     })
 
-    let { route } = await nav.getSteadyValue()
+    let route = await nav.getSteadyValue()
     
     expect(route.title).toBe('Basic example')
   })
@@ -21,7 +21,7 @@ describe("basename", () => {
       pages: fixtureSwitch,
     })
 
-    let { route } = await nav.getSteadyValue()
+    let route = await nav.getSteadyValue()
     
     expect(route.title).toBe('Basic example')
   })

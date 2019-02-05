@@ -2,9 +2,9 @@ import { Env } from './Env'
 import { joinPaths } from './URLTools'
 import { NotFoundError } from './Errors'
 
-export type Resolvable<T, Context extends object = any, Data = any> = (
+export type Resolvable<T, Context extends object = any, Info = any> = (
   env: Env<Context>,
-  dataPromise: PromiseLike<Data>
+  infoPromise: PromiseLike<Info>
 ) => (T | PromiseLike<{ default: T } | T>)
 
 export type Resolution<T> = {
@@ -15,20 +15,19 @@ export type Resolution<T> = {
   value?: T
 }
 
-export enum Status {
-  Ready = 'ready',
-  Busy = 'busy',
-  Error = 'error',
-}
+export type Status =
+  | 'ready'
+  | 'busy'
+  | 'error'
 
 export function reduceStatuses(x: Status, y: Status) {
-  if (x === Status.Error || y === Status.Error) {
-    return Status.Error
+  if (x === 'error' || y === 'error') {
+    return 'error'
   }
-  else if (x === Status.Busy || y === Status.Busy) {
-    return Status.Busy
+  else if (x === 'busy' || y === 'busy') {
+    return 'busy'
   }
-  return Status.Ready
+  return 'ready'
 }
 
 export class Resolver {
@@ -50,10 +49,10 @@ export class Resolver {
     this.listenerIds.delete(listener)
   }
 
-  resolve<T, Data>(
+  resolve<T, Info>(
     env: Env<any>,
     resolvable: Resolvable<T>,
-    dataResolvable?: Resolvable<Data>
+    infoResolvable?: Resolvable<Info>
   ): Resolution<T> {
     let matcherResults = this.results.get(env)
     if (!matcherResults) {
@@ -66,15 +65,15 @@ export class Resolver {
       return currentResult
     }
 
-    let dataResolution = !dataResolvable ? { promise: Promise.resolve() } : (
-      matcherResults.get(dataResolvable) || { promise: Promise.resolve() }
+    let infoResolution = !infoResolvable ? { promise: Promise.resolve() } : (
+      matcherResults.get(infoResolvable) || { promise: Promise.resolve() }
     ) 
     let id = this.nextId++
-    let maybeValue = resolvable(env, dataResolution.promise)
+    let maybeValue = resolvable(env, infoResolution.promise)
     if (!isPromiseLike(maybeValue)) {
       let result: Resolution<T> = {
         id,
-        status: Status.Ready,
+        status: 'ready',
         value: maybeValue,
         promise: Promise.resolve(maybeValue),
       }
@@ -85,11 +84,11 @@ export class Resolver {
     let promise = maybeValue.then(extractDefault)
     let result: Resolution<T> = {
       id,
-      status: Status.Busy,
+      status: 'busy',
       promise,
     }
     matcherResults.set(resolvable, result)
-    this.listenForChanges(promise, matcherResults, resolvable, id, joinPaths(env.pathname, env.unmatchedPathnamePart))
+    this.listenForChanges(promise, matcherResults, resolvable, id, joinPaths(env.mountedPathname, env.unmatchedPathnamePart))
     return result
   }
 
@@ -107,7 +106,7 @@ export class Resolver {
           if (currentResult && currentResult.id === id) {
             matcherResults!.set(resolvable, {
               id: currentResult.id,
-              status: Status.Ready,
+              status: 'ready',
               value: value,
               promise,
             })
@@ -124,7 +123,7 @@ export class Resolver {
           if (currentResult && currentResult.id === id) {
             matcherResults!.set(resolvable, {
               id: currentResult.id,
-              status: Status.Error,
+              status: 'error',
               error: error || new Error(),
               promise,
             })

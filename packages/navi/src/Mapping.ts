@@ -1,4 +1,4 @@
-import { MaybeResolvableNode } from './Node'
+import { MaybeResolvableMatcher } from './Matcher'
 import { Env } from './Env'
 import { joinPaths } from './URLTools'
 
@@ -40,23 +40,23 @@ export interface Mapping {
      * The node that will be used to handle detailed matching of this path,
      * once a tentative match is found.
      */
-    maybeResolvableNode: MaybeResolvableNode,
+    maybeResolvableMatcher: MaybeResolvableMatcher,
 }
 
-export function createRootMapping(maybeResolvableNode: MaybeResolvableNode, rootPath: string = ''): Mapping {
+export function createRootMapping(maybeResolvableMatcher: MaybeResolvableMatcher, rootPath: string = ''): Mapping {
     return (
         rootPath !== ''
-            ?   createMapping(rootPath, maybeResolvableNode)
+            ?   createMapping(rootPath, maybeResolvableMatcher)
             :   {
                     pattern: rootPath,
                     key: '',
                     regExp: new RegExp(''),
-                    maybeResolvableNode,
+                    maybeResolvableMatcher,
                 }
     )
 }
 
-export function createMapping(pattern: string, maybeResolvableNode: MaybeResolvableNode): Mapping {
+export function createMapping(pattern: string, maybeResolvableMatcher: MaybeResolvableMatcher): Mapping {
     let processedPattern = pattern
     if (processedPattern.length > 1 && processedPattern.substr(-1) === '/') {
         if (process.env.NODE_ENV !== 'production') {
@@ -107,7 +107,7 @@ export function createMapping(pattern: string, maybeResolvableNode: MaybeResolva
     
     return {
         key: keyParts.join('/'),
-        maybeResolvableNode: maybeResolvableNode,
+        maybeResolvableMatcher: maybeResolvableMatcher,
         pattern: processedPattern,
         pathParamNames: pathParams.length ? pathParams : undefined,
         regExp: new RegExp(regExpParts.join('/')),
@@ -133,21 +133,56 @@ export function matchMappingAgainstPathname<Context extends object>(env: Env<Con
         }
     }
 
-    let mountname = joinPaths(env.mountname, matchedPathname)
-
-    return {
+    let mountedPathname = joinPaths(env.mountedPathname, matchedPathname)
+    let mappedEnv: Env = {
+        body: env.body,
         context: env.context,
-        headers: {},
+        headers: env.headers,
         method: env.method,
         params: params,
-        pathname: mountname,
-        mountname: mountname,
-        query: env.query,
-        search: env.search,
+        mountedPathname: mountedPathname,
         router: env.router,
-        unmatchedPathnamePart: env.unmatchedPathnamePart.slice(matchedPathname.length) || (appendFinalSlash ? '/' : ''),
         url: env.url,
-    }
+
+        unmatchedPathnamePart: env.unmatchedPathnamePart.slice(matchedPathname.length) || (appendFinalSlash ? '/' : ''),
+    } as any
+
+    Object.defineProperties(mappedEnv, {
+        mountname: {
+            get: () => {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.warn("'env.mountname' is deprecated, and will be removed in Navi 0.12. Please use 'env.mountedPathname' instead.")
+                }
+                return mountedPathname
+            },
+        },
+        pathname: {
+            get: () => {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.warn("'env.pathname' is deprecated, and will be removed in Navi 0.12. Please use 'env.mountedPathname' instead.")
+                }
+                return mountedPathname
+            }
+        },
+        query: {
+            get: () => {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.warn("'env.query' is deprecated, and will be removed in Navi 0.12. Please use 'env.url.query' instead.")
+                }
+                return env.url.query
+            }
+        },
+        search: {
+            get: () => {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.warn("'env.search' is deprecated, and will be removed in Navi 0.12. Please use 'env.url.search' instead.")
+                }
+                return env.url.search
+            },
+        }
+    })
+
+    return mappedEnv
 }
     
 

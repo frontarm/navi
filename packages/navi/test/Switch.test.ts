@@ -6,13 +6,13 @@ describe("Switch", () => {
       url: '/from',
       pages: createSwitch({
         paths: {
-          '/from': env => createRedirect('/to?from='+encodeURIComponent(env.pathname)),
+          '/from': env => createRedirect('/to?from='+encodeURIComponent(env.mountedPathname)),
           '/to': env => createPage({ title: null }),
         }
       }),
     })
 
-    let { route } = await nav.getSteadyValue()
+    let route = await nav.getSteadyValue()
     
     expect(route.url.pathname).toBe('/to/')
     expect(route.url.query.from).toBe('/from')

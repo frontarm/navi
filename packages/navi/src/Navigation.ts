@@ -2,39 +2,23 @@ import { History } from 'history'
 import { Router } from './Router'
 import { Route } from './Route'
 import { Observable } from './Observable'
-import { URLDescriptor } from './URLTools'
 
-export interface Navigation<Context extends object=any> extends Observable<NavigationSnapshot> {
+export interface Navigation<Context extends object=any> extends Observable<Route> {
   readonly history: History
   readonly router: Router
 
   setContext(context: Context): void;
 
-  getCurrentValue(): NavigationSnapshot;
+  getCurrentValue(): Route;
 
   /**
    * Returns a promise that resolves once `isReady()` returns true.
    * This is useful for implementing static rendering, or for waiting until
    * content is loaded before making the first render.
    */
-  getSteadyValue(): Promise<NavigationSnapshot>;
+  getSteadyValue(): Promise<Route>;
 
   steady(): Promise<void>;
 
   dispose(): void;
-}
-
-export interface NavigationSnapshot {
-  history: History
-  router: Router
-
-  route: Route
-  url: URLDescriptor
-
-  /**
-   * Navigation managers can't scroll to hashes until they've been rendered.
-   * To let the manager know that the view has been rendered and scrolling
-   * can happen, your view should call this function.
-   */
-  onRendered: () => void
 }

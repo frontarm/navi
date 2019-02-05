@@ -1,51 +1,50 @@
-import { Status, Resolution, Resolvable } from './Resolver'
-import { Segment, createPlaceholderSegment } from './Segments'
+import { Resolution, Resolvable } from './Resolver'
+import { RouteSegment, createPlaceholderSegment } from './Segments'
 import {
-  NaviNode,
-  NodeMatcher,
-  NodeMatcherResult,
-  NaviNodeBase,
-  NodeMatcherOptions,
-  MaybeResolvableNode,
-  NaviNodeType,
-} from './Node'
+  Matcher,
+  MatcherBase,
+  MatcherResult,
+  MatcherClass,
+  MatcherOptions,
+  MaybeResolvableMatcher,
+} from './Matcher'
 import { Env } from './Env'
 
 
 export interface Context<ParentContext extends object = any, ChildContext extends object = any>
-  extends NaviNodeBase<ParentContext, ContextMatcher<ParentContext, ChildContext>> {
-  type: NaviNodeType.Context
+  extends MatcherClass<ParentContext, ContextMatcher<ParentContext, ChildContext>> {
+  type: 'context'
 
-  new (options: NodeMatcherOptions<ParentContext>): ContextMatcher<
+  new (options: MatcherOptions<ParentContext>): ContextMatcher<
     ParentContext,
     ChildContext
   >
 
-  childNodeResolvable: Resolvable<NaviNode>
+  childMatcherResolvable: Resolvable<Matcher>
   childContextResolvable: Resolvable<ChildContext>
 }
 
 
-export class ContextMatcher<ParentContext extends object, ChildContext extends object> extends NodeMatcher<ParentContext> {
-  static isNode = true;
-  static type: NaviNodeType.Context = NaviNodeType.Context;
+export class ContextMatcher<ParentContext extends object, ChildContext extends object> extends MatcherBase<ParentContext> {
+  static isMatcher = true;
+  static type: 'context' = 'context';
 
   last?: {
     childContext?: ChildContext
     childEnv?: Env
 
-    matcher?: NodeMatcher<any>
-    node?: NaviNode
+    matcherInstance?: MatcherBase<any>
+    matcher?: Matcher
   };
 
   ['constructor']: Context<ParentContext, ChildContext>
-  constructor(options: NodeMatcherOptions<ParentContext>) {
+  constructor(options: MatcherOptions<ParentContext>) {
     super(options, true)
   }
 
-  protected execute(): NodeMatcherResult<Segment> {
+  protected execute(): MatcherResult<RouteSegment> {
     let childContextResolution: Resolution<ChildContext> = this.resolver.resolve(this.env, this.constructor.childContextResolvable)
-    if (childContextResolution.status !== Status.Ready) {
+    if (childContextResolution.status !== 'ready') {
       return {
         resolutionIds: [childContextResolution.id],
         segment: createPlaceholderSegment(this.env, childContextResolution.error, this.appendFinalSlash)
@@ -69,41 +68,40 @@ export class ContextMatcher<ParentContext extends object, ChildContext extends o
       childEnv = this.last.childEnv!
     }
 
-    let childNodeResolution = this.resolver.resolve(childEnv, this.constructor.childNodeResolvable)
-    if (childNodeResolution.status !== Status.Ready) {
+    let childMatcherResolution = this.resolver.resolve(childEnv, this.constructor.childMatcherResolvable)
+    if (childMatcherResolution.status !== 'ready') {
       return {
-        resolutionIds: [childNodeResolution.id],
-        segment: createPlaceholderSegment(childEnv, childNodeResolution.error, this.appendFinalSlash)
+        resolutionIds: [childMatcherResolution.id],
+        segment: createPlaceholderSegment(childEnv, childMatcherResolution.error, this.appendFinalSlash)
       }
     }
 
     // Memoize matcher so its env prop can be used as a key for the resolver
-    let node = childNodeResolution.value!
-    let matcher: NodeMatcher<ChildContext>
-    if (this.last.node !== node) {
-      matcher = new node({
+    let matcher = childMatcherResolution.value!
+    let matcherInstance: MatcherBase<ChildContext>
+    if (this.last.matcher !== matcher) {
+      matcherInstance = new matcher({
         env: childEnv,
         resolver: this.resolver,
-        withContent: this.withContent,
         appendFinalSlash: this.appendFinalSlash,
       })
       this.last = {
         ...this.last,
-        node,
-        matcher,
+        matcher: matcher,
+        matcherInstance: matcherInstance,
       }
     }
     else {
-      matcher = this.last.matcher!
+      matcherInstance = this.last.matcherInstance!
     }
 
-    return matcher.getResult()
+    return matcherInstance.getResult()
   }
 }
 
 export function createContext<ParentContext extends object=any, ChildContext extends object=any>(
   maybeChildContextResolvable: ((env: Env<ParentContext>) => Promise<ChildContext> | ChildContext) | ChildContext,
-  maybeChildNodeResolvable: MaybeResolvableNode<ChildContext>
+  maybeChildMatcherResolvable: MaybeResolvableMatcher<ChildContext>
 ): Context<ParentContext, ChildContext> {
   if (process.env.NODE_ENV !== 'production') {
     if (maybeChildContextResolvable === undefined) {
@@ -113,8 +111,8 @@ export function createContext<ParentContext extends object=any, ChildContext ext
     }
   }
 
-  let childNodeResolvable: Resolvable<NaviNode> =
-    maybeChildNodeResolvable.isNode ? (() => maybeChildNodeResolvable) : (maybeChildNodeResolvable as Resolvable<NaviNode>)
+  let childMatcherResolvable: Resolvable<Matcher> =
+    maybeChildMatcherResolvable.isMatcher ? (() => maybeChildMatcherResolvable) : (maybeChildMatcherResolvable as Resolvable<Matcher>)
 
   let childContextResolvable: Resolvable<ChildContext> =
     (typeof maybeChildContextResolvable !== 'function')
@@ -122,7 +120,7 @@ export function createContext<ParentContext extends object=any, ChildContext ext
       : (maybeChildContextResolvable as any)
 
   return class extends ContextMatcher<ParentContext, ChildContext> {
-    static childNodeResolvable = childNodeResolvable
+    static childMatcherResolvable = childMatcherResolvable
     static childContextResolvable = childContextResolvable
   }
 }

@@ -1,10 +1,10 @@
 import { isValidContext } from './Context'
+import { isValidSwitch } from './Switch'
 import { isValidPage } from './Page'
 import { isValidRedirect } from './Redirect'
-import { isValidSwitch } from './Switch'
-import { NaviNode } from './Node'
+import { Matcher } from './Matcher'
 
-export function isValidDeclaration(x: any): x is NaviNode {
+export function isValidMatcher(x: any): x is Matcher {
   return (
     isValidContext(x) ||
     isValidPage(x) ||

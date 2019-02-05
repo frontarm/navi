@@ -7,25 +7,24 @@ import { Status } from './Resolver'
 /**
  * A type that covers all Segment objects.
  */
-export type Segment =
+export type RouteSegment =
   | PlaceholderSegment
   | SwitchSegment
   | PageSegment
   | RedirectSegment
 
-export enum SegmentType {
-  Placeholder = 'placeholder',
-  Switch = 'switch',
-  Page = 'page',
-  Redirect = 'redirect',
-}
+export type RouteSegmentType =
+  | 'placeholder'
+  | 'switch'
+  | 'page'
+  | 'redirect'
 
 /**
  * All segments extend this interface. It includes all information that can be
  * inferred from just a pattern string and a location.
  */
 export interface GenericSegment {
-  type: SegmentType
+  type: RouteSegmentType
 
   /**
    * Any params that have been matched.
@@ -43,14 +42,15 @@ export interface GenericSegment {
  * resolved.
  */
 export interface PlaceholderSegment extends GenericSegment {
-  type: SegmentType.Placeholder
+  type: 'placeholder'
 
   nextSegment?: never
   nextPattern?: never
   status: Status
   error?: any
   content?: never
-  meta?: never
+  head?: never
+  info?: never
   title?: never
 
   lastRemainingSegment?: never
@@ -60,11 +60,12 @@ export interface PlaceholderSegment extends GenericSegment {
 /**
  * Page segments corresponds to a URL segment followed by a final '/'.
  */
-export interface PageSegment<Meta extends object = any, Content = any>
+export interface PageSegment<Info extends object = any, Content = any>
   extends GenericSegment {
-  type: SegmentType.Page
+  type: 'page'
   content?: Content
-  meta?: Meta
+  info?: Info
+  head?: any[] | JSX.Element
   title?: string
 
   status: Status
@@ -80,14 +81,15 @@ export interface PageSegment<Meta extends object = any, Content = any>
  * Redirect segments indicate that anything underneath this segment
  * should be redirected to the location specified at `to`.
  */
-export interface RedirectSegment<Meta extends object = any>
+export interface RedirectSegment<Info extends object = any>
   extends GenericSegment {
   to?: string
-  meta: Meta
+  info?: Info
   title?: never
-  type: SegmentType.Redirect
+  type: 'redirect'
 
   content?: never
+  head?: never
   status: Status
   error?: any
 
@@ -100,16 +102,17 @@ export interface RedirectSegment<Meta extends object = any>
 /**
  * Switch segments correspond to non-final segment of the URL.
  */
-export interface SwitchSegment<Meta extends object = any, Content = any>
+export interface SwitchSegment<Info extends object = any, Content = any>
   extends GenericSegment {
-  type: SegmentType.Switch
-  meta: Meta
+  type: 'switch'
+  info?: Info
   title?: string
-  switch: Switch<any, Meta, Content>
+  switch: Switch<any, Info, Content>
 
   status: Status
   error?: any
   content?: Content
+  head?: any[] | JSX.Element
 
   /**
    * The pattern that was matched (with param placeholders if applicable).
@@ -122,7 +125,7 @@ export interface SwitchSegment<Meta extends object = any, Content = any>
    * It may be undefined if the user has provided an incorrect URL, or
    * if the child's template still needs to be loaded.
    */
-  nextSegment?: Segment
+  nextSegment?: RouteSegment
 
   /**
    * An array of all Segment objects corresponding to the remaining parts
@@ -131,36 +134,38 @@ export interface SwitchSegment<Meta extends object = any, Content = any>
    * It may be undefined if the user has provided an incorrect URL, or
    * if the child's template still needs to be loaded.
    */
-  remainingSegments: Segment[]
+  remainingSegments: RouteSegment[]
 
   /**
    * Contains the final segment object, whatever it happens to be.
    */
-  lastRemainingSegment?: Segment
+  lastRemainingSegment?: RouteSegment
 }
 
-export function isSegmentSteady(segment: Segment): boolean {
+export function isRouteSegmentSteady(segment: RouteSegment): boolean {
   return (
-    segment.status !== Status.Busy &&
+    segment.status !== 'busy' &&
     (segment.remainingSegments.length === 0 ||
-      isSegmentSteady(segment.remainingSegments[0]))
+      isRouteSegmentSteady(segment.remainingSegments[0]))
   )
 }
 
-export function createSegment<Type extends string, Details>(
+export function createRouteSegment<Type extends string, Details>(
   type: Type,
   env: Env,
   details: Details,
   ensureTrailingSlash = true,
 ) {
+  (details as any).meta = (details as any).info
+
   return Object.assign(
     {
       type: type,
-      meta: undefined as any,
+      info: undefined as any,
       params: env.params,
       url: createURLDescriptor({
-        pathname: env.pathname,
-        query: env.query,
+        pathname: env.mountedPathname,
+        query: env.url.query,
       }, { ensureTrailingSlash }),
       remainingSegments: (details as any).remainingSegments || [],
     },
@@ -173,23 +178,23 @@ export function createPlaceholderSegment(
   error?: any,
   ensureTrailingSlash = true,
 ): PlaceholderSegment {
-  return createSegment(SegmentType.Placeholder, env, {
-    status: error ? Status.Error : Status.Busy,
+  return createRouteSegment('placeholder', env, {
+    status: (error ? 'error' : 'busy') as Status,
     error: error,
   }, ensureTrailingSlash)
 }
 
 export function createNotFoundSegment(env: Env): PlaceholderSegment {
-  let fullPathname = joinPaths(env.pathname, env.unmatchedPathnamePart)
+  let fullPathname = joinPaths(env.mountedPathname, env.unmatchedPathnamePart)
   let error = new NotFoundError(fullPathname)
   return {
-    type: SegmentType.Placeholder,
+    type: 'placeholder',
     params: env.params,
     url: createURLDescriptor({
       pathname: fullPathname,
-      query: env.query,
+      query: env.url.query,
     }),
-    status: Status.Error,
+    status: 'error',
     error: error,
     remainingSegments: [],
   }

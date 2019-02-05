@@ -5,10 +5,9 @@ import {
   reduceStatuses,
 } from './Resolver'
 import {
-  Segment,
+  RouteSegment,
   SwitchSegment,
-  SegmentType,
-  createSegment,
+  createRouteSegment,
   createPlaceholderSegment,
   createNotFoundSegment,
 } from './Segments'
@@ -18,59 +17,60 @@ import {
   matchMappingAgainstPathname,
 } from './Mapping'
 import {
-  NodeMatcher,
-  NodeMatcherResult,
-  NaviNode,
-  NaviNodeType,
-  NaviNodeBase,
-  MaybeResolvableNode,
-  ResolvableNode,
-  NodeMatcherOptions,
-} from './Node'
+  MatcherBase,
+  MatcherResult,
+  Matcher,
+  MatcherClass,
+  MaybeResolvableMatcher,
+  ResolvableMatcher,
+  MatcherOptions,
+} from './Matcher'
 
 export type SwitchPaths<Context extends object> = {
-  [pattern: string]: MaybeResolvableNode<Context>
+  [pattern: string]: MaybeResolvableMatcher<Context>
 }
 
-export interface Switch<Context extends object = any, Meta extends object = any, Content = any>
-  extends NaviNodeBase<Context, SwitchMatcher<Context, Meta, Content>> {
-  type: NaviNodeType.Switch
+export interface Switch<Context extends object = any, Info extends object = any, Content = any>
+  extends MatcherClass<Context, SwitchMatcher<Context, Info, Content>> {
+  type: 'switch'
 
-  new (options: NodeMatcherOptions<Context>): SwitchMatcher<
+  new (options: MatcherOptions<Context>): SwitchMatcher<
     Context,
-    Meta,
+    Info,
     Content
   >
 
+  info?: Info
+  getInfo?: Resolvable<Info, Context>
   title?: string
-  getTitle?: Resolvable<string, Context, Meta>
-  meta?: Meta
-  getMeta?: Resolvable<Meta, Context>
+  getTitle?: Resolvable<string, Context, Info>
+  head?: string | any[] | JSX.Element
+  getHead?: Resolvable<string | any[] | JSX.Element, Context, Info>
   content?: Content
-  getContent?: Resolvable<Content, Context, Meta>
+  getContent?: Resolvable<Content, Context, Info>
 
   paths: SwitchPaths<Context>
   orderedMappings: Mapping[]
   patterns: string[]
 }
 
-export class SwitchMatcher<Context extends object, Meta extends object, Content> extends NodeMatcher<Context> {
-  static isNode = true
-  static type: NaviNodeType.Switch = NaviNodeType.Switch
+export class SwitchMatcher<Context extends object, Info extends object, Content> extends MatcherBase<Context> {
+  static isMatcher = true
+  static type: 'switch' = 'switch'
 
   child?: {
     mapping: Mapping,
-    matcherOptions: NodeMatcherOptions<Context>
-    maybeResolvableNode: MaybeResolvableNode<NaviNode>
+    matcherOptions: MatcherOptions<Context>
+    maybeResolvableMatcher: MaybeResolvableMatcher<Matcher>
   }
 
   last?: {
-    matcher?: NodeMatcher<any>
-    node?: NaviNode
+    matcherInstance?: MatcherBase<any>
+    matcher?: Matcher
   };
 
-  ['constructor']: Switch<Context, Meta, Content>
-  constructor(options: NodeMatcherOptions<Context>) {
+  ['constructor']: Switch<Context, Info, Content>
+  constructor(options: MatcherOptions<Context>) {
     super(options, true)
 
     // Start from the beginning and take the first result, as child mounts
@@ -86,10 +86,9 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
           matcherOptions: {
             env: childEnv,
             resolver: this.resolver,
-            withContent: this.withContent,
             appendFinalSlash: this.appendFinalSlash,
           },
-          maybeResolvableNode: mapping.maybeResolvableNode,
+          maybeResolvableMatcher: mapping.maybeResolvableMatcher,
         }
 
         // The first match is always the only match, as we don't allow
@@ -99,34 +98,50 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
     }
   }
 
-  protected execute(): NodeMatcherResult<SwitchSegment<Meta, Content>> {
+  protected execute(): MatcherResult<SwitchSegment<Info, Content>> {
     let resolutionIds: number[] = []
-    let status: Status = Status.Ready
+    let status: Status = 'ready'
     let error: any
     
-    // Meta must come first, as the promise to its result can be used by
+    // Info must come first, as the promise to its result can be used by
     // the subsequent resolvables.
-    let meta: Meta | undefined
-    if (this.constructor.getMeta) {
-      let metaResolution = this.resolver.resolve(
+    let info: Info | undefined
+    if (this.constructor.getInfo) {
+      let infoResolution = this.resolver.resolve(
         this.env,
-        this.constructor.getMeta
+        this.constructor.getInfo
       )
-      resolutionIds.push(metaResolution.id)
-      meta = metaResolution.value
-      status = reduceStatuses(status, metaResolution.status)
-      error = error || metaResolution.error
+      resolutionIds.push(infoResolution.id)
+      info = infoResolution.value
+      status = reduceStatuses(status, infoResolution.status)
+      error = error || infoResolution.error
     }
     else {
-      meta = this.constructor.meta
+      info = this.constructor.info
+    }
+
+    let head: any | undefined
+    if (this.env.method !== 'HEAD' && this.constructor.getHead) {
+      let headResolution = this.resolver.resolve(
+        this.env,
+        this.constructor.getHead,
+        this.constructor.getInfo,
+      )
+      resolutionIds.push(headResolution.id)
+      head = headResolution.value
+      status = reduceStatuses(status, headResolution.status)
+      error = error || headResolution.error
+    }
+    else {
+      head = this.constructor.head
     }
 
     let content: Content | undefined
-    if (this.withContent && this.constructor.getContent) {
+    if (this.env.method !== 'HEAD' && this.constructor.getContent) {
       let contentResolution = this.resolver.resolve(
         this.env,
         this.constructor.getContent,
-        this.constructor.getMeta,
+        this.constructor.getInfo,
       )
       resolutionIds.push(contentResolution.id)
       content = contentResolution.value
@@ -138,11 +153,11 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
     }
     
     let title: string | undefined
-    if (this.constructor.getTitle) {
+    if (this.env.method !== 'HEAD' && this.constructor.getTitle) {
       let titleResolution = this.resolver.resolve(
         this.env,
         this.constructor.getTitle,
-        this.constructor.getMeta,
+        this.constructor.getInfo,
       )
       resolutionIds.push(titleResolution.id)
       title = titleResolution.value
@@ -153,48 +168,48 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
       title = this.constructor.title
     }
 
-    let childMatcher: NodeMatcher<any> | undefined
-    let childNodeResolution: Resolution<NaviNode> | undefined
+    let childMatcherInstance: MatcherBase<any> | undefined
+    let childMatcherResolution: Resolution<Matcher> | undefined
     if (this.child) {
-      let childNode: NaviNode | undefined
-      if (this.child.maybeResolvableNode.isNode) {
-        childNode = this.child.maybeResolvableNode
+      let childMatcher: Matcher | undefined
+      if (this.child.maybeResolvableMatcher.isMatcher) {
+        childMatcher = this.child.maybeResolvableMatcher
       } else {
-        childNodeResolution = this.resolver.resolve(
+        childMatcherResolution = this.resolver.resolve(
           this.child.matcherOptions.env,
-          this.child.maybeResolvableNode as ResolvableNode<NaviNode>,
+          this.child.maybeResolvableMatcher as ResolvableMatcher<Matcher>,
         )
-        resolutionIds.push(childNodeResolution.id)
-        childNode = childNodeResolution.value
+        resolutionIds.push(childMatcherResolution.id)
+        childMatcher = childMatcherResolution.value
       }
 
-      if (!this.last || this.last.node !== childNode) {
-        if (childNode) {
-          childMatcher = new childNode(this.child.matcherOptions)
+      if (!this.last || this.last.matcher !== childMatcher) {
+        if (childMatcher) {
+          childMatcherInstance = new childMatcher(this.child.matcherOptions)
         }
       } else {
-        childMatcher = this.last.matcher
+        childMatcherInstance = this.last.matcherInstance
       }
 
       this.last = {
-        node: childNode,
         matcher: childMatcher,
+        matcherInstance: childMatcherInstance,
       }
     }
 
-    let childMatcherResult: NodeMatcherResult | undefined
-    if (childMatcher) {
-      childMatcherResult = childMatcher.getResult()
+    let childMatcherResult: MatcherResult | undefined
+    if (childMatcherInstance) {
+      childMatcherResult = childMatcherInstance.getResult()
     }
 
-    let nextSegment: Segment | undefined
+    let nextSegment: RouteSegment | undefined
     if (childMatcherResult) {
       nextSegment = childMatcherResult && childMatcherResult.segment
     }
-    else if (childNodeResolution) {
+    else if (childMatcherResolution) {
       nextSegment = createPlaceholderSegment(
         this.child!.matcherOptions.env, 
-        childNodeResolution.error,
+        childMatcherResolution.error,
         this.appendFinalSlash
       )
     }
@@ -206,10 +221,10 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
       // any child segments - which is useful for creating maps.
     }
 
-    let remainingSegments: Segment[] = []
+    let remainingSegments: RouteSegment[] = []
     if (nextSegment) {
-      remainingSegments = nextSegment.type === SegmentType.Switch
-        ? [nextSegment as Segment].concat(nextSegment.remainingSegments)
+      remainingSegments = nextSegment.type === 'switch'
+        ? [nextSegment as RouteSegment].concat(nextSegment.remainingSegments)
         : [nextSegment]
     }
 
@@ -217,11 +232,12 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
     // based comparisons on segments
     return {
       resolutionIds: resolutionIds.concat(childMatcherResult ? childMatcherResult.resolutionIds : []),
-      segment: createSegment(SegmentType.Switch, this.env, {
+      segment: createRouteSegment('switch', this.env, {
         status,
         error,
         content,
-        meta: meta || {},
+        head,
+        info: info || {},
         title,
         switch: this.constructor,
         nextPattern: this.child && this.child.mapping.pattern,
@@ -233,15 +249,21 @@ export class SwitchMatcher<Context extends object, Meta extends object, Content>
   }
 }
 
-export function createSwitch<Context extends object, Meta extends object, Content>(options: {
+export function createSwitch<Context extends object, Info extends object, Content>(options: {
   paths: SwitchPaths<Context>
-  meta?: Meta
-  getMeta?: Resolvable<Meta, Context>
-  title?: string
-  getTitle?: Resolvable<string, Context, Meta>
+  info?: Info
+  getInfo?: Resolvable<Info, Context>
+  head?: string | any[] | JSX.Element
+  getHead?: Resolvable<string | any[] | JSX.Element, Context, Info>
   content?: Content
-  getContent?: Resolvable<Content, Context, Meta>
-}): Switch<Context, Meta, Content> {
+  getContent?: Resolvable<Content, Context, Info>
+  title?: string
+  getTitle?: Resolvable<string, Context, Info>
+
+  // deprecated
+  meta?: never
+  getMeta?: never
+}): Switch<Context, Info, Content> {
   if (!options) {
     throw new Error(
       `createSwitch() must be supplied with an options object.`,
@@ -280,6 +302,10 @@ export function createSwitch<Context extends object, Meta extends object, Conten
         
         title,
         getTitle,
+        info,
+        getInfo,
+        head,
+        getHead,
         meta,
         getMeta,
         content,
@@ -319,11 +345,11 @@ export function createSwitch<Context extends object, Meta extends object, Conten
         let replacedKey = pattern.key.replace(previousPattern.regExp, '')
         if (replacedKey !== pattern.key && replacedKey.length > 0) {
           if (
-            (previousPattern.maybeResolvableNode.isNode &&
-              previousPattern.maybeResolvableNode.type ===
-              NaviNodeType.Switch) ||
-            (pattern.maybeResolvableNode.isNode &&
-              pattern.maybeResolvableNode.type === NaviNodeType.Switch)
+            (previousPattern.maybeResolvableMatcher.isMatcher &&
+              previousPattern.maybeResolvableMatcher.type ===
+              'switch') ||
+            (pattern.maybeResolvableMatcher.isMatcher &&
+              pattern.maybeResolvableMatcher.type === 'switch')
           )
             console.warn(
               `createSwitch() received Switches for patterns "${
@@ -340,11 +366,11 @@ export function createSwitch<Context extends object, Meta extends object, Conten
 
     // Check for missing mountables on patterns
     for (let i = 0; i < len; i++) {
-      if (!mappings[i].maybeResolvableNode) {
+      if (!mappings[i].maybeResolvableMatcher) {
         let pattern = mappings[i].pattern
         console.warn(
           `createSwitch() received "${typeof mappings[i]
-            .maybeResolvableNode}" for pattern "${pattern}"!`,
+            .maybeResolvableMatcher}" for pattern "${pattern}"!`,
         )
       }
     }
@@ -357,8 +383,8 @@ export function createSwitch<Context extends object, Meta extends object, Conten
       // won't know it until the split is loaded. But the same rules
       // still apply!
       if (
-        indexPattern.maybeResolvableNode.isNode &&
-        indexPattern.maybeResolvableNode.type === NaviNodeType.Switch
+        indexPattern.maybeResolvableMatcher.isMatcher &&
+        indexPattern.maybeResolvableMatcher.type === 'switch'
       ) {
         console.warn(
           `createSwitch() received a Switch at the "/" pattern, but "/" must be a Page or a Redirect!`,
@@ -367,11 +393,13 @@ export function createSwitch<Context extends object, Meta extends object, Conten
     }
   }
 
-  return class extends SwitchMatcher<Context, Meta, Content> {
+  return class extends SwitchMatcher<Context, Info, Content> {
     static paths = options.paths
 
-    static meta = options.meta
-    static getMeta = options.getMeta
+    static info = options.info
+    static getInfo = options.getInfo
+    static head = options.head
+    static getHead = options.getHead
     static title = options.title
     static getTitle = options.getTitle
     static content = options.content

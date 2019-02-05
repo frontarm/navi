@@ -5,7 +5,7 @@ import { HTTPMethod } from './HTTPMethod'
 // TODO: rename Env -> Request
 export interface Env<Context extends object=any> {
   readonly context: Context
-  readonly mountname: string
+  readonly mountedPathname: string
   readonly params: Params
   readonly router: Router<Context>
   readonly url: URLDescriptor
@@ -15,7 +15,8 @@ export interface Env<Context extends object=any> {
   readonly headers: { [name: string]: string }
   readonly method: HTTPMethod
 
-  // TODO: deprecate in favor of url.* (except hash, as changes to that aren't picked up)
+  // TODO: these are deprecated, remove in Navi 0.12
+  readonly mountname: string
   readonly pathname: string
   readonly query: Params
   readonly search: string

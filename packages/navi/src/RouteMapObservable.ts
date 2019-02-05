@@ -6,11 +6,10 @@ import {
   SimpleSubscription,
   createOrPassthroughObserver,
 } from './Observable'
-import { Status, Resolver } from './Resolver'
+import { Resolver } from './Resolver'
 import {
   SwitchSegment,
-  Segment,
-  SegmentType,
+  RouteSegment,
   PlaceholderSegment,
 } from './Segments'
 import { RouterMapOptions, Router } from './Router'
@@ -18,7 +17,6 @@ import { RouteMap, isRouteMapSteady } from './Maps'
 import { createRoute, Route } from './Route'
 import { Env } from './Env'
 import { Mapping, matchMappingAgainstPathname } from './Mapping'
-import { HTTPMethod } from './HTTPMethod'
 
 interface MapItem {
   url: URLDescriptor
@@ -28,7 +26,7 @@ interface MapItem {
   order: number[]
   matcher: Switch['prototype']
   segmentCache?: SwitchSegment | PlaceholderSegment
-  lastSegmentCache?: Segment
+  lastSegmentCache?: RouteSegment
 }
 
 export class RouteMapObservable implements Observable<RouteMap> {
@@ -148,7 +146,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
       // items, so if an earlier item is removed, its referenced items
       // will still be removed.
       if (
-        lastSegment.status === Status.Error ||
+        lastSegment.status === 'error' ||
         (this.options.predicate && !this.options.predicate(lastSegment))
       ) {
         this.removeFromQueue(item)
@@ -159,12 +157,12 @@ export class RouteMapObservable implements Observable<RouteMap> {
       // then add the location to the map.
       if (
         this.options.followRedirects &&
-        lastSegment.type === SegmentType.Redirect &&
-        lastSegment.status === Status.Ready &&
+        lastSegment.type === 'redirect' &&
+        lastSegment.status === 'ready' &&
         lastSegment.to &&
         (!cachedLastSegment ||
-          cachedLastSegment.type !== SegmentType.Redirect ||
-          cachedLastSegment.status !== Status.Ready ||
+          cachedLastSegment.type !== 'redirect' ||
+          cachedLastSegment.status !== 'ready' ||
           !cachedLastSegment.to ||
           cachedLastSegment.to !== lastSegment.to)
       ) {
@@ -172,11 +170,11 @@ export class RouteMapObservable implements Observable<RouteMap> {
       }
 
       if (
-        lastSegment.type === SegmentType.Switch &&
-        lastSegment.status === Status.Ready &&
+        lastSegment.type === 'switch' &&
+        lastSegment.status === 'ready' &&
         (!cachedLastSegment ||
-          cachedLastSegment.type !== SegmentType.Switch ||
-          cachedLastSegment.status === Status.Busy)
+          cachedLastSegment.type !== 'switch' ||
+          cachedLastSegment.status === 'busy')
       ) {
         let patterns = lastSegment.switch.patterns
         for (let j = 0; j < patterns.length; j++) {
@@ -202,7 +200,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
     for (let i = 0; i < this.mapItems.length; i++) {
       let item = this.mapItems[i]
       let lastSegment = item.lastSegmentCache!
-      if (lastSegment.type !== SegmentType.Switch && lastSegment.status !== Status.Error) {
+      if (lastSegment.type !== 'switch' && lastSegment.status !== 'error') {
         routeMapArray.push([
           joinPaths(item.pathname, '/'),
           createRoute(
@@ -294,10 +292,11 @@ export class RouteMapObservable implements Observable<RouteMap> {
       let rootEnv: Env = {
         context: this.rootContext,
         headers: {},
-        method: HTTPMethod.Get,
+        method: this.options.method || 'HEAD',
         params: {},
         pathname: '',
         mountname: '',
+        mountedPathname: '',
         query: url.query,
         search: url.search,
         router: this.router,
@@ -320,7 +319,6 @@ export class RouteMapObservable implements Observable<RouteMap> {
             appendFinalSlash: false,
             env: matchEnv,
             resolver: this.resolver,
-            withContent: this.options.withContent,
           }),
         })
       }

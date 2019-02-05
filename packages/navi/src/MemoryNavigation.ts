@@ -1,6 +1,6 @@
 import { createMemoryHistory, History } from 'history';
 import { Switch } from './Switch'
-import { Navigation, NavigationSnapshot } from './Navigation'
+import { Navigation } from './Navigation'
 import { Resolver } from './Resolver'
 import { Router, RouterOptions } from './Router'
 import { Route } from './Route'
@@ -44,8 +44,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
 
     readonly history: History
 
-    private pages: Switch
-    private basename?: string
+    private options: MemoryNavigationOptions<Context>
     private resolver: Resolver
 
     private currentRouteObservable: CurrentRouteObservable<Context>
@@ -55,12 +54,11 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
             initialEntries: [createURLDescriptor(options.url).href],
         })
         this.resolver = new Resolver
-        this.pages = options.pages
-        this.basename = options.basename
+        this.options = options
         this.router = new Router(this.resolver, {
             context: options.context,
-            pages: this.pages,
-            basename: this.basename,
+            pages: this.options.pages,
+            basename: this.options.basename,
         })
         this.currentRouteObservable = createCurrentRouteObservable({
             history: this.history,
@@ -73,37 +71,24 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
         delete this.currentRouteObservable
         delete this.router
         delete this.resolver
-        delete this.pages
+        delete this.options
     }
 
     setContext(context: Context) {
         this.router = new Router(this.resolver, {
             context: context,
-            pages: this.pages,
-            basename: this.basename,
+            pages: this.options.pages,
+            basename: this.options.basename,
         })
         this.currentRouteObservable.setRouter(this.router)
     }
 
-    getCurrentValue(): NavigationSnapshot {
-        let route = this.currentRouteObservable.getValue()
-        return {
-            route,
-            url: route.url,
-            history: this.history,
-            router: this.router,
-            onRendered: noop,
-        }
+    getCurrentValue(): Route {
+        return this.currentRouteObservable.getValue()
     }
 
-    async getSteadyValue(): Promise<NavigationSnapshot> {
-        return this.currentRouteObservable.getSteadyRoute().then(route => ({
-            route,
-            url: route.url,
-            history: this.history,
-            router: this.router,
-            onRendered: noop,
-        }))
+    getSteadyValue(): Promise<Route> {
+        return this.currentRouteObservable.getSteadyRoute()
     }
 
     async steady() {
@@ -116,41 +101,11 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
      * the snapshot, as the route may change as new code chunks are received.
      */
     subscribe(
-        onNextOrObserver: Observer<NavigationSnapshot> | ((value: NavigationSnapshot) => void),
+        onNextOrObserver: Observer<Route> | ((value: Route) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
         let navigationObserver = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
-        let mapObserver = new MapObserver(navigationObserver, this)
-        return this.currentRouteObservable.subscribe(mapObserver)
-    }
-}
-
-
-const noop = () => {}
-
-
-class MapObserver implements Observer<Route> {
-    navigation: MemoryNavigation<any>
-    observer: Observer<NavigationSnapshot>
-
-    constructor(observer: Observer<NavigationSnapshot>, navigation: MemoryNavigation<any>) {
-        this.observer = observer
-        this.navigation = navigation
-    }
-
-    next(route: Route): void {
-        this.observer.next({
-            route,
-            url: route.url,
-            history: this.navigation.history,
-            router: this.navigation.router,
-            onRendered: noop,
-        })
-    }
-    error(errorValue: any): void {
-        if (this.observer.error) {
-            this.observer.error(errorValue)
-        }
+        return this.currentRouteObservable.subscribe(navigationObserver)
     }
 }

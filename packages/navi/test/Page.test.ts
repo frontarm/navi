@@ -11,7 +11,7 @@ describe("Page", () => {
       }),
     })
 
-    let { route } = await nav.getSteadyValue()
+    let route = await nav.getSteadyValue()
     
     expect(route.url.pathname).toBe('/test/')
   })
@@ -26,7 +26,7 @@ describe("Page", () => {
       }),
     })
 
-    let { route } = await nav.getSteadyValue()
+    let route = await nav.getSteadyValue()
     
     expect(route.url.pathname).toBe('/test/')
   })

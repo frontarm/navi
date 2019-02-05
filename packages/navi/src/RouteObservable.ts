@@ -18,8 +18,7 @@ export class RouteObservable implements Observable<Route> {
         url: URLDescriptor,
         env: Env,
         pages: Switch,
-        resolver: Resolver,
-        withContent: boolean
+        resolver: Resolver
     ) {
         this.url = url
         this.resolver = resolver
@@ -27,8 +26,7 @@ export class RouteObservable implements Observable<Route> {
         this.matcher = new pages({
             appendFinalSlash: true,
             env,
-            resolver: this.resolver,
-            withContent: withContent
+            resolver: this.resolver
         })
     }
 
