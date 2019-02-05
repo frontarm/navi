@@ -3,3 +3,4 @@ dist
 .esm-cache
 *.log
 notes
+README.md

@@ -6,20 +6,21 @@
   "license": "MIT",
   "main": "dist/commonjs/index.js",
   "module": "dist/es/index.js",
-  "types": "dist/commonjs/index.d.ts",
+  "types": "dist/types/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/frontarm/navi.git"
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build:commonjs": "tsc --pretty --declaration --module commonjs --outDir dist/commonjs",
-    "build:es": "tsc --pretty --declaration --module es2015 --outDir dist/es",
+    "build:commonjs": "tsc --pretty --module commonjs --outDir dist/commonjs",
+    "build:es": "tsc --pretty --module es2015 --outDir dist/es",
+    "build:types": "tsc --pretty --declaration --emitDeclarationOnly --outDir dist/types --isolatedModules false",
     "build:umd": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/navi.js && rimraf dist/umd-intermediate",
     "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/navi.min.js && rimraf dist/umd-intermediate",
-    "build": "yarn build:es && yarn build:commonjs && yarn build:umd && yarn build:umd:min",
+    "build": "yarn run clean && yarn build:es && yarn build:commonjs && yarn build:types && yarn build:umd && yarn build:umd:min",
     "build:watch": "yarn run clean && yarn build:es -- --watch",
-    "prepublish": "yarn run clean && yarn build && yarn test && cp ../../README.md .",
+    "prepublish": "yarn test && yarn build && cp ../../README.md .",
     "test": "jest",
     "test:watch": "jest --watch"
   },
