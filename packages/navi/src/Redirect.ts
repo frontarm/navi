@@ -46,13 +46,13 @@ export class RedirectMatcher<Context extends object = any, Info extends object =
 
     return {
       resolutionIds: [toResolution.id, infoResolution.id],
-      segment: createRouteSegment('redirect', this.env.request, {
+      segments: [createRouteSegment('redirect', this.env.request, {
         to: toHref,
         info: info || emptyObject,
         status,
         error,
         remainingSegments: [],
-      }),
+      })],
     }
   }
 }

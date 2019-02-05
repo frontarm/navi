@@ -71,8 +71,8 @@ export class RouteObservable implements Observable<Route> {
     }
 
     private refresh = () => {
-        let { segment, resolutionIds } = this.matcher.getResult()
-        this.cachedValue = createRoute(this.url, segment as SwitchSegment)
+        let { segments, resolutionIds } = this.matcher.getResult()
+        this.cachedValue = createRoute(this.url, segments)
         // This will replace any existing listener and its associated resolvables
         this.resolver.listen(this.handleChange, resolutionIds)
     }

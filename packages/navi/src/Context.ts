@@ -47,7 +47,7 @@ export class ContextMatcher<ParentContext extends object, ChildContext extends o
     if (childContextResolution.status !== 'ready') {
       return {
         resolutionIds: [childContextResolution.id],
-        segment: createPlaceholderSegment(this.env.request, childContextResolution.error, this.appendFinalSlash)
+        segments: [createPlaceholderSegment(this.env.request, childContextResolution.error, this.appendFinalSlash)]
       }
     }
 
@@ -72,7 +72,7 @@ export class ContextMatcher<ParentContext extends object, ChildContext extends o
     if (childMatcherResolution.status !== 'ready') {
       return {
         resolutionIds: [childMatcherResolution.id],
-        segment: createPlaceholderSegment(childEnv.request, childMatcherResolution.error, this.appendFinalSlash)
+        segments: [createPlaceholderSegment(childEnv.request, childMatcherResolution.error, this.appendFinalSlash)]
       }
     }
 

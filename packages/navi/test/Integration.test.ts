@@ -26,14 +26,15 @@ describe("integration", () => {
         expect(pageSegment.type).toBe('page')
         expect(pageSegment.title).toBe('Basic example')
         expect(pageSegment.content).toBe('basic-example')
-        expect(pageSegment).toBe(firstSegment.nextSegment && firstSegment.nextSegment.nextSegment)
+        expect(pageSegment).toBe(route.segments[2])
         expect(route.heads.length).toBe(2)
         expect(route.heads[0][0].type).toBe('meta')
 
         nav.history.push('/examples/advanced?referrer=frontarm')
 
         firstSegment = nav.getCurrentValue().firstSegment
-        let secondSegment = firstSegment.nextSegment
+        route = nav.getCurrentValue()
+        let secondSegment = route.segments[1]
 
         expect(firstSegment.url.query).toEqual({ referrer: 'frontarm' })
         expect(firstSegment.nextPattern).toEqual('/examples')
@@ -55,7 +56,7 @@ describe("integration", () => {
 
         route = await nav.getSteadyValue()
         firstSegment = route.firstSegment
-        pageSegment = firstSegment.lastRemainingSegment as PageSegment
+        pageSegment = route.lastSegment as PageSegment
 
         expect(pageSegment.content.dat).toEqual({
             isPaywalled: true,
@@ -65,7 +66,7 @@ describe("integration", () => {
 
         route = await nav.getSteadyValue()
         firstSegment = route.firstSegment
-        let　junctionSegment = firstSegment.lastRemainingSegment as SwitchSegment
+        let　junctionSegment = route.lastSegment as SwitchSegment
         
         expect(junctionSegment.error && junctionSegment.error).toBeInstanceOf(NotFoundError)
         expect(junctionSegment.error && junctionSegment.error.pathname).toBe("/examples/intermediate/")

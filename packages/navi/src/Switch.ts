@@ -98,7 +98,7 @@ export class SwitchMatcher<Context extends object, Info extends object, Content>
     }
   }
 
-  protected execute(): MatcherResult<SwitchSegment<Info, Content>> {
+  protected execute(): MatcherResult {
     let resolutionIds: number[] = []
     let status: Status = 'ready'
     let error: any
@@ -202,49 +202,41 @@ export class SwitchMatcher<Context extends object, Info extends object, Content>
       childMatcherResult = childMatcherInstance.getResult()
     }
 
-    let nextSegment: RouteSegment | undefined
+    let nextSegments: RouteSegment[] = []
     if (childMatcherResult) {
-      nextSegment = childMatcherResult && childMatcherResult.segment
+      nextSegments = childMatcherResult && childMatcherResult.segments
     }
     else if (childMatcherResolution) {
-      nextSegment = createPlaceholderSegment(
+      nextSegments = [createPlaceholderSegment(
         this.child!.matcherOptions.env.request, 
         childMatcherResolution.error,
         this.appendFinalSlash
-      )
+      )]
     }
     else if (this.env.request.path) {
-      nextSegment = createNotFoundSegment(this.env.request)
+      nextSegments = [createNotFoundSegment(this.env.request)]
     }
     else {
       // We've matched the switch exactly, and don't need to match
       // any child segments - which is useful for creating maps.
     }
 
-    let remainingSegments: RouteSegment[] = []
-    if (nextSegment) {
-      remainingSegments = nextSegment.type === 'switch'
-        ? [nextSegment as RouteSegment].concat(nextSegment.remainingSegments)
-        : [nextSegment]
-    }
-
     // Only create a new segment if necessary, to allow for reference-equality
     // based comparisons on segments
+    let switchSegment = createRouteSegment('switch', this.env.request, {
+      status,
+      error,
+      content,
+      head,
+      info: info || {},
+      title,
+      switch: this.constructor,
+      nextPattern: this.child && this.child.mapping.pattern,
+    }, this.appendFinalSlash) as RouteSegment
+
     return {
       resolutionIds: resolutionIds.concat(childMatcherResult ? childMatcherResult.resolutionIds : []),
-      segment: createRouteSegment('switch', this.env.request, {
-        status,
-        error,
-        content,
-        head,
-        info: info || {},
-        title,
-        switch: this.constructor,
-        nextPattern: this.child && this.child.mapping.pattern,
-        nextSegment,
-        lastRemainingSegment: remainingSegments[remainingSegments.length - 1],
-        remainingSegments,
-      }, this.appendFinalSlash),
+      segments: [switchSegment].concat(nextSegments),
     }
   }
 }

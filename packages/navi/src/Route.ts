@@ -1,6 +1,6 @@
 import { URLDescriptor } from './URLTools'
 import { Status } from './Resolver'
-import { RouteSegment, SwitchSegment, isRouteSegmentSteady, PlaceholderSegment, PageSegment, RedirectSegment } from './Segments'
+import { RouteSegment, SwitchSegment, PageSegment, RedirectSegment } from './Segments'
 
 export type RouteType =
   | 'switch'
@@ -59,8 +59,7 @@ export interface RedirectRoute<Info extends object = any> extends Route {
   info: Info
 }
 
-export function createRoute(url: URLDescriptor, firstSegment: SwitchSegment | PlaceholderSegment): Route {
-  let segments = [firstSegment as RouteSegment].concat(firstSegment.remainingSegments)
+export function createRoute(url: URLDescriptor, segments: RouteSegment[]): Route {
   let lastSegment = segments[segments.length - 1]
   let status = lastSegment.status
   let error: any
@@ -95,7 +94,7 @@ export function createRoute(url: URLDescriptor, firstSegment: SwitchSegment | Pl
     segments,
     firstSegment: segments[0] as SwitchSegment,
     lastSegment,
-    isSteady: isRouteSegmentSteady(segments[0]),
+    isSteady: status !== 'busy',
     error,
     status,
     contents,

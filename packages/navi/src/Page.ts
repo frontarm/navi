@@ -101,7 +101,7 @@ export class PageMatcher<Context extends object, Info extends object, Content> e
     
     return {
       resolutionIds: resolutionIds,
-      segment: createRouteSegment('page', this.env.request, {
+      segments: [createRouteSegment('page', this.env.request, {
         title,
         info: info || {},
         status,
@@ -109,7 +109,7 @@ export class PageMatcher<Context extends object, Info extends object, Content> e
         content,
         head,
         remainingSegments: [],
-      }),
+      })],
     }
   }
 }

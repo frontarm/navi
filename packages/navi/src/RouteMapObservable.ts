@@ -26,7 +26,7 @@ interface MapItem {
   depth: number
   order: number[]
   matcher: Switch['prototype']
-  segmentCache?: SwitchSegment | PlaceholderSegment
+  segmentsCache?: RouteSegment[]
   lastSegmentCache?: RouteSegment
 }
 
@@ -133,10 +133,10 @@ export class RouteMapObservable implements Observable<RouteMap> {
     while (i < this.mapItems.length) {
       let item = this.mapItems[i]
       let pathname = item.pathname
-      let { segment, resolutionIds } = item.matcher.getResult()
-      let lastSegment = segment.lastRemainingSegment || segment
+      let { segments, resolutionIds } = item.matcher.getResult()
+      let lastSegment = segments[segments.length-1]
       let cachedLastSegment = item.lastSegmentCache
-      item.segmentCache = segment as SwitchSegment
+      item.segmentsCache = segments
       item.lastSegmentCache = lastSegment
 
       // If an item in the map cannot be found, throws an error, or is
@@ -206,7 +206,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
           joinPaths(item.pathname, '/'),
           createRoute(
             createURLDescriptor(item.pathname, { ensureTrailingSlash: false }),
-            item.segmentCache!,
+            item.segmentsCache!,
           ),
           item.order
         ])

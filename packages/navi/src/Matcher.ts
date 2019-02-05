@@ -35,7 +35,7 @@ export interface MatcherOptions<Context extends object> {
 }
 
 export interface MatcherResult<S extends RouteSegment = RouteSegment> {
-    segment: S
+    segments: S[]
     resolutionIds: number[]
 }
 
@@ -66,7 +66,7 @@ export abstract class MatcherBase<Context extends object> {
             // params, or a non-exact match without a default path.
             return {
                 resolutionIds: [],
-                segment: createNotFoundSegment(this.env.request)
+                segments: [createNotFoundSegment(this.env.request)]
             }
         }
     };
