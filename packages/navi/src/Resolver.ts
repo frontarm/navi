@@ -1,9 +1,11 @@
 import { Env } from './Env'
 import { joinPaths } from './URLTools'
 import { NotFoundError } from './Errors'
+import { NaviRequest } from './NaviRequest';
 
 export type Resolvable<T, Context extends object = any, Info = any> = (
-  env: Env<Context>,
+  request: NaviRequest,
+  context: Context,
   infoPromise: PromiseLike<Info>
 ) => (T | PromiseLike<{ default: T } | T>)
 
@@ -32,7 +34,7 @@ export function reduceStatuses(x: Status, y: Status) {
 
 export class Resolver {
   private nextId: number
-  private results: WeakMap<Env<any>, Map<Function, Resolution<any>>>
+  private results: WeakMap<Env, Map<Function, Resolution<any>>>
   private listenerIds: Map<Function, number[]>
 
   constructor() {
@@ -50,7 +52,7 @@ export class Resolver {
   }
 
   resolve<T, Info>(
-    env: Env<any>,
+    env: Env,
     resolvable: Resolvable<T>,
     infoResolvable?: Resolvable<Info>
   ): Resolution<T> {
@@ -69,7 +71,7 @@ export class Resolver {
       matcherResults.get(infoResolvable) || { promise: Promise.resolve() }
     ) 
     let id = this.nextId++
-    let maybeValue = resolvable(env, infoResolution.promise)
+    let maybeValue = resolvable(env.request, env.context, infoResolution.promise)
     if (!isPromiseLike(maybeValue)) {
       let result: Resolution<T> = {
         id,
@@ -88,7 +90,7 @@ export class Resolver {
       promise,
     }
     matcherResults.set(resolvable, result)
-    this.listenForChanges(promise, matcherResults, resolvable, id, joinPaths(env.mountedPathname, env.unmatchedPathnamePart))
+    this.listenForChanges(promise, matcherResults, resolvable, id, joinPaths(env.request.mountpath, env.request.path))
     return result
   }
 

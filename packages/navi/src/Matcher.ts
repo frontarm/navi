@@ -57,7 +57,7 @@ export abstract class MatcherBase<Context extends object> {
 
     // Get the segment object given the current state.
     getResult(): MatcherResult {
-        let unmatchedPathnamePart = this.env.unmatchedPathnamePart
+        let unmatchedPathnamePart = this.env.request.path
         if (this.wildcard || !unmatchedPathnamePart || unmatchedPathnamePart === '/') {
             return this.execute()
         }
@@ -66,7 +66,7 @@ export abstract class MatcherBase<Context extends object> {
             // params, or a non-exact match without a default path.
             return {
                 resolutionIds: [],
-                segment: createNotFoundSegment(this.env)
+                segment: createNotFoundSegment(this.env.request)
             }
         }
     };

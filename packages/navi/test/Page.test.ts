@@ -6,7 +6,7 @@ describe("Page", () => {
       url: '/test/',
       pages: createSwitch({
         paths: {
-          '/test': env => createPage({ title: 'test' }),
+          '/test': req => createPage({ title: 'test' }),
         }
       }),
     })
@@ -21,7 +21,7 @@ describe("Page", () => {
       url: '/test',
       pages: createSwitch({
         paths: {
-          '/test': env => createPage({ title: 'test' }),
+          '/test': req => createPage({ title: 'test' }),
         }
       }),
     })
@@ -41,7 +41,7 @@ describe("isValidPage()", () => {
   test("returns false for a Switch", () => {
     let x = createSwitch({
       paths: {
-        '/test': env => createPage({ title: 'test' }),
+        '/test': req => createPage({ title: 'test' }),
       }
     })
     expect(isValidPage(x)).toBe(false)

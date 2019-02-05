@@ -36,7 +36,7 @@ describe("pageMap", () => {
                         title: 'About',
                     }),
                     '/tags/:name': createPage({
-                        getTitle: env => `${env.params.name} Tag`
+                        getTitle: req => `${req.params.name} Tag`
                     })
                 }
             })
@@ -58,7 +58,7 @@ describe("pageMap", () => {
                         title: 'About',
                     }),
                     '/tags/:name': createPage({
-                        getTitle: env => `${env.params.name} Tag`
+                        getTitle: req => `${req.params.name} Tag`
                     })
                 }
             })

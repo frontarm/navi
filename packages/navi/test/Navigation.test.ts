@@ -5,7 +5,7 @@ describe("BrowserNavigation", () => {
     let nav = createBrowserNavigation({
       pages: createSwitch({
         paths: {
-          '/test': env => createPage({ title: 'test' }),
+          '/test': req => createPage({ title: 'test' }),
         }
       }),
     })

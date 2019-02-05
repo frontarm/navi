@@ -1,6 +1,7 @@
 import { MaybeResolvableMatcher } from './Matcher'
 import { Env } from './Env'
 import { joinPaths } from './URLTools'
+import { createRequest } from './NaviRequest';
 
 
 export const KEY_WILDCARD = '\0'
@@ -116,7 +117,8 @@ export function createMapping(pattern: string, maybeResolvableMatcher: MaybeReso
 
 
 export function matchMappingAgainstPathname<Context extends object>(env: Env<Context>, mapping: Mapping, appendFinalSlash: boolean): Env<Context> | undefined {
-    let match = mapping.regExp.exec(env.unmatchedPathnamePart)
+    let request = env.request
+    let match = mapping.regExp.exec(env.request.path)
     if (!match) {
         return
     }
@@ -124,63 +126,28 @@ export function matchMappingAgainstPathname<Context extends object>(env: Env<Con
     let matchedPathname = match[0]
 
     // Set path params using RegExp match
-    let params = env.params
+    let params = request.params
     if (mapping.pathParamNames) {
-        params = { ...env.params }
+        params = { ...request.params }
         for (let i = 0; i < mapping.pathParamNames.length; i++) {
             let paramName = mapping.pathParamNames[i]
             params[paramName] = match[i+1]
         }
     }
 
-    let mountedPathname = joinPaths(env.mountedPathname, matchedPathname)
+    let unmatchedPath = request.path.slice(matchedPathname.length) || (appendFinalSlash ? '/' : '')
+
+    let mountpath = joinPaths(request.mountpath, matchedPathname)
     let mappedEnv: Env = {
-        body: env.body,
         context: env.context,
-        headers: env.headers,
-        method: env.method,
-        params: params,
-        mountedPathname: mountedPathname,
-        router: env.router,
-        url: env.url,
-
-        unmatchedPathnamePart: env.unmatchedPathnamePart.slice(matchedPathname.length) || (appendFinalSlash ? '/' : ''),
-    } as any
-
-    Object.defineProperties(mappedEnv, {
-        mountname: {
-            get: () => {
-                if (process.env.NODE_ENV !== 'production') {
-                    console.warn("'env.mountname' is deprecated, and will be removed in Navi 0.12. Please use 'env.mountedPathname' instead.")
-                }
-                return mountedPathname
-            },
-        },
-        pathname: {
-            get: () => {
-                if (process.env.NODE_ENV !== 'production') {
-                    console.warn("'env.pathname' is deprecated, and will be removed in Navi 0.12. Please use 'env.mountedPathname' instead.")
-                }
-                return mountedPathname
-            }
-        },
-        query: {
-            get: () => {
-                if (process.env.NODE_ENV !== 'production') {
-                    console.warn("'env.query' is deprecated, and will be removed in Navi 0.12. Please use 'env.url.query' instead.")
-                }
-                return env.url.query
-            }
-        },
-        search: {
-            get: () => {
-                if (process.env.NODE_ENV !== 'production') {
-                    console.warn("'env.search' is deprecated, and will be removed in Navi 0.12. Please use 'env.url.search' instead.")
-                }
-                return env.url.search
-            },
-        }
-    })
+        request: createRequest(env.context, {
+            ...request,
+            params,
+            mountpath,
+            path: unmatchedPath,
+            url: unmatchedPath+request.search,
+        })
+    }
 
     return mappedEnv
 }

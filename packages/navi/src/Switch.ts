@@ -121,7 +121,7 @@ export class SwitchMatcher<Context extends object, Info extends object, Content>
     }
 
     let head: any | undefined
-    if (this.env.method !== 'HEAD' && this.constructor.getHead) {
+    if (this.env.request.method !== 'HEAD' && this.constructor.getHead) {
       let headResolution = this.resolver.resolve(
         this.env,
         this.constructor.getHead,
@@ -137,7 +137,7 @@ export class SwitchMatcher<Context extends object, Info extends object, Content>
     }
 
     let content: Content | undefined
-    if (this.env.method !== 'HEAD' && this.constructor.getContent) {
+    if (this.env.request.method !== 'HEAD' && this.constructor.getContent) {
       let contentResolution = this.resolver.resolve(
         this.env,
         this.constructor.getContent,
@@ -153,7 +153,7 @@ export class SwitchMatcher<Context extends object, Info extends object, Content>
     }
     
     let title: string | undefined
-    if (this.env.method !== 'HEAD' && this.constructor.getTitle) {
+    if (this.env.request.method !== 'HEAD' && this.constructor.getTitle) {
       let titleResolution = this.resolver.resolve(
         this.env,
         this.constructor.getTitle,
@@ -208,13 +208,13 @@ export class SwitchMatcher<Context extends object, Info extends object, Content>
     }
     else if (childMatcherResolution) {
       nextSegment = createPlaceholderSegment(
-        this.child!.matcherOptions.env, 
+        this.child!.matcherOptions.env.request, 
         childMatcherResolution.error,
         this.appendFinalSlash
       )
     }
-    else if (this.env.unmatchedPathnamePart) {
-      nextSegment = createNotFoundSegment(this.env)
+    else if (this.env.request.path) {
+      nextSegment = createNotFoundSegment(this.env.request)
     }
     else {
       // We've matched the switch exactly, and don't need to match
@@ -232,7 +232,7 @@ export class SwitchMatcher<Context extends object, Info extends object, Content>
     // based comparisons on segments
     return {
       resolutionIds: resolutionIds.concat(childMatcherResult ? childMatcherResult.resolutionIds : []),
-      segment: createRouteSegment('switch', this.env, {
+      segment: createRouteSegment('switch', this.env.request, {
         status,
         error,
         content,

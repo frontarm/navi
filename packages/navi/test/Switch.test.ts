@@ -6,8 +6,8 @@ describe("Switch", () => {
       url: '/from',
       pages: createSwitch({
         paths: {
-          '/from': env => createRedirect('/to?from='+encodeURIComponent(env.mountedPathname)),
-          '/to': env => createPage({ title: null }),
+          '/from': req => createRedirect('/to?from='+encodeURIComponent(req.mountpath)),
+          '/to': req => createPage({ title: null }),
         }
       }),
     })

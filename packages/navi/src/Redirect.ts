@@ -34,7 +34,7 @@ export class RedirectMatcher<Context extends object = any, Info extends object =
     let toHref: string | undefined
     if (typeof to === 'string') {
       if (to.slice(0, 2) === './') {
-        toHref = joinPaths(this.env.mountedPathname.split('/').slice(0, -1).join('/'), to.slice(2))
+        toHref = joinPaths(this.env.request.mountpath.split('/').slice(0, -1).join('/'), to.slice(2))
       }
       else {
         toHref = to
@@ -46,7 +46,7 @@ export class RedirectMatcher<Context extends object = any, Info extends object =
 
     return {
       resolutionIds: [toResolution.id, infoResolution.id],
-      segment: createRouteSegment('redirect', this.env, {
+      segment: createRouteSegment('redirect', this.env.request, {
         to: toHref,
         info: info || emptyObject,
         status,

@@ -8,13 +8,14 @@ import { RouteSegment } from './Segments'
 import { SiteMap, PageMap, RedirectMap } from './Maps'
 import { createPromiseFromObservable } from './Observable';
 import { createURLDescriptor, URLDescriptor } from './URLTools';
-import { HTTPMethod } from './HTTPMethod';
+import { createRequest, HTTPMethod } from './NaviRequest';
 import { OutOfRootError } from './Errors';
+import { Env } from './Env';
 
 
 export interface RouterOptions<Context extends object> {
     context?: Context,
-    pages: Switch,
+    pages: Switch<Context>,
     basename?: string,
 }
 
@@ -23,6 +24,7 @@ export interface RouterResolveOptions {
     body?: any,
     headers?: { [name: string]: string },
     method?: HTTPMethod,
+    hostname?: string,
 }
 
 export interface RouterMapOptions {
@@ -31,6 +33,8 @@ export interface RouterMapOptions {
     predicate?: (segment: RouteSegment) => boolean,
     expandPattern?: (pattern: string, router: Router) => undefined | string[] | Promise<undefined | string[]>,
     method?: 'GET' | 'HEAD',
+    headers?: { [name: string]: string },
+    hostname?: string,
 }
   
 
@@ -69,20 +73,22 @@ export class Router<Context extends object=any> {
         // need to somehow keep track of which promises in the resolver correspond to which observables,
         // so that I don't end up updating observables which haven't actually changed.
         let url = createURLDescriptor(urlOrDescriptor, { removeHash: true })
-        let rootEnv = {
-            body: options.body,
+        let rootEnv: Env = {
             context: this.context,
-            headers: options.headers || {},
-            method: options.method || 'GET',
-            mountname: '',
-            mountedPathname: '',
-            params: url.query,
-            pathname: '',
-            query: url.query,
-            search: url.search,
-            router: this,
-            url: url,
-            unmatchedPathnamePart: url.pathname,
+            request: createRequest(this.context, {
+                body: options.body,
+                headers: options.headers || {},
+                method: options.method || 'GET',
+                hostname: options.hostname || '',
+                mountpath: '',
+                params: url.query,
+                query: url.query,
+                search: url.search,
+                router: this,
+                url: url.pathname+url.search,
+                originalUrl: url.href,
+                path: url.pathname,
+            })
         }
         let matchEnv = matchMappingAgainstPathname(rootEnv, this.rootMapping, true)
         if (matchEnv) {

@@ -17,6 +17,7 @@ import { RouteMap, isRouteMapSteady } from './Maps'
 import { createRoute, Route } from './Route'
 import { Env } from './Env'
 import { Mapping, matchMappingAgainstPathname } from './Mapping'
+import { createRequest } from './NaviRequest';
 
 interface MapItem {
   url: URLDescriptor
@@ -291,17 +292,20 @@ export class RouteMapObservable implements Observable<RouteMap> {
       })
       let rootEnv: Env = {
         context: this.rootContext,
-        headers: {},
-        method: this.options.method || 'HEAD',
-        params: {},
-        pathname: '',
-        mountname: '',
-        mountedPathname: '',
-        query: url.query,
-        search: url.search,
-        router: this.router,
-        unmatchedPathnamePart: url.pathname,
-        url: url,
+        request: createRequest(this.rootContext, {
+          body: null,
+          headers: this.options.headers || {},
+          method: this.options.method || 'HEAD',
+          params: {},
+          hostname: this.options.hostname || '',
+          mountpath: '',
+          query: url.query,
+          search: url.search,
+          router: this.router,
+          path: url.pathname,
+          url: url.pathname+url.search,
+          originalUrl: url.href,
+        }),
       }
       let matchEnv = matchMappingAgainstPathname(
         rootEnv,

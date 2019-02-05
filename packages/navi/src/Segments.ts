@@ -3,6 +3,7 @@ import { Switch } from './Switch'
 import { NotFoundError } from './Errors'
 import { Env } from './Env'
 import { Status } from './Resolver'
+import { NaviRequest } from './NaviRequest';
 
 /**
  * A type that covers all Segment objects.
@@ -152,7 +153,7 @@ export function isRouteSegmentSteady(segment: RouteSegment): boolean {
 
 export function createRouteSegment<Type extends string, Details>(
   type: Type,
-  env: Env,
+  request: NaviRequest,
   details: Details,
   ensureTrailingSlash = true,
 ) {
@@ -162,10 +163,10 @@ export function createRouteSegment<Type extends string, Details>(
     {
       type: type,
       info: undefined as any,
-      params: env.params,
+      params: request.params,
       url: createURLDescriptor({
-        pathname: env.mountedPathname,
-        query: env.url.query,
+        pathname: request.mountpath,
+        query: request.query,
       }, { ensureTrailingSlash }),
       remainingSegments: (details as any).remainingSegments || [],
     },
@@ -174,25 +175,25 @@ export function createRouteSegment<Type extends string, Details>(
 }
 
 export function createPlaceholderSegment(
-  env: Env,
+  request: NaviRequest,
   error?: any,
   ensureTrailingSlash = true,
 ): PlaceholderSegment {
-  return createRouteSegment('placeholder', env, {
+  return createRouteSegment('placeholder', request, {
     status: (error ? 'error' : 'busy') as Status,
     error: error,
   }, ensureTrailingSlash)
 }
 
-export function createNotFoundSegment(env: Env): PlaceholderSegment {
-  let fullPathname = joinPaths(env.mountedPathname, env.unmatchedPathnamePart)
+export function createNotFoundSegment(request: NaviRequest): PlaceholderSegment {
+  let fullPathname = joinPaths(request.mountpath, request.path)
   let error = new NotFoundError(fullPathname)
   return {
     type: 'placeholder',
-    params: env.params,
+    params: request.params,
     url: createURLDescriptor({
       pathname: fullPathname,
-      query: env.url.query,
+      query: request.query,
     }),
     status: 'error',
     error: error,

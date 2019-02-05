@@ -1,5 +1,5 @@
 import React from 'react'
-import { createPage, createSwitch, createRedirect, createContext, Env } from '../../src'
+import { createPage, createSwitch, createRedirect, createContext } from '../../src'
 
 export const fixtureSwitch = createSwitch({
     getContent() {
@@ -14,7 +14,7 @@ export const fixtureSwitch = createSwitch({
             info: {
                 description: 'Navi Is A Router/Loader',
             },
-            getContent: (env: Env) => env.router.resolvePageMap('/examples'),
+            getContent: (request) => request.router.resolvePageMap('/examples'),
         }),
 
         '/examples': async () =>
@@ -33,7 +33,7 @@ export const fixtureSwitch = createSwitch({
                     ],
 
                     paths: {
-                        '/': async () => createRedirect(env => env.mountedPathname+'basic'),
+                        '/': async () => createRedirect(reuqest => reuqest.mountpath+'basic'),
 
                         '/basic': async () => createPage({
                             title: 'Basic example',
@@ -48,8 +48,8 @@ export const fixtureSwitch = createSwitch({
                             getInfo: async () => ({
                                 isPaywalled: true,
                             }),
-                            async getContent(env, infoPromise) {
-                                if (env.context.contextName !== 'examples' || !env.context.isAuthenticated) {
+                            async getContent(request, context, infoPromise) {
+                                if (request.context.contextName !== 'examples' || !request.context.isAuthenticated) {
                                     return 'please-login'
                                 }
                                 

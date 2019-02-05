@@ -52,7 +52,7 @@ export class PageMatcher<Context extends object, Info extends object, Content> e
     }
 
     let head: any | undefined
-    if (this.env.method !== 'HEAD' && this.constructor.getHead) {
+    if (this.env.request.method !== 'HEAD' && this.constructor.getHead) {
       let headResolution = this.resolver.resolve(
         this.env,
         this.constructor.getHead,
@@ -68,7 +68,7 @@ export class PageMatcher<Context extends object, Info extends object, Content> e
     }
 
     let content: Content | undefined
-    if (this.env.method !== 'HEAD' && this.constructor.getContent) {
+    if (this.env.request.method !== 'HEAD' && this.constructor.getContent) {
       let contentResolution = this.resolver.resolve(
         this.env,
         this.constructor.getContent,
@@ -84,7 +84,7 @@ export class PageMatcher<Context extends object, Info extends object, Content> e
     }
     
     let title: string | undefined
-    if (this.env.method !== 'HEAD' && this.constructor.getTitle) {
+    if (this.env.request.method !== 'HEAD' && this.constructor.getTitle) {
       let titleResolution = this.resolver.resolve(
         this.env,
         this.constructor.getTitle,
@@ -101,7 +101,7 @@ export class PageMatcher<Context extends object, Info extends object, Content> e
     
     return {
       resolutionIds: resolutionIds,
-      segment: createRouteSegment('page', this.env, {
+      segment: createRouteSegment('page', this.env.request, {
         title,
         info: info || {},
         status,
