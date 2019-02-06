@@ -1,5 +1,5 @@
 import { Resolvable, Status, reduceStatuses } from './Resolver'
-import { PageSegment, createRouteSegment } from './Segments'
+import { PayloadSegment, createSegment, Payload, createNotReadySegment, Segment } from './Segments'
 import { MatcherBase, MatcherResult, MatcherClass, MatcherOptions } from './Matcher'
 
 export interface Page<Context extends object = any, Info extends object = any, Content = any>
@@ -29,7 +29,7 @@ export class PageMatcher<Context extends object, Info extends object, Content> e
   static isMatcher = true
   static type: 'page' = 'page'
 
-  protected execute(): MatcherResult<PageSegment<Info, Content>> {
+  protected execute(): MatcherResult<Segment> {
     let resolutionIds: number[] = []
     let status: Status = 'ready'
     let error: any
@@ -98,18 +98,24 @@ export class PageMatcher<Context extends object, Info extends object, Content> e
     else {
       title = this.constructor.title
     }
+
+    if (status !== 'ready') {
+      return {
+        resolutionIds: resolutionIds,
+        segments: [createNotReadySegment(this.env.request, error)],
+      }
+    }
     
+    let payload: Payload = {
+      title,
+      info: info || {},
+      status: 200,
+      content,
+      head,
+    }
     return {
       resolutionIds: resolutionIds,
-      segments: [createRouteSegment('page', this.env.request, {
-        title,
-        info: info || {},
-        status,
-        error,
-        content,
-        head,
-        remainingSegments: [],
-      })],
+      segments: [createSegment('payload', this.env.request, { payload })],
     }
   }
 }

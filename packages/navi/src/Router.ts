@@ -4,7 +4,7 @@ import { RouteObservable } from './RouteObservable'
 import { RouteMapObservable } from './RouteMapObservable'
 import { Resolver } from './Resolver'
 import { PageRoute, RedirectRoute } from './Route'
-import { RouteSegment } from './Segments'
+import { Segment } from './Segments'
 import { SiteMap, PageMap, RedirectMap } from './Maps'
 import { createPromiseFromObservable } from './Observable';
 import { createURLDescriptor, URLDescriptor } from './URLTools';
@@ -30,7 +30,7 @@ export interface RouterResolveOptions {
 export interface RouterMapOptions {
     followRedirects?: boolean,
     maxDepth?: number,
-    predicate?: (segment: RouteSegment) => boolean,
+    predicate?: (segment: Segment) => boolean,
     expandPattern?: (pattern: string, router: Router) => undefined | string[] | Promise<undefined | string[]>,
     method?: 'GET' | 'HEAD',
     headers?: { [name: string]: string },
@@ -133,15 +133,13 @@ export class Router<Context extends object=any> {
             for (let i = 0; i < urls.length; i++) {
                 let url = urls[i]
                 let route = routeMap[url]
-                if (route.status === 'ready') {
-                    if (route.type === 'page') {
-                        pageMap[url] = route as PageRoute
-                        continue
-                    }
-                    else if (route.type === 'redirect') {
-                        redirectMap[url] = route as RedirectRoute
-                        continue
-                    }
+                if (route.type === 'page') {
+                    pageMap[url] = route as PageRoute
+                    continue
+                }
+                else if (route.type === 'redirect') {
+                    redirectMap[url] = route as RedirectRoute
+                    continue
                 }
                 throw route.error || new Error('router error')
             }
@@ -163,15 +161,19 @@ export class Router<Context extends object=any> {
         }
 
         return createPromiseFromObservable(observable).then(route => {
-            if (route.status === 'ready') {
+            if (route.error) {
+                throw route.error
+            }
+            if (route.type !== 'busy') {
                 if (route.type === 'redirect' && options.followRedirects) {
-                    return this.getPageRoutePromise(createURLDescriptor(route.to), options)
+                    return this.getPageRoutePromise(createURLDescriptor((route as RedirectRoute).to), options)
                 }
                 else if (route.type === 'page') {
                     return route as PageRoute
                 }
             }
-            throw route.error || new Error('router error')
+
+            throw new Error('router error')
         })
     }
 }

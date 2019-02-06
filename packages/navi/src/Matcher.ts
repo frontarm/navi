@@ -1,6 +1,6 @@
 import { Context } from './Context'
 import { Resolver, Resolvable } from './Resolver'
-import { RouteSegment, createNotFoundSegment } from './Segments'
+import { Segment, createNotFoundSegment } from './Segments'
 import { Switch } from './Switch'
 import { Page } from './Page'
 import { Redirect } from './Redirect'
@@ -34,7 +34,7 @@ export interface MatcherOptions<Context extends object> {
     resolver: Resolver
 }
 
-export interface MatcherResult<S extends RouteSegment = RouteSegment> {
+export interface MatcherResult<S extends Segment = Segment> {
     segments: S[]
     resolutionIds: number[]
 }

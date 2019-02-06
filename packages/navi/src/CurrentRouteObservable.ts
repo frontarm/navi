@@ -92,7 +92,7 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
         if (this.error) {
             return Promise.reject(this.error)
         }
-        else if (this.lastRoute && this.lastRoute.isSteady) {
+        else if (this.lastRoute && this.lastRoute.type !== 'busy') {
             return Promise.resolve(this.lastRoute)
         }
         else if (!this.waitUntilSteadyDeferred) {
@@ -175,12 +175,11 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
     private update = (route?: Route) => {
         let url = this.lastURL
         let nextRoute = route || this.lastRoute
-        let lastSegment = route && route.lastSegment
-
-        if (lastSegment && lastSegment.type === 'redirect' && lastSegment.to) {
+        
+        if (route && route.type === 'redirect' && route.to) {
             // No need to notify any listeners of a ready redirect,
             // as we can take the appropriate action ourselves
-            this.history.replace(lastSegment.to)
+            this.history.replace(route.to)
             return
         }
 
@@ -188,7 +187,7 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
             ...nextRoute!,
             url,
         }
-        if (this.waitUntilSteadyDeferred && this.lastRoute.isSteady) {
+        if (this.waitUntilSteadyDeferred && this.lastRoute.type !== 'busy') {
             this.waitUntilSteadyDeferred.resolve(this.lastRoute)
             delete this.waitUntilSteadyDeferred
         }

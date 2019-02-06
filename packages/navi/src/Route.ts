@@ -1,100 +1,95 @@
 import { URLDescriptor } from './URLTools'
-import { Status } from './Resolver'
-import { RouteSegment, SwitchSegment, PageSegment, RedirectSegment } from './Segments'
+import { Segment, PayloadSegment, Payload } from './Segments'
 
 export type RouteType =
   | 'switch'
   | 'page'
+  | 'error'
   | 'redirect'
-  | 'placeholder'
+  | 'busy'
 
 export interface Route {
   url: URLDescriptor
 
   type: RouteType
 
-  segments: RouteSegment[]
-  firstSegment: SwitchSegment
-  lastSegment: RouteSegment
+  segments: Segment[]
+  firstSegment: Segment
+  lastSegment: Segment
 
-  /**
-   * Indicates that the router context must be changed to cause any more
-   * changes.
-   */
-  isSteady: boolean
-
-  /**
-   * Indicates whether the location has fully loaded (including content if
-   * content was requested), is still busy, or encountered an error.
-   */
-  status: Status
+  to?: string
 
   error?: any
 
-  // Placeholder properties for routes that don't contain them
-  to?: any
   title?: any
   info: object
   contents: any[]
   heads: any[]
+  status?: number
+}
+
+export interface RedirectRoute extends Route {
+  type: 'redirect'
+  to: string
 }
 
 export interface PageRoute<Info extends object = any, Content extends object = any> extends Route {
   type: 'page'
-  status: 'ready'
-  isSteady: true
-  lastSegment: PageSegment<Info, Content>
+  lastSegment: PayloadSegment<Payload<Info, Content>>
 
   title: string
   info: Info
 }
 
-export interface RedirectRoute<Info extends object = any> extends Route {
-  type: 'redirect'
-  status: 'ready'
-  isSteady: true
-  lastSegment: RedirectSegment<Info>
-
-  to: string
-  info: Info
-}
-
-export function createRoute(url: URLDescriptor, segments: RouteSegment[]): Route {
+export function createRoute(url: URLDescriptor, segments: Segment[]): Route {
   let lastSegment = segments[segments.length - 1]
-  let status = lastSegment.status
   let error: any
   let info: object = {}
   let contents: any[] = []
   let heads: any[] = []
   let title: string | undefined
+  let status: number | undefined
+  let to: string | undefined
 
   // An error could appear in a mid segment if its content fails to load,
   // and we want to always use the first error available.
   for (let i = 0; i < segments.length; i++) {
     let segment = segments[i]
-    if (segment.status === 'error') {
+    if (segment.type === 'error') {
       error = segment.error
-      status = 'error'
+      break
     }
-    if (segment.content !== undefined) {
-      contents.push(segment.content)
+    if (segment.type === 'redirect') {
+      to = segment.to
+      break
     }
-    if (segment.head !== undefined) {
-      heads.push(segment.head)
+    if (segment.type === 'busy') {
+      break
     }
-    if (segment.title) {
-      title = segment.title
+    if (segment.type === 'payload') {
+      let payload = segment.payload as Payload
+      if (payload.status) {
+        status = parseInt(payload.status as any, 10)
+      }
+      if (payload.content) {
+        contents.push(payload.content)
+      }
+      if (payload.head !== undefined) {
+        heads.push(payload.head)
+      }
+      if (payload.title) {
+        title = payload.title
+      }
+      Object.assign(info, payload.info)
     }
-    Object.assign(info, segment.info)
   }
 
   let route: Route = {
-    type: lastSegment.type,
+    type: lastSegment.type === 'payload' ? 'page' : lastSegment.type,
     url: url,
     segments,
-    firstSegment: segments[0] as SwitchSegment,
-    lastSegment,
-    isSteady: status !== 'busy',
+    firstSegment: segments[0],
+    lastSegment: segments[segments.length - 1],
     error,
     status,
     contents,
@@ -103,11 +98,11 @@ export function createRoute(url: URLDescriptor, segments: RouteSegment[]): Route
     title,
   }
 
-  if (lastSegment.type === 'redirect') {
-    route.to = lastSegment.to
+  if (route.type === 'redirect') {
+    (route as RedirectRoute).to = to!
   }
 
-  if (lastSegment.type === 'page') {
+  if (route.type === 'page') {
     Object.defineProperty(route, 'content', {
       get: () => {
         if (process.env.NODE_ENV !== 'production') {

@@ -4,7 +4,6 @@ import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver }
 import { Resolver } from './Resolver'
 import { Env } from './Env';
 import { URLDescriptor } from './URLTools';
-import { SwitchSegment } from './Segments';
 
 export class RouteObservable implements Observable<Route> {
     readonly url: URLDescriptor
@@ -59,11 +58,11 @@ export class RouteObservable implements Observable<Route> {
         for (let i = 0; i < this.observers.length; i++) {
             let observer = this.observers[i]
             observer.next(this.cachedValue)
-            if (this.cachedValue.isSteady && observer.complete) {
+            if (this.cachedValue.type !== 'busy' && observer.complete) {
                 observer.complete()
             }
         }
-        if (this.cachedValue.isSteady) {
+        if (this.cachedValue.type !== 'busy') {
             this.resolver.unlisten(this.handleChange)
             delete this.matcher
             delete this.resolver

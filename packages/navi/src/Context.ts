@@ -1,5 +1,5 @@
 import { Resolution, Resolvable } from './Resolver'
-import { RouteSegment, createPlaceholderSegment } from './Segments'
+import { Segment, createNotReadySegment } from './Segments'
 import {
   Matcher,
   MatcherBase,
@@ -42,12 +42,12 @@ export class ContextMatcher<ParentContext extends object, ChildContext extends o
     super(options, true)
   }
 
-  protected execute(): MatcherResult<RouteSegment> {
+  protected execute(): MatcherResult<Segment> {
     let childContextResolution: Resolution<ChildContext> = this.resolver.resolve(this.env, this.constructor.childContextResolvable)
     if (childContextResolution.status !== 'ready') {
       return {
         resolutionIds: [childContextResolution.id],
-        segments: [createPlaceholderSegment(this.env.request, childContextResolution.error, this.appendFinalSlash)]
+        segments: [createNotReadySegment(this.env.request, childContextResolution.error, this.appendFinalSlash)]
       }
     }
 
@@ -72,7 +72,7 @@ export class ContextMatcher<ParentContext extends object, ChildContext extends o
     if (childMatcherResolution.status !== 'ready') {
       return {
         resolutionIds: [childMatcherResolution.id],
-        segments: [createPlaceholderSegment(childEnv.request, childMatcherResolution.error, this.appendFinalSlash)]
+        segments: [createNotReadySegment(childEnv.request, childMatcherResolution.error, this.appendFinalSlash)]
       }
     }
 

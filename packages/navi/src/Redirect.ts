@@ -1,6 +1,6 @@
 import { URLDescriptor, createURLDescriptor, joinPaths } from './URLTools'
-import { Resolvable, reduceStatuses } from './Resolver'
-import { RedirectSegment, createRouteSegment } from './Segments'
+import { Resolvable } from './Resolver'
+import { PayloadSegment, createSegment, Payload, createNotReadySegment, Segment } from './Segments'
 import { MatcherBase, MatcherResult, MatcherClass, MatcherOptions } from './Matcher'
 
 const emptyObject = {}
@@ -12,7 +12,6 @@ export interface Redirect<Context extends object = any, Info extends object = an
   new (options: MatcherOptions<Context>): RedirectMatcher<Info>
 
   to: Resolvable<Partial<URLDescriptor> | string>
-  info: Resolvable<Info>
 }
 
 export class RedirectMatcher<Context extends object = any, Info extends object = any> extends MatcherBase<Context> {
@@ -21,14 +20,16 @@ export class RedirectMatcher<Context extends object = any, Info extends object =
   static isMatcher = true
   static type: 'redirect' = 'redirect'
 
-  protected execute(): MatcherResult<RedirectSegment<Info>> {
+  protected execute(): MatcherResult<Segment> {
     let toResolution = this.resolver.resolve(this.env, this.constructor.to)
     let { value: to, status, error } = toResolution
-    
-    let infoResolution = this.resolver.resolve(this.env, this.constructor.info)
-    let info = infoResolution.value
-    status = reduceStatuses(status, infoResolution.status)
-    error = error || infoResolution.error
+
+    if (status !== 'ready') {
+      return {
+        resolutionIds: [toResolution.id],
+        segments: [createNotReadySegment(this.env.request, error)]
+      }
+    }
     
     // TODO: support all relative URLs
     let toHref: string | undefined
@@ -43,16 +44,9 @@ export class RedirectMatcher<Context extends object = any, Info extends object =
     else if (to) {
       toHref = createURLDescriptor(to).href
     }
-
     return {
-      resolutionIds: [toResolution.id, infoResolution.id],
-      segments: [createRouteSegment('redirect', this.env.request, {
-        to: toHref,
-        info: info || emptyObject,
-        status,
-        error,
-        remainingSegments: [],
-      })],
+      resolutionIds: [toResolution.id],
+      segments: [createSegment('redirect', this.env.request, { to: toHref! })],
     }
   }
 }

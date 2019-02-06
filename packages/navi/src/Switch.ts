@@ -1,15 +1,9 @@
+import { Resolution, Resolvable } from './Resolver'
 import {
-  Resolution,
-  Resolvable,
-  Status,
-  reduceStatuses,
-} from './Resolver'
-import {
-  RouteSegment,
-  SwitchSegment,
-  createRouteSegment,
-  createPlaceholderSegment,
+  Segment,
+  createSegment,
   createNotFoundSegment,
+  createNotReadySegment,
 } from './Segments'
 import {
   createMapping,
@@ -100,74 +94,6 @@ export class SwitchMatcher<Context extends object, Info extends object, Content>
 
   protected execute(): MatcherResult {
     let resolutionIds: number[] = []
-    let status: Status = 'ready'
-    let error: any
-    
-    // Info must come first, as the promise to its result can be used by
-    // the subsequent resolvables.
-    let info: Info | undefined
-    if (this.constructor.getInfo) {
-      let infoResolution = this.resolver.resolve(
-        this.env,
-        this.constructor.getInfo
-      )
-      resolutionIds.push(infoResolution.id)
-      info = infoResolution.value
-      status = reduceStatuses(status, infoResolution.status)
-      error = error || infoResolution.error
-    }
-    else {
-      info = this.constructor.info
-    }
-
-    let head: any | undefined
-    if (this.env.request.method !== 'HEAD' && this.constructor.getHead) {
-      let headResolution = this.resolver.resolve(
-        this.env,
-        this.constructor.getHead,
-        this.constructor.getInfo,
-      )
-      resolutionIds.push(headResolution.id)
-      head = headResolution.value
-      status = reduceStatuses(status, headResolution.status)
-      error = error || headResolution.error
-    }
-    else {
-      head = this.constructor.head
-    }
-
-    let content: Content | undefined
-    if (this.env.request.method !== 'HEAD' && this.constructor.getContent) {
-      let contentResolution = this.resolver.resolve(
-        this.env,
-        this.constructor.getContent,
-        this.constructor.getInfo,
-      )
-      resolutionIds.push(contentResolution.id)
-      content = contentResolution.value
-      status = reduceStatuses(status, contentResolution.status)
-      error = error || contentResolution.error
-    }
-    else {
-      content = this.constructor.content
-    }
-    
-    let title: string | undefined
-    if (this.env.request.method !== 'HEAD' && this.constructor.getTitle) {
-      let titleResolution = this.resolver.resolve(
-        this.env,
-        this.constructor.getTitle,
-        this.constructor.getInfo,
-      )
-      resolutionIds.push(titleResolution.id)
-      title = titleResolution.value
-      status = reduceStatuses(status, titleResolution.status)
-      error = error || titleResolution.error
-    }
-    else {
-      title = this.constructor.title
-    }
-
     let childMatcherInstance: MatcherBase<any> | undefined
     let childMatcherResolution: Resolution<Matcher> | undefined
     if (this.child) {
@@ -202,12 +128,12 @@ export class SwitchMatcher<Context extends object, Info extends object, Content>
       childMatcherResult = childMatcherInstance.getResult()
     }
 
-    let nextSegments: RouteSegment[] = []
+    let nextSegments: Segment[] = []
     if (childMatcherResult) {
       nextSegments = childMatcherResult && childMatcherResult.segments
     }
     else if (childMatcherResolution) {
-      nextSegments = [createPlaceholderSegment(
+      nextSegments = [createNotReadySegment(
         this.child!.matcherOptions.env.request, 
         childMatcherResolution.error,
         this.appendFinalSlash
@@ -223,16 +149,12 @@ export class SwitchMatcher<Context extends object, Info extends object, Content>
 
     // Only create a new segment if necessary, to allow for reference-equality
     // based comparisons on segments
-    let switchSegment = createRouteSegment('switch', this.env.request, {
-      status,
-      error,
-      content,
-      head,
-      info: info || {},
-      title,
-      switch: this.constructor,
-      nextPattern: this.child && this.child.mapping.pattern,
-    }, this.appendFinalSlash) as RouteSegment
+    let switchSegment = createSegment(
+      'switch',
+      this.env.request,
+      { switch: this.constructor },
+      this.appendFinalSlash
+    ) as Segment
 
     return {
       resolutionIds: resolutionIds.concat(childMatcherResult ? childMatcherResult.resolutionIds : []),

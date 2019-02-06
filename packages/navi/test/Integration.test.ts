@@ -1,4 +1,4 @@
-import { SwitchSegment, createMemoryNavigation, PageSegment, NotFoundError } from '../src'
+import { SwitchSegment, createMemoryNavigation, RouteSegment, NotFoundError } from '../src'
 import { fixtureSwitch } from './fixtures/switches'
 
 describe("integration", () => {
@@ -14,7 +14,7 @@ describe("integration", () => {
 
         let route = await nav.getSteadyValue()
         let firstSegment = route.firstSegment
-        let pageSegment = route.lastSegment as PageSegment
+        let pageSegment = route.lastSegment as RouteSegment
         
         expect(firstSegment.type).toBe('switch')
         expect(firstSegment.title).toBe('Site')
@@ -43,7 +43,7 @@ describe("integration", () => {
 
         route = await nav.getSteadyValue()
         firstSegment = route.firstSegment
-        pageSegment = route.lastSegment as PageSegment
+        pageSegment = route.lastSegment as RouteSegment
 
         expect(pageSegment.url.query).toEqual({ referrer: 'frontarm' })
         expect(pageSegment.title).toBe('Advanced example')
@@ -56,7 +56,7 @@ describe("integration", () => {
 
         route = await nav.getSteadyValue()
         firstSegment = route.firstSegment
-        pageSegment = route.lastSegment as PageSegment
+        pageSegment = route.lastSegment as RouteSegment
 
         expect(pageSegment.content.dat).toEqual({
             isPaywalled: true,
@@ -79,7 +79,7 @@ describe("integration", () => {
 
         let route = await nav.getSteadyValue()
         
-        expect(Object.keys(route.lastSegment.content)).toEqual(['/examples/basic/', '/examples/advanced/'])
+        expect(Object.keys(route.lastSegment.payload.content)).toEqual(['/examples/basic/', '/examples/advanced/'])
         expect(route.type).toBe('page')
         expect(route.title).toBe('Navi')
     })

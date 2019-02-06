@@ -1,4 +1,4 @@
-import { SwitchSegment, createMemoryNavigation, PageSegment, Status, NotFoundError } from '../src'
+import { createMemoryNavigation } from '../src'
 import { fixtureSwitch } from './fixtures/switches'
 
 describe("basename", () => {

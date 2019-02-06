@@ -9,8 +9,8 @@ import {
 import { Resolver } from './Resolver'
 import {
   SwitchSegment,
-  RouteSegment,
-  PlaceholderSegment,
+  Segment,
+  BusySegment,
 } from './Segments'
 import { RouterMapOptions, Router } from './Router'
 import { RouteMap, isRouteMapSteady } from './Maps'
@@ -26,8 +26,8 @@ interface MapItem {
   depth: number
   order: number[]
   matcher: Switch['prototype']
-  segmentsCache?: RouteSegment[]
-  lastSegmentCache?: RouteSegment
+  segmentsCache?: Segment[]
+  lastSegmentCache?: Segment
 }
 
 export class RouteMapObservable implements Observable<RouteMap> {
@@ -147,35 +147,36 @@ export class RouteMapObservable implements Observable<RouteMap> {
       // items, so if an earlier item is removed, its referenced items
       // will still be removed.
       if (
-        lastSegment.status === 'error' ||
+        lastSegment.type === "error" ||
         (this.options.predicate && !this.options.predicate(lastSegment))
       ) {
         this.removeFromQueue(item)
         continue
       }
 
+      let lastSegmentRedirectsTo: string | undefined
+      let cachedLastSegmentRedirectTo: string | undefined
+      if (lastSegment.type === 'redirect') {
+        lastSegmentRedirectsTo = lastSegment.to
+      }
+      if (cachedLastSegment && cachedLastSegment.type === 'redirect') {
+        cachedLastSegmentRedirectTo = cachedLastSegment.to
+      }
+
       // If a redirect has been added or changed `to` location,
       // then add the location to the map.
       if (
         this.options.followRedirects &&
-        lastSegment.type === 'redirect' &&
-        lastSegment.status === 'ready' &&
-        lastSegment.to &&
-        (!cachedLastSegment ||
-          cachedLastSegment.type !== 'redirect' ||
-          cachedLastSegment.status !== 'ready' ||
-          !cachedLastSegment.to ||
-          cachedLastSegment.to !== lastSegment.to)
+        lastSegmentRedirectsTo &&
+        lastSegmentRedirectsTo !== cachedLastSegmentRedirectTo
       ) {
-        this.addToQueue(lastSegment.to, item.depth + 1, pathname, item.order)
+        this.addToQueue(lastSegmentRedirectsTo, item.depth + 1, pathname, item.order)
       }
 
       if (
         lastSegment.type === 'switch' &&
-        lastSegment.status === 'ready' &&
         (!cachedLastSegment ||
-          cachedLastSegment.type !== 'switch' ||
-          cachedLastSegment.status === 'busy')
+          cachedLastSegment.type !== 'switch')
       ) {
         let patterns = lastSegment.switch.patterns
         for (let j = 0; j < patterns.length; j++) {
@@ -201,7 +202,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
     for (let i = 0; i < this.mapItems.length; i++) {
       let item = this.mapItems[i]
       let lastSegment = item.lastSegmentCache!
-      if (lastSegment.type !== 'switch' && lastSegment.status !== 'error') {
+      if (lastSegment.type !== 'switch' && lastSegment.type !== 'error') {
         routeMapArray.push([
           joinPaths(item.pathname, '/'),
           createRoute(

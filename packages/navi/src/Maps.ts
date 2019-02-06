@@ -5,7 +5,7 @@ export interface RouteMap {
 }
 
 export interface SiteMap<Info extends object = any, Content extends object = any> {
-  redirects: RedirectMap<any>
+  redirects: RedirectMap
   pages: PageMap<Info, Content>
 }
 
@@ -13,10 +13,10 @@ export interface PageMap<Info extends object = any, Content extends object = any
   [url: string]: PageRoute<Info, Content>
 }
 
-export interface RedirectMap<Info extends object = any> {
-  [url: string]: RedirectRoute<Info>
+export interface RedirectMap {
+  [url: string]: RedirectRoute
 }
 
 export function isRouteMapSteady(routeMap: RouteMap): boolean {
-  return Object.values(routeMap).every(route => route.isSteady)
+  return Object.values(routeMap).every(route => route.type !== 'busy')
 }
