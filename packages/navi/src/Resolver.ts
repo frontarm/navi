@@ -158,7 +158,7 @@ function isPromiseLike<T>(
   return !!x && !!x['then']
 }
 
-function extractDefault<T>(value: { default: T } | T): T {
+export function extractDefault<T>(value: { default: T } | T): T {
   if (hasDefault(value)) {
     return value.default
   } else {

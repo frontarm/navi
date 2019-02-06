@@ -16,6 +16,21 @@ describe("Page", () => {
     expect(route.url.pathname).toBe('/test/')
   })
 
+  test("Can specify payload using a function", async () => {
+    let nav = createMemoryNavigation({
+      url: '/test/',
+      pages: createSwitch({
+        paths: {
+          '/test': req => createPage(req => ({ title: req.mountpath })),
+        }
+      }),
+    })
+
+    let route = await nav.getSteadyValue()
+    
+    expect(route.title).toBe('/test')
+  })
+
   test("Matches URLs with no trailing /", async () => {
     let nav = createMemoryNavigation({
       url: '/test',
