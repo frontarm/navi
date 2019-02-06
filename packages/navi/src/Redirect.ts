@@ -5,16 +5,16 @@ import { MatcherBase, MatcherResult, MatcherClass, MatcherOptions } from './Matc
 
 const emptyObject = {}
 
-export interface Redirect<Context extends object = any, Info extends object = any>
-  extends MatcherClass<Context, RedirectMatcher<Context, Info>> {
+export interface Redirect<Context extends object = any>
+  extends MatcherClass<Context, RedirectMatcher<Context>> {
   type: 'redirect'
 
-  new (options: MatcherOptions<Context>): RedirectMatcher<Info>
+  new (options: MatcherOptions<Context>): RedirectMatcher
 
   to: Resolvable<Partial<URLDescriptor> | string>
 }
 
-export class RedirectMatcher<Context extends object = any, Info extends object = any> extends MatcherBase<Context> {
+export class RedirectMatcher<Context extends object = any> extends MatcherBase<Context> {
   ['constructor']: Redirect
 
   static isMatcher = true
@@ -51,13 +51,11 @@ export class RedirectMatcher<Context extends object = any, Info extends object =
   }
 }
 
-export function createRedirect<Context extends object = any, Info extends object = any>(
-  to: string | Partial<URLDescriptor> | Resolvable<Partial<URLDescriptor> | string>,
-  info?: Info | Resolvable<Info>,
+export function createRedirect<Context extends object = any>(
+  to: string | Partial<URLDescriptor> | Resolvable<Partial<URLDescriptor> | string>
 ): Redirect {
-  return class extends RedirectMatcher<Context, Info> {
+  return class extends RedirectMatcher<Context> {
     static to = typeof to === 'function' ? (to as Resolvable<Partial<URLDescriptor> | string>) : () => to
-    static info = typeof info === 'function' ? (info as Resolvable<Info>) : () => info
   }
 }
 
