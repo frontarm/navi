@@ -6,26 +6,26 @@ import Bio from './Bio'
 import Pagination from './Pagination'
 import styles from './BlogIndexPage.module.css'
 
-function BlogIndexPage({ blogPathname, pageCount, pageNumber, postRoutes }) {
+function BlogIndexPage({ blogRoot, pageCount, pageNumber, postRoutes }) {
   return (
     <div>
       <header>
         <h1 className={styles.title}>
-          <NavLink href={blogPathname}>{siteMetadata.title}</NavLink>
+          <NavLink href={blogRoot}>{siteMetadata.title}</NavLink>
         </h1>
         <Bio />
       </header>
       <ul className={styles.articlesList}>
         {postRoutes.map(route =>
           <li key={route.url.href}>
-            <ArticleSummary blogPathname={blogPathname} route={route} />
+            <ArticleSummary blogRoot={blogRoot} route={route} />
           </li>
         )}
       </ul>
       {
         pageCount > 1 &&
         <Pagination
-          blogPathname={blogPathname}
+          blogRoot={blogRoot}
           pageCount={pageCount}
           pageNumber={pageNumber}
         />

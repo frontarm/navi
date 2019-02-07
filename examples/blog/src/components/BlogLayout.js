@@ -10,7 +10,7 @@ import NotFoundPage from './NotFoundPage'
 import LoadingIndicator from './LoadingIndicator'
 import styles from './BlogLayout.module.css'
 
-function BlogLayout({ blogPathname, isViewingIndex }) {
+function BlogLayout({ blogRoot, isViewingIndex }) {
   let loadingRoute = useLoadingRoute()
 
   return (
@@ -21,7 +21,7 @@ function BlogLayout({ blogPathname, isViewingIndex }) {
       !isViewingIndex && (
         <header>
           <h3 className={styles.title}>
-            <NavLink href={blogPathname}>{siteMetadata.title}</NavLink>
+            <NavLink href={blogRoot}>{siteMetadata.title}</NavLink>
           </h3>
         </header>
       )}

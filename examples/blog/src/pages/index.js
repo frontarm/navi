@@ -36,7 +36,7 @@ let chunkPagePairs = chunks.map((chunk, i) => [
       title: pageTitle,
       body:
         <BlogIndexPage
-          blogPathname={context.blogRoot}
+          blogRoot={context.blogRoot}
           pageNumber={i+1}
           pageCount={chunks.length}
           postRoutes={postRoutes}
@@ -64,7 +64,7 @@ const pages = Navi.withContext(
         // configuration to the blog's components.
         return (
           <BlogLayout
-            blogPathname={context.blogRoot}
+            blogRoot={context.blogRoot}
             isViewingIndex={isViewingIndex}
           />
         )
@@ -85,7 +85,7 @@ const pages = Navi.withContext(
       '/posts': Navi.withContent(
         {
           getBody: (req, context) =>
-            <BlogPostLayout blogPathname={context.blogRoot} />
+            <BlogPostLayout blogRoot={context.blogRoot} />
         },
         Navi.map(
           fromPairs(

@@ -3,11 +3,11 @@ import { NavLink } from 'react-navi'
 import ArticleMeta from './ArticleMeta'
 import styles from './ArticleSummary.module.css'
 
-function ArticleSummary({ blogPathname, route }) {
+function ArticleSummary({ blogRoot, route }) {
   return (
     <article className={styles.ArticleSummary}>
       <h2><NavLink href={route.url.href}>{route.title}</NavLink></h2>
-      <ArticleMeta blogPathname={blogPathname} meta={route.info} />
+      <ArticleMeta blogRoot={blogRoot} meta={route.info} />
       <p>{route.info.spoiler}</p>
     </article>
   )

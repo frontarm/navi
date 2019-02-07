@@ -36,7 +36,7 @@ const tagPages = Navi.withContext(
 
         return (
           <TagIndexPage
-            blogPathname={context.blogRoot}
+            blogRoot={context.blogRoot}
             tags={
               tags.map(name => ({
                 name,
@@ -68,7 +68,7 @@ const tagPages = Navi.withContext(
 
         return (
           <TagPage
-            blogPathname={context.blogRoot}
+            blogRoot={context.blogRoot}
             name={req.params.tag}
             routes={routes}
           />

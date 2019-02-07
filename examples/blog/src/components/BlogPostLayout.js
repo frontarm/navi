@@ -6,7 +6,7 @@ import ArticleMeta from './ArticleMeta'
 import Bio from './Bio'
 import styles from './BlogPostLayout.module.css'
 
-function BlogPostLayout({ blogPathname }) {
+function BlogPostLayout({ blogRoot }) {
   let { title, info, url } = useCurrentRoute()
 
   return (
@@ -21,7 +21,7 @@ function BlogPostLayout({ blogPathname }) {
               <NavLink href={url.pathname}>{title}</NavLink>
             </h1>
             <ArticleMeta
-              blogPathname={blogPathname}
+              blogRoot={blogRoot}
               meta={info}
               readingTime={readingTime}
             />
@@ -37,7 +37,7 @@ function BlogPostLayout({ blogPathname }) {
           </MDXProvider>
           <footer className={styles.footer}>
             <h3 className={styles.title}>
-              <NavLink href={blogPathname}>
+              <NavLink href={blogRoot}>
                 {siteMetadata.title}
               </NavLink>
             </h3>
