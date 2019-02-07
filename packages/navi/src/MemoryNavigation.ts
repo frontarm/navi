@@ -1,5 +1,5 @@
 import { createMemoryHistory, History } from 'history';
-import { Switch } from './Switch'
+import { Matcher } from './Matcher'
 import { Navigation } from './Navigation'
 import { Resolver } from './Resolver'
 import { Router, RouterOptions } from './Router'
@@ -11,9 +11,10 @@ import { URLDescriptor, createURLDescriptor } from './URLTools';
 
 export interface MemoryNavigationOptions<Context extends object> extends RouterOptions<Context> {
     /**
-     * The Switch that declares your app's pages.
+     * The Matcher that declares your app's pages.
      */
-    pages: Switch,
+    matcher?: Matcher<Context>,
+    pages?: Matcher<Context>,
 
     /**
      * The initial URL to match.
@@ -27,8 +28,8 @@ export interface MemoryNavigationOptions<Context extends object> extends RouterO
     basename?: string,
 
     /**
-     * This will be made available within your `pages` Switch through
-     * the `env` object passed to any getter functions.
+     * This will be made available within your matcher through
+     * the second argument passed to any getter functions.
      */
     context?: Context,
 }
@@ -50,6 +51,11 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
     private currentRouteObservable: CurrentRouteObservable<Context>
 
     constructor(options: MemoryNavigationOptions<Context>) {
+        if (options.pages) {
+            options.matcher = options.pages
+            console.warn(`Deprecation Warning: specifying a "pages" option for "createMemoryNavigation()" is deprecated -- please use "matcher" instead.`)
+        }
+
         this.history = createMemoryHistory({
             initialEntries: [createURLDescriptor(options.url).href],
         })
@@ -57,7 +63,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
         this.options = options
         this.router = new Router(this.resolver, {
             context: options.context,
-            pages: this.options.pages,
+            matcher: (this.options.matcher || this.options.pages)!,
             basename: this.options.basename,
         })
         this.currentRouteObservable = createCurrentRouteObservable({
@@ -77,7 +83,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
     setContext(context: Context) {
         this.router = new Router(this.resolver, {
             context: context,
-            pages: this.options.pages,
+            matcher: (this.options.matcher || this.options.pages)!,
             basename: this.options.basename,
         })
         this.currentRouteObservable.setRouter(this.router)

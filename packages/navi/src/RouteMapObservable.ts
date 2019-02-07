@@ -1,5 +1,4 @@
 import { URLDescriptor, createURLDescriptor, joinPaths } from './URLTools'
-import { Switch } from './Switch'
 import {
   Observable,
   Observer,
@@ -7,16 +6,13 @@ import {
   createOrPassthroughObserver,
 } from './Observable'
 import { Resolver } from './Resolver'
-import {
-  SwitchSegment,
-  Segment,
-  BusySegment,
-} from './Segments'
+import { Segment, } from './Segments'
+import { Matcher } from './Matcher'
 import { RouterMapOptions, Router } from './Router'
 import { RouteMap, isRouteMapSteady } from './Maps'
 import { createRoute, Route } from './Route'
 import { Env } from './Env'
-import { Mapping, matchMappingAgainstPathname } from './Mapping'
+import { Mapping, mappingAgainstPathname } from './Mapping'
 import { createRequest } from './NaviRequest';
 
 interface MapItem {
@@ -25,14 +21,14 @@ interface MapItem {
   fromPathname?: string
   depth: number
   order: number[]
-  matcher: Switch['prototype']
+  matcher: Matcher<any>['prototype']
   segmentsCache?: Segment[]
   lastSegmentCache?: Segment
 }
 
 export class RouteMapObservable implements Observable<RouteMap> {
   private rootContext: any
-  private pages: Switch
+  private matcher: Matcher<any>
   private rootMapping: Mapping
   private observers: Observer<RouteMap>[]
   private isRefreshScheduled: boolean
@@ -47,7 +43,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
   constructor(
     url: URLDescriptor,
     rootContext: any,
-    pages: Switch,
+    matcher: Matcher<any>,
     rootMapping: Mapping,
     resolver: Resolver,
     router: Router,
@@ -58,7 +54,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
     this.resolver = resolver
     this.router = router
     this.rootContext = rootContext
-    this.pages = pages
+    this.matcher = matcher
     this.rootMapping = rootMapping
     this.options = options
     this.seenPathnames = new Set()
@@ -174,11 +170,11 @@ export class RouteMapObservable implements Observable<RouteMap> {
       }
 
       if (
-        lastSegment.type === 'switch' &&
+        lastSegment.type === 'map' &&
         (!cachedLastSegment ||
-          cachedLastSegment.type !== 'switch')
+          cachedLastSegment.type !== 'map')
       ) {
-        let patterns = lastSegment.switch.patterns
+        let patterns = lastSegment.map.patterns
         for (let j = 0; j < patterns.length; j++) {
           let expandedPatterns = await this.expandPatterns(joinPaths(pathname, patterns[j]))
           for (let k = 0; k < expandedPatterns.length; k++) {
@@ -202,7 +198,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
     for (let i = 0; i < this.mapItems.length; i++) {
       let item = this.mapItems[i]
       let lastSegment = item.lastSegmentCache!
-      if (lastSegment.type !== 'switch' && lastSegment.type !== 'error') {
+      if (lastSegment.type !== 'map' && lastSegment.type !== 'error') {
         routeMapArray.push([
           joinPaths(item.pathname, '/'),
           createRoute(
@@ -308,7 +304,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
           originalUrl: url.href,
         }),
       }
-      let matchEnv = matchMappingAgainstPathname(
+      let matchEnv = mappingAgainstPathname(
         rootEnv,
         this.rootMapping,
         false,
@@ -320,7 +316,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
           depth,
           pathname,
           order,
-          matcher: new this.pages({
+          matcher: new this.matcher({
             appendFinalSlash: false,
             env: matchEnv,
             resolver: this.resolver,

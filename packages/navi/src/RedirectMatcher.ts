@@ -1,21 +1,19 @@
 import { URLDescriptor, createURLDescriptor, joinPaths } from './URLTools'
 import { Resolvable } from './Resolver'
-import { PayloadSegment, createSegment, Payload, createNotReadySegment, Segment } from './Segments'
+import { createSegment, createNotReadySegment, Segment } from './Segments'
 import { MatcherBase, MatcherResult, MatcherClass, MatcherOptions } from './Matcher'
 
-const emptyObject = {}
-
-export interface Redirect<Context extends object = any>
-  extends MatcherClass<Context, RedirectMatcher<Context>> {
+export interface RedirectMatcher<Context extends object = any>
+  extends MatcherClass<Context, RedirectMatcherImplementation<Context>> {
   type: 'redirect'
 
-  new (options: MatcherOptions<Context>): RedirectMatcher
+  new (options: MatcherOptions<Context>): RedirectMatcherImplementation
 
   to: Resolvable<Partial<URLDescriptor> | string>
 }
 
-export class RedirectMatcher<Context extends object = any> extends MatcherBase<Context> {
-  ['constructor']: Redirect
+export class RedirectMatcherImplementation<Context extends object = any> extends MatcherBase<Context> {
+  ['constructor']: RedirectMatcher
 
   static isMatcher = true
   static type: 'redirect' = 'redirect'
@@ -51,14 +49,14 @@ export class RedirectMatcher<Context extends object = any> extends MatcherBase<C
   }
 }
 
-export function createRedirect<Context extends object = any>(
+export function redirect<Context extends object = any>(
   to: string | Partial<URLDescriptor> | Resolvable<Partial<URLDescriptor> | string>
-): Redirect {
-  return class extends RedirectMatcher<Context> {
+): RedirectMatcher<Context> {
+  return class extends RedirectMatcherImplementation<Context> {
     static to = typeof to === 'function' ? (to as Resolvable<Partial<URLDescriptor> | string>) : () => to
   }
 }
 
-export function isValidRedirect(x: any): x is Redirect {
-  return x && x.prototype && x.prototype instanceof RedirectMatcher
+export function isValidRedirectMatcher(x: any): x is RedirectMatcher {
+  return x && x.prototype && x.prototype instanceof RedirectMatcherImplementation
 }

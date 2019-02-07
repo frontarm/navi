@@ -14,7 +14,7 @@ export const KEY_WILDCARD_REGEXP = /\0/g
  */
 export interface Mapping {
     /**
-     * The relative path of a Switch to its parent, with wildcards
+     * The relative path of a Map to its parent, with wildcards
      * represented by a colon `:`, followed by the name of the param where
      * their value should be placed.
      */
@@ -116,7 +116,7 @@ export function createMapping(pattern: string, maybeResolvableMatcher: MaybeReso
 }
 
 
-export function matchMappingAgainstPathname<Context extends object>(env: Env<Context>, mapping: Mapping, appendFinalSlash: boolean): Env<Context> | undefined {
+export function mappingAgainstPathname<Context extends object>(env: Env<Context>, mapping: Mapping, appendFinalSlash: boolean): Env<Context> | undefined {
     let request = env.request
     let match = mapping.regExp.exec(env.request.path)
     if (!match) {

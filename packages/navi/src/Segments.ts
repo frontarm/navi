@@ -1,5 +1,5 @@
 import { joinPaths, URLDescriptor, createURLDescriptor } from './URLTools'
-import { Switch } from './Switch'
+import { MapMatcher } from './MapMatcher'
 import { NotFoundError } from './Errors'
 import { NaviRequest } from './NaviRequest'
 
@@ -8,17 +8,17 @@ import { NaviRequest } from './NaviRequest'
  */
 export type Segment =
   | BusySegment
-  | SwitchSegment
+  | MapSegment
   | ErrorSegment
   | RedirectSegment
-  | PayloadSegment<any>
+  | ContentSegment
 
 export type SegmentType =
   | 'error'
-  | 'payload'
+  | 'content'
   | 'busy'
   | 'redirect'
-  | 'switch'
+  | 'map'
 
 /**
  * All segments extend this interface. It includes all information that can be
@@ -66,27 +66,27 @@ export interface RedirectSegment extends GenericSegment {
  * server, or that will be rendered in the browser. They can contain error
  * or redirect information, but they'll still be rendered as-is in the client.
  */
-export interface PayloadSegment<P extends Payload=Payload> extends GenericSegment {
-  type: 'payload'
-  payload: P
+export interface ContentSegment<C=Content> extends GenericSegment {
+  type: 'content'
+  content: C
 }
 
-export interface Payload<Info extends object=any, Content=any> {
-  content?: Content
-  info?: Info
+export interface Content<Info extends object=any> {
+  body?: any
   head?: any
-  title?: string
-  status?: number
   headers?: { [name: string]: string }
+  info?: Info
+  status?: number
+  title?: string
 }
 
 /**
- * Switch segments are added for each switch that is routed through. They're
+ * Map segments are added for each map that is routed through. They're
  * useful for building maps, as they hold metadata on other possible paths.
  */
-export interface SwitchSegment extends GenericSegment {
-  type: 'switch'
-  switch: Switch
+export interface MapSegment extends GenericSegment {
+  type: 'map'
+  map: MapMatcher
 }
 
 

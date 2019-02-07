@@ -1,14 +1,14 @@
-import { isValidContext } from './Context'
-import { isValidSwitch } from './Switch'
-import { isValidPage } from './Page'
-import { isValidRedirect } from './Redirect'
+import { isValidContextMatcher } from './ContextMatcher'
+import { isValidMapMatcher } from './MapMatcher'
+import { isValidContentMatcher } from './ContentMatcher'
+import { isValidRedirectMatcher } from './RedirectMatcher'
 import { Matcher } from './Matcher'
 
-export function isValidMatcher(x: any): x is Matcher {
+export function isValidMatcher(x: any): x is Matcher<any> {
   return (
-    isValidContext(x) ||
-    isValidPage(x) ||
-    isValidRedirect(x) ||
-    isValidSwitch(x)
+    isValidContextMatcher(x) ||
+    isValidContentMatcher(x) ||
+    isValidRedirectMatcher(x) ||
+    isValidMapMatcher(x)
   )
 }

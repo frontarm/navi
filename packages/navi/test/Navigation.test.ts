@@ -1,12 +1,10 @@
-import { createBrowserNavigation, createPage, createSwitch } from '../src'
+import { createBrowserNavigation, createPage, map } from '../src'
 
 describe("BrowserNavigation", () => {
   test("can be created", async () => {
     let nav = createBrowserNavigation({
-      pages: createSwitch({
-        paths: {
-          '/test': req => createPage({ title: 'test' }),
-        }
+      matcher: map({
+        '/test': req => createPage({ title: 'test' }),
       }),
     })
   })

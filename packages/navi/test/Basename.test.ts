@@ -1,12 +1,12 @@
 import { createMemoryNavigation } from '../src'
-import { fixtureSwitch } from './fixtures/switches'
+import { fixtureMap } from './fixtures/switches'
 
 describe("basename", () => {
   test("works without final /", async () => {
     let nav = createMemoryNavigation({
       url: '/nested/examples',
       basename: '/nested',
-      pages: fixtureSwitch,
+      matcher: fixtureMap,
     })
 
     let route = await nav.getSteadyValue()
@@ -18,7 +18,7 @@ describe("basename", () => {
     let nav = createMemoryNavigation({
       url: '/nested/examples',
       basename: '/nested/',
-      pages: fixtureSwitch,
+      matcher: fixtureMap,
     })
 
     let route = await nav.getSteadyValue()

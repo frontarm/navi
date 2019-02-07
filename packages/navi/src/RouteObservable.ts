@@ -1,5 +1,5 @@
 import { Route, createRoute } from './Route'
-import { Switch } from './Switch'
+import { Matcher } from './Matcher'
 import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { Resolver } from './Resolver'
 import { Env } from './Env';
@@ -9,20 +9,20 @@ export class RouteObservable implements Observable<Route> {
     readonly url: URLDescriptor
 
     private cachedValue: Route
-    private matcher: Switch['prototype']
+    private matcher: Matcher<any>['prototype']
     private observers: Observer<Route>[]
     private resolver: Resolver
   
     constructor(
         url: URLDescriptor,
         env: Env,
-        pages: Switch,
+        matcher: Matcher<any>,
         resolver: Resolver
     ) {
         this.url = url
         this.resolver = resolver
         this.observers = []
-        this.matcher = new pages({
+        this.matcher = new matcher({
             appendFinalSlash: true,
             env,
             resolver: this.resolver

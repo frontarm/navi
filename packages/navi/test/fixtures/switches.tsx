@@ -1,75 +1,75 @@
 import React from 'react'
-import { createPage, createSwitch, createRedirect, createContext } from '../../src'
+import { map, page, redirect, withContent, withContext } from '../../src'
 
-export const fixtureSwitch = createSwitch({
-    getContent() {
-        return 'site-layout'
+export const fixtureMap = withContent(
+  {
+    getBody() {
+      return 'site-layout'
     },
-
     title: 'Site',
+  },
+  map({
+    '/': () => page({
+      title: 'Navi',
+      info: {
+        description: 'Navi Is A Router/Loader',
+      },
+      getBody: (request) => request.router.resolvePageMap('/examples'),
+    }),
 
-    paths: {
-        '/': () => createPage({
-            title: 'Navi',
-            info: {
-                description: 'Navi Is A Router/Loader',
-            },
-            getContent: (request) => request.router.resolvePageMap('/examples'),
+    '/examples': async () =>
+      withContext(
+        async (request, context) => ({
+          ...context,
+          contextName: 'examples'
         }),
+        map(async () =>
+          withContent(
+            {
+              getBody() {
+                return 'example-layout'
+              },
+              getHead: () => [
+                { type: 'meta', props: { name: 'description', content: 'examples meta description' } }
+              ],
+            },
+            map({
+              '/': async () => redirect(reuqest => reuqest.mountpath+'basic'),
 
-        '/examples': async () =>
-            createContext(
-                async ({ context }) => ({
-                    ...context,
-                    contextName: 'examples'
+              '/basic': async () => page({
+                title: 'Basic example',
+                head: <>
+                  <meta name='description' content='basic meta description' />
+                </>,
+                getBody: () => 'basic-example'
+              }),
+
+              '/advanced': page({
+                title: 'Advanced example',
+                getInfo: async () => ({
+                  isPaywalled: true,
                 }),
-                async () => createSwitch({
-                    async getContent() {
-                        return 'example-layout'
-                    },
+                async getBody(request, context: any, infoPromise) {
+                  if (context.contextName !== 'examples' || !context.isAuthenticated) {
+                    return 'please-login'
+                  }
+                  
+                  return {
+                    dat: await infoPromise
+                  }
+                }
+              })
+            })
+          )
+        )
+      ),
 
-                    getHead: () => [
-                        { type: 'meta', props: { name: 'description', content: 'examples meta description' } }
-                    ],
-
-                    paths: {
-                        '/': async () => createRedirect(reuqest => reuqest.mountpath+'basic'),
-
-                        '/basic': async () => createPage({
-                            title: 'Basic example',
-                            head: <>
-                                <meta name='description' content='basic meta description' />
-                            </>,
-                            getContent: () => 'basic-example'
-                        }),
-
-                        '/advanced': createPage({
-                            title: 'Advanced example',
-                            getInfo: async () => ({
-                                isPaywalled: true,
-                            }),
-                            async getContent(request, context, infoPromise) {
-                                if (request.context.contextName !== 'examples' || !request.context.isAuthenticated) {
-                                    return 'please-login'
-                                }
-                                
-                                return {
-                                    dat: await infoPromise
-                                }
-                            }
-                        })
-                    }
-                })
-            ),
-
-        '/goodies': async () => createSwitch({
-            paths: {
-                '/cheatsheet': async () => createPage({
-                    getContent() {
-                        return Promise.resolve('cheatsheet')
-                    }
-                })
-            }
-        })
-    }
-})
+    '/goodies': async () => map({
+      '/cheatsheet': async () => page({
+        getBody() {
+          return Promise.resolve('cheatsheet')
+        }
+      })
+    })
+  })
+)

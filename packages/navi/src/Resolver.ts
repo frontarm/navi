@@ -6,7 +6,7 @@ import { NaviRequest } from './NaviRequest';
 export type Resolvable<T, Context extends object = any, Info = any> = (
   request: NaviRequest,
   context: Context,
-  infoPromise: PromiseLike<Info>
+  infoPromise: Info
 ) => (T | PromiseLike<{ default: T } | T>)
 
 export type Resolution<T> = {
@@ -54,7 +54,8 @@ export class Resolver {
   resolve<T, Info>(
     env: Env,
     resolvable: Resolvable<T>,
-    infoResolvable?: Resolvable<Info>
+    infoResolvable?: Resolvable<Info>,
+    infoValue?: Info
   ): Resolution<T> {
     let matcherResults = this.results.get(env)
     if (!matcherResults) {
@@ -67,7 +68,7 @@ export class Resolver {
       return currentResult
     }
 
-    let infoResolution = !infoResolvable ? { promise: Promise.resolve() } : (
+    let infoResolution = !infoResolvable ? { promise: Promise.resolve(infoValue) } : (
       matcherResults.get(infoResolvable) || { promise: Promise.resolve() }
     ) 
     let id = this.nextId++

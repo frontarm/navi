@@ -1,18 +1,19 @@
-import { createBrowserHistory, History } from 'history';
-import { Switch } from './Switch'
+import { createBrowserHistory, History } from 'history'
 import { Navigation } from './Navigation'
 import { Resolver } from './Resolver'
 import { Router } from './Router'
 import { Route } from './Route'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { CurrentRouteObservable, createCurrentRouteObservable } from './CurrentRouteObservable';
+import { Matcher } from './Matcher'
 
 
 export interface BrowserNavigationOptions<Context extends object> {
     /**
-     * The Switch that declares your app's pages.
+     * The Matcher that declares your app's pages.
      */
-    pages: Switch,
+    matcher?: Matcher<Context>,
+    pages?: Matcher<Context>,
 
     /**
      * If provided, this part of any URLs will be ignored. This is useful
@@ -21,7 +22,7 @@ export interface BrowserNavigationOptions<Context extends object> {
     basename?: string,
 
     /**
-     * This will be made available within your `pages` Switch through
+     * This will be made available within your matcher through
      * the `env` object passed to any getter functions.
      */
     context?: Context,
@@ -45,7 +46,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
     router: Router<Context>
     history: History
 
-    private pages: Switch
+    private matcher: Matcher<Context>
     private basename?: string
     private resolver: Resolver
     private receivedRoute: Route
@@ -53,13 +54,18 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
     private currentRouteObservable: CurrentRouteObservable<Context>
 
     constructor(options: BrowserNavigationOptions<Context>) {
+        if (options.pages) {
+            options.matcher = options.pages
+            console.warn(`Deprecation Warning: specifying a "pages" option for "createBrowserNavigation()" is deprecated -- please use "matcher" instead.`)
+        }
+
         this.history = options.history || createBrowserHistory()
         this.resolver = new Resolver
-        this.pages = options.pages
+        this.matcher = options.matcher!
         this.basename = options.basename
         this.router = new Router(this.resolver, {
             context: options.context,
-            pages: options.pages,
+            matcher: this.matcher,
             basename: options.basename,
         })
 
@@ -77,7 +83,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         delete this.router
         delete this.history
         delete this.resolver
-        delete this.pages
+        delete this.matcher
         delete this.receivedRoute
         delete this.renderedRoute
     }
@@ -85,7 +91,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
     setContext(context: Context) {
         this.router = new Router(this.resolver, {
             context: context,
-            pages: this.pages,
+            matcher: this.matcher,
             basename: this.basename,
         })
         this.currentRouteObservable.setRouter(this.router)

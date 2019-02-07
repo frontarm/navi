@@ -1,9 +1,9 @@
-import { Switch } from './Switch'
-import { createRootMapping, matchMappingAgainstPathname, Mapping } from './Mapping'
+import { Matcher } from './Matcher'
+import { createRootMapping, mappingAgainstPathname, Mapping } from './Mapping'
 import { RouteObservable } from './RouteObservable'
 import { RouteMapObservable } from './RouteMapObservable'
 import { Resolver } from './Resolver'
-import { PageRoute, RedirectRoute } from './Route'
+import { ContentRoute, RedirectRoute } from './Route'
 import { Segment } from './Segments'
 import { SiteMap, PageMap, RedirectMap } from './Maps'
 import { createPromiseFromObservable } from './Observable';
@@ -11,11 +11,12 @@ import { createURLDescriptor, URLDescriptor } from './URLTools';
 import { createRequest, HTTPMethod } from './NaviRequest';
 import { OutOfRootError } from './Errors';
 import { Env } from './Env';
+import { isValidMatcher } from './isValidMatcher';
 
 
 export interface RouterOptions<Context extends object> {
     context?: Context,
-    pages: Switch<Context>,
+    matcher?: Matcher<Context>,
     basename?: string,
 }
 
@@ -46,27 +47,27 @@ export function createRouter<Context extends object>(options: RouterOptions<Cont
 export class Router<Context extends object=any> {
     private resolver: Resolver
     private context: Context
-    private pages: Switch<any, any, Context>
+    private matcher: Matcher<Context>
     private rootMapping: Mapping
     
     constructor(resolver: Resolver, options: RouterOptions<Context>) {
         if (process.env.NODE_ENV !== "production") {
-            if (!options.pages || options.pages.type !== 'switch') {
+            if (!options.matcher || !isValidMatcher(options.matcher)) {
                 // TODO: support top-level context matchers
-                throw new Error(`Expected to receive a Switch object for the "pages" prop, but instead received "${options.pages}".`)
+                throw new Error(`Expected to receive a Matcher object for the "pages" prop, but instead received "${options.matcher}".`)
             }
         }
 
         this.resolver = resolver
         this.context = options.context || {} as any
-        this.pages = options.pages
+        this.matcher = options.matcher!
 
         let basename = options.basename
         if (basename && basename.slice(-1) === '/') {
             basename = basename.slice(0, -1)
         }
 
-        this.rootMapping = createRootMapping(options.pages, basename)
+        this.rootMapping = createRootMapping(options.matcher!, basename)
     }
 
     createObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterResolveOptions = {}): RouteObservable | undefined {
@@ -90,12 +91,12 @@ export class Router<Context extends object=any> {
                 path: url.pathname,
             })
         }
-        let matchEnv = matchMappingAgainstPathname(rootEnv, this.rootMapping, true)
+        let matchEnv = mappingAgainstPathname(rootEnv, this.rootMapping, true)
         if (matchEnv) {
             return new RouteObservable(
                 url,
                 matchEnv,
-                this.pages,
+                this.matcher,
                 this.resolver,
             )
         }
@@ -105,7 +106,7 @@ export class Router<Context extends object=any> {
         return new RouteMapObservable(
             createURLDescriptor(urlOrDescriptor, { ensureTrailingSlash: false }),
             this.context,
-            this.pages,
+            this.matcher,
             this.rootMapping,
             this.resolver,
             this,
@@ -113,9 +114,9 @@ export class Router<Context extends object=any> {
         )
     }
 
-    resolve(url: string | Partial<URLDescriptor>, options?: RouterResolveOptions): Promise<PageRoute>;
-    resolve(urls: (string | Partial<URLDescriptor>)[], options?: RouterResolveOptions): Promise<PageRoute[]>;
-    resolve(urls: string | Partial<URLDescriptor> | (string | Partial<URLDescriptor>)[], options: RouterResolveOptions = {}): Promise<PageRoute | PageRoute[]> {
+    resolve(url: string | Partial<URLDescriptor>, options?: RouterResolveOptions): Promise<ContentRoute>;
+    resolve(urls: (string | Partial<URLDescriptor>)[], options?: RouterResolveOptions): Promise<ContentRoute[]>;
+    resolve(urls: string | Partial<URLDescriptor> | (string | Partial<URLDescriptor>)[], options: RouterResolveOptions = {}): Promise<ContentRoute | ContentRoute[]> {
         let urlDescriptors: URLDescriptor[] = getDescriptorsArray(urls)
         if (!urlDescriptors.length) {
             return Promise.resolve([])
@@ -133,8 +134,8 @@ export class Router<Context extends object=any> {
             for (let i = 0; i < urls.length; i++) {
                 let url = urls[i]
                 let route = routeMap[url]
-                if (route.type === 'page') {
-                    pageMap[url] = route as PageRoute
+                if (route.type === 'content') {
+                    pageMap[url] = route as ContentRoute
                     continue
                 }
                 else if (route.type === 'redirect') {
@@ -154,7 +155,7 @@ export class Router<Context extends object=any> {
         return this.resolveSiteMap(urlOrDescriptor, options).then(siteMap => siteMap.pages)
     }
 
-    private getPageRoutePromise(url: URLDescriptor, options: RouterResolveOptions): Promise<PageRoute> {
+    private getPageRoutePromise(url: URLDescriptor, options: RouterResolveOptions): Promise<ContentRoute> {
         let observable = this.createObservable(url, options)
         if (!observable) {
             return Promise.reject(new OutOfRootError(url))
@@ -168,8 +169,8 @@ export class Router<Context extends object=any> {
                 if (route.type === 'redirect' && options.followRedirects) {
                     return this.getPageRoutePromise(createURLDescriptor((route as RedirectRoute).to), options)
                 }
-                else if (route.type === 'page') {
-                    return route as PageRoute
+                else if (route.type === 'content') {
+                    return route as ContentRoute
                 }
             }
 

@@ -1,14 +1,14 @@
-import { Context } from './Context'
+import { ContextMatcher } from './ContextMatcher'
 import { Resolver, Resolvable } from './Resolver'
 import { Segment, createNotFoundSegment } from './Segments'
-import { Switch } from './Switch'
-import { Page } from './Page'
-import { Redirect } from './Redirect'
+import { MapMatcher } from './MapMatcher'
+import { ContentMatcher } from './ContentMatcher'
+import { RedirectMatcher } from './RedirectMatcher'
 import { Env } from './Env'
 
 export type MatcherType =
-    | 'switch'
-    | 'page'
+    | 'map'
+    | 'content'
     | 'redirect'
     | 'context'
 
@@ -20,13 +20,13 @@ export interface MatcherClass<Context extends object, RM extends MatcherBase<Con
     prototype: RM;
 }
 
-export type Matcher = Switch | Page | Redirect | Context
+export type Matcher<Context extends object> = MapMatcher<Context> | ContentMatcher<Context> | RedirectMatcher<Context> | ContextMatcher<Context>
 
-export interface ResolvableMatcher<M extends Matcher = Matcher, Context extends object=any> extends Resolvable<M, Context> {
+export interface ResolvableMatcher<M extends Matcher<Context> = Matcher<Context>, Context extends object=any> extends Resolvable<M, Context> {
     isMatcher?: undefined;
 }
 
-export type MaybeResolvableMatcher<Context extends object=any> = Matcher | ResolvableMatcher<Matcher, Context>
+export type MaybeResolvableMatcher<Context extends object=any> = Matcher<Context> | ResolvableMatcher<Matcher<Context>, Context>
 
 export interface MatcherOptions<Context extends object> {
     appendFinalSlash?: boolean
@@ -45,7 +45,7 @@ export abstract class MatcherBase<Context extends object> {
     resolver: Resolver;
     wildcard: boolean;
 
-    ['constructor']: Matcher
+    ['constructor']: Matcher<Context>
 
     constructor(options: MatcherOptions<Context>, wildcard = false) {
         this.appendFinalSlash = !!options.appendFinalSlash
@@ -62,7 +62,7 @@ export abstract class MatcherBase<Context extends object> {
             return this.execute()
         }
         else {
-            // This switch couldn't be matched due to missing required
+            // This couldn't be matched due to missing required
             // params, or a non-exact match without a default path.
             return {
                 resolutionIds: [],

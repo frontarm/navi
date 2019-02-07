@@ -1,14 +1,14 @@
 import { URLDescriptor } from './URLTools'
-import { Segment, PayloadSegment, Payload } from './Segments'
+import { Segment, ContentSegment, Content } from './Segments'
 
 export type RouteType =
-  | 'switch'
-  | 'page'
-  | 'error'
-  | 'redirect'
   | 'busy'
+  | 'content'
+  | 'error'
+  | 'map'
+  | 'redirect'
 
-export interface Route {
+export interface Route<C = Content> {
   url: URLDescriptor
 
   type: RouteType
@@ -17,13 +17,15 @@ export interface Route {
   firstSegment: Segment
   lastSegment: Segment
 
+  contents: C[]
+
   to?: string
 
   error?: any
 
   title?: any
-  info: object
-  contents: any[]
+  info: any
+  bodies: any[]
   heads: any[]
   status?: number
 }
@@ -33,19 +35,20 @@ export interface RedirectRoute extends Route {
   to: string
 }
 
-export interface PageRoute<Info extends object = any, Content extends object = any> extends Route {
-  type: 'page'
-  lastSegment: PayloadSegment<Payload<Info, Content>>
+export interface ContentRoute<Info extends object = any, C = Content<Info>> extends Route {
+  type: 'content'
+  lastSegment: ContentSegment<C>
 
   title: string
   info: Info
 }
 
 export function createRoute(url: URLDescriptor, segments: Segment[]): Route {
-  let lastSegment = segments[segments.length - 1]
+  let lastSegment: Segment = undefined as any
+  let contents: any[] = []
   let error: any
   let info: object = {}
-  let contents: any[] = []
+  let bodies: any[] = []
   let heads: any[] = []
   let title: string | undefined
   let status: number | undefined
@@ -54,45 +57,47 @@ export function createRoute(url: URLDescriptor, segments: Segment[]): Route {
   // An error could appear in a mid segment if its content fails to load,
   // and we want to always use the first error available.
   for (let i = 0; i < segments.length; i++) {
-    let segment = segments[i]
-    if (segment.type === 'error') {
-      error = segment.error
+    lastSegment = segments[i]
+    if (lastSegment.type === 'error') {
+      error = lastSegment.error
       break
     }
-    if (segment.type === 'redirect') {
-      to = segment.to
+    if (lastSegment.type === 'redirect') {
+      to = lastSegment.to
       break
     }
-    if (segment.type === 'busy') {
+    if (lastSegment.type === 'busy') {
       break
     }
-    if (segment.type === 'payload') {
-      let payload = segment.payload as Payload
-      if (payload.status) {
-        status = parseInt(payload.status as any, 10)
+    if (lastSegment.type === 'content') {
+      let content = lastSegment.content as Content
+      contents.push(content)
+      if (content.status) {
+        status = parseInt(content.status as any, 10)
       }
-      if (payload.content) {
-        contents.push(payload.content)
+      if (content.body) {
+        bodies.push(content.body)
       }
-      if (payload.head !== undefined) {
-        heads.push(payload.head)
+      if (content.head !== undefined) {
+        heads.push(content.head)
       }
-      if (payload.title) {
-        title = payload.title
+      if (content.title) {
+        title = content.title
       }
-      Object.assign(info, payload.info)
+      Object.assign(info, content.info)
     }
   }
 
   let route: Route = {
-    type: lastSegment.type === 'payload' ? 'page' : lastSegment.type,
+    type: lastSegment.type,
+    contents,
     url: url,
     segments,
     firstSegment: segments[0],
-    lastSegment: segments[segments.length - 1],
+    lastSegment: lastSegment,
     error,
     status,
-    contents,
+    bodies: bodies,
     heads,
     info,
     title,
@@ -102,13 +107,13 @@ export function createRoute(url: URLDescriptor, segments: Segment[]): Route {
     (route as RedirectRoute).to = to!
   }
 
-  if (route.type === 'page') {
+  if (route.type === 'content') {
     Object.defineProperty(route, 'content', {
       get: () => {
         if (process.env.NODE_ENV !== 'production') {
           console.warn("`route.content` is deprecated, and will be removed in Navi 0.12. Please use the `route.contents` array instead.")
         }
-        return route.contents[route.contents.length - 1]
+        return route.bodies[route.bodies.length - 1]
       }
     })
   }

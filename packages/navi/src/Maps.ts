@@ -1,4 +1,4 @@
-import { Route, PageRoute, RedirectRoute } from './Route'
+import { Route, ContentRoute, RedirectRoute } from './Route'
 
 export interface RouteMap {
   [url: string]: Route
@@ -10,7 +10,7 @@ export interface SiteMap<Info extends object = any, Content extends object = any
 }
 
 export interface PageMap<Info extends object = any, Content extends object = any> {
-  [url: string]: PageRoute<Info, Content>
+  [url: string]: ContentRoute<Info, Content>
 }
 
 export interface RedirectMap {
