@@ -2,7 +2,7 @@ import { History } from 'history'
 import { OutOfRootError } from './Errors'
 import { URLDescriptor, areURLDescriptorsEqual, createURLDescriptor } from './URLTools'
 import { Router } from './Router'
-import { Route } from './Route'
+import { Route, createRoute } from './Route'
 import { Deferred } from './Deferred';
 import { Observer, Observable, Subscription, SimpleSubscription, createOrPassthroughObserver } from './Observable';
 
@@ -154,7 +154,7 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
         // The router only looks at path and search, so if they haven't
         // changed, there's no point recreating the observable.
         if (!force && !(pathHasChanged || searchHasChanged) && !this.lastRoute.error) {
-            this.update()
+            this.setRoute(this.lastRoute ? createRoute(url, this.lastRoute.segments) : ({ url } as any))
             return
         }
 
@@ -164,7 +164,7 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
 
         let observable = this.router.createObservable(url)
         if (observable) {
-            this.observableSubscription = observable.subscribe(this.update)
+            this.observableSubscription = observable.subscribe(this.handleRoute)
         }
         else if (!lastURL) {
             throw new OutOfRootError(url)
@@ -172,27 +172,28 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
     }
 
     // Allows for either the location or route or both to be changed at once.
-    private update = (route?: Route) => {
+    private handleRoute = (route: Route) => {
         let url = this.lastURL
         let nextRoute = route || this.lastRoute
         
         if (route && route.type === 'redirect' && route.to) {
-            // No need to notify any listeners of a ready redirect,
+            // No need to notify any listeners of a redirect,
             // as we can take the appropriate action ourselves
             this.history.replace(route.to)
-            return
         }
+        else {
+            this.setRoute(route)
+        }
+    }
 
-        this.lastRoute = {
-            ...nextRoute!,
-            url,
-        }
-        if (this.waitUntilSteadyDeferred && this.lastRoute.type !== 'busy') {
-            this.waitUntilSteadyDeferred.resolve(this.lastRoute)
+    private setRoute(route: Route) {
+        this.lastRoute = route
+        if (this.waitUntilSteadyDeferred && route.type !== 'busy') {
+            this.waitUntilSteadyDeferred.resolve(route)
             delete this.waitUntilSteadyDeferred
         }
         for (let i = 0; i < this.observers.length; i++) {
-            this.observers[i].next(this.lastRoute)
+            this.observers[i].next(route)
         }
     }
 }

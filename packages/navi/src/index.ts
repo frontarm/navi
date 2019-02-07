@@ -84,7 +84,7 @@ export function createContext<ParentContext extends object=any, ChildContext ext
   }
 }
 
-export function createMap<Context extends object, Meta extends object, C>(options: {
+export function createSwitch<Context extends object, Meta extends object, C>(options: {
   paths: MapMatcherPaths<Context>
   meta?: Meta
   getMeta?: Resolvable<Meta, Context>
@@ -95,7 +95,7 @@ export function createMap<Context extends object, Meta extends object, C>(option
 }): MapMatcher<Context> | ContentMatcher<Context, Content<Meta>> {
   if (process.env.NODE_ENV !== 'production') {
     console.warn(
-      `Deprecation Warning: "createMap()" is deprecated. From Navi 0.12, `+
+      `Deprecation Warning: "createSwitch()" is deprecated. From Navi 0.12, `+
       `you'll need to use the "map()" matcher instead. If you need to set a `+
       `title or other content on the map, wrap it in a "content()" matcher.`
     )

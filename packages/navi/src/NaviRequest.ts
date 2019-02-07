@@ -41,7 +41,7 @@ export function createRequest(context: any, request: NaviRequest) {
     mountname: {
       get: () => {
         if (process.env.NODE_ENV !== 'production') {
-          console.warn("'reuqest.mountname' is deprecated, and will be removed in Navi 0.12. Please use 'request.mountpath' instead.")
+          console.warn(`Deprecation Warning: "request.mountname" will be removed in Navi 0.12. Please use "request.mountpath" instead.`)
         }
         return request.mountpath
       },
@@ -49,7 +49,7 @@ export function createRequest(context: any, request: NaviRequest) {
     pathname: {
       get: () => {
         if (process.env.NODE_ENV !== 'production') {
-          console.warn("'request.pathname' is deprecated, and will be removed in Navi 0.12. Please use 'request.mountpath' instead.")
+          console.warn(`Deprecation Warning: "request.pathname" will be removed in Navi 0.12. Please use "request.mountpath" instead.`)
         }
         return request.mountpath
       }
@@ -57,7 +57,7 @@ export function createRequest(context: any, request: NaviRequest) {
     context: {
       get: () => {
         if (process.env.NODE_ENV !== 'production') {
-          console.warn("'request.context' is deprecated, and will be removed in Navi 0.12. Please use the separate context argument instead.")
+          console.warn(`Deprecation Warning: "request.context" will be removed in Navi 0.12. Please use the separate context argument instead.`)
         }
         return context
       }

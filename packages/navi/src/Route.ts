@@ -111,7 +111,7 @@ export function createRoute(url: URLDescriptor, segments: Segment[]): Route {
     Object.defineProperty(route, 'content', {
       get: () => {
         if (process.env.NODE_ENV !== 'production') {
-          console.warn("`route.content` is deprecated, and will be removed in Navi 0.12. Please use the `route.contents` array instead.")
+          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.12. Please use the "route.contents" array instead.`)
         }
         return route.bodies[route.bodies.length - 1]
       }
@@ -121,7 +121,7 @@ export function createRoute(url: URLDescriptor, segments: Segment[]): Route {
   Object.defineProperty(route, 'meta', {
     get: () => {
       if (process.env.NODE_ENV !== 'production') {
-        console.warn("`route.meta` is deprecated, and will be removed in Navi 0.12. Please use `route.info` instead.")
+        console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.12. Please use "route.info" instead.`)
       }
       return route.info
     }

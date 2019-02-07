@@ -49,14 +49,11 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
     private matcher: Matcher<Context>
     private basename?: string
     private resolver: Resolver
-    private receivedRoute: Route
-    private renderedRoute?: Route
     private currentRouteObservable: CurrentRouteObservable<Context>
 
     constructor(options: BrowserNavigationOptions<Context>) {
         if (options.pages) {
             options.matcher = options.pages
-            console.warn(`Deprecation Warning: specifying a "pages" option for "createBrowserNavigation()" is deprecated -- please use "matcher" instead.`)
         }
 
         this.history = options.history || createBrowserHistory()
@@ -73,8 +70,6 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
             history: this.history,
             router: this.router,
         })
-        this.currentRouteObservable.subscribe(this.handleChange)
-        this.renderedRoute = this.currentRouteObservable.getValue()
     }
 
     dispose() {
@@ -84,8 +79,6 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         delete this.history
         delete this.resolver
         delete this.matcher
-        delete this.receivedRoute
-        delete this.renderedRoute
     }
 
     setContext(context: Context) {
@@ -121,9 +114,5 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
     ): SimpleSubscription {
         let navigationObserver = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
         return this.currentRouteObservable.subscribe(navigationObserver)
-    }
-
-    private handleChange = (route: Route) => {
-        this.receivedRoute = route
     }
 }

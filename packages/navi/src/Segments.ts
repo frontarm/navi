@@ -31,6 +31,11 @@ export interface GenericSegment {
    * The part of the URL pathname that has been matched.
    */
   url: URLDescriptor
+
+  error?: any
+  to?: any
+  content?: any
+  map?: any
 }
 
 

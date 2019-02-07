@@ -118,9 +118,13 @@ export function withContent<Context extends object, Info extends object, C = Con
           ? Promise.resolve(options.getInfo(req, context, undefined as any)).then(extractDefault).then(inputOrEmptyObject)
           : Promise.resolve(options.info || {})
 
+      let titlePromise: Promise<string | undefined> =
+      options.getTitle
+        ? Promise.resolve(options.getTitle(req, context, infoPromise)).then(extractDefault)
+        : Promise.resolve(options.title)
+
       let bodyPromise: Promise<any | undefined> | undefined
       let headPromise: Promise<any> | undefined
-      let titlePromise: Promise<string | undefined> | undefined
 
       if (req.method !== 'HEAD') {
         bodyPromise = 
@@ -131,10 +135,6 @@ export function withContent<Context extends object, Info extends object, C = Con
         options.getHead
             ? Promise.resolve(options.getHead(req, context, infoPromise)).then(extractDefault)
             : Promise.resolve(options.head)
-        titlePromise =
-          options.getTitle
-            ? Promise.resolve(options.getTitle(req, context, infoPromise)).then(extractDefault)
-            : Promise.resolve(options.title)
       }
 
       return {

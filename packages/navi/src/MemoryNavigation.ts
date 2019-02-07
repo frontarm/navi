@@ -53,7 +53,6 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
     constructor(options: MemoryNavigationOptions<Context>) {
         if (options.pages) {
             options.matcher = options.pages
-            console.warn(`Deprecation Warning: specifying a "pages" option for "createMemoryNavigation()" is deprecated -- please use "matcher" instead.`)
         }
 
         this.history = createMemoryHistory({
