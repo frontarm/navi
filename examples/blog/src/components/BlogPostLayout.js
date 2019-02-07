@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavContent, NavLink } from 'react-navi'
+import { NavContent, NavLink, useCurrentRoute } from 'react-navi'
 import { MDXProvider } from '@mdx-js/tag'
 import siteMetadata from '../siteMetadata'
 import ArticleMeta from './ArticleMeta'
@@ -7,9 +7,11 @@ import Bio from './Bio'
 import styles from './BlogPostLayout.module.css'
 
 function BlogPostLayout({ blogPathname }) {
+  let { title, info, url } = useCurrentRoute()
+
   return (
     <NavContent>
-      {({ MDXComponent, readingTime }, { title, meta, url }) =>
+      {({ MDXComponent, readingTime }) =>
         // The content for posts is an MDX component, so we'll need
         // to use <MDXProvider> to ensure that links are rendered
         // with <NavLink>, and thus use pushState.
@@ -20,7 +22,7 @@ function BlogPostLayout({ blogPathname }) {
             </h1>
             <ArticleMeta
               blogPathname={blogPathname}
-              meta={meta}
+              meta={info}
               readingTime={readingTime}
             />
           </header>
@@ -42,15 +44,15 @@ function BlogPostLayout({ blogPathname }) {
             <Bio className={styles.bio} />
             <section className={styles.links}>
               {
-                meta.previousDetails &&
-                <NavLink className={styles.previous} href={meta.previousDetails.href}>
-                  ← {meta.previousDetails.title}
+                info.previousDetails &&
+                <NavLink className={styles.previous} href={info.previousDetails.href}>
+                  ← {info.previousDetails.title}
                 </NavLink>
               }
               {
-                meta.nextDetails &&
-                <NavLink className={styles.next} href={meta.nextDetails.href}>
-                  {meta.nextDetails.title} →
+                info.nextDetails &&
+                <NavLink className={styles.next} href={info.nextDetails.href}>
+                  {info.nextDetails.title} →
                 </NavLink>
               }
             </section>

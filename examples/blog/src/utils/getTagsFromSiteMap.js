@@ -12,7 +12,7 @@ function getTagsFromSiteMap(siteMap) {
     new Set(
       [].concat.apply(
         [],
-        routes.map(route => (route.meta && route.meta.tags) || []),
+        routes.map(route => (route.info && route.info.tags) || []),
       ),
     ),
   )

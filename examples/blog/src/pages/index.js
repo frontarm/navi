@@ -13,19 +13,15 @@ import posts from './posts'
 let chunks = chunk(posts, siteMetadata.indexPageSize)
 let chunkPagePairs = chunks.map((chunk, i) => [
   '/' + (i + 1),
-  async env => {
-    // Get the blog's root pathname, as all index pages other than the first
-    // one are mounted at `/pages/n`
-    let blogPathname = i === 0 ? env.pathname : join(env.pathname, '../..')
-
+  async (req, context) => {
     // Get metadata for all pages on this page
     let postRoutes = await Promise.all(
       chunk.map(async post => {
-        let href = join(blogPathname, 'posts', post.slug)
-        return await env.router.resolve(href, {
+        let href = join(context.blogRoot, 'posts', post.slug)
+        return await req.router.resolve(href, {
           // If you want to show the page content on the index page, set
-          // this to true to be able to access it.
-          withContent: false,
+          // this to 'GET' to be able to access it.
+          method: 'HEAD',
         })
       }),
     )
@@ -36,11 +32,11 @@ let chunkPagePairs = chunks.map((chunk, i) => [
       pageTitle += ` – page ${i+1}`
     }
 
-    return Navi.createPage({
+    return Navi.page({
       title: pageTitle,
-      getContent: () =>
+      body:
         <BlogIndexPage
-          blogPathname={blogPathname}
+          blogPathname={context.blogRoot}
           pageNumber={i+1}
           pageCount={chunks.length}
           postRoutes={postRoutes}
@@ -49,62 +45,71 @@ let chunkPagePairs = chunks.map((chunk, i) => [
   },
 ])
 
-const pagesSwitch = Navi.createSwitch({
-  getContent: env => {
-    // Check if the current page is an index page by comparing the remaining
-    // portion of the URL's pathname with the index page paths.
-    let remainingPathname = env.url.pathname.replace(env.mountname, '')
-    let isViewingIndex =
-      remainingPathname === '/' ||
-      /^\/page\/\d+\/$/.test(remainingPathname)
+const pages = Navi.withContext(
+  (req, context) => ({
+    ...context,
+    blogRoot: req.mountpath || '/',
+  }),
+  Navi.withContent(
+    {
+      getBody: (req, context) => {
+        // Check if the current page is an index page by comparing the remaining
+        // portion of the URL's pathname with the index page paths.
+        let remainingPathname = req.path
+        let isViewingIndex =
+          remainingPathname === '/' ||
+          /^\/page\/\d+\/$/.test(remainingPathname)
 
-    // Wrap the current page's content with a React Context to pass global
-    // configuration to the blog's components.
-    return (
-      <BlogLayout
-        blogPathname={env.pathname || '/'}
-        isViewingIndex={isViewingIndex}
-      />
-    )
-  },
-
-  paths: {
-    // The blog's index pages go here. The first index page is mapped to the
-    // root URL, with a redirect from "/page/1". Subsequent index pages are
-    // mapped to "/page/n".
-    '/': chunkPagePairs.shift()[1],
-    '/page': Navi.createSwitch({
-      paths: {
-        '/1': env => Navi.createRedirect(join(env.pathname, '../..')),
+        // Wrap the current page's content with a React Context to pass global
+        // configuration to the blog's components.
+        return (
+          <BlogLayout
+            blogPathname={context.blogRoot}
+            isViewingIndex={isViewingIndex}
+          />
+        )
+      }
+    },
+    Navi.map({
+      // The blog's index pages go here. The first index page is mapped to the
+      // root URL, with a redirect from "/page/1". Subsequent index pages are
+      // mapped to "/page/n".
+      '/': chunkPagePairs.shift()[1],
+      '/page': Navi.map({
+        '/1': (req, context) => Navi.redirect(context.blogRoot),
         ...fromPairs(chunkPagePairs),
-      },
-    }),
+      }),
 
-    // Put posts under "/posts", so that they can be wrapped with a
-    // "<BlogPostLayout />" that configures MDX and adds a post-specific layout.
-    '/posts': Navi.createSwitch({
-      getContent: env => <BlogPostLayout blogPathname={join(env.pathname, '..')} />,
-    
-      paths: fromPairs(
-        posts.map(post => [
-          '/' + post.slug,
-          post.getPage,
-        ]),
+      // Put posts under "/posts", so that they can be wrapped with a
+      // "<BlogPostLayout />" that configures MDX and adds a post-specific layout.
+      '/posts': Navi.withContent(
+        {
+          getBody: (req, context) =>
+            <BlogPostLayout blogPathname={context.blogRoot} />
+        },
+        Navi.map(
+          fromPairs(
+            posts.map(post => [
+              '/' + post.slug,
+              post.getPage,
+            ]),
+          )
+        )
       ),
+
+      // Miscellaneous pages can be added directly to the root switch.
+      '/tags': () => import('./tags'),
+      '/about': () => import('./about'),
+
+      // Only the statically built copy of the RSS feed is intended to be opened,
+      // but the content is fetched here.
+      '/rss': Navi.page({
+        getBody: (req) => req.router.resolveSiteMap('/posts', { 
+          method: 'GET',
+        })
+      }),
     }),
+  )
+)
 
-    // Miscellaneous pages can be added directly to the root switch.
-    '/tags': () => import('./tags'),
-    '/about': () => import('./about'),
-
-    // Only the statically built copy of the RSS feed is intended to be opened,
-    // but the content is fetched here.
-    '/rss': Navi.createPage({
-      getContent: env => env.router.resolveSiteMap('/posts', {
-        withContent: true,
-      })
-    }),
-  },
-})
-
-export default pagesSwitch
+export default pages

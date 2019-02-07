@@ -1,6 +1,6 @@
 import * as Navi from 'navi'
 
-export default Navi.createPage({
+export default Navi.page({
   title: "About",
-  getContent: () => import('./document.mdx'),
+  getBody: () => import('./document.mdx'),
 })
