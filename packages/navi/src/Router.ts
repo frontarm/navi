@@ -11,7 +11,6 @@ import { createURLDescriptor, URLDescriptor } from './URLTools';
 import { createRequest, HTTPMethod } from './NaviRequest';
 import { OutOfRootError } from './Errors';
 import { Env } from './Env';
-import { isValidMatcher } from './isValidMatcher';
 
 
 export interface RouterOptions<Context extends object> {
@@ -51,13 +50,6 @@ export class Router<Context extends object=any> {
     private rootMapping: Mapping
     
     constructor(resolver: Resolver, options: RouterOptions<Context>) {
-        if (process.env.NODE_ENV !== "production") {
-            if (!options.matcher || !isValidMatcher(options.matcher)) {
-                // TODO: support top-level context matchers
-                throw new Error(`Expected to receive a Matcher object for the "pages" prop, but instead received "${options.matcher}".`)
-            }
-        }
-
         this.resolver = resolver
         this.context = options.context || {} as any
         this.matcher = options.matcher!

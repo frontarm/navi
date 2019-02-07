@@ -1,82 +1,19 @@
-import * as Navi from 'navi'
-import React from 'react'
-import ReactDOMServer from 'react-dom/server'
-import { NavProvider, NavContent } from 'react-navi'
-import { renderCreateReactAppTemplate } from 'react-navi/create-react-app'
+import { createRouter } from 'navi'
+import renderReactPageToString from 'react-navi/create-react-app'
 import renderRSSFeedToString from './renderRSSFeedToString'
 
 /**
  * navi-scripts will call this function for each of your site's pages
  * to produce its statically rendered HTML.
  */
-async function renderPageToString({
-  config,
-
-  // Sets of JavaScript and CSS files that were used while rendering this
-  // page
-  dependencies,
-  
-  // The `pages` switch passed to the call to `Navi.app()` in index.js
-  pages,
-
-  // The URL to be rendered
-  url,
-}) {
-  // Create an in-memory Navigation object with the given URL
-  let navigation = Navi.createMemoryNavigation({
-    pages,
-    url,
-  })
-
-  // Wait for any asynchronous content to finish fetching
-  let { route } = await navigation.getSteadyValue()
-
-  // The feed is a special case
-  if (url.pathname === '/rss') {
+async function renderPageToString(props) {
+  if (props.url.pathname === '/rss') {
+    let router = createRouter({ matcher: props.pages })
+    let route = await router.resolve(props.url)
     return await renderRSSFeedToString(route.content)
   }
 
-  // Render the content to a string
-  let appHTML = ReactDOMServer.renderToString(
-    React.createElement(
-      NavProvider,
-      { navigation },
-      React.createElement(NavContent)
-    )
-  )
-
-  // Add any stylesheets that were loaded to this page to the head, to avoid
-  // a flash of unstyled content on load
-  let stylesheetTags = Array.from(dependencies.stylesheets)
-    .map(pathname => `<link rel="stylesheet" href="${pathname}" />`)
-    .join('')
-
-  let canonicalURLBase = process.env.CANONICAL_URL || process.env.PUBLIC_URL || ''
-  let headHTML = `
-    <title>${route.title || 'Untitled'}</title>
-    <link rel="canonical" href="${canonicalURLBase+url.href}" />
-    ${stylesheetTags}
-  `
-
-  // If a page has a `meta.head` property, it will be assumed to be a React
-  // element, and will be rendered and added to the page head.
-  if (route.meta.head) {
-    if (!React.isValidElement(route.meta.head)) {
-      console.error(`The page at "${route.url.href}" had a "meta.head" property, but it wasn't a React element. To add elements to a page's <head>, "meta.head" must be a React element.`)
-    }
-    else {
-      headHTML += ReactDOMServer.renderToStaticMarkup(route.meta.head)
-    }
-  }
-
-  // Read the `index.html` produced by create-react-app's build script,
-  // then inject `appHTML` into the `<div id="root"></div>` tag,
-  // and replace the `<title>` tag with `metaHTML`.
-  return renderCreateReactAppTemplate({
-    config,
-    insertIntoRootDiv: appHTML,
-    replaceTitleWith: headHTML,
-  })
+  return renderReactPageToString(props)
 }
 
 export default renderPageToString

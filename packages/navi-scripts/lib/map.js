@@ -23,7 +23,7 @@ async function createMap(config) {
     }
 
     let router = createRouter({
-        pages: app.pages,
+        matcher: app.pages,
         context: config.context,
     })
 
