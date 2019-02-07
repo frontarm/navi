@@ -1,13 +1,18 @@
 import * as React from 'react'
-import { NaviError, Route, Status, Segment, SegmentType } from 'navi'
+import { Helmet } from 'react-helmet'
+import { NaviError, Route, Segment, ContentSegment, Content, areURLDescriptorsEqual } from 'navi'
 import { NavContext } from './NavContext'
+import { scrollToHash } from './scrollToHash'
 
 
 export interface NavContentProps {
   /**
    * A render function that will be used to render the selected segment.
    */
-  children?: (content: any, segment: Segment, route: Route) => React.ReactNode
+  children?: (body: any, content: Content) => React.ReactNode
+
+  disableScrollHandling?: boolean
+  hashScrollBehavior?: 'smooth' | 'instant'
 
   /**
    * The first segment that matches this will be consumed, along with
@@ -30,7 +35,7 @@ export const NavContent: React.SFC<NavContentProps> = function NavContent(props:
   )
 }
 NavContent.defaultProps = {
-  where: (segment: Segment) => segment.content || segment.type !== SegmentType.Switch
+  where: (segment: Segment) => segment.type !== 'map'
 }
 
 
@@ -41,7 +46,7 @@ interface InnerNavContentProps extends NavContentProps {
 interface InnerNavContentState {
   steadyRoute?: Route,
   childContext?: NavContext,
-  segment?: Segment,
+  segment?: ContentSegment,
   consumedSegments?: Segment[],
   error?: Error
 }
@@ -66,7 +71,7 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
 
     let index = props.where ? unconsumedSegments.findIndex(props.where!) : 0
     let errorSearchSegments = index === -1 ? unconsumedSegments : unconsumedSegments.slice(0, index + 1)
-    let errorSegment = errorSearchSegments.find(segment => segment.status === Status.Error)
+    let errorSegment = errorSearchSegments.find(segment => segment.type === 'error')
     if (errorSegment) {
       return {
         error: errorSegment.error || new Error("Unknown routing error")
@@ -78,7 +83,7 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
       }
     }
     let consumedSegments = unconsumedSegments.slice(0, index + 1)
-    let segment = unconsumedSegments[index]
+    let segment = unconsumedSegments[index] as ContentSegment
 
     return {
       segment,
@@ -107,9 +112,35 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
 
   handleUpdate(prevState?: InnerNavContentState) {
     if (this.state.steadyRoute && (!prevState || !prevState.steadyRoute || prevState.steadyRoute !== this.state.steadyRoute)) {
-      if (this.props.context.onRendered) {
-        this.props.context.onRendered()
-      }
+      // if (this.renderedRoute !== this.receivedRoute) {
+      //   let prevRoute = this.renderedRoute
+      //   let nextRoute = this.receivedRoute
+
+      //   if (nextRoute && nextRoute.isSteady) {
+      //     if (prevRoute && areURLDescriptorsEqual(nextRoute.url, prevRoute.url)) {
+      //       return
+      //     }
+
+      //     if (!this.props.disableScrollHandling &&
+      //       (!prevRoute ||
+      //       !prevRoute.url ||
+      //       prevRoute.url.hash !== nextRoute.url.hash ||
+      //       prevRoute.url.pathname !== nextRoute.url.pathname)
+      //     ) {
+      //       scrollToHash(
+      //           nextRoute.url.hash,
+      //           prevRoute && prevRoute.url && prevRoute.url.pathname === nextRoute.url.pathname
+      //               ? this.props.hashScrollBehavior
+      //               : 'instant'
+      //       )
+      //     }
+      //   }
+
+      //   this.renderedRoute = this.receivedRoute
+      // }
+      // else if (this.receivedRoute && this.receivedRoute.url.hash) {
+      //   // scrollToHash(this.receivedRoute.url.hash, this.props.hashScrollBehavior)
+      // }
     }
   }
 
@@ -119,7 +150,7 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
     }
 
     let segment = this.state.segment
-    if (!segment) {
+    if (!segment || !segment.content) {
       let Suspense: React.ComponentType<any> = (React as any).Suspense
       if (Suspense) {
         throw this.props.context.navigation.steady()
@@ -130,32 +161,41 @@ class InnerNavContent extends React.Component<InnerNavContentProps, InnerNavCont
       }
     }
 
+    let { body, head, title } = segment.content
+    let helmet = (head || title) ? (
+      <Helmet>
+        {title && <title>{title}</title>}
+        {(head && head.type === React.Fragment) ? head.props.children : head}
+      </Helmet>
+    ) : null
     let content: React.ReactNode
-    let render: undefined | ((content: any, segment: Segment, route: Route) => React.ReactNode)
+    
+    let render: undefined | ((content: Content, segment: Segment, route: Route) => React.ReactNode)
     if (this.props.children) {
-      render = this.props.children as (content: any, segment: Segment, route: Route) => React.ReactNode
+      render = this.props.children as (content: Content, segment: Segment, route: Route) => React.ReactNode
       if (typeof render !== "function") {
         throw new Error(`<NavContent> expects its children to be a function, but instead received "${render}".`)
       }
+      content = this.props.children(body, segment.content)
     }
-    else if (segment && segment.content) {
-      if (typeof segment.content === 'function') {
-        content = React.createElement(segment.content as any, { segment, route: this.props.context.steadyRoute })
+    else if ('body' in segment.content) {
+      if (typeof body === 'function') {
+        content = React.createElement(body, { segment, route: this.props.context.steadyRoute })
       }
-      else if (typeof segment.content === 'string' || React.isValidElement(segment.content)) {
-        content = segment.content
+      else if (typeof body === 'string' || React.isValidElement(body)) {
+        content = body
+      }
+      else {
+        throw new Error("<NavContent> was not able to find a `children` prop, and was unable to find any body or head content in the consumed Route segment's `content`.")
       }
     }
-
-    if (render) {
-      content = render(segment.content, segment, this.props.context.steadyRoute!)
-    }
-    if (content === undefined) {
-      throw new Error("<NavContent> was not able to find a `children` prop, and was unable to find any content in the consumed RouteSegment's `content`.")
+    else {
+      content = <NavContent />
     }
 
     return (
       <NavContext.Provider value={this.state.childContext!}>
+        {helmet}
         {
           // Clone the content to force a re-render even if content hasn't
           // changed, as Provider is a PureComponent.

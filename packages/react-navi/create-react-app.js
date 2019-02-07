@@ -2,6 +2,7 @@ const he = require('he')
 const Navi = require('navi')
 const React = require('react')
 const ReactDOMServer = require('react-dom/server')
+const { Helmet } = require('react-helmet')
 const { NavProvider } = require('react-navi')
 
 async function renderCreateReactAppTemplate({ config, replaceTitleWith, insertIntoRootDiv }) {
@@ -24,35 +25,44 @@ async function renderCreateReactAppTemplate({ config, replaceTitleWith, insertIn
 
 async function renderPageToString({ config, exports, pages, siteMap, dependencies, url }) {
   let navigation = Navi.createMemoryNavigation({ pages, url })
-  let { route } = await navigation.getSteadyValue()
+  let route = await navigation.getSteadyValue()
   let canonicalURLBase = process.env.CANONICAL_URL || process.env.PUBLIC_URL || ''
 
   let stylesheetTags = Array.from(dependencies.stylesheets)
     .map(pathname => `<link rel="stylesheet" href="${pathname}" />`)
     .join('')
+
+  let bodyHTML =
+    ReactDOMServer.renderToString(
+      React.createElement(
+        NavProvider,
+        { navigation }, 
+        React.createElement(
+          typeof exports === 'function' ? exports : exports.App,
+          {
+            navigation,
+            siteMap,
+          }
+        )
+      )
+    )
+
+  Helmet.canUseDOM = false
+  
+  // Generate metadata 
+  let helmet = Helmet.renderStatic();
+  let metaHTML = `
+    ${helmet.title.toString()}
+    ${helmet.meta.toString()}
+    ${helmet.link.toString()}
+  `
   
   return renderCreateReactAppTemplate({
     config,
-    insertIntoRootDiv:
-      ReactDOMServer.renderToString(
-        React.createElement(
-          NavProvider,
-          { navigation }, 
-          React.createElement(
-            typeof exports === 'function' ? exports : exports.App,
-            {
-              navigation,
-              siteMap,
-            }
-          )
-        )
-      ),
+    insertIntoRootDiv: bodyHTML,
     replaceTitleWith:
-      `\n<title>${route.title || 'Untitled'}</title>\n` +
       `<link rel="canonical" href="${canonicalURLBase+url.href}" />\n`+
-      Object.entries(route.meta || {}).map(([key, value]) =>
-        `<meta name="${he.encode(key)}" content="${he.encode(typeof value === 'string' ? value : String(value))}" />`
-      ).concat('').join('\n')+
+      metaHTML+
       stylesheetTags,
   })
 }

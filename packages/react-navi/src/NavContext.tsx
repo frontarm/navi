@@ -13,8 +13,6 @@ export interface NavContext {
   
   // The routes that haven't been used yet. Initially identical to routingState.routes
   unconsumedSteadyRouteSegments?: Segment[],
-
-  onRendered?: () => void,
 }
 
 export const NavContextProvider = NavContext.Provider

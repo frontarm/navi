@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { BrowserNavigation, Navigation, NavigationSnapshot, Subscription, Route } from 'navi'
+import { BrowserNavigation, Navigation, Subscription, Route } from 'navi'
 import { NavContext } from './NavContext'
 
 export interface NavProviderProps {
@@ -29,10 +29,10 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
 
   static getDerivedStateFromProps(props: NavProviderProps, state: NavProviderState): NavProviderState | null {
     if (state.navigation !== props.navigation) {
-      let route = props.navigation.getCurrentValue().route
+      let route = props.navigation.getCurrentValue()
 
       return (
-        (!route.isSteady)
+        (route.type === 'busy')
           ? { steadyRoute: state.steadyRoute, busyRoute: route, navigation: props.navigation }
           : { steadyRoute: route, busyRoute: undefined, navigation: props.navigation }
       )
@@ -46,11 +46,7 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
   }
 
   render() {
-    let context = {
-      ...this.state,
-      onRendered: this.props.navigation.getCurrentValue().onRendered,
-    }
-    
+    let context = this.state
     let result = (
       <NavContext.Provider value={context}>
         {this.props.children}
@@ -110,8 +106,8 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
     }
   }
 
-  handleNavigationSnapshot = ({ route }: NavigationSnapshot) => {
-    if (route.isSteady) {
+  handleNavigationSnapshot = (route: Route) => {
+    if (route.type !== 'busy') {
       this.setState({
         steadyRoute: route,
         busyRoute: undefined,

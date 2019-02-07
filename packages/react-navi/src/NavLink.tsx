@@ -159,7 +159,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
     let url = this.getURL()
     if (url && url.pathname) {
       this.props.context.navigation.router.resolve(url, {
-        withContent: !!props.precache,
+        method: 'HEAD',
         followRedirects: true,
       })
         .catch(() => {
