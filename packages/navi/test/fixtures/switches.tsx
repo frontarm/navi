@@ -1,4 +1,4 @@
-import { composeMatchers, map, route, redirect, withContent, withContents, withInfo, withContext } from '../../src'
+import { composeMatchers, map, lazy, route, redirect, withContent, withContents, withInfo, withContext } from '../../src'
 
 export const fixtureMap = composeMatchers(
   withContents(['site-layout']),
@@ -19,41 +19,40 @@ export const fixtureMap = composeMatchers(
         ...context,
         contextName: 'examples'
       })),
-      map(async () => composeMatchers(
-        withContent(() => 'example-layout'),
-        map({
-          '/': async () => redirect(req => req.mountpath+'basic'),
+      withContent(() => 'example-layout'),
+      map({
+        '/': async () => redirect(req => req.mountpath+'basic'),
 
-          '/basic': async () => route(req => ({
-            info: {
-              title: 'Basic example',
-              description: 'basic meta description'
-            },
-            content: 'basic-example'
-          })),
+        '/basic': async () => route(req => ({
+          info: {
+            title: 'Basic example',
+            description: 'basic meta description'
+          },
+          content: 'basic-example'
+        })),
 
-          '/advanced': route(async (req, context: any) => {
-            let info = {
-              isPaywalled: true,
-              title: 'Advanced example',
-            }
-
-            return {
-              info,
-              content:
-                (context.contextName !== 'examples' || !context.isAuthenticated)
-                  ? 'please-login'
-                  : { isPaywalled: true }
-            }
-          })
+        '/advanced': route({
+          info: {
+            isPaywalled: true,
+            title: 'Advanced example',
+          },
+          getContent: async (request, context, infoPromise) => 
+            (context.contextName !== 'examples' || !context.isAuthenticated)
+              ? 'please-login'
+              : { isPaywalled: true }
         })
-      ))
+      })
     ),
 
     '/goodies/cheatsheet': async () => map({
-      '/cheatsheet': async () => route({
-        content: 'cheatsheet'
-      })
+      '/cheatsheet': async () => 
+        lazy(async () =>
+          composeMatchers(
+            route({
+              content: 'cheatsheet'
+            })
+          )
+        )
     })
   })
 )

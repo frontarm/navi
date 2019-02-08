@@ -27,3 +27,4 @@ export { Observer, Subscription } from './Observable'
 //
 
 export { withContent as content } from './matchers/ContentMatcher'
+export { map as lazy } from './matchers/MapMAtcher'

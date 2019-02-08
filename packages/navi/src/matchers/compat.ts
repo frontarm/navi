@@ -4,14 +4,14 @@
 
 import { composeMatchers } from '../composeMatchers'
 import { withContent, withContents } from './ContentMatcher'
-import { map, MapMatcherGeneratorClass, MapMatcherPaths } from './MapMatcher'
-import { redirect, RedirectMatcherGeneratorClass } from './RedirectMatcher'
-import { withContext, ContextMatcherGeneratorClass } from './ContextMatcher'
+import { map, MapMatcherPaths } from './MapMatcher'
+import { redirect } from './RedirectMatcher'
+import { withContext } from './ContextMatcher'
 import { MaybeResolvableMatcher, Matcher } from '../Matcher'
 import { Resolvable, extractDefault } from '../Resolver'
 import { URLDescriptor } from '../URLTools'
 import { NaviRequest } from '../NaviRequest'
-import { withInfo, InfoMatcherGeneratorClass } from '../matchers/InfoMatcher'
+import { withInfo } from '../matchers/InfoMatcher'
 
 interface Page<Meta extends object, Content> {
   title?: string
@@ -47,11 +47,10 @@ function createGetPage<Context extends object, Meta extends object, Content>(
         )
       : Promise.resolve(options.title)
 
-    let bodyPromise: Promise<any | undefined> | undefined
-    let headPromise: Promise<any> | undefined
-
+    let contentPromise: Promise<any | undefined> | undefined
+    
     if (req.method !== 'HEAD') {
-      bodyPromise = options.getContent
+      contentPromise = options.getContent
         ? Promise.resolve(options.getContent(req, context, metaPromise)).then(
             extractDefault,
           )
@@ -59,12 +58,10 @@ function createGetPage<Context extends object, Meta extends object, Content>(
     }
 
     return {
-      info: await metaPromise,
-      body: await bodyPromise,
-      head: await headPromise,
+      meta: await metaPromise,
+      content: await contentPromise,
       title: await titlePromise,
-      status: 200,
-    } as any
+    }
   }
 }
 
