@@ -2,7 +2,7 @@ const Navi = require('navi')
 const React = require('react')
 const ReactDOMServer = require('react-dom/server')
 const { Helmet } = require('react-helmet')
-const { NavProvider, NavContent } = require('react-navi')
+const { NavProvider, NavView } = require('react-navi')
 
 async function renderCreateReactAppTemplate({ config, replaceTitleWith, insertIntoRootDiv }) {
   let html = (await config.fs.readFile(config.entry)).toString('utf8')
@@ -22,12 +22,12 @@ async function renderCreateReactAppTemplate({ config, replaceTitleWith, insertIn
   return html
 }
 
-async function renderPageToString({ config, exports, pages, siteMap, dependencies, url }) {
+async function renderPageToString({ config, exports={}, routes, siteMap, dependencies, url }) {
   let canonicalURLBase = process.env.CANONICAL_URL || process.env.PUBLIC_URL || ''
 
   // Create an in-memory Navigation object with the given URL
   let navigation = Navi.createMemoryNavigation({
-    pages,
+    routes,
     url,
   })
 
@@ -44,7 +44,7 @@ async function renderPageToString({ config, exports, pages, siteMap, dependencie
       React.createElement(
         NavProvider,
         { navigation }, 
-        React.createElement(NavContent)
+        React.createElement(exports.App || NavView)
       )
     )
 

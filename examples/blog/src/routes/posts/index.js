@@ -7,7 +7,7 @@ import slugify from 'slugify'
 // Get a list of all posts, that will not be loaded until the user
 // requests them.
 const postModules = importAll.deferred('./**/post.js')
-const importPost = (pathname) => postModules[pathname]()
+const importPost = pathname => postModules[pathname]()
 const postPathnames = Object.keys(postModules)
 const datePattern = /^((\d{1,4})-(\d{1,4})-(\d{1,4}))[/-]/
 
@@ -54,9 +54,9 @@ let posts = postDetails.map(({ slug, pathname, date }, i) => ({
       nextSlug = nextPostDetails.slug
     }
 
-    return Navi.page({
+    return Navi.route({
       title,
-      getInfo: req => ({
+      getData: req => ({
         date,
         pathname,
         slug,
@@ -66,11 +66,11 @@ let posts = postDetails.map(({ slug, pathname, date }, i) => ({
         },
         nextDetails: nextPost && {
           title: nextPost.title,
-          href: join(req.pathname, '../..', nextSlug)
+          href: join(req.pathname, '../..', nextSlug),
         },
         ...meta,
       }),
-      getBody: async () => {
+      getView: async () => {
         let { default: MDXComponent, ...other } = await getContent()
         return { MDXComponent, ...other }
       },

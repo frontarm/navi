@@ -4,9 +4,9 @@ describe("Map", () => {
   test("Passes correct pathname into path getter function", async () => {
     let nav = createMemoryNavigation({
       url: '/from',
-      matcher: map({
+      routes: map({
         '/from': req => redirect('/to?from='+encodeURIComponent(req.mountpath)),
-        '/to': req => route({ content: 'test' }),
+        '/to': req => route({ view: 'test' }),
       }),
     })
 
@@ -20,7 +20,7 @@ describe("Map", () => {
     try {
       await createMemoryNavigation({
         url: '/from',
-        matcher: map({
+        routes: map({
           '/fail': {title: 'this fails'}
           '/this-also-fails': {title: 'this too'}
         })

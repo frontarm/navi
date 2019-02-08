@@ -7,12 +7,12 @@
  * development, while also allowing production builds to use a prebuilt copy.
  */
 function getTagsFromSiteMap(siteMap) {
-  let routes = Object.values(siteMap.pages)
+  let routes = Object.values(siteMap.routes)
   return Array.from(
     new Set(
       [].concat.apply(
         [],
-        routes.map(route => (route.info && route.info.tags) || []),
+        routes.map(route => (route.data && route.data.tags) || []),
       ),
     ),
   )

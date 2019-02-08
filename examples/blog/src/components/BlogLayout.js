@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  NavContent,
+  NavView,
   NavLink,
   NavNotFoundBoundary,
   useLoadingRoute,
@@ -28,7 +28,7 @@ function BlogLayout({ blogRoot, isViewingIndex }) {
 
       <main>
         <NavNotFoundBoundary render={() => <NotFoundPage />}>
-          <NavContent />
+          <NavView />
         </NavNotFoundBoundary>
       </main>
     </div>

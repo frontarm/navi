@@ -4,7 +4,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { NavProvider } from "react-navi";
 import "./index.css";
-import pages from "./pages";
+import routes from "./routes";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
@@ -14,7 +14,7 @@ import * as serviceWorker from "./serviceWorker";
 register({
   // Specify the pages that navi-app should statically build, by passing in a
   // Switch object.
-  pages,
+  routes,
 
   // The default create-react-app renderer needs access to the App component.
   // Learn about custom static renderers at:
@@ -27,7 +27,7 @@ register({
   // be called when performing static generation.
   async main() {
     let navigation = Navi.createBrowserNavigation({
-      pages,
+      routes,
     });
 
     // Wait until the navigation has loaded the page's content, or failed to do

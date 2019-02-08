@@ -1,28 +1,29 @@
 import { Resolvable, extractDefault } from "../Resolver"
 import { composeMatchers } from "../composeMatchers"
-import { withContents } from "./ContentMatcher"
+import { withView } from "./ViewMatcher"
 import { withContext } from "./ContextMatcher"
-import { withInfo } from "./InfoMatcher"
+import { withData } from "./DataMatcher"
 import { NaviRequest } from "../NaviRequest";
+import { withTitle } from "./TitleMatcher";
 
-interface Route<Info extends object> {
-  info?: Info
-  content?: any
-  contents?: any[]
+interface Route<Data extends object> {
+  data?: Data
+  title?: string
+  view?: any
 }
 
-interface RouteOptions<Context extends object, Info extends object> {
-  info?: Info
-  getInfo?: Resolvable<Info, Context>
-  content?: any
-  getContent?: Resolvable<any, Context, Promise<Info>>
-  contents?: any[]
-  getContents?: Resolvable<any[], Context, Promise<Info>>
+interface RouteOptions<Context extends object, Data extends object> {
+  data?: Data
+  getData?: Resolvable<Data, Context>
+  view?: any
+  getView?: Resolvable<any, Context, Promise<Data>>
+  title?: string
+  getTitle?: Resolvable<string, Context, Promise<Data>>
 }
 
-export function route<Context extends object, Info extends object>(options: RouteOptions<Context, Info> | Resolvable<Route<Info>, Context> = {}) {
+export function route<Context extends object, Data extends object>(options: RouteOptions<Context, Data> | Resolvable<Route<Data>, Context> = {}) {
   if (typeof options !== 'function') {
-    let { info, getInfo, content, getContent, contents, getContents, ...other } = options
+    let { data, getData, view, getView, title, getTitle, ...other } = options
 
     if (process.env.NODE_ENV !== 'production') {
       let unknownKeys = Object.keys(other)
@@ -38,46 +39,42 @@ export function route<Context extends object, Info extends object>(options: Rout
     options = async function getRoute(
       req: NaviRequest,
       context: Context,
-    ): Promise<Route<Info>> {
-      let infoPromise: Promise<Info> = getInfo
-        ? Promise.resolve(getInfo(req, context, undefined as any))
+    ): Promise<Route<Data>> {
+      let dataPromise: Promise<Data> = getData
+        ? Promise.resolve(getData(req, context, undefined as any))
             .then(extractDefault)
             .then(inputOrEmptyObject)
-        : Promise.resolve(info || {})
+        : Promise.resolve(data || {})
 
-      let contentPromise: Promise<any | undefined> | undefined
-      let contentsPromise: Promise<any[] | undefined> | undefined
+      let titlePromise: Promise<string | undefined> = getTitle
+      ? Promise.resolve(getTitle(req, context, dataPromise)).then(
+          extractDefault,
+        )
+      : Promise.resolve(title)
+
+      let viewPromise: Promise<any | undefined> | undefined
   
       if (req.method !== 'HEAD') {
-        contentPromise = getContent
-          ? Promise.resolve(getContent(req, context, infoPromise)).then(
+        viewPromise = getView
+          ? Promise.resolve(getView(req, context, dataPromise)).then(
               extractDefault,
             )
-          : Promise.resolve(content)
-
-        contentsPromise = getContents
-          ? Promise.resolve(getContents(req, context, infoPromise)).then(
-              extractDefault,
-            )
-          : Promise.resolve(contents)
+          : Promise.resolve(view)
       }
   
       return {
-        info: await infoPromise,
-        content: await contentPromise,
-        contents: await contentsPromise,
+        data: await dataPromise,
+        view: await viewPromise,
+        title: await titlePromise,
       }
     }
   }
 
   return composeMatchers(
     withContext(options),
-    withInfo((req, context) =>
-      context.info
-    ),
-    withContents((req, context) =>
-      (context.contents || []).concat(context.content || [])
-    )
+    withData((req, context) => context.data),
+    withTitle((req, context) => context.title),
+    withView((req, context) => context.view)
   )
 }
 

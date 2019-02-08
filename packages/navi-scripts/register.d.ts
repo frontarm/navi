@@ -1,4 +1,4 @@
-import { Switch } from "navi";
+import { Matcher } from "navi";
 
 export interface RegisterOptions {
   /**
@@ -32,7 +32,7 @@ export interface RegisterOptions {
   /**
    * The app's root switch.
    */
-  pages: Switch,
+  routes: Matcher<any>,
 }
 
 declare function register(options: RegisterOptions): void;

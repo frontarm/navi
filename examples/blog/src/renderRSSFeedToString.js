@@ -19,10 +19,10 @@ function renderRSSFeed(siteMap) {
     },
   });
 
-  let pathnames = Object.keys(siteMap.pages)
+  let pathnames = Object.keys(siteMap.routes)
 
   pathnames.sort().forEach(pathname => {
-    let route = siteMap.pages[pathname]
+    let route = siteMap.routes[pathname]
     let meta = route.meta || {}
     let link = path.join(publicURL, pathname)
 

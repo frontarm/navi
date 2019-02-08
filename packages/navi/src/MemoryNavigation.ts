@@ -2,7 +2,6 @@ import { createMemoryHistory, History } from 'history';
 import { Matcher } from './Matcher'
 import { Navigation } from './Navigation'
 import { Reducer } from './Reducer'
-import { Resolver } from './Resolver'
 import { Router } from './Router'
 import { Route, defaultRouteReducer } from './Route'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
@@ -15,7 +14,7 @@ export interface MemoryNavigationOptions<Context extends object, R = Route> {
     /**
      * The Matcher that declares your app's pages.
      */
-    matcher?: Matcher<Context>,
+    routes?: Matcher<Context>,
     pages?: Matcher<Context>,
 
     /**
@@ -61,7 +60,7 @@ export class MemoryNavigation<Context extends object, R> implements Navigation<C
                 `Deprecation Warning: passing a "pages" option to "createMemoryNavigation()" will `+
                 `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
             )
-            options.matcher = options.pages
+            options.routes = options.pages
         }
 
         let reducer = options.reducer || defaultRouteReducer as any as Reducer<Segment, R>
@@ -72,7 +71,7 @@ export class MemoryNavigation<Context extends object, R> implements Navigation<C
         this.options = options
         this.router = new Router({
             context: options.context,
-            matcher: (this.options.matcher || this.options.pages)!,
+            routes: (this.options.routes || this.options.pages)!,
             basename: this.options.basename,
             reducer,
         })

@@ -4,7 +4,7 @@ describe("Redirect", () => {
   test("Supports relative paths", async () => {
     let nav = createMemoryNavigation({
       url: '/switch/from',
-      matcher: map({
+      routes: map({
         '/switch': map({
           '/from': redirect('./to'),
           '/to': route({})

@@ -1,10 +1,10 @@
 import { createMemoryNavigation, route, map } from '../src'
 
-describe("ContentMatcher", () => {
+describe("ViewMatcher", () => {
   test("Matches URLs with trailing /", async () => {
     let nav = createMemoryNavigation({
       url: '/test/',
-      matcher: map({
+      routes: map({
         '/test': route({}),
       }),
     })
@@ -17,20 +17,20 @@ describe("ContentMatcher", () => {
   test("Can specify payload using a function", async () => {
     let nav = createMemoryNavigation({
       url: '/test/',
-      matcher: map({
-        '/test': route(req => ({ info: { title: req.mountpath } })),
+      routes: map({
+        '/test': route(req => ({ data: { title: req.mountpath } })),
       }),
     })
 
     let r = await nav.getSteadyValue()
     
-    expect(r.info.title).toBe('/test')
+    expect(r.data.title).toBe('/test')
   })
 
   test("Matches URLs with no trailing /", async () => {
     let nav = createMemoryNavigation({
       url: '/test',
-      matcher: map({
+      routes: map({
         '/test': route({}),
       }),
     })

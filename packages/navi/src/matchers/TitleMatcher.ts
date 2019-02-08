@@ -9,21 +9,17 @@ import {
   createMatcher,
 } from '../Matcher'
 
-export interface InfoMatcherGeneratorClass<
-  Context extends object = any,
-  Info = any
-> extends MatcherGeneratorClass<Context, InfoMatcherGenerator<Context, Info>> {
-  new (options: MatcherOptions<Context>): InfoMatcherGenerator<Context, Info>
+export interface TitleMatcherGeneratorClass<
+  Context extends object = any
+> extends MatcherGeneratorClass<Context, TitleMatcherGenerator<Context>> {
+  new (options: MatcherOptions<Context>): TitleMatcherGenerator<Context>
 
   childMatcherGeneratorClass: MatcherGeneratorClass<Context> | undefined
-  getInfo: Resolvable<Info, Context>
+  getTitle: Resolvable<string, Context>
 }
 
-class InfoMatcherGenerator<
-  Context extends object,
-  Info
-> extends MatcherGenerator<Context> {
-  ['constructor']: InfoMatcherGeneratorClass<Context, Info>
+class TitleMatcherGenerator<Context extends object> extends MatcherGenerator<Context> {
+  ['constructor']: TitleMatcherGeneratorClass<Context>
 
   last?: {
     matcherGenerator?: MatcherGenerator<any>
@@ -38,15 +34,15 @@ class InfoMatcherGenerator<
   }
 
   protected execute(): MatcherResult {
-    let { id, error, status, value: info } = this.resolver.resolve(
+    let { id, error, status, value: title } = this.resolver.resolve(
       this.env,
-      this.constructor.getInfo,
+      this.constructor.getTitle,
     )
     let segments: Segment[] =
       status === 'ready'
         ? (
-          info
-          ? [createSegment('info', this.env.request, { info })]
+          title
+          ? [createSegment('title', this.env.request, { title })]
           : [createSegment('null', this.env.request)]
         )
         : [createNotReadySegment(this.env.request, error)]
@@ -82,20 +78,20 @@ class InfoMatcherGenerator<
   }
 }
 
-export function withInfo<Context extends object, Info>(
-  maybeResolvableInfo: Info | Resolvable<Info, Context>,
+export function withTitle<Context extends object>(
+  maybeResolvableTitle: string | undefined | Resolvable<string | undefined, Context>,
 ): Matcher<Context> {
-  let getInfo: Resolvable<Info, Context> =
-    typeof maybeResolvableInfo === 'function'
-      ? (maybeResolvableInfo as any)
-      : () => maybeResolvableInfo
+  let getTitle: Resolvable<string, Context> =
+    typeof maybeResolvableTitle === 'function'
+      ? (maybeResolvableTitle as any)
+      : () => maybeResolvableTitle
 
   return createMatcher(
     (
       childMatcherGeneratorClass?: MatcherGeneratorClass<Context>,
-    ): InfoMatcherGeneratorClass<Context, Info> =>
-      class extends InfoMatcherGenerator<Context, Info> {
-        static getInfo = getInfo
+    ): TitleMatcherGeneratorClass<Context> =>
+      class extends TitleMatcherGenerator<Context> {
+        static getTitle = getTitle
         static childMatcherGeneratorClass = childMatcherGeneratorClass
       },
   )

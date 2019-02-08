@@ -2,9 +2,9 @@ import register from "navi-scripts/register";
 import * as Navi from "navi";
 import React from "react";
 import ReactDOM from "react-dom";
-import { NavContent, NavProvider } from "react-navi";
+import { NavProvider, NavView } from "react-navi";
 import "./index.module.css";
-import pages from "./pages";
+import routes from "./routes";
 import * as serviceWorker from "./serviceWorker";
 
 // `register()` is responsible for exporting your app's pages and App
@@ -13,14 +13,12 @@ import * as serviceWorker from "./serviceWorker";
 register({
   // Specify the pages that navi-app should statically build, by passing in a
   // Switch object.
-  pages,
+  routes,
 
   // This will only be called when loading your app in the browser. It won't
   // be called when performing static generation.
   async main() {
-    let navigation = Navi.createBrowserNavigation({
-      pages,
-    });
+    let navigation = Navi.createBrowserNavigation({ routes });
 
     // Wait until the navigation has loaded the page's content, or failed to do
     // so. If you want to load other data in parallel while the initial page is
@@ -37,7 +35,7 @@ register({
     // NavProvider.
     renderer(
       <NavProvider navigation={navigation}>
-        <NavContent />
+        <NavView />
       </NavProvider>,
       document.getElementById("root")
     )

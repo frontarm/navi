@@ -16,7 +16,7 @@ import { Reducer } from './Reducer';
 
 export interface RouterOptions<Context extends object, R = Route> {
     context?: Context,
-    matcher?: Matcher<Context>,
+    routes?: Matcher<Context>,
     basename?: string,
     reducer?: Reducer<Segment, R>,
 }
@@ -55,7 +55,7 @@ export class Router<Context extends object=any, R=Route> {
     constructor(options: RouterOptions<Context, R>) {
         this.resolver = new Resolver
         this.context = options.context || {} as any
-        this.matcherGeneratorClass = options.matcher!()
+        this.matcherGeneratorClass = options.routes!()
         this.reducer = options.reducer || (defaultRouteReducer as any)
 
         let basename = options.basename
@@ -63,7 +63,7 @@ export class Router<Context extends object=any, R=Route> {
             basename = basename.slice(0, -1)
         }
 
-        this.rootMapping = createRootMapping(options.matcher!, basename)
+        this.rootMapping = createRootMapping(options.routes!, basename)
     }
 
     // Please don't document this API. It should only be used through

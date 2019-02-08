@@ -218,7 +218,7 @@ export function map<Context extends object, M extends Matcher<Context>>(
         // replace it, and either item is a map, then there could
         // be a conflict.
         // TODO: this warning will have false positives when a wildcard
-        // is on a content matcher and the map is on a more specific element.
+        // is on a view matcher and the map is on a more specific element.
         let replacedKey = pattern.key.replace(previousPattern.regExp, '')
         if (replacedKey !== pattern.key && replacedKey.length > 0) {
           if (

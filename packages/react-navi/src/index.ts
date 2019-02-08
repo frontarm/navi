@@ -6,4 +6,8 @@ export { NavNotFoundBoundary } from './NavNotFoundBoundary'
 export { NavProvider } from './NavProvider'
 export { NavRoute, useCurrentRoute } from './NavRoute'
 export { NavRouter, useRouter } from './NavRouter'
-export { NavContent } from './NavContent'
+export { NavView } from './NavView'
+
+// Aliases
+
+export { NavView as NavContent } from './NavView'

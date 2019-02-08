@@ -3,25 +3,25 @@ import { fixtureMap } from './fixtures/switches'
 
 describe("pageMap", () => {
   test("mapping over '/' returns full site", async () => {
-    let router = createRouter({ matcher: fixtureMap })
+    let router = createRouter({ routes: fixtureMap })
     let map = await router.resolveRouteMap('/')
     expect(Object.keys(map).length).toBe(4)
   })
    
   test("mapping over '' returns full site", async () => {
-    let router = createRouter({ matcher: fixtureMap })
+    let router = createRouter({ routes: fixtureMap })
     let map = await router.resolveRouteMap('/')
     expect(Object.keys(map).length).toBe(4)
   })
 
-  test("does not include contents", async () => {
-    let router = createRouter({ matcher: fixtureMap })
+  test("does not include views", async () => {
+    let router = createRouter({ routes: fixtureMap })
     let map = await router.resolveRouteMap('/')
-    expect(map['/'].contents.length).toBe(0)
+    expect(map['/'].views.length).toBe(0)
   })
 
   test("can map from an intermediate url and exclude its index", async () => {
-    let router = createRouter({ matcher: fixtureMap })
+    let router = createRouter({ routes: fixtureMap })
     let map = await router.resolveRouteMap('/examples', {
       predicate: (segment) => segment.url.pathname !== '/examples/'
     })
@@ -30,7 +30,7 @@ describe("pageMap", () => {
 
   test("supports expandPattern()", async () => {
     let router = createRouter({
-      matcher: map({
+      routes: map({
         '/about': route(),
         '/tags/:name': route()
       })
@@ -46,7 +46,7 @@ describe("pageMap", () => {
 
   test("excludes patterns with wildcards when expandPattern() is not supplied", async () => {
     let router = createRouter({
-      matcher: map({
+      routes: map({
         '/about': route(),
         '/tags/:name': route()
       })
@@ -58,7 +58,7 @@ describe("pageMap", () => {
 
 describe("pageRoute", () => {
   test("follows redirects when { followRedirects: true }", async () => {
-    let router = createRouter({ matcher: fixtureMap })
+    let router = createRouter({ routes: fixtureMap })
     let route = await router.resolve('/examples', { followRedirects: true })
     expect(route.url.pathname).toBe('/examples/basic/')
   })
@@ -66,7 +66,7 @@ describe("pageRoute", () => {
 
 describe("siteMap", () => {
   test("includes redirects", async () => {
-    let router = createRouter({ matcher: fixtureMap })
+    let router = createRouter({ routes: fixtureMap })
     let map = await router.resolveSiteMap('/')
     expect(Object.keys(map.redirects).length).toBe(1)
   })

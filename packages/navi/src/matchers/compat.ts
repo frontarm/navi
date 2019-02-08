@@ -3,7 +3,7 @@
 //
 
 import { composeMatchers } from '../composeMatchers'
-import { withContent, withContents } from './ContentMatcher'
+import { withView } from './ViewMatcher'
 import { map, MapMatcherPaths } from './MapMatcher'
 import { redirect } from './RedirectMatcher'
 import { withContext } from './ContextMatcher'
@@ -11,7 +11,8 @@ import { MaybeResolvableMatcher, Matcher } from '../Matcher'
 import { Resolvable, extractDefault } from '../Resolver'
 import { URLDescriptor } from '../URLTools'
 import { NaviRequest } from '../NaviRequest'
-import { withInfo } from '../matchers/InfoMatcher'
+import { withData } from '../matchers/DataMatcher'
+import { withTitle } from './TitleMatcher';
 
 interface Page<Meta extends object, Content> {
   title?: string
@@ -68,8 +69,8 @@ function createGetPage<Context extends object, Meta extends object, Content>(
 export function createPage<
   Context extends object,
   Meta extends object,
-  Content
->(options: PageOptions<Context, Meta, Content>): Matcher<Context> {
+  View
+>(options: PageOptions<Context, Meta, View>): Matcher<Context> {
   if (process.env.NODE_ENV !== 'production') {
     console.warn(
       `Deprecation Warning: "createPage()" is deprecated. From Navi 0.12, ` +
@@ -79,13 +80,9 @@ export function createPage<
 
   return composeMatchers(
     withContext(createGetPage(options)),
-    withInfo((req, context) => context.meta),
-    withContents((req, context) => [
-      (context.title
-        ? [{ type: 'title', props: { children: context.title } }]
-        : ([] as any[])
-      ).concat(context.content ? [context.content] : []),
-    ]),
+    withData((req, context) => context.meta),
+    withTitle((req, context) => context.title),
+    withView((req, context) => context.content),
   )
 }
 
@@ -135,8 +132,7 @@ export function createSwitch<
   if (process.env.NODE_ENV !== 'production') {
     console.warn(
       `Deprecation Warning: "createSwitch()" is deprecated. From Navi 0.12, ` +
-        `you'll need to use the "map()" matcher instead. If you need to set a ` +
-        `title or other content on the map, wrap it in a "content()" matcher.`,
+        `you'll need to use the "map()" matcher instead.`,
     )
   }
 
@@ -146,13 +142,9 @@ export function createSwitch<
     let { paths, ...pageOptions } = options
     return composeMatchers(
       withContext(createGetPage(pageOptions)),
-      withInfo((req, context) =>
-        context.meta
-      ),
-      withContent((req, context: Page<Meta, Content>) => [
-        { type: 'title', props: { children: context.title } },
-        context.content,
-      ]),
+      withData((req, context: Page<any, any>) => context.meta),
+      withTitle((req, context: Page<any, any>) => context.title),
+      withView((req, context: Page<any, any>) => context.content),
       map(options.paths),
     )
   }
@@ -178,7 +170,7 @@ export function createRedirect<
   let matcher = redirect(to)
   if (meta) {
     return composeMatchers(
-      withInfo(meta),
+      withData(meta),
       matcher,
     )
   }

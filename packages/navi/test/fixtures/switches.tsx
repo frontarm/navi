@@ -1,17 +1,17 @@
-import { composeMatchers, map, lazy, route, redirect, withContent, withContents, withInfo, withContext } from '../../src'
+import { composeMatchers, map, lazy, route, redirect, withView, withData, withContext } from '../../src'
 
 export const fixtureMap = composeMatchers(
-  withContents(['site-layout']),
-  withInfo({
+  withView('site-layout'),
+  withData({
     title: 'Site',
   }),
   map({
     '/': route(async req => ({
-      info: {
+      data: {
         description: 'Navi Is A Router/Loader',
         title: 'Navi',
       },
-      content: await req.router.resolveRouteMap('/examples'),
+      view: await req.router.resolveRouteMap('/examples'),
     })),
 
     '/examples': async () => composeMatchers(
@@ -19,24 +19,24 @@ export const fixtureMap = composeMatchers(
         ...context,
         contextName: 'examples'
       })),
-      withContent(() => 'example-layout'),
+      withView(() => 'example-layout'),
       map({
         '/': async () => redirect(req => req.mountpath+'basic'),
 
         '/basic': async () => route(req => ({
-          info: {
+          data: {
             title: 'Basic example',
             description: 'basic meta description'
           },
-          content: 'basic-example'
+          view: 'basic-example'
         })),
 
         '/advanced': route({
-          info: {
+          data: {
             isPaywalled: true,
             title: 'Advanced example',
           },
-          getContent: async (request, context, infoPromise) => 
+          getView: async (request, context, dataPromise) => 
             (context.contextName !== 'examples' || !context.isAuthenticated)
               ? 'please-login'
               : { isPaywalled: true }
@@ -49,7 +49,7 @@ export const fixtureMap = composeMatchers(
         lazy(async () =>
           composeMatchers(
             route({
-              content: 'cheatsheet'
+              view: 'cheatsheet'
             })
           )
         )

@@ -3,11 +3,11 @@ import { Segment } from './Segments'
 
 export type RouteType =
   | 'busy'
-  | 'success'
+  | 'ready'
   | 'error'
   | 'redirect'
 
-export interface Route<Info = any, Content = any> {
+export interface Route<Data = any, View = any> {
   url: URLDescriptor
 
   type: RouteType
@@ -17,8 +17,8 @@ export interface Route<Info = any, Content = any> {
   segments: Segment[]
   lastSegment: Segment
 
-  contents?: Content
-  info?: Info
+  views?: View
+  data?: Data
   title?: string
 }
 
@@ -31,15 +31,15 @@ export function defaultRouteReducer(route: Route | undefined, segment: Segment):
         url: segment.url,
       }
     }
-    if (route.type !== 'success') {
+    if (route.type !== 'ready') {
       return route
     }
   }
 
   let base = {
     url: route ? route.url : segment.url,
-    contents: route ? route.contents : [],
-    info: route ? route.info : {},
+    views: route ? route.views : [],
+    data: route ? route.data : {},
     segments: route ? route.segments.concat(segment) : [segment],
     lastSegment: segment,
     title: route && route.title,
@@ -48,19 +48,19 @@ export function defaultRouteReducer(route: Route | undefined, segment: Segment):
   switch (segment.type) {
     case 'busy':
       return { ...base, type: 'busy' }
-    case 'content':
+    case 'view':
       route = {
         ...base,
-        type: 'success',
-        contents: base.contents.concat(segment.content),
+        type: 'ready',
+        views: base.views.concat(segment.view),
       }
       Object.defineProperty(route, 'content', {
         enumerable: true,
         get: () => {
           if (process.env.NODE_ENV !== 'production') {
-            console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.12. Please use "route.contents" instead.`)
+            console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.12. Please use "route.views" instead.`)
           }
-          return segment.content
+          return segment.view
         },
       })
       return route
@@ -69,20 +69,19 @@ export function defaultRouteReducer(route: Route | undefined, segment: Segment):
     case 'null':
     case 'url':
     case 'map':
-      return { ...base, type: 'success' }
-    case 'info':
-      Object.assign(base.info, segment.info)
-      route = { ...base, type: 'success', info: base.info }
-      if (base.info.title) {
-        route.title = base.info.title
-      }
+      return { ...base, type: 'ready' }
+    case 'title':
+      return { ...base, type: 'ready', title: segment.title }
+    case 'data':
+      Object.assign(base.data, segment.data)
+      route = { ...base, type: 'ready', data: base.data }
       Object.defineProperty(route, 'meta', {
         enumerable: true,
         get: () => {
           if (process.env.NODE_ENV !== 'production') {
-            console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.12. Please use "route.info" instead.`)
+            console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.12. Please use "route.data" instead.`)
           }
-          return route!.info
+          return route!.data
         },
       })
       return route

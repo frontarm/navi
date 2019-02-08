@@ -1,4 +1,4 @@
-import { Resolvable, extractDefault } from '../Resolver'
+import { Resolvable } from '../Resolver'
 import { createSegment, createNotReadySegment, Segment } from '../Segments'
 import {
   Matcher,
@@ -8,30 +8,29 @@ import {
   MatcherOptions,
   createMatcher,
 } from '../Matcher'
-import { NaviRequest } from '../NaviRequest'
 
-export interface ContentMatcherGeneratorClass<
+export interface ViewMatcherGeneratorClass<
   Context extends object = any,
-  Content = any
+  View = any
 >
   extends MatcherGeneratorClass<
     Context,
-    ContentMatcherGenerator<Context, Content>
+    ViewMatcherGenerator<Context, View>
   > {
-  new (options: MatcherOptions<Context>): ContentMatcherGenerator<
+  new (options: MatcherOptions<Context>): ViewMatcherGenerator<
     Context,
-    Content
+    View
   >
 
   childGeneratorClass: MatcherGeneratorClass<Context> | undefined
-  getContents: Resolvable<Content[], Context>
+  getView: Resolvable<View, Context>
 }
 
-class ContentMatcherGenerator<
+class ViewMatcherGenerator<
   Context extends object,
-  Content
+  View
 > extends MatcherGenerator<Context> {
-  ['constructor']: ContentMatcherGeneratorClass<Context, Content>
+  ['constructor']: ViewMatcherGeneratorClass<Context, View>
 
   last?: {
     matcherGenerator?: MatcherGenerator<any>
@@ -50,17 +49,15 @@ class ContentMatcherGenerator<
     let resolutionIds: number[] = []
 
     if (this.env.request.method !== 'HEAD') {
-      let { id, error, status, value: contents } = this.resolver.resolve(
+      let { id, error, status, value: view } = this.resolver.resolve(
         this.env,
-        this.constructor.getContents,
+        this.constructor.getView,
       )
       resolutionIds.push(id)
 
       segments =
         status === 'ready'
-          ? contents!.map(content =>
-              createSegment('content', this.env.request, { content }),
-            )
+          ? (view ? [createSegment('view', this.env.request, { view })] : [])
           : [createNotReadySegment(this.env.request, error)]
 
       if (segments.length === 0) {
@@ -96,44 +93,21 @@ class ContentMatcherGenerator<
   }
 }
 
-export function withContents<Context extends object, Content>(
-  maybeResolvableContent: Content[] | Resolvable<Content[], Context>,
+export function withView<Context extends object, View>(
+  maybeResolvableView: View | Resolvable<View, Context>,
 ): Matcher<Context> {
-  let getContents: Resolvable<Content[], Context> =
-    typeof maybeResolvableContent === 'function'
-      ? (maybeResolvableContent as any)
-      : () => maybeResolvableContent
+  let getView: Resolvable<View, Context> =
+    typeof maybeResolvableView === 'function'
+      ? (maybeResolvableView as any)
+      : () => maybeResolvableView
 
   return createMatcher(
     (
       childGeneratorClass?: MatcherGeneratorClass<Context>,
-    ): ContentMatcherGeneratorClass<Context, Content> =>
-      class extends ContentMatcherGenerator<Context, Content> {
-        static getContents = getContents
+    ): ViewMatcherGeneratorClass<Context, View> =>
+      class extends ViewMatcherGenerator<Context, View> {
+        static getView = getView
         static childGeneratorClass = childGeneratorClass
       },
   )
-}
-
-export function withContent<Context extends object, Content>(
-  resolvableContent: Resolvable<Content, Context>,
-): Matcher<Context> {
-  let getContents = async (req: NaviRequest, context: Context) => {
-    let x = await resolvableContent(req, context)
-    return wrapWithArray(extractDefault(x))
-  }
-
-  return createMatcher(
-    (
-      childGeneratorClass?: MatcherGeneratorClass<Context>,
-    ): ContentMatcherGeneratorClass<Context, Content> =>
-      class extends ContentMatcherGenerator<Context, Content> {
-        static getContents = getContents
-        static childGeneratorClass = childGeneratorClass
-      },
-  )
-}
-
-function wrapWithArray<X>(x: X): X[] {
-  return [x]
 }

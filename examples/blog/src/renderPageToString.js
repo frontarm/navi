@@ -8,7 +8,7 @@ import renderRSSFeedToString from './renderRSSFeedToString'
  */
 async function renderPageToString(props) {
   if (props.url.pathname === '/rss') {
-    let router = createRouter({ matcher: props.pages })
+    let router = createRouter({ routes: props.routes })
     let route = await router.resolve(props.url)
     return await renderRSSFeedToString(route.content)
   }

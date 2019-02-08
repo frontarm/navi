@@ -91,7 +91,7 @@ export class CurrentRouteObservable<Context extends object, R> implements Observ
     /**
      * Returns a promise that resolves once the route is steady.
      * This is useful for implementing static rendering, or for waiting until
-     * content is loaded before making the first render.
+     * view is loaded before making the first render.
      */
     async getSteadyRoute(): Promise<R> {
         if (this.isLastRouteSteady) {

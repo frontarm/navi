@@ -7,7 +7,7 @@ import Bio from './Bio'
 import styles from './BlogPostLayout.module.css'
 
 function BlogPostLayout({ blogRoot }) {
-  let { title, info, url } = useCurrentRoute()
+  let { title, data, url } = useCurrentRoute()
 
   return (
     <NavContent>
@@ -22,7 +22,7 @@ function BlogPostLayout({ blogRoot }) {
             </h1>
             <ArticleMeta
               blogRoot={blogRoot}
-              meta={info}
+              meta={data}
               readingTime={readingTime}
             />
           </header>
@@ -44,15 +44,15 @@ function BlogPostLayout({ blogRoot }) {
             <Bio className={styles.bio} />
             <section className={styles.links}>
               {
-                info.previousDetails &&
-                <NavLink className={styles.previous} href={info.previousDetails.href}>
-                  ← {info.previousDetails.title}
+                data.previousDetails &&
+                <NavLink className={styles.previous} href={data.previousDetails.href}>
+                  ← {data.previousDetails.title}
                 </NavLink>
               }
               {
-                info.nextDetails &&
-                <NavLink className={styles.next} href={info.nextDetails.href}>
-                  {info.nextDetails.title} →
+                data.nextDetails &&
+                <NavLink className={styles.next} href={data.nextDetails.href}>
+                  {data.nextDetails.title} →
                 </NavLink>
               }
             </section>

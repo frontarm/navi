@@ -4,10 +4,11 @@
 
 export * from './matchers/compat'
 export * from './matchers/ContextMatcher'
-export * from './matchers/InfoMatcher'
+export * from './matchers/DataMatcher'
 export * from './matchers/MapMatcher'
-export * from './matchers/ContentMatcher'
+export * from './matchers/ViewMatcher'
 export * from './matchers/RedirectMatcher'
+export * from './matchers/TitleMatcher'
 export * from './matchers/route'
 export * from './Errors'
 export * from './NaviRequest'
@@ -26,5 +27,5 @@ export { Observer, Subscription } from './Observable'
 // Aliases
 //
 
-export { withContent as content } from './matchers/ContentMatcher'
-export { map as lazy } from './matchers/MapMAtcher'
+export { withView as view } from './matchers/ViewMatcher'
+export { map as lazy } from './matchers/MapMatcher'

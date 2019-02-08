@@ -7,8 +7,8 @@ function ArticleSummary({ blogRoot, route }) {
   return (
     <article className={styles.ArticleSummary}>
       <h2><NavLink href={route.url.href}>{route.title}</NavLink></h2>
-      <ArticleMeta blogRoot={blogRoot} meta={route.info} />
-      <p>{route.info.spoiler}</p>
+      <ArticleMeta blogRoot={blogRoot} meta={route.data} />
+      <p>{route.data.spoiler}</p>
     </article>
   )
 }

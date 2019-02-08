@@ -1,29 +1,31 @@
-import * as Navi from 'navi'
+import { createMemoryNavigation, composeMatchers, withView, route, map } from 'navi'
 import React, { Component } from 'react'
 import ReactTestRenderer from 'react-test-renderer'
-import { NavContent, NavProvider } from '../src'
+import { NavView, NavProvider } from '../src'
 
-describe("NavContent", () => {
+describe("NavView", () => {
   test("supports nested nested content", async () => {
-    let navigation = Navi.createMemoryNavigation({
+    let navigation = createMemoryNavigation({
       url: '/test/',
-      pages: Navi.createSwitch({
-        content: function Wrapper() {
-          return <div><NavContent /></div>
-        },
-        paths: {
-          '/test': Navi.createPage({
-            content: 'nested content'
+      routes: composeMatchers(
+        withView(() =>
+          function Wrapper() {
+            return <div><NavView /></div>
+          }
+        ),
+        map({
+          '/test': route({
+            view: 'nested content'
           }),
-        }
-      }),
+        })
+      ),
     })
 
     await navigation.steady()
 
     let component = ReactTestRenderer.create(
       <NavProvider navigation={navigation}>
-        <NavContent />
+        <NavView />
       </NavProvider>,
     )
 
@@ -31,20 +33,18 @@ describe("NavContent", () => {
   })
 
   test("renders class component content as an element with a 'route' prop", async () => {
-    let navigation = Navi.createMemoryNavigation({
+    let navigation = createMemoryNavigation({
       url: '/test/',
-      pages: Navi.createSwitch({
-        paths: {
-          '/test': Navi.createPage({
-            title: 'title',
-            content:
-              class TestClassComponent extends Component<any> {
-                  render() {
-                      return this.props.route.title
-                  }
-              },
-          }),
-        }
+      routes: map({
+        '/test': route({
+          title: 'title',
+          view:
+            class TestClassComponent extends Component<any> {
+                render() {
+                    return this.props.route.title
+                }
+            },
+        }),
       }),
     })
 
@@ -52,7 +52,7 @@ describe("NavContent", () => {
 
     let component = ReactTestRenderer.create(
       <NavProvider navigation={navigation}>
-        <NavContent />
+        <NavView />
       </NavProvider>,
     )
     let output = component.toJSON()
@@ -61,15 +61,13 @@ describe("NavContent", () => {
   })
 
   test("renders function component content as an element with a 'route' prop", async () => {
-    let navigation = Navi.createMemoryNavigation({
+    let navigation = createMemoryNavigation({
       url: '/test/',
-      pages: Navi.createSwitch({
-        paths: {
-          '/test': Navi.createPage({
-            title: 'title',
-            content: ({ route }) => route.title
-          }),
-        }
+      routes: map({
+        '/test': route({
+          title: 'title',
+          view: ({ route }) => route.title
+        }),
       }),
     })
 
@@ -77,7 +75,7 @@ describe("NavContent", () => {
 
     let component = ReactTestRenderer.create(
       <NavProvider navigation={navigation}>
-        <NavContent />
+        <NavView />
       </NavProvider>,
     )
     
@@ -85,14 +83,12 @@ describe("NavContent", () => {
   })
 
   test("renders element content", async () => {
-    let navigation = Navi.createMemoryNavigation({
+    let navigation = createMemoryNavigation({
       url: '/test/',
-      pages: Navi.createSwitch({
-        paths: {
-          '/test': Navi.createPage({
-            content: <>test content</>
-          }),
-        }
+      routes: map({
+        '/test': route({
+          view: <>test content</>
+        }),
       }),
     })
 
@@ -100,7 +96,7 @@ describe("NavContent", () => {
 
     let component = ReactTestRenderer.create(
       <NavProvider navigation={navigation}>
-        <NavContent />
+        <NavView />
       </NavProvider>,
     )
     
@@ -108,14 +104,12 @@ describe("NavContent", () => {
   })
 
   test("renders string content", async () => {
-    let navigation = Navi.createMemoryNavigation({
+    let navigation = createMemoryNavigation({
       url: '/test/',
-      pages: Navi.createSwitch({
-        paths: {
-          '/test': Navi.createPage({
-            content: "test content"
-          }),
-        }
+      routes: map({
+        '/test': route({
+          view: "test content"
+        }),
       }),
     })
 
@@ -123,7 +117,7 @@ describe("NavContent", () => {
 
     let component = ReactTestRenderer.create(
       <NavProvider navigation={navigation}>
-        <NavContent />
+        <NavView />
       </NavProvider>,
     )
     

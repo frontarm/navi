@@ -1,11 +1,11 @@
-import { createMemoryNavigation, ContentSegment, NotFoundError } from '../src'
+import { createMemoryNavigation, ViewSegment, NotFoundError } from '../src'
 import { fixtureMap } from './fixtures/switches'
 
 describe("integration", () => {
     function createTestNavigation(initialURL) {
         return createMemoryNavigation({
             url: initialURL,
-            matcher: fixtureMap,
+            routes: fixtureMap,
         })
     }
 
@@ -16,13 +16,13 @@ describe("integration", () => {
         let firstSegment = route.segments[0]
         
         expect(firstSegment.type).toBe('url')
-        expect((route.segments[2] as any).info.title).toBe('Site')
+        expect((route.segments[2] as any).data.title).toBe('Site')
         // expect(route.status).toBe(200)
-        expect(route.contents[0]).toBe('site-layout')
-        expect(route.contents[1]).toBe('example-layout')
-        expect(route.type).toBe('success')
+        expect(route.views[0]).toBe('site-layout')
+        expect(route.views[1]).toBe('example-layout')
+        expect(route.type).toBe('ready')
         expect(route.title).toBe('Basic example')
-        expect(route.contents[2]).toBe('basic-example')
+        expect(route.views[2]).toBe('basic-example')
 
         nav.history.push('/examples/advanced?referrer=frontarm')
 
@@ -36,8 +36,8 @@ describe("integration", () => {
 
         expect(route.url.query).toEqual({ referrer: 'frontarm' })
         expect(route.title).toBe('Advanced example')
-        expect(route.info['isPaywalled']).toBe(true)
-        expect(route.contents[route.contents.length - 1]).toBe('please-login')
+        expect(route.data['isPaywalled']).toBe(true)
+        expect(route.views[route.views.length - 1]).toBe('please-login')
 
         nav.setContext({
             isAuthenticated: true
@@ -45,7 +45,7 @@ describe("integration", () => {
 
         route = await nav.getSteadyValue()
 
-        expect((route.lastSegment as ContentSegment).content).toEqual({
+        expect((route.lastSegment as ViewSegment).view).toEqual({
             isPaywalled: true,
         })
 
@@ -59,14 +59,14 @@ describe("integration", () => {
         nav.dispose()
     })
 
-    test("map-based content", async () => {
+    test("map-based view", async () => {
         let nav = createTestNavigation('/')
 
         let route = await nav.getSteadyValue()
-        let lastSegment = route.lastSegment as ContentSegment
+        let lastSegment = route.lastSegment as ViewSegment
         
-        expect(Object.keys(lastSegment.content)).toEqual(['/examples/basic/', '/examples/advanced/'])
-        expect(route.type).toBe('success')
+        expect(Object.keys(lastSegment.view)).toEqual(['/examples/basic/', '/examples/advanced/'])
+        expect(route.type).toBe('ready')
         expect(route.title).toBe('Navi')
     })
 })

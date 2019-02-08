@@ -8,22 +8,24 @@ import { NaviRequest } from './NaviRequest'
  */
 export type Segment =
   | BusySegment
-  | ContentSegment
+  | ViewSegment
   | ErrorSegment
-  | InfoSegment
+  | DataSegment
   | MapSegment
   | NullSegment
   | RedirectSegment
+  | TitleSegment
   | URLSegment
 
 export type SegmentType =
   | 'busy'
-  | 'content'
+  | 'view'
   | 'error'
-  | 'info'
+  | 'data'
   | 'map'
   | 'null'
   | 'redirect'
+  | 'title'
   | 'url'
 
 /**
@@ -40,7 +42,7 @@ export interface GenericSegment {
 
   error?: any
   to?: any
-  content?: any
+  view?: any
   map?: any
 }
 
@@ -54,7 +56,7 @@ export interface BusySegment extends GenericSegment {
 }
 
 /**
- * When encountered in a route by a `<NavContent>`, this will be thrown, and
+ * When encountered in a route by a `<NavView>`, this will be thrown, and
  * can then be handled by an Error Boundary. Behavior for handling error
  * segments on the server side is undefined.
  */
@@ -73,22 +75,22 @@ export interface RedirectSegment extends GenericSegment {
 }
 
 /**
- * Content segments contain data that will be used in a response on the
+ * View segments contain data that will be used in a response on the
  * server, or that will be rendered in the browser. They can contain error
  * or redirect information, but they'll still be rendered as-is in the client.
  */
-export interface ContentSegment<Content=any> extends GenericSegment {
-  type: 'content'
-  content: Content
+export interface ViewSegment<View=any> extends GenericSegment {
+  type: 'view'
+  view: View
 }
 
 /**
- * Info segments contain information that will be available on the produced
+ * Data segments contain information that will be available on the produced
  * route object, but isn't meant to be rendered with the page itself.
  */
-export interface InfoSegment<Info=any> extends GenericSegment {
-  type: 'info'
-  info: Info
+export interface DataSegment<Data=any> extends GenericSegment {
+  type: 'data'
+  data: Data
 }
 
 /**
@@ -98,6 +100,15 @@ export interface InfoSegment<Info=any> extends GenericSegment {
 export interface NullSegment extends GenericSegment {
   type: 'null'
 }
+
+/**
+ * Allows matchers to specify a <title> tag, or document title.
+ */
+export interface TitleSegment extends GenericSegment {
+  type: 'title'
+  title: string
+}
+
 
 /**
  * Contains the URL's hash, if it exists. This isn't usable within the router,

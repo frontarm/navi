@@ -13,7 +13,7 @@ export interface BrowserNavigationOptions<Context extends object, R = Route> {
     /**
      * The Matcher that declares your app's pages.
      */
-    matcher?: Matcher<Context>,
+    routes?: Matcher<Context>,
     pages?: Matcher<Context>,
 
     /**
@@ -60,7 +60,7 @@ export class BrowserNavigation<Context extends object, R> implements Navigation<
                 `Deprecation Warning: passing a "pages" option to "createBrowserNavigation()" will `+
                 `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
             )
-            options.matcher = options.pages
+            options.routes = options.pages
         }
 
         let reducer = options.reducer || defaultRouteReducer as any as Reducer<Segment, R>
@@ -68,7 +68,7 @@ export class BrowserNavigation<Context extends object, R> implements Navigation<
         this.history = options.history || createBrowserHistory()
         this.router = new Router({
             context: options.context,
-            matcher: options.matcher!,
+            routes: options.routes!,
             basename: options.basename,
             reducer,
         })

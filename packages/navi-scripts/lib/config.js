@@ -17,8 +17,8 @@ const defaultConfig = {
     const chalk = require("chalk")
     const fs = config.fs
 
-    for (let { url, to } of Object.values(siteMap.redirects)) {
-      let pathname = url === '/' ? 'index.html' : path.join(url.pathname.slice(1), 'index.html')
+    for (let [url, to] of Object.entries(siteMap.redirects)) {
+      let pathname = url === '/' ? 'index.html' : path.join(url.split('?')[0].slice(1), 'index.html')
 
       console.log(chalk.yellow("[redirect] ")+pathname+chalk.grey(" -> "+to))
 
