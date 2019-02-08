@@ -6,11 +6,9 @@ import {
   createOrPassthroughObserver,
 } from './Observable'
 import { Resolver } from './Resolver'
-import { Segment, } from './Segments'
-import { Matcher } from './Matcher'
+import { Segment } from './Segments'
+import { MatcherGeneratorClass, MatcherGenerator } from './Matcher'
 import { RouterMapOptions, Router } from './Router'
-import { RouteMap, isRouteMapSteady } from './Maps'
-import { createRoute, Route } from './Route'
 import { Env } from './Env'
 import { Mapping, mappingAgainstPathname } from './Mapping'
 import { createRequest } from './NaviRequest';
@@ -21,16 +19,20 @@ interface MapItem {
   fromPathname?: string
   depth: number
   order: number[]
-  matcher: Matcher<any>['prototype']
+  matcherGenerator: MatcherGenerator<any>
   segmentsCache?: Segment[]
   lastSegmentCache?: Segment
 }
 
-export class RouteMapObservable implements Observable<RouteMap> {
+export interface SegmentsMap {
+  [name: string]: Segment[]
+}
+
+export class SegmentsMapObservable implements Observable<SegmentsMap> {
   private rootContext: any
-  private matcher: Matcher<any>
+  private matcherGeneratorClass: MatcherGeneratorClass<any>
   private rootMapping: Mapping
-  private observers: Observer<RouteMap>[]
+  private observers: Observer<SegmentsMap>[]
   private isRefreshScheduled: boolean
   private isRefreshing: boolean
   private resolver: Resolver
@@ -43,10 +45,10 @@ export class RouteMapObservable implements Observable<RouteMap> {
   constructor(
     url: URLDescriptor,
     rootContext: any,
-    matcher: Matcher<any>,
+    matcherGeneratorClass: MatcherGeneratorClass<any>,
     rootMapping: Mapping,
     resolver: Resolver,
-    router: Router,
+    router: Router<any, any>,
     options: RouterMapOptions,
   ) {
     this.observers = []
@@ -54,7 +56,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
     this.resolver = resolver
     this.router = router
     this.rootContext = rootContext
-    this.matcher = matcher
+    this.matcherGeneratorClass = matcherGeneratorClass
     this.rootMapping = rootMapping
     this.options = options
     this.seenPathnames = new Set()
@@ -72,8 +74,8 @@ export class RouteMapObservable implements Observable<RouteMap> {
 
   subscribe(
     onNextOrObserver:
-      | Observer<RouteMap>
-      | ((value: RouteMap) => void),
+      | Observer<SegmentsMap>
+      | ((value: SegmentsMap) => void),
     onError?: (error: any) => void,
     onComplete?: () => void,
   ): SimpleSubscription {
@@ -104,7 +106,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
     return [pattern].filter(pattern => !/\/:/.test(pattern))
   }
 
-  private handleUnsubscribe = (observer: Observer<RouteMap>) => {
+  private handleUnsubscribe = (observer: Observer<SegmentsMap>) => {
     let index = this.observers.indexOf(observer)
     if (index !== -1) {
       this.observers.splice(index, 1)
@@ -129,7 +131,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
     while (i < this.mapItems.length) {
       let item = this.mapItems[i]
       let pathname = item.pathname
-      let { segments, resolutionIds } = item.matcher.getResult()
+      let { segments, resolutionIds } = item.matcherGenerator.getResult()
       let lastSegment = segments[segments.length-1]
       let cachedLastSegment = item.lastSegmentCache
       item.segmentsCache = segments
@@ -194,17 +196,14 @@ export class RouteMapObservable implements Observable<RouteMap> {
       i++
     }
 
-    let routeMapArray = [] as [string, Route, number[]][]
+    let segmentsMapArray = [] as [string, Segment[], number[]][]
     for (let i = 0; i < this.mapItems.length; i++) {
       let item = this.mapItems[i]
       let lastSegment = item.lastSegmentCache!
       if (lastSegment.type !== 'map' && lastSegment.type !== 'error') {
-        routeMapArray.push([
+        segmentsMapArray.push([
           joinPaths(item.pathname, '/'),
-          createRoute(
-            createURLDescriptor(item.pathname, { ensureTrailingSlash: false }),
-            item.segmentsCache!,
-          ),
+          item.segmentsCache!,
           item.order
         ])
       }
@@ -213,7 +212,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
     // This will replace any existing listener and its associated resolvables
     this.resolver.listen(this.handleResolverUpdate, allResolvableIds)
 
-    routeMapArray.sort((itemX, itemY) => {
+    segmentsMapArray.sort((itemX, itemY) => {
       let x = itemX[2]
       let y = itemY[2]
     
@@ -240,16 +239,19 @@ export class RouteMapObservable implements Observable<RouteMap> {
       this.refresh()
     }
     else {
-      let routeMap: RouteMap = {}
-      for (let i = 0; i < routeMapArray.length; i++) {
-        let [pathname, route] = routeMapArray[i]
-        routeMap[pathname] = route
+      let segmentsMap: SegmentsMap = {}
+      let isSteady = true
+      for (let i = 0; i < segmentsMapArray.length; i++) {
+        let [pathname, segments] = segmentsMapArray[i]
+        if (segments.some(segment => segment.type === 'busy')) {
+          isSteady = false
+        }
+        segmentsMap[pathname] = segments
       }
       
-      let isSteady = isRouteMapSteady(routeMap)
       for (let i = 0; i < this.observers.length; i++) {
         let observer = this.observers[i]
-        observer.next(routeMap)
+        observer.next(segmentsMap)
         if (isSteady && observer.complete) {
           observer.complete()
         }
@@ -316,7 +318,7 @@ export class RouteMapObservable implements Observable<RouteMap> {
           depth,
           pathname,
           order,
-          matcher: new this.matcher({
+          matcherGenerator: new this.matcherGeneratorClass({
             appendFinalSlash: false,
             env: matchEnv,
             resolver: this.resolver,

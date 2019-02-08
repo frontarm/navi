@@ -1,15 +1,17 @@
 import { createMemoryHistory, History } from 'history';
 import { Matcher } from './Matcher'
 import { Navigation } from './Navigation'
+import { Reducer } from './Reducer'
 import { Resolver } from './Resolver'
-import { Router, RouterOptions } from './Router'
-import { Route } from './Route'
+import { Router } from './Router'
+import { Route, defaultRouteReducer } from './Route'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { CurrentRouteObservable, createCurrentRouteObservable } from './CurrentRouteObservable';
 import { URLDescriptor, createURLDescriptor } from './URLTools';
+import { Segment } from './Segments';
 
 
-export interface MemoryNavigationOptions<Context extends object> extends RouterOptions<Context> {
+export interface MemoryNavigationOptions<Context extends object, R = Route> {
     /**
      * The Matcher that declares your app's pages.
      */
@@ -32,42 +34,52 @@ export interface MemoryNavigationOptions<Context extends object> extends RouterO
      * the second argument passed to any getter functions.
      */
     context?: Context,
+
+    /**
+     * The function that reduces segments into a Route object.
+     */
+    reducer?: Reducer<Segment, R>,
 }
 
 
-export function createMemoryNavigation<Context extends object>(options: MemoryNavigationOptions<Context>) {
+export function createMemoryNavigation<Context extends object, R = Route>(options: MemoryNavigationOptions<Context, R>) {
     return new MemoryNavigation(options)
 }
 
 
-export class MemoryNavigation<Context extends object> implements Navigation<Context> {
-    router: Router<Context>
+export class MemoryNavigation<Context extends object, R> implements Navigation<Context, R> {
+    router: Router<Context, R>
 
     readonly history: History
 
-    private options: MemoryNavigationOptions<Context>
-    private resolver: Resolver
+    private options: MemoryNavigationOptions<Context, R>
+    private currentRouteObservable: CurrentRouteObservable<Context, R>
 
-    private currentRouteObservable: CurrentRouteObservable<Context>
-
-    constructor(options: MemoryNavigationOptions<Context>) {
+    constructor(options: MemoryNavigationOptions<Context, R>) {
         if (options.pages) {
+            console.warn(
+                `Deprecation Warning: passing a "pages" option to "createMemoryNavigation()" will `+
+                `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
+            )
             options.matcher = options.pages
         }
+
+        let reducer = options.reducer || defaultRouteReducer as any as Reducer<Segment, R>
 
         this.history = createMemoryHistory({
             initialEntries: [createURLDescriptor(options.url).href],
         })
-        this.resolver = new Resolver
         this.options = options
-        this.router = new Router(this.resolver, {
+        this.router = new Router({
             context: options.context,
             matcher: (this.options.matcher || this.options.pages)!,
             basename: this.options.basename,
+            reducer,
         })
         this.currentRouteObservable = createCurrentRouteObservable({
             history: this.history,
             router: this.router,
+            reducer,
         })
     }
 
@@ -75,24 +87,18 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
         this.currentRouteObservable.dispose()
         delete this.currentRouteObservable
         delete this.router
-        delete this.resolver
         delete this.options
     }
 
     setContext(context: Context) {
-        this.router = new Router(this.resolver, {
-            context: context,
-            matcher: (this.options.matcher || this.options.pages)!,
-            basename: this.options.basename,
-        })
-        this.currentRouteObservable.setRouter(this.router)
+        this.currentRouteObservable.setContext(context)
     }
 
-    getCurrentValue(): Route {
+    getCurrentValue(): R {
         return this.currentRouteObservable.getValue()
     }
 
-    getSteadyValue(): Promise<Route> {
+    getSteadyValue(): Promise<R> {
         return this.currentRouteObservable.getSteadyRoute()
     }
 
@@ -106,7 +112,7 @@ export class MemoryNavigation<Context extends object> implements Navigation<Cont
      * the snapshot, as the route may change as new code chunks are received.
      */
     subscribe(
-        onNextOrObserver: Observer<Route> | ((value: Route) => void),
+        onNextOrObserver: Observer<R> | ((value: R) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {

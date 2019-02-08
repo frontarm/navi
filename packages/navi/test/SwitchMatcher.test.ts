@@ -1,4 +1,4 @@
-import { createMemoryNavigation, isValidMapMatcher, map, redirect, page } from '../src'
+import { createMemoryNavigation, map, redirect, route } from '../src'
 
 describe("Map", () => {
   test("Passes correct pathname into path getter function", async () => {
@@ -6,24 +6,14 @@ describe("Map", () => {
       url: '/from',
       matcher: map({
         '/from': req => redirect('/to?from='+encodeURIComponent(req.mountpath)),
-        '/to': req => page({ title: null }),
+        '/to': req => route({ content: 'test' }),
       }),
     })
 
-    let route = await nav.getSteadyValue()
+    let r = await nav.getSteadyValue()
     
-    expect(route.url.pathname).toBe('/to/')
-    expect(route.url.query.from).toBe('/from')
-  })
-
-  test("is a valid map", () => {
-    let x = map({
-      '/test': page({
-        title: 'test'
-      })
-    })
-
-    expect(isValidMapMatcher(x)).toBe(true)
+    expect(r.url.pathname).toBe('/to/')
+    expect(r.url.query.from).toBe('/from')
   })
 
   test("Fails when non-functions are specified as paths", async () => {
@@ -39,12 +29,5 @@ describe("Map", () => {
       expect(e.message.indexOf('/this-also-fails') > -1).toBeTruthy()
       expect(e.message.indexOf('/fail') > -1).toBeTruthy()
     }
-  })
-})
-
-describe("isValidMapMatcher()", () => {
-  test("returns false for a Redirect", () => {
-    let page = redirect('/to')
-    expect(isValidMapMatcher(page)).toBe(false)
   })
 })

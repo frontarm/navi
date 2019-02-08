@@ -1,32 +1,18 @@
-import { ContextMatcher } from './ContextMatcher'
 import { Resolver, Resolvable } from './Resolver'
 import { Segment, createNotFoundSegment } from './Segments'
-import { MapMatcher } from './MapMatcher'
-import { ContentMatcher } from './ContentMatcher'
-import { RedirectMatcher } from './RedirectMatcher'
 import { Env } from './Env'
 
-export type MatcherType =
-    | 'map'
-    | 'content'
-    | 'redirect'
-    | 'context'
+export type Matcher<ParentContext extends object, ChildContext extends object = ParentContext> =
+    ((child?: MatcherGeneratorClass<ChildContext>) => MatcherGeneratorClass<ParentContext>) & 
+    {
+        isMatcher: true;
+    }
 
-export interface MatcherClass<Context extends object, RM extends MatcherBase<Context> = MatcherBase<Context>> {
-    isMatcher: boolean;
-    type: MatcherType;
-
-    new(options: MatcherOptions<Context>): RM;
-    prototype: RM;
-}
-
-export type Matcher<Context extends object> = MapMatcher<Context> | ContentMatcher<Context> | RedirectMatcher<Context> | ContextMatcher<Context>
-
-export interface ResolvableMatcher<M extends Matcher<Context> = Matcher<Context>, Context extends object=any> extends Resolvable<M, Context> {
+export interface ResolvableMatcher<Context extends object=any, M extends Matcher<Context> = Matcher<Context>> extends Resolvable<M, Context> {
     isMatcher?: undefined;
 }
 
-export type MaybeResolvableMatcher<Context extends object=any> = Matcher<Context> | ResolvableMatcher<Matcher<Context>, Context>
+export type MaybeResolvableMatcher<Context extends object=any> = Matcher<Context> | ResolvableMatcher<Context, Matcher<Context>>
 
 export interface MatcherOptions<Context extends object> {
     appendFinalSlash?: boolean
@@ -34,18 +20,32 @@ export interface MatcherOptions<Context extends object> {
     resolver: Resolver
 }
 
-export interface MatcherResult<S extends Segment = Segment> {
-    segments: S[]
+export interface MatcherResult {
+    segments: Segment[]
     resolutionIds: number[]
 }
 
-export abstract class MatcherBase<Context extends object> {
+export function isValidMatcher(x: any): x is Matcher<any> {
+    return x && x.isMatcher
+}
+
+export function createMatcher<ParentContext extends object, ChildContext extends object = ParentContext>(
+    thunk: (childGeneratorClass?: MatcherGeneratorClass<ChildContext>) => MatcherGeneratorClass<ParentContext>
+): Matcher<ParentContext, ChildContext> {
+    return Object.assign(thunk, { isMatcher: true as true })
+}
+
+export interface MatcherGeneratorClass<Context extends object, MG extends MatcherGenerator<Context> = MatcherGenerator<Context>> {
+    new (options: MatcherOptions<Context>): MG
+}
+
+export class MatcherGenerator<Context extends object> {
     appendFinalSlash: boolean
     env: Env;
     resolver: Resolver;
     wildcard: boolean;
 
-    ['constructor']: Matcher<Context>
+    ['constructor']: MatcherGeneratorClass<Context>
 
     constructor(options: MatcherOptions<Context>, wildcard = false) {
         this.appendFinalSlash = !!options.appendFinalSlash
@@ -71,5 +71,8 @@ export abstract class MatcherBase<Context extends object> {
         }
     };
     
-    protected abstract execute(): MatcherResult;
+    protected execute(): MatcherResult {
+        // abstract.
+        return undefined as any
+    }
 }

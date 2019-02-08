@@ -3,10 +3,10 @@ import { joinPaths } from './URLTools'
 import { NotFoundError } from './Errors'
 import { NaviRequest } from './NaviRequest';
 
-export type Resolvable<T, Context extends object = any, Info = any> = (
+export type Resolvable<T, Context extends object = any, U = any> = (
   request: NaviRequest,
   context: Context,
-  infoPromise: Info
+  arg?: U
 ) => (T | PromiseLike<{ default: T } | T>)
 
 export type Resolution<T> = {
@@ -51,11 +51,9 @@ export class Resolver {
     this.listenerIds.delete(listener)
   }
 
-  resolve<T, Info>(
+  resolve<T>(
     env: Env,
-    resolvable: Resolvable<T>,
-    infoResolvable?: Resolvable<Info>,
-    infoValue?: Info
+    resolvable: Resolvable<T>
   ): Resolution<T> {
     let matcherResults = this.results.get(env)
     if (!matcherResults) {
@@ -68,11 +66,14 @@ export class Resolver {
       return currentResult
     }
 
-    let infoResolution = !infoResolvable ? { promise: Promise.resolve(infoValue) } : (
-      matcherResults.get(infoResolvable) || { promise: Promise.resolve() }
-    ) 
     let id = this.nextId++
-    let maybeValue = resolvable(env.request, env.context, infoResolution.promise)
+    let maybeValue
+    try {
+      maybeValue = resolvable(env.request, env.context)
+    }
+    catch (e) {
+      maybeValue = Promise.reject(e)
+    }
     if (!isPromiseLike(maybeValue)) {
       let result: Resolution<T> = {
         id,

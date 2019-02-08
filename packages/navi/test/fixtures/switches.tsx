@@ -1,74 +1,58 @@
-import React from 'react'
-import { map, page, redirect, withContent, withContext } from '../../src'
+import { composeMatchers, map, route, redirect, withContent, withContents, withInfo, withContext } from '../../src'
 
-export const fixtureMap = withContent(
-  {
-    getBody() {
-      return 'site-layout'
-    },
+export const fixtureMap = composeMatchers(
+  withContents(['site-layout']),
+  withInfo({
     title: 'Site',
-  },
+  }),
   map({
-    '/': () => page({
-      title: 'Navi',
+    '/': route(async req => ({
       info: {
         description: 'Navi Is A Router/Loader',
+        title: 'Navi',
       },
-      getBody: (request) => request.router.resolvePageMap('/examples'),
-    }),
+      content: await req.router.resolveRouteMap('/examples'),
+    })),
 
-    '/examples': async () =>
-      withContext(
-        async (request, context) => ({
-          ...context,
-          contextName: 'examples'
-        }),
-        map(async () =>
-          withContent(
-            {
-              getBody() {
-                return 'example-layout'
-              },
-              getHead: () => [
-                { type: 'meta', props: { name: 'description', content: 'examples meta description' } }
-              ],
+    '/examples': async () => composeMatchers(
+      withContext(async (req, context) => ({
+        ...context,
+        contextName: 'examples'
+      })),
+      map(async () => composeMatchers(
+        withContent(() => 'example-layout'),
+        map({
+          '/': async () => redirect(req => req.mountpath+'basic'),
+
+          '/basic': async () => route(req => ({
+            info: {
+              title: 'Basic example',
+              description: 'basic meta description'
             },
-            map({
-              '/': async () => redirect(reuqest => reuqest.mountpath+'basic'),
+            content: 'basic-example'
+          })),
 
-              '/basic': async () => page({
-                title: 'Basic example',
-                head: <>
-                  <meta name='description' content='basic meta description' />
-                </>,
-                getBody: () => 'basic-example'
-              }),
+          '/advanced': route(async (req, context: any) => {
+            let info = {
+              isPaywalled: true,
+              title: 'Advanced example',
+            }
 
-              '/advanced': page({
-                title: 'Advanced example',
-                getInfo: async () => ({
-                  isPaywalled: true,
-                }),
-                async getBody(request, context: any, infoPromise) {
-                  if (context.contextName !== 'examples' || !context.isAuthenticated) {
-                    return 'please-login'
-                  }
-                  
-                  return {
-                    dat: await infoPromise
-                  }
-                }
-              })
-            })
-          )
-        )
-      ),
+            return {
+              info,
+              content:
+                (context.contextName !== 'examples' || !context.isAuthenticated)
+                  ? 'please-login'
+                  : { isPaywalled: true }
+            }
+          })
+        })
+      ))
+    ),
 
-    '/goodies': async () => map({
-      '/cheatsheet': async () => page({
-        getBody() {
-          return Promise.resolve('cheatsheet')
-        }
+    '/goodies/cheatsheet': async () => map({
+      '/cheatsheet': async () => route({
+        content: 'cheatsheet'
       })
     })
   })

@@ -12,7 +12,7 @@ export type HTTPMethod =
 export interface NaviRequest {
   readonly mountpath: string
   readonly params: { [name: string]: string }
-  readonly router: Router
+  readonly router: Router<any, any>
 
   readonly query: { [name: string]: string }
   readonly search: string

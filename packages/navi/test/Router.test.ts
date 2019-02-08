@@ -1,28 +1,28 @@
-import { createRouter, map, page } from '../src'
+import { createRouter, map, route } from '../src'
 import { fixtureMap } from './fixtures/switches'
 
 describe("pageMap", () => {
   test("mapping over '/' returns full site", async () => {
     let router = createRouter({ matcher: fixtureMap })
-    let map = await router.resolvePageMap('/')
+    let map = await router.resolveRouteMap('/')
     expect(Object.keys(map).length).toBe(4)
   })
    
   test("mapping over '' returns full site", async () => {
     let router = createRouter({ matcher: fixtureMap })
-    let map = await router.resolvePageMap('/')
+    let map = await router.resolveRouteMap('/')
     expect(Object.keys(map).length).toBe(4)
   })
 
   test("does not include contents", async () => {
     let router = createRouter({ matcher: fixtureMap })
-    let map = await router.resolvePageMap('/')
-    expect(map['/'].bodies.length).toBe(0)
+    let map = await router.resolveRouteMap('/')
+    expect(map['/'].contents.length).toBe(0)
   })
 
   test("can map from an intermediate url and exclude its index", async () => {
     let router = createRouter({ matcher: fixtureMap })
-    let map = await router.resolvePageMap('/examples', {
+    let map = await router.resolveRouteMap('/examples', {
       predicate: (segment) => segment.url.pathname !== '/examples/'
     })
     expect(Object.keys(map).length).toBe(2)
@@ -31,12 +31,8 @@ describe("pageMap", () => {
   test("supports expandPattern()", async () => {
     let router = createRouter({
       matcher: map({
-        '/about': page({
-          title: 'About',
-        }),
-        '/tags/:name': page({
-          getTitle: req => `${req.params.name} Tag`
-        })
+        '/about': route(),
+        '/tags/:name': route()
       })
     })
     let siteMap = await router.resolveSiteMap('/', {
@@ -45,22 +41,18 @@ describe("pageMap", () => {
           ? [pattern]
           : ['/tags/react', '/tags/navi']
     })
-    expect(Object.keys(siteMap.pages).length).toBe(3)
+    expect(Object.keys(siteMap.routes).length).toBe(3)
   })
 
   test("excludes patterns with wildcards when expandPattern() is not supplied", async () => {
     let router = createRouter({
       matcher: map({
-        '/about': page({
-          title: 'About',
-        }),
-        '/tags/:name': page({
-          getTitle: req => `${req.params.name} Tag`
-        })
+        '/about': route(),
+        '/tags/:name': route()
       })
     })
     let siteMap = await router.resolveSiteMap('/')
-    expect(Object.keys(siteMap.pages).length).toBe(1)
+    expect(Object.keys(siteMap.routes).length).toBe(1)
   })
 })
 

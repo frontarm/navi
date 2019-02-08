@@ -1,56 +1,50 @@
-import { Resolution } from './Resolver'
+import { Resolution } from '../Resolver'
 import {
   Segment,
   createSegment,
   createNotFoundSegment,
   createNotReadySegment,
-} from './Segments'
+} from '../Segments'
+import { createMapping, Mapping, mappingAgainstPathname } from '../Mapping'
 import {
-  createMapping,
-  Mapping,
-  mappingAgainstPathname,
-} from './Mapping'
-import {
-  MatcherBase,
-  MatcherResult,
   Matcher,
-  MatcherClass,
+  MatcherGenerator,
+  MatcherGeneratorClass,
+  MatcherResult,
   MaybeResolvableMatcher,
   ResolvableMatcher,
   MatcherOptions,
-} from './Matcher'
+  createMatcher,
+} from '../Matcher'
 
 export type MapMatcherPaths<Context extends object> = {
   [pattern: string]: MaybeResolvableMatcher<Context>
 }
 
-export interface MapMatcher<Context extends object = any>
-  extends MatcherClass<Context, MapMatcherImplementation<Context>> {
-  type: 'map'
-
-  new (options: MatcherOptions<Context>): MapMatcherImplementation<Context>
+export interface MapMatcherGeneratorClass<Context extends object = any>
+  extends MatcherGeneratorClass<Context, MapMatcherGenerator<Context>> {
+  new (options: MatcherOptions<Context>): MapMatcherGenerator<Context>
 
   paths: MapMatcherPaths<Context>
   orderedMappings: Mapping[]
   patterns: string[]
 }
 
-export class MapMatcherImplementation<Context extends object> extends MatcherBase<Context> {
-  static isMatcher = true
-  static type: 'map' = 'map'
-
+class MapMatcherGenerator<Context extends object> extends MatcherGenerator<
+  Context
+> {
   child?: {
-    mapping: Mapping,
+    mapping: Mapping
     matcherOptions: MatcherOptions<Context>
     maybeResolvableMatcher: MaybeResolvableMatcher<Context>
   }
 
   last?: {
-    matcherInstance?: MatcherBase<any>
-    matcher?: Matcher<Context>
+    matcherGenerator?: MatcherGenerator<any>
+    childMatcher?: Matcher<Context>
   };
 
-  ['constructor']: MapMatcher<Context>
+  ['constructor']: MapMatcherGeneratorClass<Context>
   constructor(options: MatcherOptions<Context>) {
     super(options, true)
 
@@ -71,11 +65,14 @@ export class MapMatcherImplementation<Context extends object> extends MatcherBas
         },
         maybeResolvableMatcher: mappings[0].maybeResolvableMatcher,
       }
-    }
-    else {
+    } else {
       for (let i = mappings.length - 1; i >= 0; i--) {
         let mapping = mappings[i]
-        let childEnv = mappingAgainstPathname(this.env, mapping, this.appendFinalSlash)
+        let childEnv = mappingAgainstPathname(
+          this.env,
+          mapping,
+          this.appendFinalSlash,
+        )
         if (childEnv) {
           this.child = {
             mapping,
@@ -97,7 +94,7 @@ export class MapMatcherImplementation<Context extends object> extends MatcherBas
 
   protected execute(): MatcherResult {
     let resolutionIds: number[] = []
-    let childMatcherInstance: MatcherBase<any> | undefined
+    let childMatcherGenerator: MatcherGenerator<any> | undefined
     let childMatcherResolution: Resolution<Matcher<Context>> | undefined
     if (this.child) {
       let childMatcher: Matcher<Context> | undefined
@@ -106,46 +103,49 @@ export class MapMatcherImplementation<Context extends object> extends MatcherBas
       } else {
         childMatcherResolution = this.resolver.resolve(
           this.child.matcherOptions.env,
-          this.child.maybeResolvableMatcher as ResolvableMatcher<Matcher<Context>, Context>,
+          this.child.maybeResolvableMatcher as ResolvableMatcher<
+            Context,
+            Matcher<Context>
+          >,
         )
         resolutionIds.push(childMatcherResolution.id)
         childMatcher = childMatcherResolution.value
       }
 
-      if (!this.last || this.last.matcher !== childMatcher) {
+      if (!this.last || this.last.childMatcher !== childMatcher) {
         if (childMatcher) {
-          childMatcherInstance = new childMatcher(this.child.matcherOptions)
+          let childMatcherGeneratorClass = childMatcher()
+          childMatcherGenerator = new childMatcherGeneratorClass(this.child.matcherOptions)
         }
       } else {
-        childMatcherInstance = this.last.matcherInstance
+        childMatcherGenerator = this.last.matcherGenerator
       }
 
       this.last = {
-        matcher: childMatcher,
-        matcherInstance: childMatcherInstance,
+        childMatcher: childMatcher,
+        matcherGenerator: childMatcherGenerator,
       }
     }
 
     let childMatcherResult: MatcherResult | undefined
-    if (childMatcherInstance) {
-      childMatcherResult = childMatcherInstance.getResult()
+    if (childMatcherGenerator) {
+      childMatcherResult = childMatcherGenerator.getResult()
     }
 
     let nextSegments: Segment[] = []
     if (childMatcherResult) {
       nextSegments = childMatcherResult && childMatcherResult.segments
-    }
-    else if (childMatcherResolution) {
-      nextSegments = [createNotReadySegment(
-        this.child!.matcherOptions.env.request, 
-        childMatcherResolution.error,
-        this.appendFinalSlash
-      )]
-    }
-    else if (this.env.request.path) {
+    } else if (childMatcherResolution) {
+      nextSegments = [
+        createNotReadySegment(
+          this.child!.matcherOptions.env.request,
+          childMatcherResolution.error,
+          this.appendFinalSlash,
+        ),
+      ]
+    } else if (this.env.request.path) {
       nextSegments = [createNotFoundSegment(this.env.request)]
-    }
-    else {
+    } else {
       // We've matched the map exactly, and don't need to match
       // any child segments - which is useful for creating maps.
     }
@@ -156,42 +156,45 @@ export class MapMatcherImplementation<Context extends object> extends MatcherBas
       'map',
       this.env.request,
       { map: this.constructor },
-      this.appendFinalSlash
+      this.appendFinalSlash,
     ) as Segment
 
     return {
-      resolutionIds: resolutionIds.concat(childMatcherResult ? childMatcherResult.resolutionIds : []),
+      resolutionIds: resolutionIds.concat(
+        childMatcherResult ? childMatcherResult.resolutionIds : [],
+      ),
       segments: [mapSegment].concat(nextSegments),
     }
   }
 }
 
-export function map<Context extends object, M extends Matcher<Context>>(options: MapMatcherPaths<Context> | ResolvableMatcher<M, Context>): MapMatcher<Context> {
+export function map<Context extends object, M extends Matcher<Context>>(
+  options: MapMatcherPaths<Context> | ResolvableMatcher<Context, M>,
+): Matcher<Context> {
   if (!options) {
-    throw new Error(
-      `match() must be supplied with a paths object.`,
-    )
+    throw new Error(`match() must be supplied with a paths object.`)
   }
 
   let paths: MapMatcherPaths<Context>
   if (typeof options === 'function') {
     paths = {
-      '/': options
+      '/': options,
     }
-  }
-  else {
+  } else {
     paths = options
   }
-  
+
   let patterns = Object.keys(paths)
   let invalidPaths = patterns.filter(
-    pattern => typeof paths[pattern] !== 'function'
+    pattern => typeof paths[pattern] !== 'function',
   )
   if (invalidPaths.length > 0) {
     let singular = invalidPaths.length === 1
     throw new TypeError(
-      `The given ${singular ? 'path' : 'paths'}: ${invalidPaths.join(', ')} ${singular ? 'is' : 'are'} `+
-      `invalid. Paths should be a matcher object or function that returns one. See https://frontarm.com/navi/reference/declarations/`
+      `The given ${singular ? 'path' : 'paths'}: ${invalidPaths.join(', ')} ${
+        singular ? 'is' : 'are'
+      } ` +
+        `invalid. Paths should be a matcher object or function that returns one. See https://frontarm.com/navi/reference/declarations/`,
     )
   }
 
@@ -219,11 +222,8 @@ export function map<Context extends object, M extends Matcher<Context>>(options:
         let replacedKey = pattern.key.replace(previousPattern.regExp, '')
         if (replacedKey !== pattern.key && replacedKey.length > 0) {
           if (
-            (previousPattern.maybeResolvableMatcher.isMatcher &&
-              previousPattern.maybeResolvableMatcher.type ===
-              'map') ||
-            (pattern.maybeResolvableMatcher.isMatcher &&
-              pattern.maybeResolvableMatcher.type === 'map')
+            isValidMapMatcher(previousPattern.maybeResolvableMatcher) ||
+            isValidMapMatcher(pattern.maybeResolvableMatcher)
           )
             console.warn(
               `map() received Maps for patterns "${
@@ -250,15 +250,17 @@ export function map<Context extends object, M extends Matcher<Context>>(options:
     }
   }
 
-  return class extends MapMatcherImplementation<Context> {
-    static paths = paths
-    static orderedMappings = mappings
-    static patterns = patterns
-  }
+  return createMatcher(() =>
+    class extends MapMatcherGenerator<Context> {
+      static paths = paths
+      static orderedMappings = mappings
+      static patterns = patterns
+    }
+  )
 }
 
-export function isValidMapMatcher(x: any): x is MapMatcher {
-  return x && x.prototype && x.prototype instanceof MapMatcherImplementation
+function isValidMapMatcher(x: any): x is MapMatcherGeneratorClass {
+  return x && x.prototype && x.prototype instanceof MapMatcherGenerator
 }
 
 function compareStrings(a, b) {

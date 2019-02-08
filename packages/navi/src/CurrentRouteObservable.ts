@@ -1,20 +1,23 @@
 import { History } from 'history'
 import { OutOfRootError } from './Errors'
 import { URLDescriptor, areURLDescriptorsEqual, createURLDescriptor } from './URLTools'
+import { Reducer } from './Reducer'
 import { Router } from './Router'
-import { Route, createRoute } from './Route'
 import { Deferred } from './Deferred';
-import { Observer, Observable, Subscription, SimpleSubscription, createOrPassthroughObserver } from './Observable';
+import { Observer, Observable, Subscription, SimpleSubscription, createOrPassthroughObserver } from './Observable'
+import { Segment } from './Segments'
 
-export interface CurrentRouteObservableOptions<Context extends object> {
+export interface CurrentRouteObservableOptions<Context extends object, R> {
     history: History,
-    router: Router<Context>
+    router: Router<Context, R>
+    reducer: Reducer<Segment, R>
 }
 
-export function createCurrentRouteObservable<Context extends object>(options: CurrentRouteObservableOptions<Context>) {
-    return new CurrentRouteObservable<Context>(
+export function createCurrentRouteObservable<Context extends object, R>(options: CurrentRouteObservableOptions<Context, R>) {
+    return new CurrentRouteObservable<Context, R>(
         options.history,
         options.router,
+        options.reducer,
     )
 }
 
@@ -23,28 +26,30 @@ export function createCurrentRouteObservable<Context extends object>(options: Cu
  * passing it through a router each time it changes, and emitting the
  * lastest route from the latest router.
  */
-export class CurrentRouteObservable<Context extends object> implements Observable<Route> {
+export class CurrentRouteObservable<Context extends object, R> implements Observable<R> {
     private history: History
-    private router: Router<Context>
+    private router: Router<Context, R>
+    private reducer: Reducer<Segment, R>
 
     // Stores the last receive location, even if we haven't processed it.
     // Used to detect and defuse loops where a change to history results
     // in a new change to history before the previous one completes.
     private lastReceivedURL?: URLDescriptor
 
-    private error?: any
-
-    private waitUntilSteadyDeferred?: Deferred<Route>
-    private observers: Observer<Route>[]
+    private waitUntilSteadyDeferred?: Deferred<R>
+    private observers: Observer<R>[]
     private lastURL: URLDescriptor
-    private lastRoute: Route
+    private lastRoute?: R
+    private isLastRouteSteady: boolean
     private observableSubscription?: Subscription
     private unlisten: () => void
 
-    constructor(history: History, router: Router<Context>) {
+    constructor(history: History, router: Router<Context, R>, reducer: Reducer) {
         this.observers = []
+        this.isLastRouteSteady = false
         this.router = router
         this.history = history
+        this.reducer = reducer
         this.lastURL = createURLDescriptor(this.history.location)
         this.unlisten = this.history.listen(location => this.handleURLChange(createURLDescriptor(location)))
         this.refresh()
@@ -71,16 +76,16 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
         this.handleURLChange(createURLDescriptor(this.history.location), true)
     }
 
-    setRouter(router: Router<Context>) {
-        this.router = router
+    setContext(context: Context) {
+        this.router.setContext(context)
         this.refresh()
     }
 
     /**
      * Get the latest route
      */
-    getValue(): Route {
-        return this.lastRoute
+    getValue(): R {
+        return this.lastRoute!
     }
 
     /**
@@ -88,12 +93,9 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
      * This is useful for implementing static rendering, or for waiting until
      * content is loaded before making the first render.
      */
-    async getSteadyRoute(): Promise<Route> {
-        if (this.error) {
-            return Promise.reject(this.error)
-        }
-        else if (this.lastRoute && this.lastRoute.type !== 'busy') {
-            return Promise.resolve(this.lastRoute)
+    async getSteadyRoute(): Promise<R> {
+        if (this.isLastRouteSteady) {
+            return Promise.resolve(this.lastRoute!)
         }
         else if (!this.waitUntilSteadyDeferred) {
             this.waitUntilSteadyDeferred = new Deferred()
@@ -106,7 +108,7 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
      * Route, as the route may change as new code chunks are received.
      */
     subscribe(
-        onNextOrObserver: Observer<Route> | ((value: Route) => void),
+        onNextOrObserver: Observer<R> | ((value: R) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
@@ -115,7 +117,7 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
         return new SimpleSubscription(this.handleUnsubscribe, observer)
     }
 
-    private handleUnsubscribe = (observer: Observer<Route>) => {
+    private handleUnsubscribe = (observer: Observer<R>) => {
         let index = this.observers.indexOf(observer)
         if (index !== -1) {
             this.observers.splice(index, 1)
@@ -126,7 +128,7 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
         // Bail without change is the URL hasn't changed
         if (!force && this.lastReceivedURL && areURLDescriptorsEqual(this.lastReceivedURL, url)) {
             for (let i = 0; i < this.observers.length; i++) {
-                this.observers[i].next(this.lastRoute)
+                this.observers[i].next(this.lastRoute!)
             }
             return 
         }
@@ -153,8 +155,16 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
 
         // The router only looks at path and search, so if they haven't
         // changed, there's no point recreating the observable.
-        if (!force && !(pathHasChanged || searchHasChanged) && !this.lastRoute.error) {
-            this.setRoute(this.lastRoute ? createRoute(url, this.lastRoute.segments) : ({ url } as any))
+        if (!force && !(pathHasChanged || searchHasChanged) && this.lastRoute) {
+            if (url.hash !== lastURL.hash) {
+                this.setRoute(
+                    this.reducer(this.lastRoute, {
+                        type: 'url',
+                        url: url,
+                    }),
+                    this.isLastRouteSteady
+                )
+            }
             return
         }
 
@@ -164,7 +174,7 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
 
         let observable = this.router.createObservable(url)
         if (observable) {
-            this.observableSubscription = observable.subscribe(this.handleRoute)
+            this.observableSubscription = observable.subscribe(this.handleSegmentList)
         }
         else if (!lastURL) {
             throw new OutOfRootError(url)
@@ -172,28 +182,38 @@ export class CurrentRouteObservable<Context extends object> implements Observabl
     }
 
     // Allows for either the location or route or both to be changed at once.
-    private handleRoute = (route: Route) => {
-        let url = this.lastURL
-        let nextRoute = route || this.lastRoute
+    private handleSegmentList = (segments: Segment[]) => {
+        let isSteady = true
+        for (let i = 0; i < segments.length; i++) {
+            let segment = segments[i]
+            if (segment.type === 'busy') {
+                isSteady = false
+            }
+            if (segment.type === 'redirect') {
+                this.history.replace(segment.to)
+                return
+            }
+        }
         
-        if (route && route.type === 'redirect' && route.to) {
-            // No need to notify any listeners of a redirect,
-            // as we can take the appropriate action ourselves
-            this.history.replace(route.to)
-        }
-        else {
-            this.setRoute(route)
-        }
+        this.setRoute(
+            [{ type: 'url', url: this.lastURL }]
+                .concat(segments)
+                .reduce(this.reducer, undefined as any) as R,
+            isSteady
+        )
     }
 
-    private setRoute(route: Route) {
-        this.lastRoute = route
-        if (this.waitUntilSteadyDeferred && route.type !== 'busy') {
-            this.waitUntilSteadyDeferred.resolve(route)
-            delete this.waitUntilSteadyDeferred
-        }
-        for (let i = 0; i < this.observers.length; i++) {
-            this.observers[i].next(route)
+    private setRoute(route: R, isSteady: boolean) {
+        if (route !== this.lastRoute) {
+            this.lastRoute = route
+            this.isLastRouteSteady = isSteady
+            if (isSteady && this.waitUntilSteadyDeferred) {
+                this.waitUntilSteadyDeferred.resolve(route)
+                delete this.waitUntilSteadyDeferred
+            }
+            for (let i = 0; i < this.observers.length; i++) {
+                this.observers[i].next(route)
+            }
         }
     }
 }

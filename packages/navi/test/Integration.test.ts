@@ -1,4 +1,4 @@
-import { MapSegment, createMemoryNavigation, ContentSegment, NotFoundError } from '../src'
+import { createMemoryNavigation, ContentSegment, NotFoundError } from '../src'
 import { fixtureMap } from './fixtures/switches'
 
 describe("integration", () => {
@@ -13,22 +13,20 @@ describe("integration", () => {
         let nav = createTestNavigation('/examples')
 
         let route = await nav.getSteadyValue()
-        let firstSegment = route.firstSegment
+        let firstSegment = route.segments[0]
         
-        expect(firstSegment.type).toBe('content')
-        expect((firstSegment as ContentSegment).content.title).toBe('Site')
-        expect(route.status).toBe(200)
-        expect(route.bodies[0]).toBe('site-layout')
-        expect(route.bodies[1]).toBe('example-layout')
-        expect(route.type).toBe('content')
+        expect(firstSegment.type).toBe('url')
+        expect((route.segments[2] as any).info.title).toBe('Site')
+        // expect(route.status).toBe(200)
+        expect(route.contents[0]).toBe('site-layout')
+        expect(route.contents[1]).toBe('example-layout')
+        expect(route.type).toBe('success')
         expect(route.title).toBe('Basic example')
-        expect(route.bodies[2]).toBe('basic-example')
-        expect(route.heads.length).toBe(2)
-        expect(route.heads[0][0].type).toBe('meta')
+        expect(route.contents[2]).toBe('basic-example')
 
         nav.history.push('/examples/advanced?referrer=frontarm')
 
-        firstSegment = nav.getCurrentValue().firstSegment
+        firstSegment = nav.getCurrentValue().segments[0]
         route = nav.getCurrentValue()
         
         expect(firstSegment.url.query).toEqual({ referrer: 'frontarm' })
@@ -39,7 +37,7 @@ describe("integration", () => {
         expect(route.url.query).toEqual({ referrer: 'frontarm' })
         expect(route.title).toBe('Advanced example')
         expect(route.info['isPaywalled']).toBe(true)
-        expect(route.bodies[route.bodies.length - 1]).toBe('please-login')
+        expect(route.contents[route.contents.length - 1]).toBe('please-login')
 
         nav.setContext({
             isAuthenticated: true
@@ -47,7 +45,7 @@ describe("integration", () => {
 
         route = await nav.getSteadyValue()
 
-        expect((route.lastSegment as ContentSegment).content.body.dat).toEqual({
+        expect((route.lastSegment as ContentSegment).content).toEqual({
             isPaywalled: true,
         })
 
@@ -67,8 +65,8 @@ describe("integration", () => {
         let route = await nav.getSteadyValue()
         let lastSegment = route.lastSegment as ContentSegment
         
-        expect(Object.keys(lastSegment.content.body)).toEqual(['/examples/basic/', '/examples/advanced/'])
-        expect(route.type).toBe('content')
+        expect(Object.keys(lastSegment.content)).toEqual(['/examples/basic/', '/examples/advanced/'])
+        expect(route.type).toBe('success')
         expect(route.title).toBe('Navi')
     })
 })

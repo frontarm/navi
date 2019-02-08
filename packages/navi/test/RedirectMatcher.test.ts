@@ -1,4 +1,4 @@
-import { createMemoryNavigation, map, redirect, page } from '../src'
+import { createMemoryNavigation, map, redirect, route } from '../src'
 
 describe("Redirect", () => {
   test("Supports relative paths", async () => {
@@ -7,13 +7,13 @@ describe("Redirect", () => {
       matcher: map({
         '/switch': map({
           '/from': redirect('./to'),
-          '/to': page({ title: null })
+          '/to': route({})
         }),
       }),
     })
 
-    let route = await nav.getSteadyValue()
+    let r = await nav.getSteadyValue()
     
-    expect(route.url.pathname).toBe('/switch/to/')
+    expect(r.url.pathname).toBe('/switch/to/')
   })
 })

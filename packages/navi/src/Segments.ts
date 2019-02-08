@@ -1,5 +1,5 @@
 import { joinPaths, URLDescriptor, createURLDescriptor } from './URLTools'
-import { MapMatcher } from './MapMatcher'
+import { MapMatcherGeneratorClass } from './matchers/MapMatcher'
 import { NotFoundError } from './Errors'
 import { NaviRequest } from './NaviRequest'
 
@@ -8,17 +8,23 @@ import { NaviRequest } from './NaviRequest'
  */
 export type Segment =
   | BusySegment
-  | MapSegment
-  | ErrorSegment
-  | RedirectSegment
   | ContentSegment
+  | ErrorSegment
+  | InfoSegment
+  | MapSegment
+  | NullSegment
+  | RedirectSegment
+  | URLSegment
 
 export type SegmentType =
-  | 'error'
-  | 'content'
   | 'busy'
-  | 'redirect'
+  | 'content'
+  | 'error'
+  | 'info'
   | 'map'
+  | 'null'
+  | 'redirect'
+  | 'url'
 
 /**
  * All segments extend this interface. It includes all information that can be
@@ -67,22 +73,38 @@ export interface RedirectSegment extends GenericSegment {
 }
 
 /**
- * Payload segments contain data that will be used in a response on the
+ * Content segments contain data that will be used in a response on the
  * server, or that will be rendered in the browser. They can contain error
  * or redirect information, but they'll still be rendered as-is in the client.
  */
-export interface ContentSegment<C=Content> extends GenericSegment {
+export interface ContentSegment<Content=any> extends GenericSegment {
   type: 'content'
-  content: C
+  content: Content
 }
 
-export interface Content<Info extends object=any> {
-  body?: any
-  head?: any
-  headers?: { [name: string]: string }
-  info?: Info
-  status?: number
-  title?: string
+/**
+ * Info segments contain information that will be available on the produced
+ * route object, but isn't meant to be rendered with the page itself.
+ */
+export interface InfoSegment<Info=any> extends GenericSegment {
+  type: 'info'
+  info: Info
+}
+
+/**
+ * Added by matchers that don't add anything else, to make sure that the last
+ * segment isn't a map segment when building maps.
+ */
+export interface NullSegment extends GenericSegment {
+  type: 'null'
+}
+
+/**
+ * Contains the URL's hash, if it exists. This isn't usable within the router,
+ * but is appended by BrowserRoute or MemoryRoute if appropriate.
+ */
+export interface URLSegment extends GenericSegment {
+  type: 'url'
 }
 
 /**
@@ -91,7 +113,7 @@ export interface Content<Info extends object=any> {
  */
 export interface MapSegment extends GenericSegment {
   type: 'map'
-  map: MapMatcher
+  map: MapMatcherGeneratorClass
 }
 
 

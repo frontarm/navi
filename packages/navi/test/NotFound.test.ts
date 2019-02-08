@@ -1,14 +1,11 @@
-import { map, page, NotFoundError, createMemoryNavigation } from '../src'
+import { map, withContent, NotFoundError, createMemoryNavigation } from '../src'
 
 describe("pageMap", () => {
   const matcher = map({
-    '/declared/:id': page({
-      title: 'Navi',
-      async getBody({ params }) {
-        if (params.id !== "1") {
-          throw new NotFoundError()
-        }
-      },
+    '/declared/:id': withContent(({ params }) => {
+      if (params.id !== "1") {
+        throw new NotFoundError()
+      }
     })
   })
 

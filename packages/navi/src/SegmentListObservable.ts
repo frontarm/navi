@@ -1,28 +1,28 @@
-import { Route, createRoute } from './Route'
-import { Matcher } from './Matcher'
+import { MatcherGenerator, MatcherGeneratorClass } from './Matcher'
 import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { Resolver } from './Resolver'
 import { Env } from './Env';
 import { URLDescriptor } from './URLTools';
+import { Segment } from './Segments'
 
-export class RouteObservable implements Observable<Route> {
+export class SegmentListObservable implements Observable<Segment[]> {
     readonly url: URLDescriptor
 
-    private cachedValue: Route
-    private matcher: Matcher<any>['prototype']
-    private observers: Observer<Route>[]
+    private cachedValue: Segment[]
+    private matcherGenerator: MatcherGenerator<any>
+    private observers: Observer<Segment[]>[]
     private resolver: Resolver
   
     constructor(
         url: URLDescriptor,
         env: Env,
-        matcher: Matcher<any>,
-        resolver: Resolver
+        matcherGeneratorClass: MatcherGeneratorClass<any>,
+        resolver: Resolver,
     ) {
         this.url = url
         this.resolver = resolver
         this.observers = []
-        this.matcher = new matcher({
+        this.matcherGenerator = new matcherGeneratorClass({
             appendFinalSlash: true,
             env,
             resolver: this.resolver
@@ -30,7 +30,7 @@ export class RouteObservable implements Observable<Route> {
     }
 
     subscribe(
-        onNextOrObserver: Observer<Route> | ((value: Route) => void),
+        onNextOrObserver: Observer<Segment[]> | ((value: Segment[]) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
@@ -46,7 +46,7 @@ export class RouteObservable implements Observable<Route> {
         return subscription
     }
 
-    private handleUnsubscribe = (observer: Observer<Route>) => {
+    private handleUnsubscribe = (observer: Observer<Segment[]>) => {
         let index = this.observers.indexOf(observer)
         if (index !== -1) {
             this.observers.splice(index, 1)
@@ -55,23 +55,24 @@ export class RouteObservable implements Observable<Route> {
 
     private handleChange = () => {
         this.refresh()
+        let isDone = this.cachedValue.every(segment => segment.type !== 'busy')
         for (let i = 0; i < this.observers.length; i++) {
             let observer = this.observers[i]
             observer.next(this.cachedValue)
-            if (this.cachedValue.type !== 'busy' && observer.complete) {
+            if (isDone && observer.complete) {
                 observer.complete()
             }
         }
-        if (this.cachedValue.type !== 'busy') {
+        if (isDone) {
             this.resolver.unlisten(this.handleChange)
-            delete this.matcher
+            delete this.matcherGenerator
             delete this.resolver
         }
     }
 
     private refresh = () => {
-        let { segments, resolutionIds } = this.matcher.getResult()
-        this.cachedValue = createRoute(this.url, segments)
+        let { segments, resolutionIds } = this.matcherGenerator.getResult()
+        this.cachedValue = segments
         // This will replace any existing listener and its associated resolvables
         this.resolver.listen(this.handleChange, resolutionIds)
     }

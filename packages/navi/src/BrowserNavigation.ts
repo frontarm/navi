@@ -1,14 +1,15 @@
 import { createBrowserHistory, History } from 'history'
 import { Navigation } from './Navigation'
-import { Resolver } from './Resolver'
+import { Segment } from './Segments'
+import { Reducer } from './Reducer'
 import { Router } from './Router'
-import { Route } from './Route'
+import { Route, defaultRouteReducer } from './Route'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { CurrentRouteObservable, createCurrentRouteObservable } from './CurrentRouteObservable';
 import { Matcher } from './Matcher'
 
 
-export interface BrowserNavigationOptions<Context extends object> {
+export interface BrowserNavigationOptions<Context extends object, R = Route> {
     /**
      * The Matcher that declares your app's pages.
      */
@@ -34,41 +35,48 @@ export interface BrowserNavigationOptions<Context extends object> {
      * By default, a browser history object will be created.
      */
     history?: History,
+
+    /**
+     * The function that reduces segments into a Route object.
+     */
+    reducer?: Reducer<Segment, R>,
 }
 
 
-export function createBrowserNavigation<Context extends object>(options: BrowserNavigationOptions<Context>) {
+export function createBrowserNavigation<Context extends object, R = Route>(options: BrowserNavigationOptions<Context, R>) {
     return new BrowserNavigation(options)
 }
 
 
-export class BrowserNavigation<Context extends object> implements Navigation<Context> {
-    router: Router<Context>
+export class BrowserNavigation<Context extends object, R> implements Navigation<Context, R> {
+    router: Router<Context, R>
     history: History
 
-    private matcher: Matcher<Context>
-    private basename?: string
-    private resolver: Resolver
-    private currentRouteObservable: CurrentRouteObservable<Context>
+    private currentRouteObservable: CurrentRouteObservable<Context, R>
 
-    constructor(options: BrowserNavigationOptions<Context>) {
+    constructor(options: BrowserNavigationOptions<Context, R>) {
         if (options.pages) {
+            console.warn(
+                `Deprecation Warning: passing a "pages" option to "createBrowserNavigation()" will `+
+                `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
+            )
             options.matcher = options.pages
         }
 
+        let reducer = options.reducer || defaultRouteReducer as any as Reducer<Segment, R>
+
         this.history = options.history || createBrowserHistory()
-        this.resolver = new Resolver
-        this.matcher = options.matcher!
-        this.basename = options.basename
-        this.router = new Router(this.resolver, {
+        this.router = new Router({
             context: options.context,
-            matcher: this.matcher,
+            matcher: options.matcher!,
             basename: options.basename,
+            reducer,
         })
 
         this.currentRouteObservable = createCurrentRouteObservable({
             history: this.history,
             router: this.router,
+            reducer,
         })
     }
 
@@ -77,24 +85,17 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         delete this.currentRouteObservable
         delete this.router
         delete this.history
-        delete this.resolver
-        delete this.matcher
     }
 
     setContext(context: Context) {
-        this.router = new Router(this.resolver, {
-            context: context,
-            matcher: this.matcher,
-            basename: this.basename,
-        })
-        this.currentRouteObservable.setRouter(this.router)
+        this.currentRouteObservable.setContext(context)
     }
 
-    getCurrentValue(): Route {
+    getCurrentValue(): R {
         return this.currentRouteObservable.getValue()
     }
 
-    getSteadyValue(): Promise<Route> {
+    getSteadyValue(): Promise<R> {
         return this.currentRouteObservable.getSteadyRoute()
     }
 
@@ -108,7 +109,7 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
      * the snapshot, as the route may change as new code chunks are received.
      */
     subscribe(
-        onNextOrObserver: Observer<Route> | ((value: Route) => void),
+        onNextOrObserver: Observer<R> | ((value: R) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
