@@ -6,14 +6,14 @@ import slugify from 'slugify'
 
 // Get a list of all posts, that will not be loaded until the user
 // requests them.
-const postModules = importAll.deferred('./**/post.js')
+const postModules = importAll.deferred('./**/post.ts?(x)')
 const importPost = pathname => postModules[pathname]()
 const postPathnames = Object.keys(postModules)
 const datePattern = /^((\d{1,4})-(\d{1,4})-(\d{1,4}))[/-]/
 
 let postDetails = postPathnames.map(pathname => {
   let slug = slugify(
-    pathname.replace(/post.jsx?$/, '').replace(/(\d)\/(\d)/, '$1-$2'),
+    pathname.replace(/post.tsx?$/, '').replace(/(\d)\/(\d)/, '$1-$2'),
   )
     .replace(/^[-.]+|[.-]+$/g, '')
     .replace(datePattern, '$1/')
@@ -21,7 +21,11 @@ let postDetails = postPathnames.map(pathname => {
   let date
   let dateMatch = slug.match(datePattern)
   if (dateMatch) {
-    date = new Date(dateMatch[2], parseInt(dateMatch[3]) - 1, dateMatch[4])
+    date = new Date(
+      parseInt(dateMatch[2], 10),
+      parseInt(dateMatch[3], 10) - 1,
+      parseInt(dateMatch[4], 10),
+    )
   }
 
   return {
@@ -56,7 +60,7 @@ let posts = postDetails.map(({ slug, pathname, date }, i) => ({
 
     return Navi.route({
       title,
-      getData: (req, context) => ({
+      getData: (req, context: { blogRoot: string }) => ({
         date,
         pathname,
         slug,

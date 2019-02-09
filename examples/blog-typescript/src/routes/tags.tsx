@@ -1,13 +1,18 @@
 import React from 'react'
-import { composeMatchers, map, route, withContext } from 'navi'
+import { composeMatchers, map, route, withContext, Route } from 'navi'
 import { join } from 'path'
 import { fromPairs } from 'lodash'
 import TagIndexPage from '../components/TagIndexPage'
 import TagPage from '../components/TagPage'
 import getTagsFromSiteMap from '../utils/getTagsFromSiteMap'
 
+interface TagsNavContext {
+  blogRoot: string
+  tagsRoot: string
+}
+
 const tagRoutes = composeMatchers(
-  withContext((req, context) => ({
+  withContext((req, context): TagsNavContext => ({
     ...context,
     tagsRoot: req.mountpath,
   })),
@@ -15,15 +20,16 @@ const tagRoutes = composeMatchers(
     '/': route({
       title: 'Tags',
 
-      getView: async (req, context) => {
+      getView: async req => {
         // Build a list of pages for each tag
-        let siteMap = await req.router.resolveSiteMap(context.blogRoot, {
+        let tagsPathname = req.mountpath.replace(/\/$/, '')
+        let siteMap = await req.router.resolveSiteMap('/', {
           predicate: segment =>
-            segment.url.pathname.indexOf(context.tagsRoot) === -1,
+            segment.url.pathname.indexOf(tagsPathname) === -1,
         })
         let tags = getTagsFromSiteMap(siteMap)
         let tagRoutes = fromPairs(tags.map(name => [name.toLowerCase(), []]))
-        Object.values(siteMap.routes).forEach((route) => {
+        Object.values(siteMap.routes).forEach((route: Route) => {
           let data = route.data
           if (data && data.tags) {
             data.tags.forEach(tag => {
@@ -37,7 +43,6 @@ const tagRoutes = composeMatchers(
 
         return (
           <TagIndexPage
-            blogRoot={context.blogRoot}
             tags={tags.map(name => ({
               name,
               href: join(req.mountpath, name.toLowerCase()),
@@ -58,8 +63,8 @@ const tagRoutes = composeMatchers(
           predicate: segment =>
             segment.url.pathname.indexOf(context.tagsRoot) === -1,
         })
-        let routes = []
-        Object.entries(siteMap.routes).forEach(([_, route]) => {
+        let routes = [] as Route[]
+        Object.values(siteMap.routes).forEach((route: Route) => {
           let tags = (route.data && route.data.tags) || []
           if (tags.find(metaTag => metaTag.toLowerCase() === lowerCaseTag)) {
             routes.push(route)
@@ -75,7 +80,7 @@ const tagRoutes = composeMatchers(
         )
       },
     }),
-  }),
+  })
 )
 
 export default tagRoutes

@@ -1,4 +1,4 @@
-import { composeMatchers, map, redirect, route, withContext, withView } from 'navi'
+import { composeMatchers, map, redirect, route, withContext, withView, Route } from 'navi'
 import React from 'react'
 import { join } from 'path'
 import { chunk, fromPairs } from 'lodash'
@@ -8,14 +8,18 @@ import BlogPostLayout from '../components/BlogPostLayout'
 import siteMetadata from '../siteMetadata'
 import posts from './posts'
 
+interface AppNavContext {
+  blogRoot: string
+}
+
 // Split the posts into a list of chunks of the given size, and
 // then build index pages for each chunk.
 let chunks = chunk(posts, siteMetadata.indexPageSize)
 let chunkPagePairs = chunks.map((chunk, i) => [
   '/' + (i + 1),
-  async (req, context) => {
+  async (req, context: AppNavContext) => {
     // Get metadata for all pages on this page
-    let postRoutes = await Promise.all(
+    let postRoutes = await Promise.all<Route>(
       chunk.map(async post => {
         let href = join(context.blogRoot, 'posts', post.slug)
         return await req.router.resolve(href, {
@@ -34,7 +38,7 @@ let chunkPagePairs = chunks.map((chunk, i) => [
 
     return route({
       title: pageTitle,
-      view: (
+      getView: () => (
         <BlogIndexPage
           blogRoot={context.blogRoot}
           pageNumber={i + 1}
@@ -46,9 +50,11 @@ let chunkPagePairs = chunks.map((chunk, i) => [
   },
 ])
 
-const routes = composeMatchers(
-  withContext((req, context) => ({
-    ...context,
+const pagesSwitch = composeMatchers(
+  withContext((req): AppNavContext => ({
+    // By adding the point at which the blog was mounted to context, it
+    // makes it possible to easily scope all URLs to the blog root, thus
+    // making it possible to mount the entire route on a subdirectory.
     blogRoot: req.mountpath || '/',
   })),
   withView((req, context) => {
@@ -56,7 +62,8 @@ const routes = composeMatchers(
     // portion of the URL's pathname with the index page paths.
     let isViewingIndex = req.path === '/' || /^\/page\/\d+\/$/.test(req.path)
 
-    // Render the application-wide layout
+    // Wrap the current page's content with a React Context to pass global
+    // configuration to the blog's components.
     return (
       <BlogLayout
         blogRoot={context.blogRoot}
@@ -93,4 +100,4 @@ const routes = composeMatchers(
   }),
 )
 
-export default routes
+export default pagesSwitch

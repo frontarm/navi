@@ -1,0 +1,60 @@
+import naviLogo from './navi-logo.svg'
+import reactLogo from './react-logo.svg'
+import styles from './document.module.css'
+
+<div className={styles["Welcome"]}>
+
+<div className={styles["logo"]}>
+  <img src={naviLogo} className={styles["logo-navi"]} alt="logo" />
+  <img src={reactLogo} className={styles["logo-react"]} alt="logo" />
+</div>
+
+## How to...
+
+**To update this post,** edit `src/pages/posts/2019-01-05-welcome/document.mdx` and save to reload.
+
+**To update the site's title,** edit the metadata in `src/siteMetadata.js`.
+
+**To your bio and photo,** edit the Bio component in `src/components/Bio.js`.
+
+<!--**To learn how to build your own JAMStack app**, join the [React In Practice](https://frontarm.com/courses/react-in-practice/) course by [James K Nelson](https://twitter.com/james_k_nelson), where you'll build this blog from scratch.-->
+
+**To change the site's colors,** edit the `:root` block in `src/index.module.css`.
+
+**To create a new post,** add a new directory to `src/pages/posts` that is prefixed with the new post's publication date, then create a `post.js` file inside it:
+
+```jsx
+export default {
+  title: `Learn How To Build This Blog From Scratch`,
+  tags: ['react', 'navi'],
+  spoiler: "An online course with loads of live demos and exercises.",
+  getContent: () => import('./document.mdx'),
+}
+```
+
+**To set the maximum number of posts on an index page,**, set the `indexPageSize` property of the object exported by `src/siteMetadata.js`.
+
+**To modify the generated HTML,** update the `src/renderPageToString.js` file.
+
+**To add non-blog pages,** just use [`Navi.createPage()`](https://frontarm.com/navi/reference/declarations/#createpage), [`Navi.createSwitch()`](https://frontarm.com/navi/reference/declarations/#createswitch) and [`Navi.createRedirect()`](https://frontarm.com/navi/reference/declarations/#createredirect). For an example, check the about page at `src/pages/about/index.js`. If you create a page, remember to add it to the root switch at `src/pages/index.js`.
+
+**To brush up on React's fundamentals,** check out the [React (without the buzzwords)](https://frontarm.com/courses/learn-raw-react/) and [Asynchronous JavaScript](https://frontarm.com/courses/async-javascript/) courses.
+
+
+##  The lowdown
+
+This template is designed with a JAMstack architecture. This means that the blog is statically rendered for the fastest possible load time, but once loaded, it turns into a single page app -- ensuring navigation is silky smooth.
+
+It follows a convention-over-configuation philosophy. It should work out of the box with minimal effort for most people's needs, but can also be configured where required.
+
+Finally, an effort has been made to prefer explicit code over concise code, and simplicity over complexity. Magic is avoided wherever possible, even if this means more code is required for the desired result.
+
+
+## The tools
+
+- [React](https://reactjs.org) renders the UI
+- [MDX](https://mdxjs.com) converts markdown into React components
+- [Navi](https://frontarm.com/navi/) handles routing and creates static HTML files for each route
+- [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html) builds the app's assets and provides the dev server
+
+</div>

@@ -1,0 +1,11 @@
+.Pagination {
+  display: block;
+  margin: 4.375rem 0 7rem;
+}
+  
+.Pagination .previous {
+  margin-right: 0.5rem;
+}
+.Pagination .next {
+  margin-left: 0.5rem;
+}
