@@ -26,6 +26,7 @@ export class NaviError extends Error {
 
 export class NotFoundError extends NaviError {
   pathname: string
+  status: number
 
   constructor(pathname?: string) {
     super(`URL not found: ${pathname}`)
@@ -33,7 +34,7 @@ export class NotFoundError extends NaviError {
     // If you create a NotFoundError without a pathname, the
     // resolver will catch it and assign the correct pathname.
     this.pathname = pathname!
-
+    this.status = 404
     this.name = 'NotFoundError'
   }
 }

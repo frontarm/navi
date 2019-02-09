@@ -1,101 +1,123 @@
 import { URLDescriptor } from './URLTools'
-import { Status } from './Resolver'
-import { Segment, SwitchSegment, isSegmentSteady, PlaceholderSegment, SegmentType, PageSegment, RedirectSegment } from './Segments'
+import { Segment } from './Segments'
 
-export enum RouteType {
-  Switch = 'switch',
-  Page = 'page',
-  Redirect = 'redirect',
-  Plaecholder = 'placeholder'
-}
+export type RouteType =
+  | 'busy'
+  | 'ready'
+  | 'error'
+  | 'redirect'
 
-export interface Route {
+export interface Route<Data = any> {
   url: URLDescriptor
 
   type: RouteType
-
-  segments: Segment[]
-  firstSegment: SwitchSegment
-  lastSegment: Segment
-
-  /**
-   * Indicates that the router context must be changed to cause any more
-   * changes.
-   */
-  isSteady: boolean
-
-  /**
-   * Indicates whether the location has fully loaded (including content if
-   * content was requested), is still busy, or encountered an error.
-   */
-  status: Status
-
+  to?: string
   error?: any
 
-  // Placeholder properties for routes that don't contain them
-  to?: any
-  title?: any
-  meta?: any
-  content?: any
+  segments: Segment[]
+  lastSegment: Segment
+
+  data?: Data
+  headers: { [name: string]: string }
+  heads: any[]
+  status?: number
+  title?: string
+  views: any[]
 }
 
-export interface PageRoute<Meta extends object = any, Content extends object = any> extends Route {
-  type: RouteType.Page
-  status: Status.Ready
-  isSteady: true
-  lastSegment: PageSegment<Meta, Content>
-
-  title: string
-  meta: Meta
-  content: Content
+export function defaultRouteReducer(route: Route | undefined, segment: Segment): Route {
+  route = defaultRouteReducerWithoutCompat(route, segment)
+  Object.defineProperties(route, {
+    meta: {
+      configurable: true,
+      get: () => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.12. Please use "route.data" instead.`)
+        }
+        return route!.data
+      },
+    },
+    content: {
+      configurable: true,
+      get: () => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.12. Please use "route.views" instead.`)
+        }
+        return segment.view
+      },
+    }
+  })
+  return route
 }
 
-export interface RedirectRoute<Meta extends object = any> extends Route {
-  type: RouteType.Redirect
-  status: Status.Ready
-  isSteady: true
-  lastSegment: RedirectSegment<Meta>
-
-  to: string
-  meta: Meta
-}
-
-export function createRoute(url: URLDescriptor, firstSegment: SwitchSegment | PlaceholderSegment): Route {
-  let segments = [firstSegment as Segment].concat(firstSegment.remainingSegments)
-  let lastSegment = segments[segments.length - 1]
-  let status = lastSegment.status
-  let error: any
-
-  // An error could appear in a mid segment if its content fails to load,
-  // and we want to always use the first error available.
-  for (let i = 0; i < segments.length; i++) {
-    let segment = segments[i]
-    if (segment.status === Status.Error) {
-      error = segment.error
-      status = Status.Error
+function defaultRouteReducerWithoutCompat(route: Route | undefined, segment: Segment): Route {
+  if (route) {
+    if (segment.type === 'url') {
+      return {
+        ...route,
+        segments: route.segments.filter(segment => segment.type !== 'url'),
+        url: segment.url,
+      }
+    }
+    if (route.type !== 'ready') {
+      return route
     }
   }
 
-  let route: Route = {
-    type: lastSegment.type as string as RouteType,
-    url: url,
-    segments,
-    firstSegment: segments[0] as SwitchSegment,
-    lastSegment,
-    isSteady: isSegmentSteady(segments[0]),
-    error,
-    status,
+  let base = {
+    lastSegment: segment,
+    segments: route ? route.segments.concat(segment) : [segment],
+    
+    data: route ? route.data : {},
+    headers: route ? route.headers : {},
+    heads: route ? route.heads : [],
+    status: route ? route.status : 200,
+    title: route && route.title,
+    url: route ? route.url : segment.url,
+    views: route ? route.views : [],
   }
-
-  if (lastSegment.type === SegmentType.Redirect) {
-    route.to = lastSegment.to
-    route.meta = lastSegment.meta
+  
+  switch (segment.type) {
+    case 'busy':
+      return { ...base, type: 'busy' }
+    case 'data':
+      return {
+        ...base,
+        type: 'ready',
+        data: { ...base.data, ...segment.data }
+      }
+    case 'error':
+      return {
+        ...base,
+        type: 'error',
+        error: segment.error,
+        status: (base.status && base.status >= 400) ? base.status : (segment.error.status || 500),
+      }
+    case 'head':
+      return {
+        ...base,
+        type: 'ready',
+        heads: base.heads.concat(segment.head)
+      }
+    case 'headers':
+      return {
+        ...base,
+        type: 'ready',
+        headers: { ...base.headers, ...segment.headers }
+      }
+    case 'redirect':
+      return { ...base, type: 'redirect', to: segment.to }
+    case 'status':
+      return { ...base, type: 'ready', status: segment.status }
+    case 'title':
+      return { ...base, type: 'ready', title: segment.title }
+    case 'view':
+      return {
+        ...base,
+        type: 'ready',
+        views: base.views.concat(segment.view),
+      }
+    default:
+      return { ...base, type: 'ready' }
   }
-  if (lastSegment.type === SegmentType.Page) {
-    route.title = lastSegment.title
-    route.meta = lastSegment.meta
-    route.content = lastSegment.content
-  }
-
-  return route
 }

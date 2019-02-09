@@ -1,28 +1,32 @@
-import { Switch } from './Switch'
-import { createRootMapping, matchMappingAgainstPathname, Mapping } from './Mapping'
-import { RouteObservable } from './RouteObservable'
-import { RouteMapObservable } from './RouteMapObservable'
-import { Resolver, Status } from './Resolver'
-import { PageRoute, RouteType, RedirectRoute } from './Route'
+import { Matcher, MatcherGenerator } from './Matcher'
+import { createRootMapping, mappingAgainstPathname, Mapping } from './Mapping'
+import { SegmentListObservable } from './SegmentListObservable'
+import { SegmentsMapObservable } from './SegmentsMapObservable'
+import { Resolver } from './Resolver'
+import { Route, defaultRouteReducer } from './Route'
 import { Segment } from './Segments'
-import { SiteMap, PageMap, RedirectMap } from './Maps'
+import { SiteMap, RouteMap } from './Maps'
 import { createPromiseFromObservable } from './Observable';
 import { createURLDescriptor, URLDescriptor } from './URLTools';
-import { HTTPMethod } from './HTTPMethod';
-import { NaviNodeType } from './Node';
+import { createRequest, HTTPMethod } from './NaviRequest';
 import { OutOfRootError } from './Errors';
+import { Env } from './Env';
+import { Reducer } from './Reducer';
 
 
-export interface RouterOptions<Context extends object> {
+export interface RouterOptions<Context extends object, R = Route> {
     context?: Context,
-    pages: Switch,
+    routes?: Matcher<Context>,
     basename?: string,
+    reducer?: Reducer<Segment, R>,
 }
 
 export interface RouterResolveOptions {
     followRedirects?: boolean,
-    withContent?: boolean,
+    body?: any,
+    headers?: { [name: string]: string },
     method?: HTTPMethod,
+    url?: string | URLDescriptor,
 }
 
 export interface RouterMapOptions {
@@ -30,86 +34,114 @@ export interface RouterMapOptions {
     maxDepth?: number,
     predicate?: (segment: Segment) => boolean,
     expandPattern?: (pattern: string, router: Router) => undefined | string[] | Promise<undefined | string[]>,
-    withContent?: boolean,
+    method?: 'GET' | 'HEAD',
+    headers?: { [name: string]: string },
+    hostname?: string,
 }
   
 
 // The public factory function creates a resolver.
 export function createRouter<Context extends object>(options: RouterOptions<Context>){
-    return new Router(new Resolver(), options)
+    return new Router(options)
 }
 
-export class Router<Context extends object=any> {
+export class Router<Context extends object=any, R=Route> {
     private resolver: Resolver
     private context: Context
-    private pages: Switch<any, any, Context>
+    private matcherGeneratorClass: MatcherGenerator<Context>
     private rootMapping: Mapping
+    private reducer: Reducer<Segment, R>
     
-    constructor(resolver: Resolver, options: RouterOptions<Context>) {
-        if (process.env.NODE_ENV !== "production") {
-            if (!options.pages || options.pages.type !== NaviNodeType.Switch) {
-                // TODO: support top-level context nodes
-                throw new Error(`Expected to receive a Switch object for the "pages" prop, but instead received "${options.pages}".`)
-            }
-        }
-
-        this.resolver = resolver
+    constructor(options: RouterOptions<Context, R>) {
+        this.resolver = new Resolver
         this.context = options.context || {} as any
-        this.pages = options.pages
+        this.matcherGeneratorClass = options.routes!()
+        this.reducer = options.reducer || (defaultRouteReducer as any)
 
         let basename = options.basename
         if (basename && basename.slice(-1) === '/') {
             basename = basename.slice(0, -1)
         }
 
-        this.rootMapping = createRootMapping(options.pages, basename)
+        this.rootMapping = createRootMapping(options.routes!, basename)
     }
 
-    createObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterResolveOptions = {}): RouteObservable | undefined {
+    // Please don't document this API. It should only be used through
+    // "createBrowserNavigation()" or "createMemoryNavigation()"
+    setContext(context: Context) {
+        this.context = context || {}
+    }
+
+    createObservable(url: URLDescriptor, options: RouterResolveOptions = {}): SegmentListObservable | undefined {
         // need to somehow keep track of which promises in the resolver correspond to which observables,
         // so that I don't end up updating observables which haven't actually changed.
-        let url = createURLDescriptor(urlOrDescriptor, { removeHash: true })
-        let rootEnv = {
-            context: this.context,
-            headers: {},
-            method: options.method || HTTPMethod.Get,
-            mountname: '',
-            params: url.query,
-            pathname: '',
-            query: url.query,
-            search: url.search,
-            router: this,
-            url: url,
-            unmatchedPathnamePart: url.pathname,
+        if (url.hash) {
+            url = Object.assign({}, url)
+            delete url.hash
         }
-        let matchEnv = matchMappingAgainstPathname(rootEnv, this.rootMapping, true)
+
+        let rootEnv: Env = {
+            context: this.context,
+            request: createRequest(this.context, {
+                body: options.body,
+                headers: options.headers || {},
+                method: options.method || 'GET',
+                hostname: url.hostname,
+                mountpath: '',
+                params: url.query,
+                query: url.query,
+                search: url.search,
+                router: this,
+                url: url.pathname+url.search,
+                originalUrl: url.href,
+                path: url.pathname,
+            })
+        }
+        let matchEnv = mappingAgainstPathname(rootEnv, this.rootMapping, true)
         if (matchEnv) {
-            return new RouteObservable(
+            return new SegmentListObservable(
                 url,
                 matchEnv,
-                this.pages,
-                this.resolver,
-                !!options.withContent,
+                this.matcherGeneratorClass,
+                this.resolver
             )
         }
     }
 
-    createMapObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): RouteMapObservable {
-        return new RouteMapObservable(
+    createMapObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): SegmentsMapObservable {
+        return new SegmentsMapObservable(
             createURLDescriptor(urlOrDescriptor, { ensureTrailingSlash: false }),
             this.context,
-            this.pages,
+            this.matcherGeneratorClass,
             this.rootMapping,
             this.resolver,
             this,
-            options
+            options,
         )
     }
 
-    resolve(url: string | Partial<URLDescriptor>, options?: RouterResolveOptions): Promise<PageRoute>;
-    resolve(urls: (string | Partial<URLDescriptor>)[], options?: RouterResolveOptions): Promise<PageRoute[]>;
-    resolve(urls: string | Partial<URLDescriptor> | (string | Partial<URLDescriptor>)[], options: RouterResolveOptions = {}): Promise<PageRoute | PageRoute[]> {
-        let urlDescriptors: URLDescriptor[] = getDescriptorsArray(urls)
+    resolve(url: string | Partial<URLDescriptor> | RouterResolveOptions, options?: RouterResolveOptions): Promise<R>;
+    resolve(urls: (string | Partial<URLDescriptor>)[], options?: RouterResolveOptions): Promise<R[]>;
+    resolve(urls: string | Partial<URLDescriptor> | (string | Partial<URLDescriptor>)[] | RouterResolveOptions, options: RouterResolveOptions = {}): Promise<R | R[]> {
+        let urlDescriptors: URLDescriptor[]
+
+        if (Array.isArray(urls)) {
+            urlDescriptors = urls.map(url => createURLDescriptor(url))
+        }
+        else if (typeof urls === 'string') {
+            urlDescriptors = [createURLDescriptor(urls)]
+        }
+        else if ((urls as RouterResolveOptions).url) {
+            options = urls as RouterResolveOptions
+            urlDescriptors = [createURLDescriptor(options.url!)]
+        }
+        else if (options) {
+            urlDescriptors = [createURLDescriptor(urls as any)]
+        }
+        else {
+            throw new Error(`You must specify a URL for router.resolve().`)
+        }
+
         if (!urlDescriptors.length) {
             return Promise.resolve([])
         }
@@ -118,59 +150,62 @@ export class Router<Context extends object=any> {
         return !Array.isArray(urls) ? promises[0] : Promise.all(promises)
     }
 
-    resolveSiteMap(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): Promise<SiteMap> {
-        return createPromiseFromObservable(this.createMapObservable(urlOrDescriptor, options)).then(routeMap => {
-            let pageMap = {} as PageMap
-            let redirectMap = {} as RedirectMap
-            let urls = Object.keys(routeMap)
+    resolveSiteMap(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): Promise<SiteMap<R>> {
+        return createPromiseFromObservable(this.createMapObservable(urlOrDescriptor, options)).then(segmentsMap => {
+            let routeMap = {} as RouteMap<R>
+            let redirectMap = {} as { [name: string]: string }
+            let urls = Object.keys(segmentsMap)
             for (let i = 0; i < urls.length; i++) {
                 let url = urls[i]
-                let route = routeMap[url]
-                if (route.status === Status.Ready) {
-                    if (route.type === RouteType.Page) {
-                        pageMap[url] = route as PageRoute
-                        continue
-                    }
-                    else if (route.type === RouteType.Redirect) {
-                        redirectMap[url] = route as RedirectRoute
-                        continue
-                    }
+                let segments = segmentsMap[url]
+                let lastSegment = segments[segments.length - 1]
+                if (lastSegment.type === 'redirect') {
+                    redirectMap[url] = lastSegment.to
+                    continue
                 }
-                throw route.error || new Error('router error')
+                else {
+                    routeMap[url] =
+                        [{ type: 'url', url: createURLDescriptor(url) }]
+                            .concat(segments)
+                            .reduce(this.reducer, undefined)!
+                }
             }
             return {
-                pages: pageMap,
+                routes: routeMap,
                 redirects: redirectMap,
             }
         })
     }
 
-    resolvePageMap(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): Promise<PageMap> {
-        return this.resolveSiteMap(urlOrDescriptor, options).then(siteMap => siteMap.pages)
+    resolveRouteMap(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): Promise<RouteMap<R>> {
+        return this.resolveSiteMap(urlOrDescriptor, options).then(siteMap => siteMap.routes)
     }
 
-    private getPageRoutePromise(url: URLDescriptor, options: RouterResolveOptions): Promise<PageRoute> {
+    private getPageRoutePromise(url: URLDescriptor, options: RouterResolveOptions): Promise<R> {
         let observable = this.createObservable(url, options)
         if (!observable) {
             return Promise.reject(new OutOfRootError(url))
         }
 
-        return createPromiseFromObservable(observable).then(route => {
-            if (route.status === Status.Ready) {
-                if (route.type === RouteType.Redirect && options.followRedirects) {
-                    return this.getPageRoutePromise(createURLDescriptor(route.to), options)
+        return createPromiseFromObservable(observable).then(segments => {
+            for (let i = 0; i < segments.length; i++) {
+                let segment = segments[i]
+                if (segment.type === 'busy') {
+                    break
                 }
-                else if (route.type === RouteType.Page) {
-                    return route as PageRoute
+                if (segment.type === 'redirect' && options.followRedirects) {
+                    return this.getPageRoutePromise(createURLDescriptor(segment.to), options)
+                }
+                if (segment.type === 'error') {
+                    throw segment.error
                 }
             }
-            throw route.error || new Error('router error')
+
+            return (
+                [{ type: 'url', url: createURLDescriptor(url) }]
+                    .concat(segments)
+                    .reduce(this.reducer, undefined)!
+            )
         })
     }
-}
-
-function getDescriptorsArray(urls: Partial<URLDescriptor> | string | (Partial<URLDescriptor> | string)[]): URLDescriptor[] {
-    return Array.isArray(urls)
-        ? urls.map(url => createURLDescriptor(url))
-        : [createURLDescriptor(urls)]
 }

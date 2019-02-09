@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, NavContent, NavNotFoundBoundary, useLoadingRoute } from 'react-navi';
+import { NavLink, NavView, NavNotFoundBoundary, useLoadingRoute } from 'react-navi';
 import { MDXProvider } from '@mdx-js/tag';
 import './App.css';
 
@@ -35,7 +35,7 @@ function App() {
             // Markdown files, ensuring navigation is handled by Navi.
             a: NavLink,
           }}>
-            <NavContent />
+            <NavView />
           </MDXProvider>
         </NavNotFoundBoundary>
       </main>

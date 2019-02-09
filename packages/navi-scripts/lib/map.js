@@ -4,12 +4,12 @@ const { createScriptRunner } = require('./createScriptRunner')
 
 function formatMap(siteMap) {
     let map =''
-    for (let url of Object.keys(siteMap.pages)) {
+    for (let url of Object.keys(siteMap.routes)) {
         map += chalk.blue("[html]     ")+url+"\n"
     }
 
-    for (let [url, redirectRoute] of Object.entries(siteMap.redirects)) {
-        map += chalk.yellow("[redirect] ")+url+chalk.grey(" -> "+redirectRoute.to)+"\n"
+    for (let [url, to] of Object.entries(siteMap.redirects)) {
+        map += chalk.yellow("[redirect] ")+url+chalk.grey(" -> "+to)+"\n"
     }
     return map
 }
@@ -18,12 +18,12 @@ async function createMap(config) {
     let scriptRunner = await createScriptRunner(config)
     let app = await scriptRunner()
 
-    if (!app.pages) {
+    if (!app.routes) {
         throw new Error(`Couldn't find window.NaviScripts - did you call register()?`)
     }
 
     let router = createRouter({
-        pages: app.pages,
+        routes: app.routes,
         context: config.context,
     })
 

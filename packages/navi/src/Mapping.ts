@@ -1,6 +1,7 @@
-import { MaybeResolvableNode } from './Node'
+import { MaybeResolvableMatcher } from './Matcher'
 import { Env } from './Env'
 import { joinPaths } from './URLTools'
+import { createRequest } from './NaviRequest';
 
 
 export const KEY_WILDCARD = '\0'
@@ -13,7 +14,7 @@ export const KEY_WILDCARD_REGEXP = /\0/g
  */
 export interface Mapping {
     /**
-     * The relative path of a Switch to its parent, with wildcards
+     * The relative path of a Map to its parent, with wildcards
      * represented by a colon `:`, followed by the name of the param where
      * their value should be placed.
      */
@@ -40,23 +41,23 @@ export interface Mapping {
      * The node that will be used to handle detailed matching of this path,
      * once a tentative match is found.
      */
-    maybeResolvableNode: MaybeResolvableNode,
+    maybeResolvableMatcher: MaybeResolvableMatcher,
 }
 
-export function createRootMapping(maybeResolvableNode: MaybeResolvableNode, rootPath: string = ''): Mapping {
+export function createRootMapping(maybeResolvableMatcher: MaybeResolvableMatcher, rootPath: string = ''): Mapping {
     return (
         rootPath !== ''
-            ?   createMapping(rootPath, maybeResolvableNode)
+            ?   createMapping(rootPath, maybeResolvableMatcher)
             :   {
                     pattern: rootPath,
                     key: '',
                     regExp: new RegExp(''),
-                    maybeResolvableNode,
+                    maybeResolvableMatcher,
                 }
     )
 }
 
-export function createMapping(pattern: string, maybeResolvableNode: MaybeResolvableNode): Mapping {
+export function createMapping(pattern: string, maybeResolvableMatcher: MaybeResolvableMatcher): Mapping {
     let processedPattern = pattern
     if (processedPattern.length > 1 && processedPattern.substr(-1) === '/') {
         if (process.env.NODE_ENV !== 'production') {
@@ -107,7 +108,7 @@ export function createMapping(pattern: string, maybeResolvableNode: MaybeResolva
     
     return {
         key: keyParts.join('/'),
-        maybeResolvableNode: maybeResolvableNode,
+        maybeResolvableMatcher: maybeResolvableMatcher,
         pattern: processedPattern,
         pathParamNames: pathParams.length ? pathParams : undefined,
         regExp: new RegExp(regExpParts.join('/')),
@@ -115,8 +116,9 @@ export function createMapping(pattern: string, maybeResolvableNode: MaybeResolva
 }
 
 
-export function matchMappingAgainstPathname<Context extends object>(env: Env<Context>, mapping: Mapping, appendFinalSlash: boolean): Env<Context> | undefined {
-    let match = mapping.regExp.exec(env.unmatchedPathnamePart)
+export function mappingAgainstPathname<Context extends object>(env: Env<Context>, mapping: Mapping, appendFinalSlash: boolean): Env<Context> | undefined {
+    let request = env.request
+    let match = mapping.regExp.exec(env.request.path)
     if (!match) {
         return
     }
@@ -124,30 +126,30 @@ export function matchMappingAgainstPathname<Context extends object>(env: Env<Con
     let matchedPathname = match[0]
 
     // Set path params using RegExp match
-    let params = env.params
+    let params = request.params
     if (mapping.pathParamNames) {
-        params = { ...env.params }
+        params = { ...request.params }
         for (let i = 0; i < mapping.pathParamNames.length; i++) {
             let paramName = mapping.pathParamNames[i]
             params[paramName] = match[i+1]
         }
     }
 
-    let mountname = joinPaths(env.mountname, matchedPathname)
+    let unmatchedPath = request.path.slice(matchedPathname.length) || (appendFinalSlash ? '/' : '')
 
-    return {
+    let mountpath = joinPaths(request.mountpath, matchedPathname)
+    let mappedEnv: Env = {
         context: env.context,
-        headers: {},
-        method: env.method,
-        params: params,
-        pathname: mountname,
-        mountname: mountname,
-        query: env.query,
-        search: env.search,
-        router: env.router,
-        unmatchedPathnamePart: env.unmatchedPathnamePart.slice(matchedPathname.length) || (appendFinalSlash ? '/' : ''),
-        url: env.url,
+        request: createRequest(env.context, {
+            ...request,
+            params,
+            mountpath,
+            path: unmatchedPath,
+            url: unmatchedPath+request.search,
+        })
     }
+
+    return mappedEnv
 }
     
 

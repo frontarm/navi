@@ -1,24 +1,38 @@
-import { Params, joinPaths, URLDescriptor, createURLDescriptor } from './URLTools'
-import { Switch } from './Switch'
+import { joinPaths, URLDescriptor, createURLDescriptor } from './URLTools'
 import { NotFoundError } from './Errors'
-import { Env } from './Env'
-import { Status } from './Resolver'
+import { NaviRequest } from './NaviRequest'
+import { Resolution } from './Resolver'
 
 /**
  * A type that covers all Segment objects.
  */
 export type Segment =
-  | PlaceholderSegment
-  | SwitchSegment
-  | PageSegment
+  | BusySegment
+  | DataSegment
+  | ErrorSegment
+  | HeadSegment
+  | HeadersSegment
+  | MapSegment
+  | NullSegment
   | RedirectSegment
+  | StatusSegment
+  | TitleSegment
+  | URLSegment
+  | ViewSegment
 
-export enum SegmentType {
-  Placeholder = 'placeholder',
-  Switch = 'switch',
-  Page = 'page',
-  Redirect = 'redirect',
-}
+export type SegmentType =
+  | 'busy'
+  | 'data'
+  | 'head'
+  | 'headers'
+  | 'error'
+  | 'map'
+  | 'null'
+  | 'redirect'
+  | 'status'
+  | 'title'
+  | 'url'
+  | 'view'
 
 /**
  * All segments extend this interface. It includes all information that can be
@@ -28,169 +42,156 @@ export interface GenericSegment {
   type: SegmentType
 
   /**
-   * Any params that have been matched.
-   */
-  params: Params
-
-  /**
    * The part of the URL pathname that has been matched.
    */
   url: URLDescriptor
-}
 
-/**
- * Placeholder segments appear at the end of a route that is still being
- * resolved.
- */
-export interface PlaceholderSegment extends GenericSegment {
-  type: SegmentType.Placeholder
-
-  nextSegment?: never
-  nextPattern?: never
-  status: Status
   error?: any
-  content?: never
-  meta?: never
-  title?: never
+  to?: any
+  view?: any
+  map?: any
+}
 
-  lastRemainingSegment?: never
-  remainingSegments: any[]
+
+/**
+ * This is used in place of a segment of another type whose final result is
+ * not yet known.
+ */
+export interface BusySegment extends GenericSegment {
+  type: 'busy'
+  resolutionId: number
 }
 
 /**
- * Page segments corresponds to a URL segment followed by a final '/'.
+ * Data segments contain information that will be available on the produced
+ * route object, but isn't meant to be rendered with the page itself.
  */
-export interface PageSegment<Meta extends object = any, Content = any>
-  extends GenericSegment {
-  type: SegmentType.Page
-  content?: Content
-  meta?: Meta
-  title?: string
-
-  status: Status
-  error?: never
-
-  nextSegment?: never
-  nextPattern?: never
-  lastRemainingSegment?: never
-  remainingSegments: any[]
+export interface DataSegment<Data=any> extends GenericSegment {
+  type: 'data'
+  data: Data
 }
 
 /**
- * Redirect segments indicate that anything underneath this segment
- * should be redirected to the location specified at `to`.
+ * When encountered in a route by a `<NavView>`, this will be thrown, and
+ * can then be handled by an Error Boundary. Behavior for handling error
+ * segments on the server side is undefined.
  */
-export interface RedirectSegment<Meta extends object = any>
-  extends GenericSegment {
-  to?: string
-  meta: Meta
-  title?: never
-  type: SegmentType.Redirect
-
-  content?: never
-  status: Status
-  error?: any
-
-  nextSegment?: never
-  nextPattern?: never
-  lastRemainingSegment?: never
-  remainingSegments: any[]
+export interface ErrorSegment extends GenericSegment {
+  type: 'error'
+  error: any
 }
 
 /**
- * Switch segments correspond to non-final segment of the URL.
+ * Can be used to specify data for your page's <head> separately from
+ * the view content.
  */
-export interface SwitchSegment<Meta extends object = any, Content = any>
-  extends GenericSegment {
-  type: SegmentType.Switch
-  meta: Meta
-  title?: string
-  switch: Switch<any, Meta, Content>
-
-  status: Status
-  error?: any
-  content?: Content
-
-  /**
-   * The pattern that was matched (with param placeholders if applicable).
-   */
-  nextPattern?: string
-
-  /**
-   * A segment object that contains details on the next part of the URL.
-   *
-   * It may be undefined if the user has provided an incorrect URL, or
-   * if the child's template still needs to be loaded.
-   */
-  nextSegment?: Segment
-
-  /**
-   * An array of all Segment objects corresponding to the remaining parts
-   * of the URL.
-   *
-   * It may be undefined if the user has provided an incorrect URL, or
-   * if the child's template still needs to be loaded.
-   */
-  remainingSegments: Segment[]
-
-  /**
-   * Contains the final segment object, whatever it happens to be.
-   */
-  lastRemainingSegment?: Segment
+export interface HeadSegment extends GenericSegment {
+  type: 'head'
+  head: any
 }
 
-export function isSegmentSteady(segment: Segment): boolean {
-  return (
-    segment.status !== Status.Busy &&
-    (segment.remainingSegments.length === 0 ||
-      isSegmentSteady(segment.remainingSegments[0]))
-  )
+/**
+ * Used to specify any headers for your HTTP response.
+ */
+export interface HeadersSegment extends GenericSegment {
+  type: 'headers'
+  headers: { [name: string]: string }
 }
+
+/**
+ * Map segments are added for each map that is routed through. They're
+ * useful for building maps, as they hold metadata on other possible paths.
+ */
+export interface MapSegment extends GenericSegment {
+  type: 'map'
+  patterns: string[]
+}
+
+/**
+ * Added in place of child segments when a child returns an empty list of
+ * segments, to prevent the length of the segments list from decreasing.
+ */
+export interface NullSegment extends GenericSegment {
+  type: 'null'
+}
+
+/**
+ * When added to a route, indicates that the client should follow the redirect
+ * to the given address.
+ */
+export interface RedirectSegment extends GenericSegment {
+  type: 'redirect'
+  to: string
+}
+
+/**
+ * Used to specify the status of your HTTP response.
+ */
+export interface StatusSegment extends GenericSegment {
+  type: 'status'
+  status: number
+}
+
+/**
+ * Allows matchers to specify a <title> tag, or document title.
+ */
+export interface TitleSegment extends GenericSegment {
+  type: 'title'
+  title: string
+}
+
+/**
+ * Contains the full URL that should be used for the route, including any hash.
+ */
+export interface URLSegment extends GenericSegment {
+  type: 'url'
+}
+
+/**
+ * View segments contain data that will be used in a response on the
+ * server, or that will be rendered in the browser. They can contain error
+ * or redirect information, but they'll still be rendered as-is in the client.
+ */
+export interface ViewSegment<View=any> extends GenericSegment {
+  type: 'view'
+  view: View
+}
+
 
 export function createSegment<Type extends string, Details>(
   type: Type,
-  env: Env,
-  details: Details,
+  request: NaviRequest,
+  details?: Details,
   ensureTrailingSlash = true,
 ) {
-  return Object.assign(
-    {
-      type: type,
-      meta: undefined as any,
-      params: env.params,
-      url: createURLDescriptor({
-        pathname: env.pathname,
-        query: env.query,
-      }, { ensureTrailingSlash }),
-      remainingSegments: (details as any).remainingSegments || [],
-    },
-    details,
-  )
+  return Object.assign({
+    type: type,
+    url: createURLDescriptor({
+      pathname: request.mountpath,
+      query: request.query,
+    }, { ensureTrailingSlash }),
+  }, details)
 }
 
-export function createPlaceholderSegment(
-  env: Env,
-  error?: any,
+export function createNotReadySegment(
+  request: NaviRequest,
+  resolution: Resolution<any>,
   ensureTrailingSlash = true,
-): PlaceholderSegment {
-  return createSegment(SegmentType.Placeholder, env, {
-    status: error ? Status.Error : Status.Busy,
-    error: error,
-  }, ensureTrailingSlash)
+): BusySegment | ErrorSegment {
+  if (resolution.error) {
+    return createSegment('error', request, { error: resolution.error }, ensureTrailingSlash)  
+  }
+  return createSegment('busy', request, { resolutionId: resolution.id }, ensureTrailingSlash)
 }
 
-export function createNotFoundSegment(env: Env): PlaceholderSegment {
-  let fullPathname = joinPaths(env.pathname, env.unmatchedPathnamePart)
-  let error = new NotFoundError(fullPathname)
+export function createNotFoundSegment(request: NaviRequest): ErrorSegment {
+  let fullPathname = joinPaths(request.mountpath, request.path)
   return {
-    type: SegmentType.Placeholder,
-    params: env.params,
+    type: 'error',
     url: createURLDescriptor({
       pathname: fullPathname,
-      query: env.query,
+      query: request.query,
     }),
-    status: Status.Error,
-    error: error,
-    remainingSegments: [],
+    error: new NotFoundError(fullPathname),
   }
 }

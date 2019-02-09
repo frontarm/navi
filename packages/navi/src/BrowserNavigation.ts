@@ -1,19 +1,20 @@
-import { createBrowserHistory, History } from 'history';
-import { Switch } from './Switch'
-import { Navigation, NavigationSnapshot } from './Navigation'
-import { Resolver, Status } from './Resolver'
+import { createBrowserHistory, History } from 'history'
+import { Navigation } from './Navigation'
+import { Segment } from './Segments'
+import { Reducer } from './Reducer'
 import { Router } from './Router'
-import { Route, RouteType } from './Route'
+import { Route, defaultRouteReducer } from './Route'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
-import { CurrentRouteObservable, createCurrentRouteObservable } from './CurrentRouteObservable';
-import { areURLDescriptorsEqual } from './URLTools';
+import { CurrentRouteObservable } from './CurrentRouteObservable';
+import { Matcher } from './Matcher'
 
 
-export interface BrowserNavigationOptions<Context extends object> {
+export interface BrowserNavigationOptions<Context extends object, R = Route> {
     /**
-     * The Switch that declares your app's pages.
+     * The Matcher that declares your app's pages.
      */
-    pages: Switch,
+    routes?: Matcher<Context>,
+    pages?: Matcher<Context>,
 
     /**
      * If provided, this part of any URLs will be ignored. This is useful
@@ -22,22 +23,10 @@ export interface BrowserNavigationOptions<Context extends object> {
     basename?: string,
 
     /**
-     * This will be made available within your `pages` Switch through
+     * This will be made available within your matcher through
      * the `env` object passed to any getter functions.
      */
     context?: Context,
-
-    /**
-   * If `true`, Navi won't perform any scrolling when navigating between
-   * pages.
-   */
-    disableScrollHandling?: boolean,
-
-    /**
-     * The scroll behavior to use when scrolling between hashes on a
-     * page. Defaults to smooth.
-     */
-    hashScrollBehavior?: 'smooth' | 'instant'
 
     /**
      * You can manually supply a history object. This is useful for
@@ -48,62 +37,47 @@ export interface BrowserNavigationOptions<Context extends object> {
     history?: History,
 
     /**
-     * Sets `document.title` to the value of the
-     * `pageTitle` property in the current switchs' meta, if it exists.
-     * 
-     * You can also supply a function that reseives `pageTitle`, and
-     * returns a processed string that will be set.
-     * 
-     * Defaults to `true`.
+     * The function that reduces segments into a Route object.
      */
-    setDocumentTitle?: boolean | ((pageTitle?: string) => string),
+    reducer?: Reducer<Segment, R>,
 }
 
 
-export function createBrowserNavigation<Context extends object>(options: BrowserNavigationOptions<Context>) {
+export function createBrowserNavigation<Context extends object, R = Route>(options: BrowserNavigationOptions<Context, R>) {
     return new BrowserNavigation(options)
 }
 
 
-export class BrowserNavigation<Context extends object> implements Navigation<Context> {
-    router: Router<Context>
-
+export class BrowserNavigation<Context extends object, R> implements Navigation<Context, R> {
+    router: Router<Context, R>
     history: History
 
-    private setDocumentTitle: false | ((pageTitle?: string) => string)
-    private disableScrollHandling: boolean
+    private currentRouteObservable: CurrentRouteObservable<Context, R>
 
-    private pages: Switch
-    private basename?: string
-    private resolver: Resolver
-    private receivedRoute: Route
-    private renderedRoute?: Route
-    private hashScrollBehavior: 'smooth' | 'instant'
-    private currentRouteObservable: CurrentRouteObservable<Context>
-
-    constructor(options: BrowserNavigationOptions<Context>) {
-        this.history = options.history || createBrowserHistory()
-        this.resolver = new Resolver
-        this.pages = options.pages
-        this.basename = options.basename
-        this.router = new Router(this.resolver, {
-            context: options.context,
-            pages: options.pages,
-            basename: options.basename,
-        })
-
-        if (options.setDocumentTitle !== false) {
-            this.setDocumentTitle = typeof options.setDocumentTitle === 'function' ? options.setDocumentTitle : ((x?) => x || 'Untitled Page')
+    constructor(options: BrowserNavigationOptions<Context, R>) {
+        if (options.pages) {
+            console.warn(
+                `Deprecation Warning: passing a "pages" option to "createBrowserNavigation()" will `+
+                `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
+            )
+            options.routes = options.pages
         }
-        this.disableScrollHandling = !!options.disableScrollHandling
 
-        this.currentRouteObservable = createCurrentRouteObservable({
-            history: this.history,
-            router: this.router,
+        let reducer = options.reducer || defaultRouteReducer as any as Reducer<Segment, R>
+
+        this.history = options.history || createBrowserHistory()
+        this.router = new Router({
+            context: options.context,
+            routes: options.routes!,
+            basename: options.basename,
+            reducer,
         })
-        this.currentRouteObservable.subscribe(this.handleChange)
-        this.renderedRoute = this.currentRouteObservable.getValue()
-        this.hashScrollBehavior = options.hashScrollBehavior || 'smooth'
+
+        this.currentRouteObservable = new CurrentRouteObservable(
+            this.history,
+            this.router,
+            reducer,
+        )
     }
 
     dispose() {
@@ -111,31 +85,18 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         delete this.currentRouteObservable
         delete this.router
         delete this.history
-        delete this.resolver
-        delete this.pages
-        delete this.setDocumentTitle
-        delete this.receivedRoute
-        delete this.renderedRoute
     }
 
     setContext(context: Context) {
-        this.router = new Router(this.resolver, {
-            context: context,
-            pages: this.pages,
-            basename: this.basename,
-        })
-        this.currentRouteObservable.setRouter(this.router)
+        this.currentRouteObservable.setContext(context)
     }
 
-    getCurrentValue(): NavigationSnapshot {
-        let route = this.currentRouteObservable.getValue()
-        return {
-            route,
-            url: route.url,
-            history: this.history,
-            router: this.router,
-            onRendered: this.handleRendered,
-        }
+    getCurrentValue(): R {
+        return this.currentRouteObservable.getValue()
+    }
+
+    getSteadyValue(): Promise<R> {
+        return this.currentRouteObservable.getSteadyRoute()
     }
 
     async steady() {
@@ -143,119 +104,16 @@ export class BrowserNavigation<Context extends object> implements Navigation<Con
         return
     }
 
-    async getSteadyValue(): Promise<NavigationSnapshot> {
-        return this.currentRouteObservable.getSteadyRoute().then(route => ({
-            route,
-            url: route.url,
-            history: this.history,
-            router: this.router,
-            onRendered: this.handleRendered,
-        }))
-    }
-
     /**
      * If you're using code splitting, you'll need to subscribe to changes to
      * the snapshot, as the route may change as new code chunks are received.
      */
     subscribe(
-        onNextOrObserver: Observer<NavigationSnapshot> | ((value: NavigationSnapshot) => void),
+        onNextOrObserver: Observer<R> | ((value: R) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
         let navigationObserver = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
-        let mapObserver = new MapObserver(navigationObserver, this, this.handleRendered)
-        return this.currentRouteObservable.subscribe(mapObserver)
-    }
-
-    private handleChange = (route: Route) => {
-        this.receivedRoute = route
-    }
-
-    private handleRendered = () => {
-        if (this.renderedRoute !== this.receivedRoute) {
-            let prevRoute = this.renderedRoute
-            let nextRoute = this.receivedRoute
-
-            if (nextRoute && nextRoute.type === RouteType.Page && nextRoute.status === Status.Ready && this.setDocumentTitle) {
-                document.title = this.setDocumentTitle(nextRoute.title)
-            }
-
-            if (nextRoute && nextRoute.isSteady) {
-                if (prevRoute && areURLDescriptorsEqual(nextRoute.url, prevRoute.url)) {
-                    return
-                }
-
-                if (!this.disableScrollHandling &&
-                    (!prevRoute ||
-                    !prevRoute.url ||
-                    prevRoute.url.hash !== nextRoute.url.hash ||
-                    prevRoute.url.pathname !== nextRoute.url.pathname)
-                ) {
-                    scrollToHash(
-                        nextRoute.url.hash,
-                        prevRoute && prevRoute.url && prevRoute.url.pathname === nextRoute.url.pathname
-                            ? this.hashScrollBehavior
-                            : 'instant'
-                    )
-                }
-            }
-
-            this.renderedRoute = this.receivedRoute
-        }
-        else if (this.receivedRoute && this.receivedRoute.url.hash) {
-            scrollToHash(this.receivedRoute.url.hash, this.hashScrollBehavior)
-        }
-    }
-}
-
-
-function scrollToHash(hash, behavior) {
-    if (hash) {
-        let id = document.getElementById(hash.slice(1))
-        if (id) {
-            id.scrollIntoView({
-                behavior: behavior,
-                block: 'start'
-            })
-
-            // Focus the element, as default behavior is cancelled.
-            // https://css-tricks.com/snippets/jquery/smooth-scrolling/
-            id.focus()
-        }
-    }
-    else {
-        window.scroll({
-            top: 0, 
-            left: 0, 
-            behavior: 'auto',
-        })
-    }
-}
-
-
-class MapObserver implements Observer<Route> {
-    navigation: BrowserNavigation<any>
-    observer: Observer<NavigationSnapshot>
-    onRendered: () => void
-
-    constructor(observer: Observer<NavigationSnapshot>, navigation: BrowserNavigation<any>, onRendered: () => void) {
-        this.navigation = navigation
-        this.observer = observer
-        this.onRendered = onRendered
-    }
-
-    next(route: Route): void {
-        this.observer.next({
-            route,
-            url: route.url,
-            history: this.navigation.history,
-            router: this.navigation.router,
-            onRendered: this.onRendered,
-        })
-    }
-    error(errorValue: any): void {
-        if (this.observer.error) {
-            this.observer.error(errorValue)
-        }
+        return this.currentRouteObservable.subscribe(navigationObserver)
     }
 }

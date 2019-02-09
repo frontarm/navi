@@ -5,7 +5,7 @@ import { NavContext } from './NavContext'
 
 export function useCurrentRoute() {
   let { steadyRoute, busyRoute } = React.useContext(NavContext)
-  return steadyRoute || busyRoute
+  return (steadyRoute || busyRoute)!
 }
 
 

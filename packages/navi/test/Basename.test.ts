@@ -1,15 +1,15 @@
-import { SwitchSegment, createMemoryNavigation, PageSegment, Status, SegmentType, NotFoundError } from '../src'
-import { fixtureSwitch } from './fixtures/switches'
+import { createMemoryNavigation } from '../src'
+import { fixtureMap } from './fixtures/switches'
 
 describe("basename", () => {
   test("works without final /", async () => {
     let nav = createMemoryNavigation({
       url: '/nested/examples',
       basename: '/nested',
-      pages: fixtureSwitch,
+      routes: fixtureMap,
     })
 
-    let { route } = await nav.getSteadyValue()
+    let route = await nav.getSteadyValue()
     
     expect(route.title).toBe('Basic example')
   })
@@ -18,10 +18,10 @@ describe("basename", () => {
     let nav = createMemoryNavigation({
       url: '/nested/examples',
       basename: '/nested/',
-      pages: fixtureSwitch,
+      routes: fixtureMap,
     })
 
-    let { route } = await nav.getSteadyValue()
+    let route = await nav.getSteadyValue()
     
     expect(route.title).toBe('Basic example')
   })

@@ -33,6 +33,8 @@ export type URLDescriptor = {
    */
   query: Params,
 
+  hostname: string,
+
   /**
    * The full string URL. If this URL Descriptor was created from a
    * string that you passed in, then this will match your provided
@@ -67,7 +69,7 @@ export function areURLDescriptorsEqual(x?: URLDescriptor, y?: URLDescriptor): bo
 
 const parsePattern = /((((\/?(?:[^\/\?#]+\/+)*)([^\?#]*)))?(\?[^#]+)?)(#.*)?/
 export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescriptor>, { ensureTrailingSlash = true, removeHash = false } = {}): URLDescriptor {
-  let url: URLDescriptor
+  let hostname: string
   let pathname: string
   let query: Params
   let search: string
@@ -78,12 +80,14 @@ export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescrip
     if (!matches) {
         throw new Error("Couldn't parse the provided URL.")
     }
+    hostname = ''
     pathname = matches[2] || ''
     search = matches[6] || ''
     query = parseQuery(search)
     hash = matches[7] || ''
   }
   else {
+    hostname = urlOrDescriptor.hostname || ''
     pathname = urlOrDescriptor.pathname || ''
     query = urlOrDescriptor.query || (urlOrDescriptor.search ? parseQuery(urlOrDescriptor.search) : {})
     search = urlOrDescriptor.search || stringifyQuery(query)
@@ -93,7 +97,8 @@ export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescrip
   if (ensureTrailingSlash && pathname.length && pathname.substr(-1) !== '/') {
     pathname += '/'
   }
-  return url = {
+  return {
+    hostname,
     pathname,
     query,
     search,

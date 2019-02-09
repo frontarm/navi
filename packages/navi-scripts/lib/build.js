@@ -8,7 +8,7 @@ async function build(config) {
     let siteMap = await createMap(config)
     let scriptRunner = await createScriptRunner(config)
 
-    for (let route of Object.values(siteMap.pages)) {
+    for (let route of Object.values(siteMap.routes)) {
         let url = route.url
         let dependencies = {
             scripts: new Set,
@@ -20,7 +20,7 @@ async function build(config) {
         })
         let options = {
             app,
-            pages: app.pages,
+            routes: app.routes,
             exports: app.exports,
             url,
             siteMap,

@@ -1,0 +1,11 @@
+.tags,
+.tags li {
+  display: inline;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tags li:not(:first-child)::before {
+  content: ', ';
+}

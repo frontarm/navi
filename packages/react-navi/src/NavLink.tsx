@@ -2,6 +2,7 @@ import * as React from 'react'
 import { join as pathJoin } from 'path'
 import { URLDescriptor, Navigation, createURLDescriptor } from 'navi'
 import { NavContext } from './NavContext'
+import { scrollToHash } from './scrollToHash';
 
 
 export interface NavLinkProps {
@@ -157,9 +158,10 @@ class InnerLink extends React.Component<InnerLinkProps> {
     super(props)
 
     let url = this.getURL()
-    if (url && url.pathname) {
-      this.props.context.navigation.router.resolve(url, {
-        withContent: !!props.precache,
+    let navigation = props.context.navigation
+    if (navigation && url && url.pathname) {
+      navigation.router.resolve(url, {
+        method: 'HEAD',
         followRedirects: true,
       })
         .catch(() => {
@@ -173,8 +175,8 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
   getNavigationURL() {
     let context = this.props.context
-    let route = (context.steadyRoute || context.busyRoute)!
-    return route.url
+    let route = (context.steadyRoute || context.busyRoute)
+    return route && route.url
   }
 
   getURL(): URLDescriptor | undefined  {
@@ -182,14 +184,15 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
     // If this is an external link, return undefined so that the native
     // response will be used.
-    if (!href || typeof href === 'string' && (href.indexOf('://') !== -1 || href.indexOf('mailto:') === 0)) {
+    if (!href || (typeof href === 'string' && ((href.indexOf('://') !== -1 || href.indexOf('mailto:') === 0)))) {
       return
     }
 
     // The route `pathname` should always end with a `/`, so this
     // will give us a consistent behavior for `.` and `..` links.
-    if (typeof href === 'string' && href[0] === '.') {
-      href = pathJoin(this.getNavigationURL().pathname, href)
+    let navigationURL = this.getNavigationURL()
+    if (navigationURL && typeof href === 'string' && href[0] === '.') {
+      href = pathJoin(navigationURL.pathname, href)
     }
 
     return createURLDescriptor(href)
@@ -201,6 +204,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
     let linkURL = this.getURL()
     let active = props.active !== undefined ? props.active : !!(
       linkURL &&
+      navigationURL &&
       (props.exact
         ? linkURL.pathname === navigationURL.pathname
         : navigationURL.pathname.indexOf(linkURL.pathname) === 0)
@@ -267,12 +271,15 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
         let currentURL = (this.props.context.busyRoute || this.props.context.steadyRoute)!.url
         let isSamePathname = url.pathname === currentURL.pathname
-        if (!isSamePathname || url.hash !== currentURL.hash) {
+        if ((!isSamePathname && url.pathname !== '') || url.hash !== currentURL.hash) {
           this.props.context.navigation.history.push(url)
         }
         else {
           // Don't keep pushing the same URL onto the history.
           this.props.context.navigation.history.replace(url)
+          if (url.hash) {
+            scrollToHash(currentURL.hash, 'smooth')
+          }
         }
       }
     }

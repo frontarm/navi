@@ -1,19 +1,35 @@
-export { createContext, isValidContext, Context } from './Context'
-export { Env } from './Env'
-export { isValidDeclaration } from './isValidDeclaration'
-export { createSwitch, isValidSwitch, Switch } from './Switch'
-export * from './URLTools'
-export { CurrentRouteObservable, createCurrentRouteObservable } from './CurrentRouteObservable'
-export { createPage, isValidPage, Page } from './Page'
-export { createRedirect, isValidRedirect, Redirect } from './Redirect'
-export * from './Segments'
+//
+// Exports
+//
+
+export * from './matchers/Compat'
+export * from './matchers/map'
+export * from './matchers/redirect'
+export * from './matchers/route'
+export * from './matchers/withContext'
+export * from './matchers/withData'
+export * from './matchers/withHead'
+export * from './matchers/withHeaders'
+export * from './matchers/withStatus'
+export * from './matchers/withTitle'
+export * from './matchers/withView'
 export * from './Errors'
-export * from './Maps'
-export { Status } from './Resolver'
+export * from './NaviRequest'
+export * from './Segments'
+export * from './URLTools'
+export { composeMatchers } from './matchers/composeMatchers'
 export { Router, createRouter } from './Router'
-export { Route, RouteType, PageRoute, RedirectRoute } from './Route'
-export { MaybeResolvableNode, NaviNode } from './Node'
-export { Navigation, NavigationSnapshot } from './Navigation'
+export { Route, RouteType, defaultRouteReducer } from './Route'
+export { SiteMap, RouteMap } from './Maps'
+export { Matcher, isValidMatcher } from './Matcher'
+export { Navigation } from './Navigation'
 export { createBrowserNavigation, BrowserNavigation } from './BrowserNavigation'
 export { createMemoryNavigation, MemoryNavigation } from './MemoryNavigation'
 export { Observer, Subscription } from './Observable'
+
+//
+// Aliases
+//
+
+export { withView as view } from './matchers/withView'
+export { map as lazy } from './matchers/map'

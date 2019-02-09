@@ -12,6 +12,7 @@ export default function register(options) {
     try {
       app.sharedModules['react'] = require('react')
       app.sharedModules['react-navi'] = require('react-navi')
+      app.sharedModules['react-helmet'] = require('react-helmet')
     }
     catch (e) {
       // Doesn't matter if React isn't available. We just want to export it if it is.

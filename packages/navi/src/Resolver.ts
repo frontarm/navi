@@ -1,10 +1,13 @@
 import { Env } from './Env'
 import { joinPaths } from './URLTools'
 import { NotFoundError } from './Errors'
+import { NaviRequest } from './NaviRequest';
+import { Segment, BusySegment } from './Segments';
 
-export type Resolvable<T, Context extends object = any, Data = any> = (
-  env: Env<Context>,
-  dataPromise: PromiseLike<Data>
+export type Resolvable<T, Context extends object = any, U = any> = (
+  request: NaviRequest,
+  context: Context,
+  arg?: U
 ) => (T | PromiseLike<{ default: T } | T>)
 
 export type Resolution<T> = {
@@ -15,25 +18,34 @@ export type Resolution<T> = {
   value?: T
 }
 
-export enum Status {
-  Ready = 'ready',
-  Busy = 'busy',
-  Error = 'error',
-}
+export type Status =
+  | 'ready'
+  | 'busy'
+  | 'error'
 
 export function reduceStatuses(x: Status, y: Status) {
-  if (x === Status.Error || y === Status.Error) {
-    return Status.Error
+  if (x === 'error' || y === 'error') {
+    return 'error'
   }
-  else if (x === Status.Busy || y === Status.Busy) {
-    return Status.Busy
+  else if (x === 'busy' || y === 'busy') {
+    return 'busy'
   }
-  return Status.Ready
+  return 'ready'
+}
+
+function isBusy(segment: Segment): segment is BusySegment {
+  if (!segment) {
+    debugger
+  }
+  return segment.type === 'busy'
+}
+function pickResolutionId(segment: BusySegment): number {
+  return segment.resolutionId
 }
 
 export class Resolver {
   private nextId: number
-  private results: WeakMap<Env<any>, Map<Function, Resolution<any>>>
+  private results: WeakMap<Env, Map<Function, Resolution<any>>>
   private listenerIds: Map<Function, number[]>
 
   constructor() {
@@ -42,18 +54,17 @@ export class Resolver {
     this.results = new WeakMap()
   }
 
-  listen(listener: () => void, resolutionIds: number[]) {
-    this.listenerIds.set(listener, resolutionIds)
+  listen(listener: () => void, segments: Segment[]) {
+    this.listenerIds.set(listener, segments.filter(isBusy).map(pickResolutionId))
   }
 
   unlisten(listener: () => void) {
     this.listenerIds.delete(listener)
   }
 
-  resolve<T, Data>(
-    env: Env<any>,
-    resolvable: Resolvable<T>,
-    dataResolvable?: Resolvable<Data>
+  resolve<T>(
+    env: Env,
+    resolvable: Resolvable<T>
   ): Resolution<T> {
     let matcherResults = this.results.get(env)
     if (!matcherResults) {
@@ -66,15 +77,18 @@ export class Resolver {
       return currentResult
     }
 
-    let dataResolution = !dataResolvable ? { promise: Promise.resolve() } : (
-      matcherResults.get(dataResolvable) || { promise: Promise.resolve() }
-    ) 
     let id = this.nextId++
-    let maybeValue = resolvable(env, dataResolution.promise)
+    let maybeValue
+    try {
+      maybeValue = resolvable(env.request, env.context)
+    }
+    catch (e) {
+      maybeValue = Promise.reject(e)
+    }
     if (!isPromiseLike(maybeValue)) {
       let result: Resolution<T> = {
         id,
-        status: Status.Ready,
+        status: 'ready',
         value: maybeValue,
         promise: Promise.resolve(maybeValue),
       }
@@ -85,11 +99,11 @@ export class Resolver {
     let promise = maybeValue.then(extractDefault)
     let result: Resolution<T> = {
       id,
-      status: Status.Busy,
+      status: 'busy',
       promise,
     }
     matcherResults.set(resolvable, result)
-    this.listenForChanges(promise, matcherResults, resolvable, id, joinPaths(env.pathname, env.unmatchedPathnamePart))
+    this.listenForChanges(promise, matcherResults, resolvable, id, joinPaths(env.request.mountpath, env.request.path))
     return result
   }
 
@@ -107,7 +121,7 @@ export class Resolver {
           if (currentResult && currentResult.id === id) {
             matcherResults!.set(resolvable, {
               id: currentResult.id,
-              status: Status.Ready,
+              status: 'ready',
               value: value,
               promise,
             })
@@ -124,7 +138,7 @@ export class Resolver {
           if (currentResult && currentResult.id === id) {
             matcherResults!.set(resolvable, {
               id: currentResult.id,
-              status: Status.Error,
+              status: 'error',
               error: error || new Error(),
               promise,
             })
@@ -157,7 +171,7 @@ function isPromiseLike<T>(
   return !!x && !!x['then']
 }
 
-function extractDefault<T>(value: { default: T } | T): T {
+export function extractDefault<T>(value: { default: T } | T): T {
   if (hasDefault(value)) {
     return value.default
   } else {

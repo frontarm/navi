@@ -60,8 +60,8 @@ class InnerNotFoundBoundary extends React.Component<InnerNotFoundBoundaryProps, 
   }
 
   componentDidUpdate(prevProps: InnerNotFoundBoundaryProps, prevState: InnerNotFoundBoundaryState) {
-    if (this.state.error && !prevState.error && this.props.context.onRendered) {
-      this.props.context.onRendered()
+    if (this.state.error && !prevState.error) {
+      // TODO: scroll to top / render title if necessary
     }
   }
 

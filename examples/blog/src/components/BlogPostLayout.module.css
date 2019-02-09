@@ -1,0 +1,194 @@
+.title {
+  font-family: Montserrat, sans-serif;
+  font-weight: 900;
+  line-height: 1.1;
+  text-rendering: optimizeLegibility;
+}
+.title > a {
+  text-decoration: none;
+}
+
+.header {
+  margin-bottom: 2.4rem;  
+}
+.header .title {
+  font-size: 2.5rem;
+  margin-top: 1.7rem;
+  margin-bottom: 0;
+}
+.header .title > a {
+  color: black;
+}
+
+.footer {
+  margin-top: 7rem;
+}
+.footer .title {
+  font-size: 1.44rem;
+  margin-top: 0;
+  margin-bottom: 2.4rem;
+}
+.footer .title > a {
+  color: var(--primary-color-light);
+}
+
+.bio {
+  margin-bottom: 7rem;
+}
+
+.links {
+  display: flex;
+  justify-content: space-between;
+}
+.links .next {
+  flex-grow: 1;
+  flex-shrink: 1;
+  text-align: right;
+}
+
+.content hr {
+  background: hsla(0,0%,0%,0.2);
+  border: none;
+  height: 1px;
+}
+
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
+  font-weight: 900;
+  line-height: 1.1;
+  margin-top: 3.5rem;
+  text-rendering: optimizeLegibility;
+}
+  
+/**
+* Based on copypasta from Remy Bach and Sarah Drasner
+*/
+.content code,
+.content pre {
+  color: white;
+  font-family: Consolas,Menlo,Monaco,source-code-pro,Courier New,monospace;
+  font-feature-settings: normal;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  line-height: 1.5;
+  tab-size: 4;
+  hyphens: none;
+}
+  
+/* Code blocks */
+.content pre {
+  overflow: auto;
+  padding: 1em;
+}
+
+.content :not(pre) > code,
+.content pre {
+  background: hsla(0,0%,0%,0.9);
+}
+  
+.content pre::-moz-selection,
+.content pre::selection {
+  background: hsl(207, 4%, 16%);
+}
+  
+/* Text Selection colour */
+.content pre::-moz-selection,
+.content pre ::-moz-selection {
+  text-shadow: none;
+  background: hsla(0, 0%, 100%, 0.15);
+}
+
+.content pre::selection,
+.content pre ::selection {
+  text-shadow: none;
+  background: hsla(0, 0%, 100%, 0.15);
+}
+
+/* Inline code */
+.content :not(pre) > code {
+  border-radius: .3em;
+  background: rgba(255,229,100,0.2);
+  color: #1a1a1a;
+  padding: .15em .2em .05em;
+  white-space: normal;
+}
+.content a > code {
+  color: var(--primary-color);
+}
+
+.content :global(.highlighted-line) {
+  background-color: hsla(207, 95%, 15%, 1);
+  display: block;
+  margin-right: -1em;
+  margin-left: -1em;
+  padding-right: 1em;
+  padding-left: 0.75em;
+  border-left: 0.25em solid #ffa7c4;
+}
+
+.content :global(.token.attr-name) {
+  color: rgb(173, 219, 103);
+  font-style: italic;
+}
+
+.content :global(.token.comment) {
+  color: rgb(99, 119, 119);
+}
+
+.content :global(.token.string),
+.content :global(.token.url) {
+  color: rgb(173, 219, 103);
+}
+
+.content :global(.token.variable) {
+  color: rgb(214, 222, 235);
+}
+
+.content :global(.token.number) {
+  color: rgb(247, 140, 108);
+}
+
+.content :global(.token.builtin),
+.content :global(.token.char),
+.content :global(.token.constant),
+.content :global(.token.function) {
+  color: rgb(130, 170, 255);
+}
+
+.content :global(.token.punctuation) {
+  color: rgb(199, 146, 234);
+}
+
+.content :global(.token.selector),
+.content :global(.token.doctype) {
+  color: rgb(199, 146, 234);
+  font-style: 'italic';
+}
+
+.content :global(.token.class-name) {
+  color: rgb(255, 203, 139);
+}
+
+.content :global(.token.tag),
+.content :global(.token.operator),
+.content :global(.token.keyword) {
+  color: #ffa7c4;
+}
+
+.content :global(.token.boolean) {
+  color: rgb(255, 88, 116);
+}
+
+.content :global(.token.property) {
+  color: rgb(128, 203, 196);
+}
+
+.content :global(.token.namespace) {
+  color: rgb(178, 204, 214);
+}

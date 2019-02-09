@@ -9,8 +9,8 @@ import { ScrollSpy } from './ScrollSpy'
 import { TableOfContents, TableOfContentsItem } from './TableOfContents'
 
 
-export interface NaviBarProps<PageMeta extends object = any, SwitchMeta extends object = any> {
-  pageMap?: Navi.PageMap<PageMeta, any>
+export interface NaviBarProps<Data extends object = any> {
+  routeMap?: Navi.RouteMap<Navi.Route<Data>>
 
   /**
    * A table of contents to display for the current document.
@@ -29,7 +29,7 @@ export interface NaviBarProps<PageMeta extends object = any, SwitchMeta extends 
   scrollToActive?: boolean
 
   /**
-   * If specified, this will be run on each group of pages/switches to
+   * If specified, this will be run on each group of pages/groups to
    * determine its order
    */
   comparator?: (x: Item, y: Item) => -1 | 0 | 1
@@ -37,11 +37,11 @@ export interface NaviBarProps<PageMeta extends object = any, SwitchMeta extends 
   render?: (
     options: NaviBarRendererProps
   ) => React.ReactElement<any> | null
-  renderSwitch?: (
-    options: NaviBarSwitchRendererProps<SwitchMeta>,
+  renderSection?: (
+    options: NaviBarSectionRendererProps<Data>,
   ) => React.ReactElement<any> | null
   renderPage?: (
-    options: NaviBarPageRendererProps<PageMeta>,
+    options: NaviBarPageRendererProps<Data>,
   ) => React.ReactElement<any> | null
   renderHeading?: (
     options: NaviBarHeadingRendererProps,
@@ -54,21 +54,21 @@ export interface NaviBarRendererProps {
   toggleOpen: () => void,
 }
 
-export interface NaviBarSwitchRendererProps<Meta = any> {
+export interface NaviBarSectionRendererProps<Data = any> {
   active: boolean
   children: React.ReactNode
   href: string
   level: number
-  meta: Meta
+  data: Data
   index: number
   title?: string
 }
 
-export interface NaviBarPageRendererProps<Meta = any> {
+export interface NaviBarPageRendererProps<Data = any> {
   active: boolean
   children: React.ReactNode
   href: string
-  meta: Meta
+  data: Data
   index: number
   title: string
 }
@@ -87,13 +87,13 @@ export namespace NaviBar {
   export type Props = NaviBarProps
 
   export type RendererProps = NaviBarRendererProps
-  export type PageRendererProps<Meta extends object = any> = NaviBarPageRendererProps<Meta>
-  export type SwitchRendererProps<Meta extends object = any> = NaviBarSwitchRendererProps<Meta>
+  export type PageRendererProps<Data extends object = any> = NaviBarPageRendererProps<Data>
+  export type SectionRendererProps<Data extends object = any> = NaviBarSectionRendererProps<Data>
   export type HeadingRendererProps = NaviBarHeadingRendererProps
 }
 
 export const NaviBar = Object.assign(
-  function NaviBar<PageMeta extends object = any, SwitchMeta extends object = any>(props: NaviBarProps<PageMeta, SwitchMeta>) {
+  function NaviBar<Data extends object = any>(props: NaviBarProps<Data>) {
     return (
       <ScrollSpy tableOfContents={props.tableOfContents || []}>
         {({id, parentIds}) =>
@@ -117,8 +117,8 @@ export const NaviBar = Object.assign(
   }
 )
 
-export interface InnerNaviBarProps<PageMeta extends object = any, SwitchMeta extends object = any>
-  extends NaviBarProps<PageMeta, SwitchMeta> {
+export interface InnerNaviBarProps<Data extends object = any>
+  extends NaviBarProps<Data> {
   activeURL: Navi.URLDescriptor
   activeId?: string
   activeParentIds: string[]
@@ -129,13 +129,13 @@ export interface InnerNaviBarState {
   toggleOpen: () => void,
 }
 
-export class InnerNaviBar<PageMeta extends object = any, SwitchMeta extends object = any> extends React.Component<
-  InnerNaviBarProps<PageMeta, SwitchMeta>,
+export class InnerNaviBar<Data extends object = any> extends React.Component<
+  InnerNaviBarProps<Data>,
   InnerNaviBarState
 > {
   activePageRef = React.createRef<HTMLAnchorElement>()
 
-  constructor(props: InnerNaviBarProps<PageMeta, SwitchMeta>) {
+  constructor(props: InnerNaviBarProps<Data>) {
     super(props) 
 
     this.state = {
@@ -152,11 +152,11 @@ export class InnerNaviBar<PageMeta extends object = any, SwitchMeta extends obje
 
   render() {
     let children: React.ReactNode = null
-    if (!this.props.pageMap) {
+    if (!this.props.routeMap) {
       children = this.renderTableOfContents()
     }
     else {
-      let items = getItems(this.props.pageMap, this.props.comparator)
+      let items = getItems(this.props.routeMap, this.props.comparator)
       if (items.length !== 0) {
         children = items.map(this.renderItem)
       }
@@ -198,14 +198,14 @@ export class InnerNaviBar<PageMeta extends object = any, SwitchMeta extends obje
   renderItem = (item: Item, index: number) => {
     let active =
       this.props.activeURL.pathname.indexOf(item.url.pathname) === 0 &&
-      (item.type === 'switch' || Math.abs(this.props.activeURL.pathname.length - item.url.pathname.length) <= 1)
+      (item.type === 'group' || Math.abs(this.props.activeURL.pathname.length - item.url.pathname.length) <= 1)
 
-    if (item.type === ItemType.Page) {
+    if (item.type === 'page') {
       let pageContent = this.props.renderPage!({
         active,
         children: active ? this.renderTableOfContents() : null,
         href: item.url.href,
-        meta: item.meta,
+        data: item.data,
         index: index,
         title: item.title,
       })
@@ -223,19 +223,19 @@ export class InnerNaviBar<PageMeta extends object = any, SwitchMeta extends obje
       )
     } else {
       let childElements = item.children.map(this.renderItem)
-      let switchContent = this.props.renderSwitch!({
+      let groupContent = this.props.renderSection!({
         active,
         children: childElements.length ? childElements : null,
         href: item.url.href,
         level: item.level,
-        meta: item.meta,
+        data: item.data,
         index: index,
         title: item.title,
       })
 
       return (
-        switchContent &&
-        React.cloneElement(switchContent, { key: item.url.pathname })
+        groupContent &&
+        React.cloneElement(groupContent, { key: item.url.pathname })
       )
     }
   }
@@ -252,7 +252,7 @@ export class InnerNaviBar<PageMeta extends object = any, SwitchMeta extends obje
     }
   }
 
-  componentDidUpdate(prevProps: InnerNaviBarProps<PageMeta, SwitchMeta>) {
+  componentDidUpdate(prevProps: InnerNaviBarProps<Data>) {
     if (this.props.activeURL.pathname !== prevProps.activeURL.pathname) {
       if (this.props.scrollToActive) {
         let node = this.activePageRef.current
