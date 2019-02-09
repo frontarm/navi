@@ -34,6 +34,9 @@ export function reduceStatuses(x: Status, y: Status) {
 }
 
 function isBusy(segment: Segment): segment is BusySegment {
+  if (!segment) {
+    debugger
+  }
   return segment.type === 'busy'
 }
 function pickResolutionId(segment: BusySegment): number {

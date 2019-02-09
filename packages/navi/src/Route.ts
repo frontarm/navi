@@ -26,6 +26,31 @@ export interface Route<Data = any> {
 }
 
 export function defaultRouteReducer(route: Route | undefined, segment: Segment): Route {
+  route = defaultRouteReducerWithoutCompat(route, segment)
+  Object.defineProperties(route, {
+    meta: {
+      configurable: true,
+      get: () => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.12. Please use "route.data" instead.`)
+        }
+        return route!.data
+      },
+    },
+    content: {
+      configurable: true,
+      get: () => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.12. Please use "route.views" instead.`)
+        }
+        return segment.view
+      },
+    }
+  })
+  return route
+}
+
+function defaultRouteReducerWithoutCompat(route: Route | undefined, segment: Segment): Route {
   if (route) {
     if (segment.type === 'url') {
       return {
@@ -56,18 +81,11 @@ export function defaultRouteReducer(route: Route | undefined, segment: Segment):
     case 'busy':
       return { ...base, type: 'busy' }
     case 'data':
-      Object.assign(base.data, segment.data)
-      route = { ...base, type: 'ready', data: base.data }
-      Object.defineProperty(route, 'meta', {
-        enumerable: true,
-        get: () => {
-          if (process.env.NODE_ENV !== 'production') {
-            console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.12. Please use "route.data" instead.`)
-          }
-          return route!.data
-        },
-      })
-      return route
+      return {
+        ...base,
+        type: 'ready',
+        data: { ...base.data, ...segment.data }
+      }
     case 'error':
       return {
         ...base,
@@ -82,10 +100,10 @@ export function defaultRouteReducer(route: Route | undefined, segment: Segment):
         heads: base.heads.concat(segment.head)
       }
     case 'headers':
-      Object.assign(base.headers, segment.headers)
       return {
         ...base,
         type: 'ready',
+        headers: { ...base.headers, ...segment.headers }
       }
     case 'redirect':
       return { ...base, type: 'redirect', to: segment.to }
@@ -94,21 +112,11 @@ export function defaultRouteReducer(route: Route | undefined, segment: Segment):
     case 'title':
       return { ...base, type: 'ready', title: segment.title }
     case 'view':
-      route = {
+      return {
         ...base,
         type: 'ready',
         views: base.views.concat(segment.view),
       }
-      Object.defineProperty(route, 'content', {
-        enumerable: true,
-        get: () => {
-          if (process.env.NODE_ENV !== 'production') {
-            console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.12. Please use "route.views" instead.`)
-          }
-          return segment.view
-        },
-      })
-      return route
     default:
       return { ...base, type: 'ready' }
   }

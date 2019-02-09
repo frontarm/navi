@@ -23,6 +23,7 @@ export function createSegmentsMatcher<Context extends object>(
 
     let childIterator: MatcherIterator | undefined
     let childResult: IteratorResult<Segment[]> | undefined
+    let childSegments: Segment[] = []
     let segments: Segment[]
     do {
       segments = getSegments(options)
@@ -39,9 +40,14 @@ export function createSegmentsMatcher<Context extends object>(
       }
       if (childIterator && (!childResult || !childResult.done)) {
         childResult = childIterator.next()
+        if (childResult.value) {
+          // It's possible that the children finish before we do, so save
+          // they're last value.
+          childSegments = childResult.value
+        }
       }
 
-      segments = segments.concat(childResult ? childResult.value : [])
+      segments = segments.concat(childSegments)
       if (segments.length === 0) {
         segments = [createSegment('null', env.request)]
       }

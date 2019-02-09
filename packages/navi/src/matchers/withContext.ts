@@ -30,7 +30,7 @@ export function withContext<ParentContext extends object=any, ChildContext exten
     let { env, resolver } = options
     let childIterator: MatcherIterator | undefined
     let childResult: IteratorResult<Segment[]> | undefined
-    let segments: Segment[]
+    let segments: Segment[] = []
     do {
       let childContextResolution = resolver.resolve(env, childContextResolvable)
       let { status, value: childContext } = childContextResolution
@@ -57,8 +57,10 @@ export function withContext<ParentContext extends object=any, ChildContext exten
       }
       if (!childResult || !childResult.done) {
         childResult = childIterator.next()
+        if (childResult.value) {
+          segments = childResult.value
+        }
       }
-      segments = childResult.value || []
       if (segments.length === 0) {
         segments.push(createSegment('null', env.request))
       }
