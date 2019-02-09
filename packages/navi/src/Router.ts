@@ -135,6 +135,9 @@ export class Router<Context extends object=any, R=Route> {
             options = urls as RouterResolveOptions
             urlDescriptors = [createURLDescriptor(options.url!)]
         }
+        else if (options) {
+            urlDescriptors = [createURLDescriptor(urls as any)]
+        }
         else {
             throw new Error(`You must specify a URL for router.resolve().`)
         }
