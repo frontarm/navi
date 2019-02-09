@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Route, Navigation, Segment } from 'navi'
 
-export const NavContext = React.createContext<NavContext>(undefined as any)
+export const NavContext = React.createContext<NavContext>({} as any)
 
 export const NavConsumer = NavContext.Consumer
 

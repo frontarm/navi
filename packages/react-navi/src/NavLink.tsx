@@ -157,8 +157,9 @@ class InnerLink extends React.Component<InnerLinkProps> {
     super(props)
 
     let url = this.getURL()
-    if (url && url.pathname) {
-      this.props.context.navigation.router.resolve(url, {
+    let navigation = props.context.navigation
+    if (navigation && url && url.pathname) {
+      navigation.router.resolve(url, {
         method: 'HEAD',
         followRedirects: true,
       })
@@ -173,8 +174,8 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
   getNavigationURL() {
     let context = this.props.context
-    let route = (context.steadyRoute || context.busyRoute)!
-    return route.url
+    let route = (context.steadyRoute || context.busyRoute)
+    return route && route.url
   }
 
   getURL(): URLDescriptor | undefined  {
@@ -188,8 +189,9 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
     // The route `pathname` should always end with a `/`, so this
     // will give us a consistent behavior for `.` and `..` links.
-    if (typeof href === 'string' && href[0] === '.') {
-      href = pathJoin(this.getNavigationURL().pathname, href)
+    let navigationURL = this.getNavigationURL()
+    if (navigationURL && typeof href === 'string' && href[0] === '.') {
+      href = pathJoin(navigationURL.pathname, href)
     }
 
     return createURLDescriptor(href)
@@ -201,6 +203,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
     let linkURL = this.getURL()
     let active = props.active !== undefined ? props.active : !!(
       linkURL &&
+      navigationURL &&
       (props.exact
         ? linkURL.pathname === navigationURL.pathname
         : navigationURL.pathname.indexOf(linkURL.pathname) === 0)
