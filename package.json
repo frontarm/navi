@@ -29,6 +29,7 @@
     "test:watch": "lerna run --stream test:watch"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "site"
   ]
 }
