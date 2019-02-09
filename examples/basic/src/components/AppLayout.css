@@ -1,10 +1,10 @@
-.App {
+.AppLayout {
   padding-top: 64px;
 }
-.App main {
+.AppLayout main {
   margin: 1.5rem;
 }
-.App-header {
+.AppLayout-header {
   border-bottom: 1px solid #eee;
   position: fixed;
   top: 0;
@@ -13,10 +13,10 @@
   height: 64px;
   z-index: 10;
 }
-.App-nav {
+.AppLayout-nav {
   margin: 1rem 1.5rem;
 }
-.App-nav a {
+.AppLayout-nav a {
   display: inline-block;
   color: #555555;
   font-family: Lato, sans-serif;
@@ -27,11 +27,11 @@
   text-decoration: none;
   transition: color 150ms ease-out;
 }
-.App-nav a.active {
+.AppLayout-nav a.active {
   color: #1cde78;
 }
 
-.App-loading-indicator {
+.AppLayout-loading-indicator {
   position: fixed;
   height: 4px;
   top: 0;
@@ -45,17 +45,17 @@
   transform: translateY(-4px);
   transition: transform ease-in 300ms, opacity ease-in 300ms;
   transition-delay: 0;
-  animation: App-loading 2s cubic-bezier(.4,.45,.6,.55) infinite;
+  animation: AppLayout-loading 2s cubic-bezier(.4,.45,.6,.55) infinite;
   opacity: 0;
 }
 
-.App-loading-indicator.active {
+.AppLayout-loading-indicator.active {
   transition-delay: 100ms;
   transform: translateY(0);
   opacity: 1;
 }
 
-@keyframes App-loading {
+@keyframes AppLayout-loading {
   0% {
     background-position: 0 0;
   }

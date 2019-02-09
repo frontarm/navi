@@ -1,6 +1,10 @@
 # Basic Example
 
-This example just gives you static rendering and two pages.
+This example gives you two routes and an application-wide layout. It's built using create-react-app.
+
+In this example, there's no static rendering. Instead, the `<Navigation />` component in `index.js` handles all your routing, using the routes defined in `routes/index.js`.
+
+- 
 
 To try it, change into this directory, install the dependencies, and then start the dev server or build the production version:
 
