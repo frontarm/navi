@@ -27,9 +27,9 @@
   ],
   "peerDependencies": {
     "@types/react": "^16.8.1",
-    "navi": "^0.10.0",
+    "navi": "^0.11.0",
     "react": "^16.5.0",
-    "react-navi": "^0.10.0"
+    "react-navi": "^0.11.0"
   },
   "dependencies": {
     "@types/history": "^4.6.2"
@@ -42,5 +42,5 @@
     "type": "git",
     "url": "https://github.com/frontarm/navi.git"
   },
-  "gitHead": "d5a51171b74368c67d53aab71735cddddb6f68ce"
+  "gitHead": "9a87bcdcbfc0f37a24d9488616dff65407606370"
 }
