@@ -7,9 +7,9 @@ export const fixtureMap = composeMatchers(
   }),
   map({
     '/': route(async req => ({
+      title: 'Navi',
       data: {
         description: 'Navi Is A Router/Loader',
-        title: 'Navi',
       },
       view: await req.router.resolveRouteMap('/examples'),
     })),
@@ -25,16 +25,16 @@ export const fixtureMap = composeMatchers(
 
         '/basic': async () => route(req => ({
           data: {
-            title: 'Basic example',
             description: 'basic meta description'
           },
+          title: 'Basic example',
           view: 'basic-example'
         })),
 
         '/advanced': route({
+          title: 'Advanced example',
           data: {
             isPaywalled: true,
-            title: 'Advanced example',
           },
           getView: async (request, context, dataPromise) => 
             (context.contextName !== 'examples' || !context.isAuthenticated)

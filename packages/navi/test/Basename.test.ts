@@ -11,7 +11,7 @@ describe("basename", () => {
 
     let route = await nav.getSteadyValue()
     
-    expect(route.data.title).toBe('Basic example')
+    expect(route.title).toBe('Basic example')
   })
 
   test("works with final /", async () => {
@@ -23,6 +23,6 @@ describe("basename", () => {
 
     let route = await nav.getSteadyValue()
     
-    expect(route.data.title).toBe('Basic example')
+    expect(route.title).toBe('Basic example')
   })
 })

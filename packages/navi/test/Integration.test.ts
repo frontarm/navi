@@ -16,13 +16,12 @@ describe("integration", () => {
         let firstSegment = route.segments[0]
         
         expect(firstSegment.type).toBe('url')
-        expect((route.segments[2] as any).data.title).toBe('Site')
         // expect(route.status).toBe(200)
         expect(route.views[0]).toBe('site-layout')
         expect(route.views[1]).toBe('example-layout')
         expect(route.type).toBe('ready')
-        expect(route.title).toBe('Basic example')
         expect(route.views[2]).toBe('basic-example')
+        expect(route.title).toBe('Basic example')
 
         nav.history.push('/examples/advanced?referrer=frontarm')
 
