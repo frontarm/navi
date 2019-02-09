@@ -3,6 +3,7 @@
   "devDependencies": {
     "lerna": "^3.10.7",
     "@types/jest": "^23.3.7",
+    "@types/node": "10.12.18",
     "@types/react": "^16.8.1",
     "@types/react-dom": "^16.0.11",
     "cross-env": "^5.0.5",
