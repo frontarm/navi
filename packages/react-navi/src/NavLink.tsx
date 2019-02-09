@@ -2,6 +2,7 @@ import * as React from 'react'
 import { join as pathJoin } from 'path'
 import { URLDescriptor, Navigation, createURLDescriptor } from 'navi'
 import { NavContext } from './NavContext'
+import { scrollToHash } from './scrollToHash';
 
 
 export interface NavLinkProps {
@@ -183,7 +184,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
     // If this is an external link, return undefined so that the native
     // response will be used.
-    if (!href || typeof href === 'string' && (href.indexOf('://') !== -1 || href.indexOf('mailto:') === 0)) {
+    if (!href || (typeof href === 'string' && ((href.indexOf('://') !== -1 || href.indexOf('mailto:') === 0)))) {
       return
     }
 
@@ -270,12 +271,15 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
         let currentURL = (this.props.context.busyRoute || this.props.context.steadyRoute)!.url
         let isSamePathname = url.pathname === currentURL.pathname
-        if (!isSamePathname || url.hash !== currentURL.hash) {
+        if ((!isSamePathname && url.pathname !== '') || url.hash !== currentURL.hash) {
           this.props.context.navigation.history.push(url)
         }
         else {
           // Don't keep pushing the same URL onto the history.
           this.props.context.navigation.history.replace(url)
+          if (url.hash) {
+            scrollToHash(currentURL.hash, 'smooth')
+          }
         }
       }
     }

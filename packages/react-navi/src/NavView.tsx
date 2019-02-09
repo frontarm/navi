@@ -31,6 +31,7 @@ export const NavView: React.SFC<NavViewProps> = function NavView(props: NavViewP
   )
 }
 NavView.defaultProps = {
+  hashScrollBehavior: 'smooth',
   where: (segment: Segment) => segment.type === 'view'
 }
 
