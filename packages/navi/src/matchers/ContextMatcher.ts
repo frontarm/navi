@@ -4,7 +4,6 @@ import {
   Matcher,
   MatcherGenerator,
   MatcherGeneratorClass,
-  MatcherResult,
   MatcherOptions,
   createMatcher,
 } from '../Matcher'
@@ -35,17 +34,14 @@ class ContextMatcherGenerator<ParentContext extends object, ChildContext extends
     super(options, true)
   }
 
-  protected execute(): MatcherResult {
+  protected execute() {
     let childContextResolution: Resolution<ChildContext> =
       this.resolver.resolve(
         this.env,
         this.constructor.childContextResolvable
       )
     if (childContextResolution.status !== 'ready') {
-      return {
-        resolutionIds: [childContextResolution.id],
-        segments: [createNotReadySegment(this.env.request, childContextResolution.error, this.appendFinalSlash)]
-      }
+      return [createNotReadySegment(this.env.request, childContextResolution, this.appendFinalSlash)]
     }
 
     // Need to memoize env, as its the key for memoization by the resolver

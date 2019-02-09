@@ -1,7 +1,7 @@
 import { URLDescriptor, createURLDescriptor, joinPaths } from '../URLTools'
 import { Resolvable } from '../Resolver'
 import { createSegment, createNotReadySegment } from '../Segments'
-import { MatcherGenerator, MatcherGeneratorClass, MatcherResult, MatcherOptions, Matcher, createMatcher } from '../Matcher'
+import { MatcherGenerator, MatcherGeneratorClass, MatcherOptions, Matcher, createMatcher } from '../Matcher'
 
 export interface RedirectMatcherGeneratorClass<Context extends object = any>
   extends MatcherGeneratorClass<Context, RedirectMatcherGenerator<Context>> {
@@ -14,15 +14,11 @@ export interface RedirectMatcherGeneratorClass<Context extends object = any>
 class RedirectMatcherGenerator<Context extends object = any> extends MatcherGenerator<Context> {
   ['constructor']: RedirectMatcherGeneratorClass
   
-  protected execute(): MatcherResult {
-    let toResolution = this.resolver.resolve(this.env, this.constructor.to)
-    let { value: to, status, error } = toResolution
-
+  protected execute() {
+    let resolution = this.resolver.resolve(this.env, this.constructor.to)
+    let { value: to, status } = resolution
     if (status !== 'ready') {
-      return {
-        resolutionIds: [toResolution.id],
-        segments: [createNotReadySegment(this.env.request, error)]
-      }
+      return [createNotReadySegment(this.env.request, resolution)]
     }
     
     // TODO: support all relative URLs
@@ -38,10 +34,7 @@ class RedirectMatcherGenerator<Context extends object = any> extends MatcherGene
     else if (to) {
       toHref = createURLDescriptor(to).href
     }
-    return {
-      resolutionIds: [toResolution.id],
-      segments: [createSegment('redirect', this.env.request, { to: toHref! })],
-    }
+    return [createSegment('redirect', this.env.request, { to: toHref! })]
   }
 }
 

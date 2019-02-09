@@ -126,12 +126,12 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     this.isRefreshScheduled = false
     this.isRefreshing = true
 
-    let allResolvableIds: number[] = []
+    let allSegments: Segment[] = []
     let i = 0
     while (i < this.mapItems.length) {
       let item = this.mapItems[i]
       let pathname = item.pathname
-      let { segments, resolutionIds } = item.matcherGenerator.getResult()
+      let segments = item.matcherGenerator.getResult()
       let lastSegment = segments[segments.length-1]
       let cachedLastSegment = item.lastSegmentCache
       item.segmentsCache = segments
@@ -190,8 +190,8 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
         }
       }
 
-      if (resolutionIds) {
-        allResolvableIds = allResolvableIds.concat(resolutionIds)
+      if (segments) {
+        allSegments = allSegments.concat(segments)
       }
       i++
     }
@@ -210,7 +210,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     }
 
     // This will replace any existing listener and its associated resolvables
-    this.resolver.listen(this.handleResolverUpdate, allResolvableIds)
+    this.resolver.listen(this.handleResolverUpdate, allSegments)
 
     segmentsMapArray.sort((itemX, itemY) => {
       let x = itemX[2]

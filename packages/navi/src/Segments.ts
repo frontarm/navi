@@ -2,6 +2,7 @@ import { joinPaths, URLDescriptor, createURLDescriptor } from './URLTools'
 import { MapMatcherGeneratorClass } from './matchers/MapMatcher'
 import { NotFoundError } from './Errors'
 import { NaviRequest } from './NaviRequest'
+import { Resolution } from './Resolver';
 
 /**
  * A type that covers all Segment objects.
@@ -53,6 +54,7 @@ export interface GenericSegment {
  */
 export interface BusySegment extends GenericSegment {
   type: 'busy'
+  resolutionId: number
 }
 
 /**
@@ -145,13 +147,13 @@ export function createSegment<Type extends string, Details>(
 
 export function createNotReadySegment(
   request: NaviRequest,
-  error: any,
+  resolution: Resolution<any>,
   ensureTrailingSlash = true,
 ): BusySegment | ErrorSegment {
-  if (error) {
-    return createSegment('error', request, { error }, ensureTrailingSlash)  
+  if (resolution.error) {
+    return createSegment('error', request, { error: resolution.error }, ensureTrailingSlash)  
   }
-  return createSegment('busy', request, undefined, ensureTrailingSlash)
+  return createSegment('busy', request, { resolutionId: resolution.id }, ensureTrailingSlash)
 }
 
 export function createNotFoundSegment(request: NaviRequest): ErrorSegment {

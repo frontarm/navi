@@ -2,6 +2,7 @@ import { Env } from './Env'
 import { joinPaths } from './URLTools'
 import { NotFoundError } from './Errors'
 import { NaviRequest } from './NaviRequest';
+import { Segment, BusySegment } from './Segments';
 
 export type Resolvable<T, Context extends object = any, U = any> = (
   request: NaviRequest,
@@ -32,6 +33,13 @@ export function reduceStatuses(x: Status, y: Status) {
   return 'ready'
 }
 
+function isBusy(segment: Segment): segment is BusySegment {
+  return segment.type === 'busy'
+}
+function pickResolutionId(segment: BusySegment): number {
+  return segment.resolutionId
+}
+
 export class Resolver {
   private nextId: number
   private results: WeakMap<Env, Map<Function, Resolution<any>>>
@@ -43,8 +51,8 @@ export class Resolver {
     this.results = new WeakMap()
   }
 
-  listen(listener: () => void, resolutionIds: number[]) {
-    this.listenerIds.set(listener, resolutionIds)
+  listen(listener: () => void, segments: Segment[]) {
+    this.listenerIds.set(listener, segments.filter(isBusy).map(pickResolutionId))
   }
 
   unlisten(listener: () => void) {

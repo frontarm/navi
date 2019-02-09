@@ -10,7 +10,6 @@ import {
   Matcher,
   MatcherGenerator,
   MatcherGeneratorClass,
-  MatcherResult,
   MaybeResolvableMatcher,
   ResolvableMatcher,
   MatcherOptions,
@@ -92,8 +91,7 @@ class MapMatcherGenerator<Context extends object> extends MatcherGenerator<
     }
   }
 
-  protected execute(): MatcherResult {
-    let resolutionIds: number[] = []
+  protected execute() {
     let childMatcherGenerator: MatcherGenerator<any> | undefined
     let childMatcherResolution: Resolution<Matcher<Context>> | undefined
     if (this.child) {
@@ -108,7 +106,6 @@ class MapMatcherGenerator<Context extends object> extends MatcherGenerator<
             Matcher<Context>
           >,
         )
-        resolutionIds.push(childMatcherResolution.id)
         childMatcher = childMatcherResolution.value
       }
 
@@ -127,19 +124,19 @@ class MapMatcherGenerator<Context extends object> extends MatcherGenerator<
       }
     }
 
-    let childMatcherResult: MatcherResult | undefined
+    let childMatcherResult: Segment[] | undefined
     if (childMatcherGenerator) {
       childMatcherResult = childMatcherGenerator.getResult()
     }
 
     let nextSegments: Segment[] = []
     if (childMatcherResult) {
-      nextSegments = childMatcherResult && childMatcherResult.segments
+      nextSegments = childMatcherResult
     } else if (childMatcherResolution) {
       nextSegments = [
         createNotReadySegment(
           this.child!.matcherOptions.env.request,
-          childMatcherResolution.error,
+          childMatcherResolution,
           this.appendFinalSlash,
         ),
       ]
@@ -159,12 +156,7 @@ class MapMatcherGenerator<Context extends object> extends MatcherGenerator<
       this.appendFinalSlash,
     ) as Segment
 
-    return {
-      resolutionIds: resolutionIds.concat(
-        childMatcherResult ? childMatcherResult.resolutionIds : [],
-      ),
-      segments: [mapSegment].concat(nextSegments),
-    }
+    return [mapSegment].concat(nextSegments)
   }
 }
 

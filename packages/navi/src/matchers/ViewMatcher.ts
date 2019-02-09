@@ -3,7 +3,6 @@ import { createSegment, createNotReadySegment, Segment } from '../Segments'
 import {
   Matcher,
   MatcherGenerator,
-  MatcherResult,
   MatcherGeneratorClass,
   MatcherOptions,
   createMatcher,
@@ -44,29 +43,24 @@ class ViewMatcherGenerator<
     }
   }
 
-  protected execute(): MatcherResult {
+  protected execute() {
     let segments: Segment[] = []
-    let resolutionIds: number[] = []
 
     if (this.env.request.method !== 'HEAD') {
-      let { id, error, status, value: view } = this.resolver.resolve(
+      let resolution = this.resolver.resolve(
         this.env,
         this.constructor.getView,
       )
-      resolutionIds.push(id)
+      let { status, value: view } = resolution
 
       segments =
         status === 'ready'
-          ? (view ? [createSegment('view', this.env.request, { view })] : [])
-          : [createNotReadySegment(this.env.request, error)]
-
-      if (segments.length === 0) {
-        segments = [createSegment('null', this.env.request)]
-      }
+          ? [view ? createSegment('view', this.env.request, { view }) :createSegment('null', this.env.request)]
+          : [createNotReadySegment(this.env.request, resolution)]
     }
 
     let childGeneratorClass = this.constructor.childGeneratorClass
-    let result: MatcherResult | undefined
+    let result: Segment[] | undefined
     if (childGeneratorClass) {
       // Memoize matcher so its env prop can be used as a key for the resolver
       let matcherGenerator: MatcherGenerator<Context>
@@ -86,10 +80,7 @@ class ViewMatcherGenerator<
       result = matcherGenerator.getResult()
     }
 
-    return {
-      resolutionIds: resolutionIds.concat(result ? result.resolutionIds : []),
-      segments: segments.concat(result ? result.segments : []),
-    }
+    return segments.concat(result || [])
   }
 }
 

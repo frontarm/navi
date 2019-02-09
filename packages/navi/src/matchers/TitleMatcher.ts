@@ -4,7 +4,6 @@ import {
   Matcher,
   MatcherGenerator,
   MatcherGeneratorClass,
-  MatcherResult,
   MatcherOptions,
   createMatcher,
 } from '../Matcher'
@@ -33,22 +32,19 @@ class TitleMatcherGenerator<Context extends object> extends MatcherGenerator<Con
     }
   }
 
-  protected execute(): MatcherResult {
-    let { id, error, status, value: title } = this.resolver.resolve(
+  protected execute() {
+    let resolution = this.resolver.resolve(
       this.env,
       this.constructor.getTitle,
     )
+    let { status, value: title } = resolution
     let segments: Segment[] =
       status === 'ready'
-        ? (
-          title
-          ? [createSegment('title', this.env.request, { title })]
-          : [createSegment('null', this.env.request)]
-        )
-        : [createNotReadySegment(this.env.request, error)]
+        ? [title ? createSegment('title', this.env.request, { title }) : createSegment('null', this.env.request)]
+        : [createNotReadySegment(this.env.request, resolution)]
 
     let childGeneratorClass = this.constructor.childMatcherGeneratorClass
-    let result: MatcherResult | undefined
+    let result: Segment[] | undefined
     if (childGeneratorClass) {
       // Memoize matcher so its env prop can be used as a key for the resolver
       let matcherGenerator: MatcherGenerator<Context>
@@ -71,10 +67,7 @@ class TitleMatcherGenerator<Context extends object> extends MatcherGenerator<Con
       result = matcherGenerator.getResult()
     }
 
-    return {
-      resolutionIds: [id].concat(result ? result.resolutionIds : []),
-      segments: segments.concat(result ? result.segments : []),
-    }
+    return segments.concat(result || [])
   }
 }
 

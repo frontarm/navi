@@ -3,7 +3,7 @@ import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver }
 import { Resolver } from './Resolver'
 import { Env } from './Env';
 import { URLDescriptor } from './URLTools';
-import { Segment } from './Segments'
+import { Segment, BusySegment } from './Segments'
 
 export class SegmentListObservable implements Observable<Segment[]> {
     readonly url: URLDescriptor
@@ -71,9 +71,8 @@ export class SegmentListObservable implements Observable<Segment[]> {
     }
 
     private refresh = () => {
-        let { segments, resolutionIds } = this.matcherGenerator.getResult()
-        this.cachedValue = segments
+        this.cachedValue = this.matcherGenerator.getResult()
         // This will replace any existing listener and its associated resolvables
-        this.resolver.listen(this.handleChange, resolutionIds)
+        this.resolver.listen(this.handleChange, this.cachedValue)
     }
 }

@@ -20,11 +20,6 @@ export interface MatcherOptions<Context extends object> {
     resolver: Resolver
 }
 
-export interface MatcherResult {
-    segments: Segment[]
-    resolutionIds: number[]
-}
-
 export function isValidMatcher(x: any): x is Matcher<any> {
     return x && x.isMatcher
 }
@@ -56,7 +51,7 @@ export class MatcherGenerator<Context extends object> {
     }
 
     // Get the segment object given the current state.
-    getResult(): MatcherResult {
+    getResult(): Segment[] {
         let unmatchedPathnamePart = this.env.request.path
         if (this.wildcard || !unmatchedPathnamePart || unmatchedPathnamePart === '/') {
             return this.execute()
@@ -64,14 +59,11 @@ export class MatcherGenerator<Context extends object> {
         else {
             // This couldn't be matched due to missing required
             // params, or a non-exact match without a default path.
-            return {
-                resolutionIds: [],
-                segments: [createNotFoundSegment(this.env.request)]
-            }
+            return [createNotFoundSegment(this.env.request)]
         }
     };
     
-    protected execute(): MatcherResult {
+    protected execute(): Segment[] {
         // abstract.
         return undefined as any
     }
