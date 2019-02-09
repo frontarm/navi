@@ -9,6 +9,7 @@ import {
 
 export function createSegmentsMatcher<Context extends object>(
   getSegments: (options: MatcherOptions<Context>) => Segment[],
+  forceChild?: Matcher<any>
 ): Matcher<Context> {
   function* segmentsMatcherGenerator(
     options: MatcherOptions<Context>,
@@ -56,7 +57,7 @@ export function createSegmentsMatcher<Context extends object>(
   }
 
   return createMatcher((child?: MatcherGenerator<Context>) => options =>
-    segmentsMatcherGenerator(options, child),
+    segmentsMatcherGenerator(options, forceChild ? forceChild() : child),
   )
 }
 

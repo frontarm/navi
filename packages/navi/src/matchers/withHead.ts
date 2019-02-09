@@ -8,6 +8,7 @@ import {
 
 export function withHead<Context extends object, Head>(
   maybeResolvableHead: Head | Resolvable<Head, Context>,
+  child?: Matcher<Context>,
 ): Matcher<Context> {
   let getHead: Resolvable<Head, Context> =
     typeof maybeResolvableHead === 'function'
@@ -27,5 +28,5 @@ export function withHead<Context extends object, Head>(
     else {
       return []
     }
-  })
+  }, child)
 }

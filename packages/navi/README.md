@@ -113,7 +113,7 @@ To create a `Navigation`, just call `createBrowserNavigation()` within `index.js
 // index.js
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import { NavProvider } from 'react-navi
+import { NavProvider } from 'react-navi'
 import { createBrowserNavigation } from 'navi'
 import pages from './pages'
 import App from './App'

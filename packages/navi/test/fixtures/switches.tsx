@@ -14,35 +14,38 @@ export const fixtureMap = composeMatchers(
       view: await req.router.resolveRouteMap('/examples'),
     })),
 
-    '/examples': async () => composeMatchers(
-      withContext(async (req, context) => ({
-        ...context,
-        contextName: 'examples'
-      })),
-      withView(() => 'example-layout'),
-      map({
-        '/': async () => redirect(req => req.mountpath+'basic'),
+    '/examples': async () =>
+      withContext(
+        async (req, context) => ({
+          ...context,
+          contextName: 'examples'
+        }),
+        composeMatchers(
+          withView(() => 'example-layout'),
+          map({
+            '/': async () => redirect(req => req.mountpath+'basic'),
 
-        '/basic': async () => route(req => ({
-          data: {
-            description: 'basic meta description'
-          },
-          title: 'Basic example',
-          view: 'basic-example'
-        })),
+            '/basic': async () => route(req => ({
+              data: {
+                description: 'basic meta description'
+              },
+              title: 'Basic example',
+              view: 'basic-example'
+            })),
 
-        '/advanced': route({
-          title: 'Advanced example',
-          data: {
-            isPaywalled: true,
-          },
-          getView: async (request, context, dataPromise) => 
-            (context.contextName !== 'examples' || !context.isAuthenticated)
-              ? 'please-login'
-              : { isPaywalled: true }
-        })
-      })
-    ),
+            '/advanced': route({
+              title: 'Advanced example',
+              data: {
+                isPaywalled: true,
+              },
+              getView: async (request, context: any, dataPromise) => 
+                (context.contextName !== 'examples' || !context.isAuthenticated)
+                  ? 'please-login'
+                  : { isPaywalled: true }
+            })
+          })
+        )
+      ),
 
     '/goodies/cheatsheet': async () => map({
       '/cheatsheet': async () => 

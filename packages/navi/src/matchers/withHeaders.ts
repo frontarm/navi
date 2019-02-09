@@ -8,6 +8,7 @@ import {
 
 export function withHeaders<Context extends object>(
   maybeResolvableHeaders: undefined | { [name: string]: string } | Resolvable<undefined | { [name: string]: string }, Context>,
+  child?: Matcher<Context>
 ): Matcher<Context> {
   let getHeaders: Resolvable<{ [name: string]: string }, Context> =
     typeof maybeResolvableHeaders === 'function'
@@ -22,5 +23,5 @@ export function withHeaders<Context extends object>(
         ? (headers ? [createSegment('headers', env.request, { headers })] : [])
         : [createNotReadySegment(env.request, resolution)]
     )
-  })
+  }, child)
 }

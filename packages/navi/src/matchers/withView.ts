@@ -8,6 +8,7 @@ import {
 
 export function withView<Context extends object, View>(
   maybeResolvableView: View | Resolvable<View, Context>,
+  child?: Matcher<Context>
 ): Matcher<Context> {
   let getView: Resolvable<View, Context> =
     typeof maybeResolvableView === 'function'
@@ -27,5 +28,5 @@ export function withView<Context extends object, View>(
     else {
       return []
     }
-  })
+  }, child)
 }

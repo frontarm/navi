@@ -23,6 +23,10 @@ export interface Route<Data = any> {
   status?: number
   title?: string
   views: any[]
+
+  // deprecated
+  meta?: any
+  content?: any
 }
 
 export function defaultRouteReducer(route: Route | undefined, segment: Segment): Route {

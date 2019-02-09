@@ -9,7 +9,7 @@ import { withView } from './withView'
 import { NaviRequest } from '../NaviRequest'
 import { withTitle } from './withTitle'
 
-interface Route<Data extends object> {
+interface Route<Data extends object = any> {
   data?: Data
   head?: any
   headers?: { [name: string]: string }
@@ -18,7 +18,7 @@ interface Route<Data extends object> {
   view?: any
 }
 
-interface RouteOptions<Context extends object, Data extends object> {
+interface RouteOptions<Context extends object, Data extends object = any> {
   data?: Data
   getData?: Resolvable<Data, Context>
   head?: any
@@ -33,7 +33,7 @@ interface RouteOptions<Context extends object, Data extends object> {
   getView?: Resolvable<any, Context, Promise<Data>>
 }
 
-export function route<Context extends object, Data extends object>(
+export function route<Context extends object, Data extends object = any>(
   options: RouteOptions<Context, Data> | Resolvable<Route<Data>, Context> = {},
 ) {
   if (typeof options !== 'function') {

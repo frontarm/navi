@@ -8,6 +8,7 @@ import {
 
 export function withStatus<Context extends object>(
   maybeResolvableStatus: number | undefined | Resolvable<number | undefined, Context>,
+  child?: Matcher<Context>
 ): Matcher<Context> {
   let getStatus: Resolvable<number, Context> =
     typeof maybeResolvableStatus === 'function'
@@ -22,5 +23,5 @@ export function withStatus<Context extends object>(
         ? (value ? [createSegment('status', env.request, { status: value })] : [])
         : [createNotReadySegment(env.request, resolution)]
     )
-  })
+  }, child)
 }

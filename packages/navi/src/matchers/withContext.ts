@@ -10,6 +10,7 @@ import {
 
 export function withContext<ParentContext extends object=any, ChildContext extends object=any>(
   childContextMaybeResolvable: ChildContext | Resolvable<ChildContext, ParentContext>,
+  forceChild?: Matcher<ChildContext>
 ): Matcher<ParentContext, ChildContext> {
   if (process.env.NODE_ENV !== 'production') {
     if (childContextMaybeResolvable === undefined) {
@@ -69,7 +70,7 @@ export function withContext<ParentContext extends object=any, ChildContext exten
   }
 
   return createMatcher((child: MatcherGenerator<ChildContext>) => options =>
-    contextMatcherGenerator(options, child),
+    contextMatcherGenerator(options, forceChild ? forceChild() : child),
   )
 }
 

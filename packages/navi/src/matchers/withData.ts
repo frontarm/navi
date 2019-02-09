@@ -8,6 +8,7 @@ import {
 
 export function withData<Context extends object, Data>(
   maybeResolvableData: Data | Resolvable<Data, Context>,
+  child?: Matcher<Context>,
 ): Matcher<Context> {
   let getData: Resolvable<Data, Context> =
     typeof maybeResolvableData === 'function'
@@ -22,5 +23,5 @@ export function withData<Context extends object, Data>(
         ? (data ? [createSegment('data', env.request, { data })] : [])
         : [createNotReadySegment(env.request, resolution)]
     )
-  })
+  }, child)
 }
