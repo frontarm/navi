@@ -16,7 +16,7 @@ describe("integration", () => {
         let firstSegment = route.segments[0]
         
         expect(firstSegment.type).toBe('url')
-        // expect(route.status).toBe(200)
+        expect(route.status).toBe(200)
         expect(route.views[0]).toBe('site-layout')
         expect(route.views[1]).toBe('example-layout')
         expect(route.type).toBe('ready')

@@ -7,7 +7,7 @@ export type RouteType =
   | 'error'
   | 'redirect'
 
-export interface Route<Data = any, View = any> {
+export interface Route<Data = any> {
   url: URLDescriptor
 
   type: RouteType
@@ -17,9 +17,12 @@ export interface Route<Data = any, View = any> {
   segments: Segment[]
   lastSegment: Segment
 
-  views?: View
   data?: Data
+  headers: { [name: string]: string }
+  heads: any[]
+  status?: number
   title?: string
+  views: any[]
 }
 
 export function defaultRouteReducer(route: Route | undefined, segment: Segment): Route {
@@ -37,17 +40,59 @@ export function defaultRouteReducer(route: Route | undefined, segment: Segment):
   }
 
   let base = {
+    lastSegment: segment,
+    segments: route ? route.segments.concat(segment) : [segment],
+    
+    data: route ? route.data : {},
+    headers: route ? route.headers : {},
+    heads: route ? route.heads : [],
+    status: route ? route.status : 200,
+    title: route && route.title,
     url: route ? route.url : segment.url,
     views: route ? route.views : [],
-    data: route ? route.data : {},
-    segments: route ? route.segments.concat(segment) : [segment],
-    lastSegment: segment,
-    title: route && route.title,
   }
   
   switch (segment.type) {
     case 'busy':
       return { ...base, type: 'busy' }
+    case 'data':
+      Object.assign(base.data, segment.data)
+      route = { ...base, type: 'ready', data: base.data }
+      Object.defineProperty(route, 'meta', {
+        enumerable: true,
+        get: () => {
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.12. Please use "route.data" instead.`)
+          }
+          return route!.data
+        },
+      })
+      return route
+    case 'error':
+      return {
+        ...base,
+        type: 'error',
+        error: segment.error,
+        status: (base.status && base.status >= 400) ? base.status : (segment.error.status || 500),
+      }
+    case 'head':
+      return {
+        ...base,
+        type: 'ready',
+        heads: base.heads.concat(segment.head)
+      }
+    case 'headers':
+      Object.assign(base.headers, segment.headers)
+      return {
+        ...base,
+        type: 'ready',
+      }
+    case 'redirect':
+      return { ...base, type: 'redirect', to: segment.to }
+    case 'status':
+      return { ...base, type: 'ready', status: segment.status }
+    case 'title':
+      return { ...base, type: 'ready', title: segment.title }
     case 'view':
       route = {
         ...base,
@@ -64,28 +109,7 @@ export function defaultRouteReducer(route: Route | undefined, segment: Segment):
         },
       })
       return route
-    case 'error':
-      return { ...base, type: 'error', error: segment.error }
-    case 'null':
-    case 'url':
-    case 'map':
+    default:
       return { ...base, type: 'ready' }
-    case 'title':
-      return { ...base, type: 'ready', title: segment.title }
-    case 'data':
-      Object.assign(base.data, segment.data)
-      route = { ...base, type: 'ready', data: base.data }
-      Object.defineProperty(route, 'meta', {
-        enumerable: true,
-        get: () => {
-          if (process.env.NODE_ENV !== 'production') {
-            console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.12. Please use "route.data" instead.`)
-          }
-          return route!.data
-        },
-      })
-      return route
-    case 'redirect':
-      return { ...base, type: 'redirect', to: segment.to }
   }
 }

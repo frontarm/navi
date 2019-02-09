@@ -1,28 +1,28 @@
-import { MatcherGenerator, MatcherGeneratorClass } from './Matcher'
+import { MatcherIterator, MatcherGenerator } from './Matcher'
 import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { Resolver } from './Resolver'
 import { Env } from './Env';
 import { URLDescriptor } from './URLTools';
-import { Segment, BusySegment } from './Segments'
+import { Segment } from './Segments'
 
 export class SegmentListObservable implements Observable<Segment[]> {
     readonly url: URLDescriptor
 
-    private cachedValue: Segment[]
-    private matcherGenerator: MatcherGenerator<any>
+    private result: IteratorResult<Segment[]>
+    private matcherIterator: MatcherIterator
     private observers: Observer<Segment[]>[]
     private resolver: Resolver
   
     constructor(
         url: URLDescriptor,
         env: Env,
-        matcherGeneratorClass: MatcherGeneratorClass<any>,
+        matcherGeneratorClass: MatcherGenerator<any>,
         resolver: Resolver,
     ) {
         this.url = url
         this.resolver = resolver
         this.observers = []
-        this.matcherGenerator = new matcherGeneratorClass({
+        this.matcherIterator = matcherGeneratorClass({
             appendFinalSlash: true,
             env,
             resolver: this.resolver
@@ -55,24 +55,29 @@ export class SegmentListObservable implements Observable<Segment[]> {
 
     private handleChange = () => {
         this.refresh()
-        let isDone = this.cachedValue.every(segment => segment.type !== 'busy')
+        let isDone = this.result.done || this.result.value.every(segment => segment.type !== 'busy')
         for (let i = 0; i < this.observers.length; i++) {
             let observer = this.observers[i]
-            observer.next(this.cachedValue)
+            observer.next(this.result.value)
             if (isDone && observer.complete) {
                 observer.complete()
             }
         }
         if (isDone) {
             this.resolver.unlisten(this.handleChange)
-            delete this.matcherGenerator
+            delete this.matcherIterator
             delete this.resolver
         }
     }
 
     private refresh = () => {
-        this.cachedValue = this.matcherGenerator.getResult()
-        // This will replace any existing listener and its associated resolvables
-        this.resolver.listen(this.handleChange, this.cachedValue)
+        let result = this.matcherIterator.next()
+        if (result.value) {
+            this.result = result
+        }
+        if (!this.result.done) {
+            // This will replace any existing listener and its associated resolvables
+            this.resolver.listen(this.handleChange, this.result.value)
+        }
     }
 }

@@ -2,24 +2,10 @@ import { History } from 'history'
 import { OutOfRootError } from './Errors'
 import { URLDescriptor, areURLDescriptorsEqual, createURLDescriptor } from './URLTools'
 import { Reducer } from './Reducer'
-import { Router } from './Router'
+import { Router, RouterResolveOptions } from './Router'
 import { Deferred } from './Deferred';
 import { Observer, Observable, Subscription, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { Segment } from './Segments'
-
-export interface CurrentRouteObservableOptions<Context extends object, R> {
-    history: History,
-    router: Router<Context, R>
-    reducer: Reducer<Segment, R>
-}
-
-export function createCurrentRouteObservable<Context extends object, R>(options: CurrentRouteObservableOptions<Context, R>) {
-    return new CurrentRouteObservable<Context, R>(
-        options.history,
-        options.router,
-        options.reducer,
-    )
-}
 
 /**
  * An observable that tracks the current location of a History object,
@@ -41,15 +27,22 @@ export class CurrentRouteObservable<Context extends object, R> implements Observ
     private lastURL: URLDescriptor
     private lastRoute?: R
     private isLastRouteSteady: boolean
+    private resolveOptions?: RouterResolveOptions
     private observableSubscription?: Subscription
     private unlisten: () => void
 
-    constructor(history: History, router: Router<Context, R>, reducer: Reducer) {
+    constructor(
+        history: History,
+        router: Router<Context, R>,
+        reducer: Reducer,
+        resolveOptions?: RouterResolveOptions,
+    ) {
         this.observers = []
         this.isLastRouteSteady = false
         this.router = router
         this.history = history
         this.reducer = reducer
+        this.resolveOptions = resolveOptions
         this.lastURL = createURLDescriptor(this.history.location)
         this.unlisten = this.history.listen(location => this.handleURLChange(createURLDescriptor(location)))
         this.refresh()
@@ -172,7 +165,7 @@ export class CurrentRouteObservable<Context extends object, R> implements Observ
             this.observableSubscription.unsubscribe()
         }
 
-        let observable = this.router.createObservable(url)
+        let observable = this.router.createObservable(url, this.resolveOptions)
         if (observable) {
             this.observableSubscription = observable.subscribe(this.handleSegmentList)
         }

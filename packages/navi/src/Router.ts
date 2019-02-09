@@ -1,4 +1,4 @@
-import { Matcher, MatcherGenerator, MatcherGeneratorClass } from './Matcher'
+import { Matcher, MatcherGenerator } from './Matcher'
 import { createRootMapping, mappingAgainstPathname, Mapping } from './Mapping'
 import { SegmentListObservable } from './SegmentListObservable'
 import { SegmentsMapObservable } from './SegmentsMapObservable'
@@ -26,7 +26,7 @@ export interface RouterResolveOptions {
     body?: any,
     headers?: { [name: string]: string },
     method?: HTTPMethod,
-    hostname?: string,
+    url?: string | URLDescriptor,
 }
 
 export interface RouterMapOptions {
@@ -48,7 +48,7 @@ export function createRouter<Context extends object>(options: RouterOptions<Cont
 export class Router<Context extends object=any, R=Route> {
     private resolver: Resolver
     private context: Context
-    private matcherGeneratorClass: MatcherGeneratorClass<Context>
+    private matcherGeneratorClass: MatcherGenerator<Context>
     private rootMapping: Mapping
     private reducer: Reducer<Segment, R>
     
@@ -72,17 +72,21 @@ export class Router<Context extends object=any, R=Route> {
         this.context = context || {}
     }
 
-    createObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterResolveOptions = {}): SegmentListObservable | undefined {
+    createObservable(url: URLDescriptor, options: RouterResolveOptions = {}): SegmentListObservable | undefined {
         // need to somehow keep track of which promises in the resolver correspond to which observables,
         // so that I don't end up updating observables which haven't actually changed.
-        let url = createURLDescriptor(urlOrDescriptor, { removeHash: true })
+        if (url.hash) {
+            url = Object.assign({}, url)
+            delete url.hash
+        }
+
         let rootEnv: Env = {
             context: this.context,
             request: createRequest(this.context, {
                 body: options.body,
                 headers: options.headers || {},
                 method: options.method || 'GET',
-                hostname: options.hostname || '',
+                hostname: url.hostname,
                 mountpath: '',
                 params: url.query,
                 query: url.query,
@@ -116,10 +120,25 @@ export class Router<Context extends object=any, R=Route> {
         )
     }
 
-    resolve(url: string | Partial<URLDescriptor>, options?: RouterResolveOptions): Promise<R>;
+    resolve(url: string | Partial<URLDescriptor> | RouterResolveOptions, options?: RouterResolveOptions): Promise<R>;
     resolve(urls: (string | Partial<URLDescriptor>)[], options?: RouterResolveOptions): Promise<R[]>;
-    resolve(urls: string | Partial<URLDescriptor> | (string | Partial<URLDescriptor>)[], options: RouterResolveOptions = {}): Promise<R | R[]> {
-        let urlDescriptors: URLDescriptor[] = getDescriptorsArray(urls)
+    resolve(urls: string | Partial<URLDescriptor> | (string | Partial<URLDescriptor>)[] | RouterResolveOptions, options: RouterResolveOptions = {}): Promise<R | R[]> {
+        let urlDescriptors: URLDescriptor[]
+
+        if (Array.isArray(urls)) {
+            urlDescriptors = urls.map(url => createURLDescriptor(url))
+        }
+        else if (typeof urls === 'string') {
+            urlDescriptors = [createURLDescriptor(urls)]
+        }
+        else if ((urls as RouterResolveOptions).url) {
+            options = urls as RouterResolveOptions
+            urlDescriptors = [createURLDescriptor(options.url!)]
+        }
+        else {
+            throw new Error(`You must specify a URL for router.resolve().`)
+        }
+
         if (!urlDescriptors.length) {
             return Promise.resolve([])
         }
@@ -186,10 +205,4 @@ export class Router<Context extends object=any, R=Route> {
             )
         })
     }
-}
-
-function getDescriptorsArray(urls: Partial<URLDescriptor> | string | (Partial<URLDescriptor> | string)[]): URLDescriptor[] {
-    return Array.isArray(urls)
-        ? urls.map(url => createURLDescriptor(url))
-        : [createURLDescriptor(urls)]
 }

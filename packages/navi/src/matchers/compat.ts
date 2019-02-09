@@ -2,17 +2,17 @@
 // Compat with Navi 0.10
 //
 
-import { composeMatchers } from '../composeMatchers'
-import { withView } from './ViewMatcher'
-import { map, MapMatcherPaths } from './MapMatcher'
-import { redirect } from './RedirectMatcher'
-import { withContext } from './ContextMatcher'
+import { composeMatchers } from './composeMatchers'
+import { withView } from './withView'
+import { map, MapPaths } from './map'
+import { redirect } from './redirect'
+import { withContext } from './withContext'
 import { MaybeResolvableMatcher, Matcher } from '../Matcher'
 import { Resolvable, extractDefault } from '../Resolver'
 import { URLDescriptor } from '../URLTools'
 import { NaviRequest } from '../NaviRequest'
-import { withData } from '../matchers/DataMatcher'
-import { withTitle } from './TitleMatcher';
+import { withData } from './withData'
+import { withTitle } from './withTitle';
 
 interface Page<Meta extends object, Content> {
   title?: string
@@ -119,7 +119,7 @@ export function createContext<
 
 interface SwitchOptions<Context extends object, Meta extends object, Content>
   extends PageOptions<Context, Meta, Content> {
-  paths: MapMatcherPaths<Context>
+  paths: MapPaths<Context>
 }
 
 export function createSwitch<

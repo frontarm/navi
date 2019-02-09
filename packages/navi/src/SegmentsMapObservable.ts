@@ -7,7 +7,7 @@ import {
 } from './Observable'
 import { Resolver } from './Resolver'
 import { Segment } from './Segments'
-import { MatcherGeneratorClass, MatcherGenerator } from './Matcher'
+import { MatcherGenerator, MatcherIterator } from './Matcher'
 import { RouterMapOptions, Router } from './Router'
 import { Env } from './Env'
 import { Mapping, mappingAgainstPathname } from './Mapping'
@@ -19,7 +19,8 @@ interface MapItem {
   fromPathname?: string
   depth: number
   order: number[]
-  matcherGenerator: MatcherGenerator<any>
+  matcherIterator: MatcherIterator
+  lastResult?: IteratorResult<Segment[]>
   segmentsCache?: Segment[]
   lastSegmentCache?: Segment
 }
@@ -30,7 +31,7 @@ export interface SegmentsMap {
 
 export class SegmentsMapObservable implements Observable<SegmentsMap> {
   private rootContext: any
-  private matcherGeneratorClass: MatcherGeneratorClass<any>
+  private matcherGeneratorFunction: MatcherGenerator<any>
   private rootMapping: Mapping
   private observers: Observer<SegmentsMap>[]
   private isRefreshScheduled: boolean
@@ -45,7 +46,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
   constructor(
     url: URLDescriptor,
     rootContext: any,
-    matcherGeneratorClass: MatcherGeneratorClass<any>,
+    matcherGeneratorClass: MatcherGenerator<any>,
     rootMapping: Mapping,
     resolver: Resolver,
     router: Router<any, any>,
@@ -56,7 +57,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     this.resolver = resolver
     this.router = router
     this.rootContext = rootContext
-    this.matcherGeneratorClass = matcherGeneratorClass
+    this.matcherGeneratorFunction = matcherGeneratorClass
     this.rootMapping = rootMapping
     this.options = options
     this.seenPathnames = new Set()
@@ -131,7 +132,11 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     while (i < this.mapItems.length) {
       let item = this.mapItems[i]
       let pathname = item.pathname
-      let segments = item.matcherGenerator.getResult()
+      let result = item.matcherIterator.next()
+      if (!item.lastResult || result.value) {
+        item.lastResult = result
+      }
+      let segments = item.lastResult.value
       let lastSegment = segments[segments.length-1]
       let cachedLastSegment = item.lastSegmentCache
       item.segmentsCache = segments
@@ -176,7 +181,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
         (!cachedLastSegment ||
           cachedLastSegment.type !== 'map')
       ) {
-        let patterns = lastSegment.map.patterns
+        let patterns = lastSegment.patterns
         for (let j = 0; j < patterns.length; j++) {
           let expandedPatterns = await this.expandPatterns(joinPaths(pathname, patterns[j]))
           for (let k = 0; k < expandedPatterns.length; k++) {
@@ -318,7 +323,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
           depth,
           pathname,
           order,
-          matcherGenerator: new this.matcherGeneratorClass({
+          matcherIterator: this.matcherGeneratorFunction({
             appendFinalSlash: false,
             env: matchEnv,
             resolver: this.resolver,

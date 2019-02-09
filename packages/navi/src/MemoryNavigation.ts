@@ -2,10 +2,10 @@ import { createMemoryHistory, History } from 'history';
 import { Matcher } from './Matcher'
 import { Navigation } from './Navigation'
 import { Reducer } from './Reducer'
-import { Router } from './Router'
+import { Router, RouterResolveOptions } from './Router'
 import { Route, defaultRouteReducer } from './Route'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
-import { CurrentRouteObservable, createCurrentRouteObservable } from './CurrentRouteObservable';
+import { CurrentRouteObservable } from './CurrentRouteObservable';
 import { URLDescriptor, createURLDescriptor } from './URLTools';
 import { Segment } from './Segments';
 
@@ -20,7 +20,8 @@ export interface MemoryNavigationOptions<Context extends object, R = Route> {
     /**
      * The initial URL to match.
      */
-    url: string | Partial<URLDescriptor>
+    url?: string | Partial<URLDescriptor>
+    request?: RouterResolveOptions,
 
     /**
      * If provided, this part of any URLs will be ignored. This is useful
@@ -64,9 +65,14 @@ export class MemoryNavigation<Context extends object, R> implements Navigation<C
         }
 
         let reducer = options.reducer || defaultRouteReducer as any as Reducer<Segment, R>
+        let url = options.url || (options.request && options.request.url)
+
+        if (!url) {
+            throw new Error(`createMemoriNavigation() could not find a URL.`)
+        }
 
         this.history = createMemoryHistory({
-            initialEntries: [createURLDescriptor(options.url).href],
+            initialEntries: [createURLDescriptor(url!).href],
         })
         this.options = options
         this.router = new Router({
@@ -75,11 +81,12 @@ export class MemoryNavigation<Context extends object, R> implements Navigation<C
             basename: this.options.basename,
             reducer,
         })
-        this.currentRouteObservable = createCurrentRouteObservable({
-            history: this.history,
-            router: this.router,
+        this.currentRouteObservable = new CurrentRouteObservable(
+            this.history,
+            this.router,
             reducer,
-        })
+            options.request
+        )
     }
 
     dispose() {

@@ -2,19 +2,22 @@
 // Exports
 //
 
-export * from './matchers/compat'
-export * from './matchers/ContextMatcher'
-export * from './matchers/DataMatcher'
-export * from './matchers/MapMatcher'
-export * from './matchers/ViewMatcher'
-export * from './matchers/RedirectMatcher'
-export * from './matchers/TitleMatcher'
+export * from './matchers/Compat'
+export * from './matchers/map'
+export * from './matchers/redirect'
 export * from './matchers/route'
+export * from './matchers/withContext'
+export * from './matchers/withData'
+export * from './matchers/withHead'
+export * from './matchers/withHeaders'
+export * from './matchers/withStatus'
+export * from './matchers/withTitle'
+export * from './matchers/withView'
 export * from './Errors'
 export * from './NaviRequest'
 export * from './Segments'
 export * from './URLTools'
-export { composeMatchers } from './composeMatchers'
+export { composeMatchers } from './matchers/composeMatchers'
 export { Router, createRouter } from './Router'
 export { Route, RouteType } from './Route'
 export { Matcher, isValidMatcher } from './Matcher'
@@ -27,5 +30,5 @@ export { Observer, Subscription } from './Observable'
 // Aliases
 //
 
-export { withView as view } from './matchers/ViewMatcher'
-export { map as lazy } from './matchers/MapMatcher'
+export { withView as view } from './matchers/withView'
+export { map as lazy } from './matchers/map'

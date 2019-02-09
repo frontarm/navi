@@ -5,7 +5,7 @@ import { Reducer } from './Reducer'
 import { Router } from './Router'
 import { Route, defaultRouteReducer } from './Route'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
-import { CurrentRouteObservable, createCurrentRouteObservable } from './CurrentRouteObservable';
+import { CurrentRouteObservable } from './CurrentRouteObservable';
 import { Matcher } from './Matcher'
 
 
@@ -73,11 +73,11 @@ export class BrowserNavigation<Context extends object, R> implements Navigation<
             reducer,
         })
 
-        this.currentRouteObservable = createCurrentRouteObservable({
-            history: this.history,
-            router: this.router,
+        this.currentRouteObservable = new CurrentRouteObservable(
+            this.history,
+            this.router,
             reducer,
-        })
+        )
     }
 
     dispose() {

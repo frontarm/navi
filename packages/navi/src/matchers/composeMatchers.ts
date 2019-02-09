@@ -20,34 +20,88 @@ export function composeMatchers<F extends Function>(f: F): F
 /* two functions */
 export function composeMatchers<A, R>(f1: (b: A) => R, f2: Func0<A>): Func0<R>
 export function composeMatchers<A, T1, R>(
-  f1: (b: A) => R,
+  f1: (x: A) => R,
   f2: Func1<T1, A>
 ): Func1<T1, R>
 
 /* three functions */
 export function composeMatchers<A, B, R>(
-  f1: (b: B) => R,
-  f2: (a: A) => B,
+  f1: (x: B) => R,
+  f2: (x: A) => B,
   f3: Func0<A>
 ): Func0<R>
 export function composeMatchers<A, B, T1, R>(
-  f1: (b: B) => R,
-  f2: (a: A) => B,
+  f1: (x: B) => R,
+  f2: (x: A) => B,
   f3: Func1<T1, A>
 ): Func1<T1, R>
 
 /* four functions */
 export function composeMatchers<A, B, C, R>(
-  f1: (b: C) => R,
-  f2: (a: B) => C,
-  f3: (a: A) => B,
+  f1: (x: C) => R,
+  f2: (x: B) => C,
+  f3: (x: A) => B,
   f4: Func0<A>
 ): Func0<R>
 export function composeMatchers<A, B, C, T1, R>(
-  f1: (b: C) => R,
-  f2: (a: B) => C,
-  f3: (a: A) => B,
+  f1: (x: C) => R,
+  f2: (x: B) => C,
+  f3: (x: A) => B,
   f4: Func1<T1, A>
+): Func1<T1, R>
+
+/* five functions */
+export function composeMatchers<A, B, C, D, R>(
+  f1: (x: D) => R,
+  f2: (x: C) => D,
+  f3: (x: B) => C,
+  f4: (x: A) => B,
+  f5: Func0<A>
+): Func0<R>
+export function composeMatchers<A, B, C, D, T1, R>(
+  f1: (x: D) => R,
+  f2: (x: C) => D,
+  f3: (x: B) => C,
+  f4: (x: A) => B,
+  f5: Func1<T1, A>
+): Func1<T1, R>
+
+/* six functions */
+export function composeMatchers<A, B, C, D, E, R>(
+  f1: (x: E) => R,
+  f2: (x: D) => E,
+  f3: (x: C) => D,
+  f4: (x: B) => C,
+  f5: (x: A) => B,
+  f6: Func0<A>
+): Func0<R>
+export function composeMatchers<A, B, C, D, E, T1, R>(
+  f1: (x: E) => R,
+  f2: (x: D) => E,
+  f3: (x: C) => D,
+  f4: (x: B) => C,
+  f5: (x: A) => B,
+  f6: Func1<T1, A>
+): Func1<T1, R>
+
+/* seven functions */
+export function composeMatchers<A, B, C, D, E, F, R>(
+  f1: (x: F) => R,
+  f2: (x: E) => F,
+  f3: (x: D) => E,
+  f4: (x: C) => D,
+  f5: (x: B) => C,
+  f6: (x: A) => B,
+  f7: Func0<A>
+): Func0<R>
+export function composeMatchers<A, B, C, D, E, F, T1, R>(
+  f1: (x: F) => R,
+  f2: (x: E) => F,
+  f3: (x: D) => E,
+  f4: (x: C) => D,
+  f5: (x: B) => C,
+  f6: (x: A) => B,
+  f7: Func1<T1, A>
 ): Func1<T1, R>
 
 /* rest */
