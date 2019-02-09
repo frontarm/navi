@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Helmet } from 'react-helmet'
-import { NaviError, Route, Segment, ViewSegment, areURLDescriptorsEqual } from 'navi'
+import { NaviError, Route, Segment, ViewSegment, areURLDescriptorsEqual, HeadSegment, TitleSegment } from 'navi'
 import { NavContext } from './NavContext'
 import { scrollToHash } from './scrollToHash'
 
@@ -20,7 +20,7 @@ export interface NavViewProps {
    * 
    * By default, looks for a page, a redirect, or a switch with content.
    */
-  where?: (segment: Segment, index: number, unconsumedSegments: Segment[]) => boolean
+  where?: (segment: Segment) => boolean
 }
 
 export const NavView: React.SFC<NavViewProps> = function NavView(props: NavViewProps) {
@@ -31,7 +31,7 @@ export const NavView: React.SFC<NavViewProps> = function NavView(props: NavViewP
   )
 }
 NavView.defaultProps = {
-  where: (segment: Segment) => segment.type === 'view' && !getHeadContent(segment)
+  where: (segment: Segment) => segment.type === 'view'
 }
 
 
@@ -43,7 +43,7 @@ interface InnerNavViewState {
   steadyRoute?: Route,
   childContext?: NavContext,
   segment?: ViewSegment,
-  headViews?: React.ReactNode[],
+  headAndTitleSegments?: (HeadSegment | TitleSegment)[],
   error?: Error
 }
 
@@ -65,7 +65,7 @@ class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState>
       props.context.unconsumedSteadyRouteSegments ||
       props.context.steadyRoute.segments
 
-    let index = props.where ? unconsumedSegments.findIndex(props.where!) : 0
+    let index = unconsumedSegments.findIndex(props.where!)
     let errorSearchSegments = index === -1 ? unconsumedSegments : unconsumedSegments.slice(0, index + 1)
     let errorSegment = errorSearchSegments.find(segment => segment.type === 'error')
     if (errorSegment) {
@@ -80,32 +80,25 @@ class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState>
     }
     let segment = unconsumedSegments[index] as ViewSegment
 
-    // Find any head content that comes after this segment and before a busy
-    // or error segment
-    let headViews: React.ReactNode[] = unconsumedSegments.slice(0, index).map(getHeadContent).filter(x => !!x)
+    // Find any unconsumed head content that comes before and after this
+    // segment.
+    let headAndTitleSegments =
+      unconsumedSegments
+        .slice(0, index)
+        .filter(segment => segment.type === 'title' || segment.type === 'head') as ((HeadSegment | TitleSegment)[])
     for (index += 1; index < unconsumedSegments.length; index++) {
       let segment = unconsumedSegments[index]
-      if (segment.type === 'busy' || segment.type === 'error') {
+      if (segment.type === 'busy' || segment.type === 'error' || props.where!(segment)) {
         break
       }
-      if (segment.type === 'view') {
-        let headView = getHeadContent(segment)
-        if (headView) {
-          headViews.push(headView)
-        }
-        else {
-          break
-        }
+      if (segment.type === 'title' || segment.type === 'head') {
+        headAndTitleSegments.push(segment)
       }
-    }
-
-    if (props.context.steadyRoute.title) {
-      headViews.unshift(<title>{props.context.steadyRoute.title}</title>)
     }
 
     return {
       segment,
-      headViews: headViews.map((view: any) => view.type === "title" ? <title>{view.props.children}</title> : view),
+      headAndTitleSegments,
       steadyRoute: props.context.steadyRoute,
       childContext: {
         ...props.context,
@@ -160,7 +153,7 @@ class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState>
       throw this.state.error
     }
 
-    let { segment, headViews } = this.state
+    let { segment, headAndTitleSegments } = this.state
     if (!segment || !segment.view) {
       let Suspense: React.ComponentType<any> = (React as any).Suspense
       if (Suspense) {
@@ -172,9 +165,22 @@ class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState>
       }
     }
 
-    let helmet = (headViews && headViews.length)
-      ? React.createElement(Helmet, null, ...headViews)
-      : null
+    let helmet =
+      headAndTitleSegments &&
+      headAndTitleSegments.length &&
+      React.createElement(
+        Helmet,
+        null,
+        ...headAndTitleSegments.map(segment =>
+          segment.type === 'title' ? (
+            <title>{segment.title}</title>
+          ) : ( 
+            (segment.head.type === React.Fragment || segment.head.type === 'head')
+              ? segment.head.props.children 
+              : segment.head
+          )
+        )
+      )
     let content: React.ReactNode
     
     let render: undefined | ((view: any, route: Route) => React.ReactNode)
@@ -199,7 +205,7 @@ class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState>
 
     return (
       <NavContext.Provider value={this.state.childContext!}>
-        {helmet}
+        {helmet || null}
         {
           // Clone the content to force a re-render even if content hasn't
           // changed, as Provider is a PureComponent.
@@ -219,15 +225,5 @@ export class MissingSegment extends NaviError {
   constructor(context: NavContext) {
     super(`A <NavView> component attempted to use a segment that couldn't be found. This is likely due to its "where" prop.`)
     this.context = context
-  }
-}
-
-function getHeadContent(segment): React.ReactNode {
-  let type = segment && segment.view && segment.view.type
-  if (type === 'head') {
-    return segment.view.props.children
-  }
-  else if (type === 'title' || type === 'link' || type === 'style' || type === 'meta') {
-    return segment.view
   }
 }

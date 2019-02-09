@@ -8,6 +8,10 @@ export { NavRoute, useCurrentRoute } from './NavRoute'
 export { NavRouter, useRouter } from './NavRouter'
 export { NavView } from './NavView'
 
+export { Navigation } from './Navigation'
+
+
+
 // Aliases
 
 export { NavView as NavContent } from './NavView'
