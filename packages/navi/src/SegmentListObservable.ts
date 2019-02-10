@@ -58,6 +58,7 @@ export class SegmentListObservable implements Observable<Segment[]> {
 
     private handleChange = (listenId) => {
         if (listenId === this.lastListenId) {
+            this.lastListenId++
             this.refresh()
             let isDone = this.result.done || this.result.value.every(segment => segment.type !== 'busy')
             for (let i = 0; i < this.observers.length; i++) {
@@ -68,9 +69,6 @@ export class SegmentListObservable implements Observable<Segment[]> {
                 }
             }
             if (isDone) {
-                // Prevent any further changes from being handled
-                this.lastListenId++
-                
                 delete this.matcherIterator
                 delete this.resolver
             }

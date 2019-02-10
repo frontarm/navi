@@ -198,10 +198,6 @@ export function map<Context extends object, M extends Matcher<Context>>(
       }
 
       yield segments
-
-      if (segments.filter(isError).length) {
-        return
-      }
     } while (segments.filter(isBusy).length)
   }
 

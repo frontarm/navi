@@ -118,6 +118,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
 
   private handleResolverUpdate = (listenId) => {
     if (listenId === this.lastListenId) {
+      this.lastListenId++
       if (!this.isRefreshing) {
         this.refresh()
       }
@@ -271,9 +272,6 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
         }
       }
       if (isSteady) {
-        // Prevent any further changes from being handled
-        this.lastListenId++
-
         delete this.rootContext
         delete this.mapItems
         delete this.router

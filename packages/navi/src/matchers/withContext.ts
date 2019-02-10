@@ -58,9 +58,7 @@ export function withContext<ParentContext extends object=any, ChildContext exten
       }
       if (!childResult || !childResult.done) {
         childResult = childIterator.next()
-        if (childResult.value) {
-          segments = childResult.value
-        }
+        segments = childResult.value || []
       }
       if (segments.length === 0) {
         segments.push(createSegment('null', env.request))
