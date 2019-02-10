@@ -181,7 +181,7 @@ export function createNotReadySegment(
   if (resolution.error) {
     return createSegment('error', request, { error: resolution.error }, ensureTrailingSlash)  
   }
-  return createSegment('busy', request, { promise: resolution.promise }, ensureTrailingSlash)
+  return createSegment('busy', request, { promise: resolution.promise! }, ensureTrailingSlash)
 }
 
 export function createNotFoundSegment(request: NaviRequest): ErrorSegment {

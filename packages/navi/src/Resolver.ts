@@ -11,7 +11,7 @@ export type Resolvable<T, Context extends object = any, U = any> = (
 
 export type Resolution<T> = {
   status: Status
-  promise: PromiseLike<T>
+  promise?: PromiseLike<T>
   error?: any
   value?: T
 }
@@ -54,7 +54,6 @@ export class Resolver {
       let result: Resolution<T> = {
         status: 'ready',
         value: maybeValue,
-        promise: maybeValue,
       }
       matcherResults.set(resolvable, result)
       return result
