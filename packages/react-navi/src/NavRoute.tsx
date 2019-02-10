@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { Route } from 'navi'
-import { NavContext } from './NavContext'
+import { NaviContext } from './NaviContext'
 
 
 export function useCurrentRoute() {
-  let { steadyRoute, busyRoute } = React.useContext(NavContext)
+  let { steadyRoute, busyRoute } = React.useContext(NaviContext)
   return (steadyRoute || busyRoute)!
 }
 
@@ -22,8 +22,8 @@ export namespace NavRoute {
 
 export function NavRoute(props: NavRouteProps) {
   return (
-    <NavContext.Consumer>
+    <NaviContext.Consumer>
       {context => props.children((context.steadyRoute || context.busyRoute)!)}
-    </NavContext.Consumer>
+    </NaviContext.Consumer>
   )
 }

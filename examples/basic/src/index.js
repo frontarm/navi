@@ -1,13 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { Navigation } from "react-navi";
+import { Navi } from "react-navi";
+import AppLayout from './components/AppLayout'
 import "./index.css";
 import routes from "./routes";
 import * as serviceWorker from "./serviceWorker";
 
 ReactDOM.render(
-  <React.Suspense fallback={null}>
-    <Navigation routes={routes} />
+  <React.Suspense fallback={<AppLayout>Loading...</AppLayout>}>
+    <Navi routes={routes} />
   </React.Suspense>,
   document.getElementById('root')
 )

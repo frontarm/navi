@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { Route } from 'navi'
-import { NavContext } from './NavContext'
+import { NaviContext } from './NaviContext'
 
 
 export function useLoadingRoute() {
-  return React.useContext(NavContext).busyRoute
+  return React.useContext(NaviContext).busyRoute
 }
 
 
@@ -20,8 +20,8 @@ export namespace NavLoading {
 // when it is already loading won't cause a re-render
 export function NavLoading(props: NavLoadingProps) {
   return (
-    <NavContext.Consumer>
+    <NaviContext.Consumer>
       {context => props.children(context.busyRoute)}
-    </NavContext.Consumer>
+    </NaviContext.Consumer>
   )
 }

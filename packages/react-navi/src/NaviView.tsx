@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { Helmet } from 'react-helmet'
 import { NaviError, Route, Segment, ViewSegment, areURLDescriptorsEqual, HeadSegment, TitleSegment } from 'navi'
-import { NavContext } from './NavContext'
+import { NaviContext } from './NaviContext'
 import { scrollToHash } from './scrollToHash'
 
 
-export interface NavViewProps {
+export interface NaviViewProps {
   /**
    * A render function that will be used to render the selected segment.
    */
@@ -23,33 +23,33 @@ export interface NavViewProps {
   where?: (segment: Segment) => boolean
 }
 
-export const NavView: React.SFC<NavViewProps> = function NavView(props: NavViewProps) {
+export const NaviView: React.SFC<NaviViewProps> = function NaviView(props: NaviViewProps) {
   return (
-    <NavContext.Consumer>
-      {context => <InnerNavView {...props} context={context} />}
-    </NavContext.Consumer>
+    <NaviContext.Consumer>
+      {context => <InnerNaviView {...props} context={context} />}
+    </NaviContext.Consumer>
   )
 }
-NavView.defaultProps = {
+NaviView.defaultProps = {
   hashScrollBehavior: 'smooth',
   where: (segment: Segment) => segment.type === 'view'
 }
 
 
-interface InnerNavViewProps extends NavViewProps {
-  context: NavContext
+interface InnerNaviViewProps extends NaviViewProps {
+  context: NaviContext
 }
 
-interface InnerNavViewState {
+interface InnerNaviViewState {
   steadyRoute?: Route,
-  childContext?: NavContext,
+  childContext?: NaviContext,
   segment?: ViewSegment,
   headAndTitleSegments?: (HeadSegment | TitleSegment)[],
   error?: Error
 }
 
-class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState> {
-  static getDerivedStateFromProps(props: InnerNavViewProps, state: InnerNavViewState): Partial<InnerNavViewState> | null {
+class InnerNaviView extends React.Component<InnerNaviViewProps, InnerNaviViewState> {
+  static getDerivedStateFromProps(props: InnerNaviViewProps, state: InnerNaviViewState): Partial<InnerNaviViewState> | null {
     // If there's no steady route, then we'll need to wait until a steady
     // route becomes available.
     if (!props.context.steadyRoute) {
@@ -109,12 +109,12 @@ class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState>
     }
   }
 
-  constructor(props: InnerNavViewProps) {
+  constructor(props: InnerNaviViewProps) {
     super(props)
     this.state = {}
   }
 
-  componentDidUpdate(prevProps: InnerNavViewProps, prevState: InnerNavViewState) {
+  componentDidUpdate(prevProps: InnerNaviViewProps, prevState: InnerNaviViewState) {
     this.handleUpdate(prevState)
   }
 
@@ -122,7 +122,7 @@ class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState>
     this.handleUpdate()
   }
 
-  handleUpdate(prevState?: InnerNavViewState) {
+  handleUpdate(prevState?: InnerNaviViewState) {
     if (this.state.steadyRoute && (!prevState || !prevState.steadyRoute || prevState.steadyRoute !== this.state.steadyRoute)) {
       let prevRoute = prevState && prevState.steadyRoute
       let nextRoute = this.state.steadyRoute
@@ -161,7 +161,7 @@ class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState>
         throw this.props.context.navigation.steady()
       }
       else {
-        console.warn(`A <NavView> component was rendered before your Navigation store's state had become steady. Consider waiting before rendering with "await navigation.steady()", or upgrading React to version 16.6 to handle this with Suspense.`)
+        console.warn(`A <NaviView> component was rendered before your Navigation store's state had become steady. Consider waiting before rendering with "await navigation.steady()", or upgrading React to version 16.6 to handle this with Suspense.`)
         return null
       }
     }
@@ -188,7 +188,7 @@ class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState>
     if (this.props.children) {
       render = this.props.children as (view: any, route: Route) => React.ReactNode
       if (typeof render !== "function") {
-        throw new Error(`<NavView> expects its children to be a function, but instead received "${render}".`)
+        throw new Error(`<NaviView> expects its children to be a function, but instead received "${render}".`)
       }
       content = this.props.children(segment.view, this.state.steadyRoute!)
     }
@@ -201,11 +201,11 @@ class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState>
       }
     }
     else {
-      throw new Error("<NavView> was not able to find a `children` prop, and was unable to find any body or head content in the consumed Route segment's `content`.")
+      throw new Error("<NaviView> was not able to find a `children` prop, and was unable to find any body or head content in the consumed Route segment's `content`.")
     }
 
     return (
-      <NavContext.Provider value={this.state.childContext!}>
+      <NaviContext.Provider value={this.state.childContext!}>
         {helmet || null}
         {
           // Clone the content to force a re-render even if content hasn't
@@ -214,17 +214,17 @@ class InnerNavView extends React.Component<InnerNavViewProps, InnerNavViewState>
             ? React.cloneElement(content)
             : content
         }
-      </NavContext.Provider>
+      </NaviContext.Provider>
     )
   }
 }
 
 
 export class MissingSegment extends NaviError {
-  context: NavContext
+  context: NaviContext
 
-  constructor(context: NavContext) {
-    super(`A <NavView> component attempted to use a segment that couldn't be found. This is likely due to its "where" prop.`)
+  constructor(context: NaviContext) {
+    super(`A <NaviView> component attempted to use a segment that couldn't be found. This is likely due to its "where" prop.`)
     this.context = context
   }
 }

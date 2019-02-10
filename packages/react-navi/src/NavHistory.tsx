@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { History } from 'history'
-import { NavContext } from './NavContext'
+import { NaviContext } from './NaviContext'
 
 
 export function useHistory() {
-  return React.useContext(NavContext).navigation.history
+  return React.useContext(NaviContext).navigation.history
 }
 
 
@@ -18,8 +18,8 @@ export namespace NavHistory {
 
 export function NavHistory(props: NavHistoryProps) {
   return (
-    <NavContext.Consumer>
+    <NaviContext.Consumer>
       {context => props.children(context.navigation.history)}
-    </NavContext.Consumer>
+    </NaviContext.Consumer>
   )
 }

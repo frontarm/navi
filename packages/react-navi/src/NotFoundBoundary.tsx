@@ -1,26 +1,26 @@
 import * as React from 'react'
 import { NotFoundError } from 'navi'
-import { NavContext } from './NavContext'
+import { NaviContext } from './NaviContext'
 
-export interface NavNotFoundBoundaryProps {
+export interface NotFoundBoundaryProps {
   render: (error: NotFoundError) => React.ReactNode,
 }
 
-export namespace NavNotFoundBoundary {
-  export type Props = NavNotFoundBoundaryProps
+export namespace NotFoundBoundary {
+  export type Props = NotFoundBoundaryProps
 }
 
-export const NavNotFoundBoundary: React.SFC<NavNotFoundBoundaryProps> = function ErrorBoundary(props: NavNotFoundBoundaryProps) {
+export const NotFoundBoundary: React.SFC<NotFoundBoundaryProps> = function ErrorBoundary(props: NotFoundBoundaryProps) {
   return (
-    <NavContext.Consumer>
+    <NaviContext.Consumer>
       {context => <InnerNotFoundBoundary context={context} {...props} />}
-    </NavContext.Consumer>
+    </NaviContext.Consumer>
   )
 }
 
 
-interface InnerNotFoundBoundaryProps extends NavNotFoundBoundaryProps {
-  context: NavContext
+interface InnerNotFoundBoundaryProps extends NotFoundBoundaryProps {
+  context: NaviContext
 }
 
 interface InnerNotFoundBoundaryState {

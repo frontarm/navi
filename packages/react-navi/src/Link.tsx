@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { join as pathJoin } from 'path'
 import { URLDescriptor, Navigation, createURLDescriptor } from 'navi'
-import { NavContext } from './NavContext'
+import { NaviContext } from './NaviContext'
 import { scrollToHash } from './scrollToHash';
 
 
-export interface NavLinkProps {
+export interface LinkProps {
   active?: boolean,
   activeClassName?: string,
   activeStyle?: object,
@@ -26,10 +26,10 @@ export interface NavLinkProps {
   precache?: boolean,
   onClick?: React.MouseEventHandler<HTMLAnchorElement>,
 
-  render?: (props: NavLinkRendererProps) => any,
+  render?: (props: LinkRendererProps) => any,
 }
 
-export interface NavLinkRendererProps {
+export interface LinkRendererProps {
   active: boolean,
   activeClassName?: string,
   activeStyle?: object,
@@ -65,7 +65,7 @@ export interface LinkContext {
 }
 
 
-export class NavLinkAnchor extends React.Component<React.AnchorHTMLAttributes<HTMLAnchorElement>> {
+export class LinkAnchor extends React.Component<React.AnchorHTMLAttributes<HTMLAnchorElement>> {
   render() {
     return <LinkContext.Consumer children={this.renderChildren} />
   }
@@ -102,28 +102,28 @@ export class NavLinkAnchor extends React.Component<React.AnchorHTMLAttributes<HT
 }
 
 
-export namespace NavLink {
-  export type Props = NavLinkProps
-  export type RendererProps = NavLinkRendererProps
+export namespace Link {
+  export type Props = LinkProps
+  export type RendererProps = LinkRendererProps
 }
 
 // Need to include this type definition, as the automatically generated one
 // is incompatible with some versions of the react typings.
-export const NavLink: (React.ComponentClass<NavLinkProps & React.ClassAttributes<HTMLAnchorElement>> & {
-  Anchor: typeof NavLinkAnchor;
-}) | (React.StatelessComponent<NavLinkProps & React.ClassAttributes<HTMLAnchorElement>> & {
-  Anchor: typeof NavLinkAnchor;
+export const Link: (React.ComponentClass<LinkProps & React.ClassAttributes<HTMLAnchorElement>> & {
+  Anchor: typeof LinkAnchor;
+}) | (React.StatelessComponent<LinkProps & React.ClassAttributes<HTMLAnchorElement>> & {
+  Anchor: typeof LinkAnchor;
 }) = Object.assign(
-  React.forwardRef((props: NavLinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => (
-    <NavContext.Consumer>
+  React.forwardRef((props: LinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => (
+    <NaviContext.Consumer>
       {context => <InnerLink {...props as any} context={context} anchorRef={anchorRef} />}
-    </NavContext.Consumer>
+    </NaviContext.Consumer>
   )),
-  { Anchor: NavLinkAnchor }
+  { Anchor: LinkAnchor }
 )
 
-NavLink.defaultProps = {
-  render: (props: NavLinkRendererProps) => {
+Link.defaultProps = {
+  render: (props: LinkRendererProps) => {
     let {
       active,
       activeClassName,
@@ -135,7 +135,7 @@ NavLink.defaultProps = {
     } = props
 
     return (
-      <NavLinkAnchor
+      <LinkAnchor
         children={children}
         className={`${className || ''} ${(active && activeClassName) || ''}`}
         hidden={hidden}
@@ -146,8 +146,8 @@ NavLink.defaultProps = {
 }
 
 
-interface InnerLinkProps extends NavLinkProps {
-  context: NavContext
+interface InnerLinkProps extends LinkProps {
+  context: NaviContext
   anchorRef: React.Ref<HTMLAnchorElement>
 }
 
@@ -166,7 +166,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
       })
         .catch(() => {
           console.warn(
-            `A <NavLink> referred to href "${url!.pathname}", but the ` +
+            `A <Link> referred to href "${url!.pathname}", but the ` +
             `router could not find this path.`
           )
         })

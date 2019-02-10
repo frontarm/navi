@@ -1,13 +1,19 @@
 import { composeMatchers, map, route, withView } from 'navi'
 import React from 'react'
+import { NaviView } from 'react-navi'
 import AppLayout from '../components/AppLayout'
 
 // The `composeMatchers()` function lets you build up your Route object
 // from multiple matcher functions.
 const routes = composeMatchers(
-  // This is the view that will be rendered by `<Navigation />`, as it
-  // is matched before the view specified in `route()`.
-  withView(<AppLayout />),
+  // This is the first view that is matched, so it will be rendered by the
+  // app's top level `<Navi>` component. The nested `<NaviView />` will
+  // render the matched child view.
+  withView(
+    <AppLayout>
+      <NaviView />
+    </AppLayout>
+  ),
 
   // Continue adding content to the route depending on the current URL...
   map({

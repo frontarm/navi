@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { Router } from 'navi'
-import { NavContext } from './NavContext'
+import { NaviContext } from './NaviContext'
 
 
 export function useRouter() {
-  return React.useContext(NavContext).navigation.router
+  return React.useContext(NaviContext).navigation.router
 }
 
 
@@ -18,8 +18,8 @@ export namespace NavRouter {
 
 export function NavRouter(props: NavRouterProps) {
   return (
-    <NavContext.Consumer>
+    <NaviContext.Consumer>
       {context => props.children(context.navigation.router)}
-    </NavContext.Consumer>
+    </NaviContext.Consumer>
   )
 }

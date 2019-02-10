@@ -1,8 +1,8 @@
 import React from 'react'
-import { NavLink, NavView, NavNotFoundBoundary, useLoadingRoute } from 'react-navi';
+import { Link, NotFoundBoundary, useLoadingRoute } from 'react-navi';
 import './AppLayout.css';
 
-function AppLayout() {
+function AppLayout({ children }) {
   let loadingRoute = useLoadingRoute()
 
   return (
@@ -18,21 +18,21 @@ function AppLayout() {
       />
       <header className="AppLayout-header">
         <nav className="AppLayout-nav">
-          <NavLink href='/' activeClassName='active' exact>
+          <Link href='/' activeClassName='active' exact>
             Home
-          </NavLink>
-          <NavLink href='/about/' activeClassName='active'>
+          </Link>
+          <Link href='/about/' activeClassName='active'>
             About
-          </NavLink>
-          <NavLink href='/404/' activeClassName='active'>
+          </Link>
+          <Link href='/404/' activeClassName='active'>
             404
-          </NavLink>
+          </Link>
         </nav>
       </header>
       <main>
-        <NavNotFoundBoundary render={renderNotFound}>
-          <NavView />
-        </NavNotFoundBoundary>
+        <NotFoundBoundary render={renderNotFound}>
+          {children}
+        </NotFoundBoundary>
       </main>
     </div>
   )

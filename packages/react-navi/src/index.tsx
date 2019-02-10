@@ -1,17 +1,20 @@
-export { NavConsumer, NavContextProvider } from './NavContext'
+export { NavConsumer, NavContextProvider } from './NaviContext'
 export { NavHistory, useHistory } from './NavHistory'
-export { NavLink } from './NavLink'
+export { Link } from './Link'
 export { NavLoading, useLoadingRoute } from './NavLoading'
-export { NavNotFoundBoundary } from './NavNotFoundBoundary'
-export { NavProvider } from './NavProvider'
+export { NotFoundBoundary } from './NotFoundBoundary'
+export { NaviProvider } from './NaviProvider'
 export { NavRoute, useCurrentRoute } from './NavRoute'
 export { NavRouter, useRouter } from './NavRouter'
-export { NavView } from './NavView'
+export { NaviView } from './NaviView'
 
-export { Navigation } from './Navigation'
+export { Navi } from './Navi'
 
 
 
-// Aliases
+// Aliases for compatibility with older versions
 
-export { NavView as NavContent } from './NavView'
+export { NaviView as NavContent } from './NaviView'
+export { Link as NavLink } from './Link'
+export { NotFoundBoundary as NavNotFoundBoundary } from './NotFoundBoundary'
+export { NaviProvider as NavProvider } from './NaviProvider'

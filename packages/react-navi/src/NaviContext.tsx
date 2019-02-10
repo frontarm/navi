@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { Route, Navigation, Segment } from 'navi'
 
-export const NavContext = React.createContext<NavContext>({} as any)
+export const NaviContext = React.createContext<NaviContext>({} as any)
 
-export const NavConsumer = NavContext.Consumer
+export const NavConsumer = NaviContext.Consumer
 
-export interface NavContext {
+export interface NaviContext {
   navigation: Navigation
 
   steadyRoute?: Route
@@ -15,4 +15,4 @@ export interface NavContext {
   unconsumedSteadyRouteSegments?: Segment[],
 }
 
-export const NavContextProvider = NavContext.Provider
+export const NavContextProvider = NaviContext.Provider

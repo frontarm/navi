@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { BrowserNavigation, Navigation, Subscription, Route } from 'navi'
-import { NavContext } from './NavContext'
+import { NaviContext } from './NaviContext'
 
-export interface NavProviderProps {
+export interface NaviProviderProps {
   navigation: Navigation
 
   /**
@@ -13,21 +13,21 @@ export interface NavProviderProps {
   fallback?: React.ReactNode | undefined
 }
 
-export interface NavProviderState {
+export interface NaviProviderState {
   navigation: Navigation
 
   steadyRoute?: Route
   busyRoute?: Route
 }
 
-export namespace NavProvider {
-  export type Props = NavProviderProps
+export namespace NaviProvider {
+  export type Props = NaviProviderProps
 }
 
-export class NavProvider extends React.Component<NavProviderProps, NavProviderState> {
+export class NaviProvider extends React.Component<NaviProviderProps, NaviProviderState> {
   subscription?: Subscription
 
-  static getDerivedStateFromProps(props: NavProviderProps, state: NavProviderState): NavProviderState | null {
+  static getDerivedStateFromProps(props: NaviProviderProps, state: NaviProviderState): NaviProviderState | null {
     if (state.navigation !== props.navigation) {
       let route = props.navigation.getCurrentValue()
 
@@ -40,7 +40,7 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
     return null
   }
 
-  constructor(props: NavProviderProps) {
+  constructor(props: NaviProviderProps) {
     super(props)
     this.state = {} as any
   }
@@ -48,9 +48,9 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
   render() {
     let context = this.state
     let result = (
-      <NavContext.Provider value={context}>
+      <NaviContext.Provider value={context}>
         {this.props.children}
-      </NavContext.Provider>
+      </NaviContext.Provider>
     )
 
     // If <Suspense> is supported and the app is being rendered in a browser,
@@ -67,7 +67,7 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
       }
     }
     else if (this.props.fallback !== undefined) {
-      console.warn(`You supplied a "fallback" prop to your <NavProvider>, but the version of React that you're using doesn't support Suspense. To use the "fallback" prop, upgrade to React 16.6 or later.`)
+      console.warn(`You supplied a "fallback" prop to your <NaviProvider>, but the version of React that you're using doesn't support Suspense. To use the "fallback" prop, upgrade to React 16.6 or later.`)
     }
 
     return result
@@ -77,7 +77,7 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
     this.subscribe()
   }
 
-  componentDidUpdate(prevProps: NavProviderProps) {
+  componentDidUpdate(prevProps: NaviProviderProps) {
     if (prevProps.navigation !== this.props.navigation) {
       this.unsubscribe()
       this.subscribe()
@@ -90,7 +90,7 @@ export class NavProvider extends React.Component<NavProviderProps, NavProviderSt
 
   subscribe() {
     if (!this.props.navigation) {
-      throw new Error(`A <NavProvider> component must receive a "navigation" prop.`)
+      throw new Error(`A <NaviProvider> component must receive a "navigation" prop.`)
     }
 
     this.subscription = this.props.navigation.subscribe(

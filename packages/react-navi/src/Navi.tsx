@@ -1,9 +1,11 @@
 import * as React from 'react'
 import { BrowserNavigation, Route, Matcher, createBrowserNavigation } from 'navi'
-import { NavProvider, NavProviderProps } from './NavProvider'
-import { NavView, NavViewProps } from './NavView'
+import { NaviProvider } from './NaviProvider'
+import { NaviView, NaviViewProps } from './NaviView'
 
-export interface NavigationProps<Context extends object> extends NavViewProps {
+export interface NaviProps<Context extends object> extends NaviViewProps {
+  basename?: string
+
   context?: Context
 
   /**
@@ -13,37 +15,48 @@ export interface NavigationProps<Context extends object> extends NavViewProps {
    */
   fallback?: React.ReactNode | undefined
 
+  history?: any
+
   routes?: Matcher<Context>
 }
 
-export class Navigation<Context extends object={}> extends React.Component<NavigationProps<Context>> {
+export class Navi<Context extends object={}> extends React.Component<NaviProps<Context>> {
   static defaultProps = {
     fallback: undefined,
   }
 
   navigation: BrowserNavigation<Context, Route>
 
-  constructor(props: NavigationProps<Context>) {
+  constructor(props: NaviProps<Context>) {
     super(props)
     this.navigation = createBrowserNavigation({
+      basename: props.basename,
       context: props.context,
+      history: props.history,
       routes: props.routes,
     })
   }
 
   render() {
-    let { fallback, routes, ...viewProps } = this.props
+    let { basename, fallback, history, routes, ...viewProps } = this.props
     return (
-      <NavProvider fallback={fallback} navigation={this.navigation}>
-        <NavView {...viewProps} />
-      </NavProvider>
+      <NaviProvider fallback={fallback} navigation={this.navigation}>
+        <NaviView {...viewProps} />
+      </NaviProvider>
     )
   }
 
-  componentDidUpdate(prevProps: NavigationProps<Context>) {
+  componentDidUpdate(prevProps: NaviProps<Context>) {
     if (shallowDiffers(prevProps.context || {}, this.props.context || {})) {
       this.navigation.setContext(this.props.context! || {})
     }
+  }
+
+  componentWillUnmount() {
+    // When control returns to react-router, you'll want to clean up the
+    // navigation object.
+    this.navigation.dispose()
+    delete this.navigation
   }
 }
 
