@@ -71,12 +71,12 @@ export function createPage<
   Meta extends object,
   View
 >(options: PageOptions<Context, Meta, View>): Matcher<Context> {
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn(
-      `Deprecation Warning: "createPage()" is deprecated. From Navi 0.12, ` +
-        `you'll need to use the "route()" matcher instead.`,
-    )
-  }
+  // if (process.env.NODE_ENV !== 'production') {
+  //   console.warn(
+  //     `Deprecation Warning: "createPage()" is deprecated. From Navi 0.12, ` +
+  //       `you'll need to use the "route()" matcher instead.`,
+  //   )
+  // }
 
   return composeMatchers(
     withContext(createGetPage(options)),
@@ -97,12 +97,12 @@ export function createContext<
   maybeChildContextResolvable: Resolvable<ChildContext, ParentContext>,
   maybeChildNodeResolvable: MaybeResolvableMatcher<ChildContext>,
 ): Matcher<ParentContext, ChildContext> {
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn(
-      `Deprecation Warning: "createContext()" is deprecated. From Navi 0.12, ` +
-        `you'll need to use the "withContext()" matcher instead.`,
-    )
-  }
+  // if (process.env.NODE_ENV !== 'production') {
+  //   console.warn(
+  //     `Deprecation Warning: "createContext()" is deprecated. From Navi 0.12, ` +
+  //       `you'll need to use the "withContext()" matcher instead.`,
+  //   )
+  // }
 
   if (maybeChildNodeResolvable.isMatcher) {
     return composeMatchers(
@@ -129,12 +129,12 @@ export function createSwitch<
 >(
   options: SwitchOptions<Context, Meta, Content>,
 ): Matcher<Context> {
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn(
-      `Deprecation Warning: "createSwitch()" is deprecated. From Navi 0.12, ` +
-        `you'll need to use the "map()" matcher instead.`,
-    )
-  }
+  // if (process.env.NODE_ENV !== 'production') {
+  //   console.warn(
+  //     `Deprecation Warning: "createSwitch()" is deprecated. From Navi 0.12, ` +
+  //       `you'll need to use the "map()" matcher instead.`,
+  //   )
+  // }
 
   if (Object.keys(options).length === 1) {
     return map(options.paths)
@@ -160,12 +160,12 @@ export function createRedirect<
     | Resolvable<Partial<URLDescriptor> | string>,
   meta?: Meta | Resolvable<Meta>,
 ): Matcher<Context> {
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn(
-      `Deprecation Warning: "createRedirect()" is deprecated. From Navi 0.12, ` +
-        `you'll need to use the "redirect()" matcher instead.`,
-    )
-  }
+  // if (process.env.NODE_ENV !== 'production') {
+  //   console.warn(
+  //     `Deprecation Warning: "createRedirect()" is deprecated. From Navi 0.12, ` +
+  //       `you'll need to use the "redirect()" matcher instead.`,
+  //   )
+  // }
 
   let matcher = redirect(to)
   if (meta) {

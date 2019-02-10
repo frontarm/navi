@@ -1,7 +1,7 @@
 import { createRouter, map, route } from '../src'
 import { fixtureMap } from './fixtures/switches'
 
-describe("pageMap", () => {
+describe("routeMap", () => {
   test("mapping over '/' returns full site", async () => {
     let router = createRouter({ routes: fixtureMap })
     let map = await router.resolveRouteMap('/')
@@ -56,10 +56,19 @@ describe("pageMap", () => {
   })
 })
 
-describe("pageRoute", () => {
+describe("routeMap", () => {
   test("follows redirects when { followRedirects: true }", async () => {
     let router = createRouter({ routes: fixtureMap })
     let route = await router.resolve('/examples', { followRedirects: true })
+    expect(route.url.pathname).toBe('/examples/basic/')
+  })
+})
+
+
+describe("resolve", () => {
+  test("follows redirects when { followRedirects: true }", async () => {
+    let router = createRouter({ routes: fixtureMap })
+    let route = await router.resolve('/examples/', { followRedirects: true })
     expect(route.url.pathname).toBe('/examples/basic/')
   })
 })

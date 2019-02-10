@@ -57,10 +57,12 @@ export class MemoryNavigation<Context extends object, R> implements Navigation<C
 
     constructor(options: MemoryNavigationOptions<Context, R>) {
         if (options.pages) {
-            console.warn(
-                `Deprecation Warning: passing a "pages" option to "createMemoryNavigation()" will `+
-                `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
-            )
+            // if (process.env.NODE_ENV !== 'production') {
+            //     console.warn(
+            //         `Deprecation Warning: passing a "pages" option to "createMemoryNavigation()" will `+
+            //         `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
+            //     )
+            // }
             options.routes = options.pages
         }
 
