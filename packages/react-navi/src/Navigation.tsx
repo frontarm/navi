@@ -17,6 +17,10 @@ export interface NavigationProps<Context extends object> extends NavViewProps {
 }
 
 export class Navigation<Context extends object={}> extends React.Component<NavigationProps<Context>> {
+  static defaultProps = {
+    fallback: undefined,
+  }
+
   navigation: BrowserNavigation<Context, Route>
 
   constructor(props: NavigationProps<Context>) {
@@ -29,12 +33,8 @@ export class Navigation<Context extends object={}> extends React.Component<Navig
 
   render() {
     let { fallback, routes, ...viewProps } = this.props
-    let providerProps: NavProviderProps = { navigation: this.navigation }
-    if (fallback) {
-      providerProps.fallback = fallback
-    }
     return (
-      <NavProvider {...providerProps}>
+      <NavProvider fallback={fallback} navigation={this.navigation}>
         <NavView {...viewProps} />
       </NavProvider>
     )
