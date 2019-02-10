@@ -2,7 +2,7 @@ import register from "navi-scripts/register";
 import * as Navi from "navi";
 import React from "react";
 import ReactDOM from "react-dom";
-import { NavProvider, NavView } from "react-navi";
+import { NaviProvider, NaviView } from "react-navi";
 import "./index.module.css";
 import routes from "./routes";
 import * as serviceWorker from "./serviceWorker";
@@ -32,11 +32,11 @@ register({
     let renderer = hasStaticContent ? ReactDOM.hydrate : ReactDOM.render;
 
     // Start react, passing in the current navigation state via the
-    // NavProvider.
+    // NaviProvider.
     renderer(
-      <NavProvider navigation={navigation}>
-        <NavView />
-      </NavProvider>,
+      <NaviProvider navigation={navigation}>
+        <NaviView />
+      </NaviProvider>,
       document.getElementById("root")
     )
 

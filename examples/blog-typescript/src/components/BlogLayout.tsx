@@ -1,9 +1,9 @@
 import React from 'react'
 import {
   NavContent,
-  NavLink,
+  Link,
   NavLoading,
-  NavNotFoundBoundary,
+  NotFoundBoundary,
 } from 'react-navi'
 import siteMetadata from '../siteMetadata'
 import NotFoundPage from './NotFoundPage'
@@ -29,15 +29,15 @@ function BlogLayout({ blogRoot, isViewingIndex }: BlogLayoutProps) {
           !isViewingIndex && (
             <header>
               <h3 className={styles.title}>
-                <NavLink href={blogRoot}>{siteMetadata.title}</NavLink>
+                <Link href={blogRoot}>{siteMetadata.title}</Link>
               </h3>
             </header>
           )}
 
           <main>
-            <NavNotFoundBoundary render={() => <NotFoundPage />}>
+            <NotFoundBoundary render={() => <NotFoundPage />}>
               <NavContent />
-            </NavNotFoundBoundary>
+            </NotFoundBoundary>
           </main>
         </div>
       )}

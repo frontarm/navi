@@ -1,6 +1,6 @@
 import { Route } from 'navi'
 import React from 'react'
-import { NavLink } from 'react-navi'
+import { Link } from 'react-navi'
 import siteMetadata from '../siteMetadata'
 import ArticleSummary from './ArticleSummary'
 import Bio from './Bio'
@@ -24,7 +24,7 @@ function BlogIndexPage({
     <div>
       <header>
         <h1 className={styles.title}>
-          <NavLink href={blogRoot}>{siteMetadata.title}</NavLink>
+          <Link href={blogRoot}>{siteMetadata.title}</Link>
         </h1>
         <Bio />
       </header>
@@ -47,8 +47,8 @@ function BlogIndexPage({
           <a href="./rss.xml" target="_blank" style={{ float: 'right' }}>
             RSS
           </a>
-          <NavLink href="./about">About</NavLink> &bull;{' '}
-          <NavLink href="./tags">Tags</NavLink> &bull;{' '}
+          <Link href="./about">About</Link> &bull;{' '}
+          <Link href="./tags">Tags</Link> &bull;{' '}
           <a href="https://github.com/frontarm/create-react-blog">
             Source
           </a>

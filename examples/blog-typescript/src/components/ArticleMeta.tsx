@@ -1,6 +1,6 @@
 import { join } from 'path'
 import React from 'react'
-import { NavLink } from 'react-navi'
+import { Link } from 'react-navi'
 import { formatDate } from '../utils/formats'
 import styles from './ArticleMeta.module.css'
 
@@ -36,7 +36,7 @@ function ArticleMeta({ blogRoot, data, readingTime }: ArticleMetaProps) {
           <ul className={styles.tags}>
             {data.tags.map(tag => (
               <li key={tag}>
-                <NavLink href={join(blogRoot, 'tags', tag)}>{tag}</NavLink>
+                <Link href={join(blogRoot, 'tags', tag)}>{tag}</Link>
               </li>
             ))}
           </ul>

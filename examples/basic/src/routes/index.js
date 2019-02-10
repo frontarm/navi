@@ -22,7 +22,7 @@ const routes = composeMatchers(
       // the document's `<title>`
       title: 'Home',
 
-      // Define a nested view, which can be rendered by calling `<NavView />`
+      // Define a nested view, which can be rendered by calling `<NaviView />`
       // inside a parent view.
       getView: () => import('./home')
     }),

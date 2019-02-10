@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavLink } from 'react-navi'
+import { Link } from 'react-navi'
 import styles from './TagIndexPage.module.css'
 
 function TagIndexPage(props) {
@@ -9,7 +9,7 @@ function TagIndexPage(props) {
       <ul>
         {props.tags.map(tag =>
           <li key={tag.href}>
-            <NavLink href={tag.href}>{tag.name} ({tag.count})</NavLink>
+            <Link href={tag.href}>{tag.name} ({tag.count})</Link>
           </li>  
         )}
       </ul>

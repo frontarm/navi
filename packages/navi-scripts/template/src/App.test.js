@@ -12,9 +12,9 @@ it('renders without crashing', () => {
   });
 
   ReactDOM.render(
-    <NavProvider navigation={navigation}>
+    <NaviProvider navigation={navigation}>
       <App />
-    </NavProvider>,
+    </NaviProvider>,
     div
   );
   ReactDOM.unmountComponentAtNode(div);

@@ -1,6 +1,6 @@
 import { join } from 'path'
 import React from 'react'
-import { NavLink } from 'react-navi'
+import { Link } from 'react-navi'
 import styles from './Pagination.module.css'
 
 interface PaginationProps {
@@ -13,11 +13,11 @@ function Pagination({ blogRoot, pageCount, pageNumber }: PaginationProps) {
   return (
     <small className={styles.Pagination}>
       {pageNumber !== 1 && (
-        <NavLink
+        <Link
           className={styles.previous}
           href={join(blogRoot, 'page', String(pageNumber - 1))}>
           ← Previous
-        </NavLink>
+        </Link>
       )}
       <span className={styles.pages}>
         {' '}
@@ -25,11 +25,11 @@ function Pagination({ blogRoot, pageCount, pageNumber }: PaginationProps) {
         <span className={styles.count}>{pageCount}</span>{' '}
       </span>
       {pageNumber < pageCount && (
-        <NavLink
+        <Link
           className={styles.next}
           href={join(blogRoot, 'page', String(pageNumber + 1))}>
           Next →
-        </NavLink>
+        </Link>
       )}
     </small>
   )

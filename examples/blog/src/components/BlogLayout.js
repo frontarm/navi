@@ -1,8 +1,8 @@
 import React from 'react'
 import {
-  NavView,
-  NavLink,
-  NavNotFoundBoundary,
+  NaviView,
+  Link,
+  NotFoundBoundary,
   useLoadingRoute,
 } from 'react-navi'
 import siteMetadata from '../siteMetadata'
@@ -21,15 +21,15 @@ function BlogLayout({ blogRoot, isViewingIndex }) {
       !isViewingIndex && (
         <header>
           <h3 className={styles.title}>
-            <NavLink href={blogRoot}>{siteMetadata.title}</NavLink>
+            <Link href={blogRoot}>{siteMetadata.title}</Link>
           </h3>
         </header>
       )}
 
       <main>
-        <NavNotFoundBoundary render={() => <NotFoundPage />}>
-          <NavView />
-        </NavNotFoundBoundary>
+        <NotFoundBoundary render={() => <NotFoundPage />}>
+          <NaviView />
+        </NotFoundBoundary>
       </main>
     </div>
   )

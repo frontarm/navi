@@ -1,5 +1,5 @@
 import React from 'react'
-import { NavLink } from 'react-navi'
+import { Link } from 'react-navi'
 import siteMetadata from '../siteMetadata'
 import ArticleSummary from './ArticleSummary'
 import Bio from './Bio'
@@ -11,7 +11,7 @@ function BlogIndexPage({ blogRoot, pageCount, pageNumber, postRoutes }) {
     <div>
       <header>
         <h1 className={styles.title}>
-          <NavLink href={blogRoot}>{siteMetadata.title}</NavLink>
+          <Link href={blogRoot}>{siteMetadata.title}</Link>
         </h1>
         <Bio />
       </header>
@@ -38,12 +38,12 @@ function BlogIndexPage({ blogRoot, pageCount, pageNumber, postRoutes }) {
             style={{ float: 'right' }}>
             RSS
           </a>
-          <NavLink href='./about'>
+          <Link href='./about'>
             About
-          </NavLink> &bull;{' '}
-          <NavLink href='./tags'>
+          </Link> &bull;{' '}
+          <Link href='./tags'>
             Tags
-          </NavLink> &bull;{' '}
+          </Link> &bull;{' '}
           <a href='https://github.com/frontarm/create-react-blog'>
             Source
           </a>

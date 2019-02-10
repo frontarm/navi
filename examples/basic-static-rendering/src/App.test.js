@@ -1,7 +1,7 @@
 import * as Navi from 'navi';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { NavProvider } from 'react-navi';
+import { NaviProvider } from 'react-navi';
 import App from './App';
 import routes from './routes';
 
@@ -13,9 +13,9 @@ it('renders without crashing', () => {
   });
 
   ReactDOM.render(
-    <NavProvider navigation={navigation}>
+    <NaviProvider navigation={navigation}>
       <App />
-    </NavProvider>,
+    </NaviProvider>,
     div
   );
   ReactDOM.unmountComponentAtNode(div);

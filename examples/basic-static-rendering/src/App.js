@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, NavView, NavNotFoundBoundary, useLoadingRoute } from 'react-navi';
+import { Link, NaviView, NotFoundBoundary, useLoadingRoute } from 'react-navi';
 import { MDXProvider } from '@mdx-js/tag';
 import './App.css';
 
@@ -8,15 +8,15 @@ function App() {
 
   return (
     <AppLayout isLoading={loadingRoute}>
-      <NavNotFoundBoundary render={renderNotFound}>
+      <NotFoundBoundary render={renderNotFound}>
         <MDXProvider components={{
-          // Use Navi's <NavLink> component to render links in
+          // Use Navi's <Link> component to render links in
           // Markdown files, ensuring navigation is handled by Navi.
-          a: NavLink,
+          a: Link,
         }}>
-          <NavView />
+          <NaviView />
         </MDXProvider>
-      </NavNotFoundBoundary>
+      </NotFoundBoundary>
     </AppLayout>
   );
 }
@@ -35,15 +35,15 @@ function AppLayout({ children, isLoading }) {
       />
       <header className="App-header">
         <nav className="App-nav">
-          <NavLink href='/' activeClassName='active' exact>
+          <Link href='/' activeClassName='active' exact>
             Home
-          </NavLink>
-          <NavLink href='/about/' activeClassName='active'>
+          </Link>
+          <Link href='/about/' activeClassName='active'>
             About
-          </NavLink>
-          <NavLink href='/404/' activeClassName='active'>
+          </Link>
+          <Link href='/404/' activeClassName='active'>
             404
-          </NavLink>
+          </Link>
         </nav>
       </header>
       <main>
@@ -56,7 +56,7 @@ function AppLayout({ children, isLoading }) {
 // Note that create-react-navi-app will always show an error screen when this
 // is called. This is because the underlying react-scripts package show
 // the error screen when a NotFoundError is thrown, even though it's caught
-// by <NavNotFoundBoundary>. To see the error rendered by this function,
+// by <NotFoundBoundary>. To see the error rendered by this function,
 // you'll just need to close the error overlay with the "x" at the top right.
 function renderNotFound() {
   return (
