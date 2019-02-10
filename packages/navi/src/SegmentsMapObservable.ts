@@ -6,7 +6,7 @@ import {
   createOrPassthroughObserver,
 } from './Observable'
 import { Resolver } from './Resolver'
-import { Segment } from './Segments'
+import { Segment, BusySegment } from './Segments'
 import { MatcherGenerator, MatcherIterator } from './Matcher'
 import { RouterMapOptions, Router } from './Router'
 import { Env } from './Env'
@@ -39,6 +39,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
   private resolver: Resolver
   private router: Router
   private options: RouterMapOptions
+  private lastListenId: number
   
   private seenPathnames: Set<string>
   private mapItems: MapItem[]
@@ -53,6 +54,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     options: RouterMapOptions,
   ) {
     this.observers = []
+    this.lastListenId = 0
     this.mapItems = []
     this.resolver = resolver
     this.router = router
@@ -114,12 +116,14 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     }
   }
 
-  private handleResolverUpdate = () => {
-    if (!this.isRefreshing) {
-      this.refresh()
-    }
-    else if (!this.isRefreshScheduled) {
-      this.isRefreshScheduled = true
+  private handleResolverUpdate = (listenId) => {
+    if (listenId === this.lastListenId) {
+      if (!this.isRefreshing) {
+        this.refresh()
+      }
+      else if (!this.isRefreshScheduled) {
+        this.isRefreshScheduled = true
+      }
     }
   }
 
@@ -214,8 +218,13 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
       }
     }
 
-    // This will replace any existing listener and its associated resolvables
-    this.resolver.listen(this.handleResolverUpdate, allSegments)
+    let listenId = ++this.lastListenId
+    let handleUpdate = () => this.handleResolverUpdate(listenId)
+    Promise.race(
+      allSegments
+            .filter(isBusy)
+            .map(pickSegmentPromise)
+    ).then(handleUpdate, handleUpdate)
 
     segmentsMapArray.sort((itemX, itemY) => {
       let x = itemX[2]
@@ -262,7 +271,8 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
         }
       }
       if (isSteady) {
-        this.resolver.unlisten(this.handleResolverUpdate)
+        // Prevent any further changes from being handled
+        this.lastListenId++
 
         delete this.rootContext
         delete this.mapItems
@@ -294,7 +304,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
         ensureTrailingSlash: false,
         removeHash: true,
       })
-      let rootEnv: Env = {
+      let rootEnv = {
         context: this.rootContext,
         request: createRequest(this.rootContext, {
           body: null,
@@ -324,12 +334,20 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
           pathname,
           order,
           matcherIterator: this.matcherGeneratorFunction({
-            appendFinalSlash: false,
             env: matchEnv,
+            appendFinalSlash: false,
             resolver: this.resolver,
           }),
         })
       }
     }
   }
+}
+
+function isBusy(segment: Segment): segment is BusySegment {
+  return segment.type === 'busy'
+}
+
+function pickSegmentPromise(segment: BusySegment): PromiseLike<any> {
+  return segment.promise
 }

@@ -2,7 +2,6 @@ import { Env } from './Env'
 import { joinPaths } from './URLTools'
 import { NotFoundError } from './Errors'
 import { NaviRequest } from './NaviRequest';
-import { Segment, BusySegment } from './Segments';
 
 export type Resolvable<T, Context extends object = any, U = any> = (
   request: NaviRequest,
@@ -11,7 +10,6 @@ export type Resolvable<T, Context extends object = any, U = any> = (
 ) => (T | PromiseLike<{ default: T } | T>)
 
 export type Resolution<T> = {
-  id: number
   status: Status
   promise: PromiseLike<T>
   error?: any
@@ -23,43 +21,11 @@ export type Status =
   | 'busy'
   | 'error'
 
-export function reduceStatuses(x: Status, y: Status) {
-  if (x === 'error' || y === 'error') {
-    return 'error'
-  }
-  else if (x === 'busy' || y === 'busy') {
-    return 'busy'
-  }
-  return 'ready'
-}
-
-function isBusy(segment: Segment): segment is BusySegment {
-  if (!segment) {
-    debugger
-  }
-  return segment.type === 'busy'
-}
-function pickResolutionId(segment: BusySegment): number {
-  return segment.resolutionId
-}
-
 export class Resolver {
-  private nextId: number
   private results: WeakMap<Env, Map<Function, Resolution<any>>>
-  private listenerIds: Map<Function, number[]>
 
   constructor() {
-    this.listenerIds = new Map()
-    this.nextId = 1
     this.results = new WeakMap()
-  }
-
-  listen(listener: () => void, segments: Segment[]) {
-    this.listenerIds.set(listener, segments.filter(isBusy).map(pickResolutionId))
-  }
-
-  unlisten(listener: () => void) {
-    this.listenerIds.delete(listener)
   }
 
   resolve<T>(
@@ -77,7 +43,6 @@ export class Resolver {
       return currentResult
     }
 
-    let id = this.nextId++
     let maybeValue
     try {
       maybeValue = resolvable(env.request, env.context)
@@ -87,10 +52,9 @@ export class Resolver {
     }
     if (!isPromiseLike(maybeValue)) {
       let result: Resolution<T> = {
-        id,
         status: 'ready',
         value: maybeValue,
-        promise: Promise.resolve(maybeValue),
+        promise: maybeValue,
       }
       matcherResults.set(resolvable, result)
       return result
@@ -98,68 +62,31 @@ export class Resolver {
 
     let promise = maybeValue.then(extractDefault)
     let result: Resolution<T> = {
-      id,
       status: 'busy',
       promise,
     }
     matcherResults.set(resolvable, result)
-    this.listenForChanges(promise, matcherResults, resolvable, id, joinPaths(env.request.mountpath, env.request.path))
-    return result
-  }
-
-  listenForChanges<T>(
-    promise: PromiseLike<T>,
-    matcherResults: Map<Function, Resolution<T>>,
-    resolvable: Resolvable<T>,
-    id: number,
-    fullPathname: string,
-  ) {
-    promise
-      .then(
-        value => {
-          let currentResult = matcherResults!.get(resolvable)
-          if (currentResult && currentResult.id === id) {
-            matcherResults!.set(resolvable, {
-              id: currentResult.id,
-              status: 'ready',
-              value: value,
-              promise,
-            })
-            return true
-          }
-        },
-        error => {
-          let currentResult = matcherResults!.get(resolvable)
-
-          if (error instanceof NotFoundError && !error.pathname) {
-            error.pathname = fullPathname
-          }
-
-          if (currentResult && currentResult.id === id) {
-            matcherResults!.set(resolvable, {
-              id: currentResult.id,
-              status: 'error',
-              error: error || new Error(),
-              promise,
-            })
-
-            return true
-          }
-        },
-      )
-      .then(didUpdate => {
-        // Call any listeners that want to be notified of changes
-        // to this resolvable
-        if (didUpdate) {
-          let listenerIds = Array.from(this.listenerIds.entries())
-          for (let i = 0; i < listenerIds.length; i++) {
-            let [listener, ids] = listenerIds[i]
-            if (ids.indexOf(id) !== -1) {
-              listener()
-            }
-          }
+    promise.then(
+      value => {
+        matcherResults!.set(resolvable, {
+          status: 'ready',
+          value: value,
+          promise,
+        })
+      },
+      error => {
+        if (error instanceof NotFoundError && !error.pathname) {
+          error.pathname = joinPaths(env.request.mountpath, env.request.path)
         }
-      })
+
+        matcherResults!.set(resolvable, {
+          status: 'error',
+          error: error || new Error(),
+          promise,
+        })
+      },
+    )
+    return result
   }
 }
 
