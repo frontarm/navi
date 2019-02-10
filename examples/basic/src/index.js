@@ -6,7 +6,9 @@ import routes from "./routes";
 import * as serviceWorker from "./serviceWorker";
 
 ReactDOM.render(
-  <Navigation routes={routes} />,
+  <React.Suspense fallback={null}>
+    <Navigation routes={routes} />
+  </React.Suspense>,
   document.getElementById('root')
 )
 
