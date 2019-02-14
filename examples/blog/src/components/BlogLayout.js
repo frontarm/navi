@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  NaviView,
+  View,
   Link,
   NotFoundBoundary,
   useLoadingRoute,
@@ -28,7 +28,7 @@ function BlogLayout({ blogRoot, isViewingIndex }) {
 
       <main>
         <NotFoundBoundary render={() => <NotFoundPage />}>
-          <NaviView />
+          <View />
         </NotFoundBoundary>
       </main>
     </div>

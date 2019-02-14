@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, NaviView, NotFoundBoundary, useLoadingRoute } from 'react-navi';
+import { Link, View, NotFoundBoundary, useLoadingRoute } from 'react-navi';
 import { MDXProvider } from '@mdx-js/tag';
 import './App.css';
 
@@ -14,7 +14,7 @@ function App() {
           // Markdown files, ensuring navigation is handled by Navi.
           a: Link,
         }}>
-          <NaviView />
+          <View />
         </MDXProvider>
       </NotFoundBoundary>
     </AppLayout>

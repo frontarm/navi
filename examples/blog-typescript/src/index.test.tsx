@@ -1,7 +1,7 @@
 import * as Navi from 'navi'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { NaviProvider, NaviView } from 'react-navi'
+import { NaviProvider, View } from 'react-navi'
 import routes from './routes'
 
 it('renders without crashing', () => {
@@ -10,7 +10,7 @@ it('renders without crashing', () => {
 
   ReactDOM.render(
     <NaviProvider navigation={navigation}>
-      <NaviView />
+      <View />
     </NaviProvider>,
     div
   )

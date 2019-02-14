@@ -2,7 +2,7 @@ import register from "navi-scripts/register";
 import * as Navi from "navi";
 import React from "react";
 import ReactDOM from "react-dom";
-import { NaviProvider, NaviView } from "react-navi";
+import { NaviProvider, View } from "react-navi";
 import "./index.module.css";
 import routes from "./routes";
 import * as serviceWorker from "./serviceWorker";
@@ -35,7 +35,7 @@ register({
     // NaviProvider.
     renderer(
       <NaviProvider navigation={navigation}>
-        <NaviView />
+        <View />
       </NaviProvider>,
       document.getElementById("root")
     )

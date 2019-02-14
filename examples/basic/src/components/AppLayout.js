@@ -1,21 +1,14 @@
 import React from 'react'
-import { Link, NotFoundBoundary, useLoadingRoute } from 'react-navi';
-import './AppLayout.css';
+import { Link, NotFoundBoundary, useLoadingRoute } from 'react-navi'
+import LoadingBar from './LoadingBar'
+import './AppLayout.css'
 
 function AppLayout({ children }) {
   let loadingRoute = useLoadingRoute()
 
   return (
     <div className="AppLayout">
-      <div
-        // Only add the `active` class to this element while the
-        // next page is loading, triggering a CSS animation to
-        // show or hide the loading bar.
-        className={`
-          AppLayout-loading-indicator
-          ${!!loadingRoute ? 'active' : ''}
-        `}
-      />
+      <LoadingBar isActive={!!loadingRoute} />
       <header className="AppLayout-header">
         <nav className="AppLayout-nav">
           <Link href='/' activeClassName='active' exact>
@@ -31,7 +24,7 @@ function AppLayout({ children }) {
       </header>
       <main>
         <NotFoundBoundary render={renderNotFound}>
-          {children}
+          {children || null}
         </NotFoundBoundary>
       </main>
     </div>

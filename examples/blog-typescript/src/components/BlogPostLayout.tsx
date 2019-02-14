@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, NaviView, useCurrentRoute } from 'react-navi'
+import { Link, View, useCurrentRoute } from 'react-navi'
 import { MDXProvider } from '@mdx-js/tag'
 import siteMetadata from '../siteMetadata'
 import ArticleMeta from './ArticleMeta'
@@ -14,7 +14,7 @@ function BlogPostLayout({ blogRoot }: BlogPostLayoutProps) {
   let { title, data, url } = useCurrentRoute()
 
   return (
-    <NaviView>
+    <View>
       {({ MDXComponent, readingTime }) =>
         // The content for posts is an MDX component, so we'll need
         // to use <MDXProvider> to ensure that links are rendered
@@ -61,7 +61,7 @@ function BlogPostLayout({ blogRoot }: BlogPostLayoutProps) {
           </footer>
         </article>
       }
-    </NaviView>
+    </View>
   )
 }
 
