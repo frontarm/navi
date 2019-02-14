@@ -1,10 +1,12 @@
 import * as React from 'react'
 import { BrowserNavigation, Route, Matcher, createBrowserNavigation } from 'navi'
 import { NaviProvider } from './NaviProvider'
-import { View, ViewProps } from './View'
+import { View } from './View'
 
-export interface RouterProps<Context extends object> extends ViewProps {
+export interface RouterProps<Context extends object> {
   basename?: string
+
+  children?: React.ReactNode
 
   context?: Context
 
@@ -38,10 +40,10 @@ export class Router<Context extends object={}> extends React.Component<RouterPro
   }
 
   render() {
-    let { basename, fallback, history, routes, ...viewProps } = this.props
+    let { children, fallback } = this.props
     return (
       <NaviProvider fallback={fallback} navigation={this.navigation}>
-        <View {...viewProps} />
+        {children || <View />}
       </NaviProvider>
     )
   }
