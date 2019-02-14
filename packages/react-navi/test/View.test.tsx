@@ -1,16 +1,16 @@
 import { createMemoryNavigation, composeMatchers, withView, route, map } from 'navi'
 import React, { Component } from 'react'
 import ReactTestRenderer from 'react-test-renderer'
-import { NavView, NavProvider } from '../src'
+import { View, NaviProvider } from '../src'
 
-describe("NavView", () => {
-  test("supports nested nested content", async () => {
+describe("View", () => {
+  test("supports nested nested views", async () => {
     let navigation = createMemoryNavigation({
       url: '/test/',
       routes: composeMatchers(
         withView(() =>
           function Wrapper() {
-            return <div><NavView /></div>
+            return <div><View /></div>
           }
         ),
         map({
@@ -24,9 +24,9 @@ describe("NavView", () => {
     await navigation.steady()
 
     let component = ReactTestRenderer.create(
-      <NavProvider navigation={navigation}>
-        <NavView />
-      </NavProvider>,
+      <NaviProvider navigation={navigation}>
+        <View />
+      </NaviProvider>,
     )
 
     expect(component.toJSON().children[0]).toEqual('nested content')
@@ -51,9 +51,9 @@ describe("NavView", () => {
     await navigation.steady()
 
     let component = ReactTestRenderer.create(
-      <NavProvider navigation={navigation}>
-        <NavView />
-      </NavProvider>,
+      <NaviProvider navigation={navigation}>
+        <View />
+      </NaviProvider>,
     )
     let output = component.toJSON()
     
@@ -74,9 +74,9 @@ describe("NavView", () => {
     await navigation.steady()
 
     let component = ReactTestRenderer.create(
-      <NavProvider navigation={navigation}>
-        <NavView />
-      </NavProvider>,
+      <NaviProvider navigation={navigation}>
+        <View />
+      </NaviProvider>,
     )
     
     expect(component.toJSON()).toEqual('title')
@@ -95,9 +95,9 @@ describe("NavView", () => {
     await navigation.steady()
 
     let component = ReactTestRenderer.create(
-      <NavProvider navigation={navigation}>
-        <NavView />
-      </NavProvider>,
+      <NaviProvider navigation={navigation}>
+        <View />
+      </NaviProvider>,
     )
     
     expect(component.toJSON()).toEqual('test content')
@@ -116,9 +116,9 @@ describe("NavView", () => {
     await navigation.steady()
 
     let component = ReactTestRenderer.create(
-      <NavProvider navigation={navigation}>
-        <NavView />
-      </NavProvider>,
+      <NaviProvider navigation={navigation}>
+        <View />
+      </NaviProvider>,
     )
     
     expect(component.toJSON()).toEqual('test content')

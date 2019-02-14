@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { BrowserNavigation, Route, Matcher, createBrowserNavigation } from 'navi'
 import { NaviProvider } from './NaviProvider'
-import { NaviView, NaviViewProps } from './NaviView'
+import { View, ViewProps } from './View'
 
-export interface NaviProps<Context extends object> extends NaviViewProps {
+export interface RouterProps<Context extends object> extends ViewProps {
   basename?: string
 
   context?: Context
@@ -20,14 +20,14 @@ export interface NaviProps<Context extends object> extends NaviViewProps {
   routes?: Matcher<Context>
 }
 
-export class Navi<Context extends object={}> extends React.Component<NaviProps<Context>> {
+export class Router<Context extends object={}> extends React.Component<RouterProps<Context>> {
   static defaultProps = {
     fallback: undefined,
   }
 
   navigation: BrowserNavigation<Context, Route>
 
-  constructor(props: NaviProps<Context>) {
+  constructor(props: RouterProps<Context>) {
     super(props)
     this.navigation = createBrowserNavigation({
       basename: props.basename,
@@ -41,12 +41,12 @@ export class Navi<Context extends object={}> extends React.Component<NaviProps<C
     let { basename, fallback, history, routes, ...viewProps } = this.props
     return (
       <NaviProvider fallback={fallback} navigation={this.navigation}>
-        <NaviView {...viewProps} />
+        <View {...viewProps} />
       </NaviProvider>
     )
   }
 
-  componentDidUpdate(prevProps: NaviProps<Context>) {
+  componentDidUpdate(prevProps: RouterProps<Context>) {
     if (shallowDiffers(prevProps.context || {}, this.props.context || {})) {
       this.navigation.setContext(this.props.context! || {})
     }

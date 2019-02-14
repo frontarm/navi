@@ -9,18 +9,18 @@ export function useCurrentRoute() {
 }
 
 
-export interface NavRouteProps {
+export interface CurrentRouteProps {
   /**
    * A render function that can be used to access the current route.
    */
   children: (route: Route) => React.ReactNode
 }
 
-export namespace NavRoute {
-  export type Props = NavRouteProps
+export namespace CurrentRoute {
+  export type Props = CurrentRouteProps
 }
 
-export function NavRoute(props: NavRouteProps) {
+export function CurrentRoute(props: CurrentRouteProps) {
   return (
     <NaviContext.Consumer>
       {context => props.children((context.steadyRoute || context.busyRoute)!)}

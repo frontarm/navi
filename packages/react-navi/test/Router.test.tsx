@@ -1,12 +1,12 @@
 import { route, map } from 'navi'
 import React from 'react'
 import ReactTestRenderer from 'react-test-renderer'
-import { Navigation } from '../src'
+import { Router } from '../src'
 
 describe("Navigation", () => {
   test("can update child context", async () => {
     const createElementWithContext = context =>
-      <Navigation 
+      <Router 
         context={context}
         fallback={'waiting'}
         routes={
@@ -38,7 +38,7 @@ describe("Navigation", () => {
     let getViewCount = 0
 
     const createElementWithContext = context =>
-      <Navigation 
+      <Router 
         context={context}
         fallback={'waiting'}
         routes={

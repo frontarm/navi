@@ -8,17 +8,17 @@ export function useLoadingRoute() {
 }
 
 
-export interface NavLoadingProps {
+export interface LoadingRouteProps {
   children: (busyRoute?: Route) => React.ReactNode,
 }
 
-export namespace NavLoading {
-  export type Props = NavLoadingProps
+export namespace LoadingRoute {
+  export type Props = LoadingRouteProps
 }
 
 // This is a PureComponent so that setting state to loading
 // when it is already loading won't cause a re-render
-export function NavLoading(props: NavLoadingProps) {
+export function LoadingRoute(props: LoadingRouteProps) {
   return (
     <NaviContext.Consumer>
       {context => props.children(context.busyRoute)}

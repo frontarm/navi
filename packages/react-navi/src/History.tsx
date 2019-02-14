@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { History } from 'history'
+import { History as IHistory } from 'history'
 import { NaviContext } from './NaviContext'
 
 
@@ -8,15 +8,15 @@ export function useHistory() {
 }
 
 
-export interface NavHistoryProps {
-  children: (history: History) => React.ReactNode,
+export interface HistoryProps {
+  children: (history: IHistory) => React.ReactNode,
 }
 
-export namespace NavHistory {
-  export type Props = NavHistoryProps
+export namespace History {
+  export type Props = HistoryProps
 }
 
-export function NavHistory(props: NavHistoryProps) {
+export function History(props: HistoryProps) {
   return (
     <NaviContext.Consumer>
       {context => props.children(context.navigation.history)}
