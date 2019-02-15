@@ -2,7 +2,7 @@
 // Exports
 //
 
-export * from './matchers/Compat'
+export * from './matchers/compat'
 export * from './matchers/map'
 export * from './matchers/redirect'
 export * from './matchers/route'
