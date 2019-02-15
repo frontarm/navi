@@ -8,20 +8,49 @@ export type RouteType =
   | 'redirect'
 
 export interface Route<Data = any> {
-  url: URLDescriptor
-
   type: RouteType
-  to?: string
-  error?: any
-
+  url: URLDescriptor
   segments: Segment[]
   lastSegment: Segment
+  
+  /**
+   * When "type" is "redirect", contains the redirected to URL.
+   */
+  to?: string
 
+  /**
+   * When "type" is "error", contains the error object.
+   */
+  error?: any
+
+  /**
+   * An object containing merged values from all data segments.
+   */
   data?: Data
+
+  /**
+   * An object contains HTTP headers added by header segments. 
+   */
   headers: { [name: string]: string }
+
+  /**
+   * An array containing information meant to be added to the page <head>.
+   */
   heads: any[]
+
+  /**
+   * A HTTP status code.
+   */
   status?: number
+
+  /**
+   * The title that should be set on `document.title`.
+   */
   title?: string
+
+  /**
+   * An array of components or elements for rendering the route's view.
+   */
   views: any[]
 
   // deprecated
