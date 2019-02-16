@@ -1,6 +1,6 @@
-import { map, route } from 'navi'
+import { lazy, mount, route } from 'navi'
 
-const routes = map({
+const routes = mount({
   '/': route({
     // Add a title to the route, which will be automatically used as
     // the document's `<title>`.
@@ -14,7 +14,7 @@ const routes = map({
     
   // Dynamically import the entire '/about' route, so that it isn't loaded
   // until needed.
-  '/about': () => import('./about/route'),
+  '/about': lazy(() => import('./about/route')),
 })
 
 export default routes

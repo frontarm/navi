@@ -1,6 +1,6 @@
-import { map, route } from 'navi'
+import { mount, route } from 'navi'
 
-export default map({
+export default mount({
   '/': route({
     title: "React Site",
     getView: () => import('./index.mdx')

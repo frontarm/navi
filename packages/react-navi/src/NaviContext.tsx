@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Route, Navigation, Segment } from 'navi'
+import { Route, Navigation, Chunk } from 'navi'
 
 export const NaviContext = React.createContext<NaviContext>({} as any)
 
@@ -12,7 +12,7 @@ export interface NaviContext {
   busyRoute?: Route
   
   // The routes that haven't been used yet. Initially identical to routingState.routes
-  unconsumedSteadyRouteSegments?: Segment[],
+  unconsumedSteadyRouteChunks?: Chunk[],
 }
 
 export const NavContextProvider = NaviContext.Provider

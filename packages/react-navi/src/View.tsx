@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { Helmet } from 'react-helmet'
-import { NaviError, Route, Segment, ViewSegment, areURLDescriptorsEqual, HeadSegment, TitleSegment } from 'navi'
+import { NaviError, Route, Chunk, ViewChunk, areURLDescriptorsEqual, HeadChunk, TitleChunk } from 'navi'
 import { NaviContext } from './NaviContext'
 import { scrollToHash } from './scrollToHash'
 
 
 export interface ViewProps {
   /**
-   * A render function that will be used to render the selected segment.
+   * A render function that will be used to render the selected Chunk.
    */
   children?: (view: any, route: Route) => React.ReactNode
 
@@ -15,12 +15,12 @@ export interface ViewProps {
   hashScrollBehavior?: 'smooth' | 'instant'
 
   /**
-   * The first segment that matches this will be consumed, along with
-   * all segments before it.
+   * The first Chunk that matches this will be consumed, along with
+   * all Chunks before it.
    * 
    * By default, looks for a page, a redirect, or a switch with content.
    */
-  where?: (segment: Segment) => boolean
+  where?: (Chunk: Chunk) => boolean
 }
 
 export const View: React.SFC<ViewProps> = function View(props: ViewProps) {
@@ -32,7 +32,7 @@ export const View: React.SFC<ViewProps> = function View(props: ViewProps) {
 }
 View.defaultProps = {
   hashScrollBehavior: 'smooth',
-  where: (segment: Segment) => segment.type === 'view'
+  where: (Chunk: Chunk) => Chunk.type === 'view'
 }
 
 
@@ -43,8 +43,8 @@ interface InnerViewProps extends ViewProps {
 interface InnerViewState {
   steadyRoute?: Route,
   childContext?: NaviContext,
-  segment?: ViewSegment,
-  headAndTitleSegments?: (HeadSegment | TitleSegment)[],
+  Chunk?: ViewChunk,
+  headAndTitleChunks?: (HeadChunk | TitleChunk)[],
   error?: Error
 }
 
@@ -62,49 +62,49 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
       return null
     }
 
-    let unconsumedSegments =
-      props.context.unconsumedSteadyRouteSegments ||
-      props.context.steadyRoute.segments
+    let unconsumedChunks =
+      props.context.unconsumedSteadyRouteChunks ||
+      props.context.steadyRoute.chunks
 
-    let index = unconsumedSegments.findIndex(props.where!)
-    let errorSearchSegments = index === -1 ? unconsumedSegments : unconsumedSegments.slice(0, index + 1)
-    let errorSegment = errorSearchSegments.find(segment => segment.type === 'error')
-    if (errorSegment) {
+    let index = unconsumedChunks.findIndex(props.where!)
+    let errorSearchChunks = index === -1 ? unconsumedChunks : unconsumedChunks.slice(0, index + 1)
+    let errorChunk = errorSearchChunks.find(Chunk => Chunk.type === 'error')
+    if (errorChunk) {
       return {
-        error: errorSegment.error || new Error("Unknown routing error")
+        error: errorChunk.error || new Error("Unknown routing error")
       }
     }
     if (index === -1) {
       return {
-        error: new MissingSegment(props.context),
+        error: new MissingChunk(props.context),
       }
     }
-    let segment = unconsumedSegments[index] as ViewSegment
+    let Chunk = unconsumedChunks[index] as ViewChunk
 
     // Find any unconsumed head content that comes before and after this
-    // segment.
-    let headAndTitleSegments =
-      unconsumedSegments
+    // Chunk.
+    let headAndTitleChunks =
+      unconsumedChunks
         .slice(0, index)
-        .filter(segment => segment.type === 'title' || segment.type === 'head') as ((HeadSegment | TitleSegment)[])
-    for (index += 1; index < unconsumedSegments.length; index++) {
-      let segment = unconsumedSegments[index]
-      if (segment.type === 'busy' || segment.type === 'error' || props.where!(segment)) {
+        .filter(Chunk => Chunk.type === 'title' || Chunk.type === 'head') as ((HeadChunk | TitleChunk)[])
+    for (index += 1; index < unconsumedChunks.length; index++) {
+      let Chunk = unconsumedChunks[index]
+      if (Chunk.type === 'busy' || Chunk.type === 'error' || props.where!(Chunk)) {
         break
       }
-      if (segment.type === 'title' || segment.type === 'head') {
-        headAndTitleSegments.push(segment)
+      if (Chunk.type === 'title' || Chunk.type === 'head') {
+        headAndTitleChunks.push(Chunk)
       }
     }
 
     return {
-      segment,
-      headAndTitleSegments,
+      Chunk,
+      headAndTitleChunks,
       steadyRoute: props.context.steadyRoute,
       childContext: {
         ...props.context,
         busyRoute: props.context.busyRoute,
-        unconsumedSteadyRouteSegments: unconsumedSegments.slice(index),
+        unconsumedSteadyRouteChunks: unconsumedChunks.slice(index),
       },
     }
   }
@@ -154,8 +154,8 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
       throw this.state.error
     }
 
-    let { segment, headAndTitleSegments } = this.state
-    if (!segment || !segment.view) {
+    let { Chunk, headAndTitleChunks } = this.state
+    if (!Chunk || !Chunk.view) {
       let Suspense: React.ComponentType<any> = (React as any).Suspense
       if (Suspense) {
         throw this.props.context.navigation.steady()
@@ -167,18 +167,18 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
     }
 
     let helmet =
-      headAndTitleSegments &&
-      headAndTitleSegments.length &&
+      headAndTitleChunks &&
+      headAndTitleChunks.length &&
       React.createElement(
         Helmet,
         null,
-        ...headAndTitleSegments.map(segment =>
-          segment.type === 'title' ? (
-            <title>{segment.title}</title>
+        ...headAndTitleChunks.map(Chunk =>
+          Chunk.type === 'title' ? (
+            <title>{Chunk.title}</title>
           ) : ( 
-            (segment.head.type === React.Fragment || segment.head.type === 'head')
-              ? segment.head.props.children 
-              : segment.head
+            (Chunk.head.type === React.Fragment || Chunk.head.type === 'head')
+              ? Chunk.head.props.children 
+              : Chunk.head
           )
         )
       )
@@ -190,18 +190,18 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
       if (typeof render !== "function") {
         throw new Error(`A Navi <View> expects any children to be a function, but instead received "${render}".`)
       }
-      content = this.props.children(segment.view, this.state.steadyRoute!)
+      content = this.props.children(Chunk.view, this.state.steadyRoute!)
     }
-    else if (segment.view) {
-      if (typeof segment.view === 'function') {
-        content = React.createElement(segment.view, { route: this.props.context.steadyRoute })
+    else if (Chunk.view) {
+      if (typeof Chunk.view === 'function') {
+        content = React.createElement(Chunk.view, { route: this.props.context.steadyRoute })
       }
-      else if (typeof segment.view === 'string' || React.isValidElement(segment.view)) {
-        content = segment.view
+      else if (typeof Chunk.view === 'string' || React.isValidElement(Chunk.view)) {
+        content = Chunk.view
       }
     }
     else {
-      throw new Error("A Navi <View> was not able to find a `children` prop, and was unable to find any body or head content in the consumed Route segment's `content`.")
+      throw new Error("A Navi <View> was not able to find a `children` prop, and was unable to find any body or head content in the consumed Route Chunk's `content`.")
     }
 
     return (
@@ -220,11 +220,11 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
 }
 
 
-export class MissingSegment extends NaviError {
+export class MissingChunk extends NaviError {
   context: NaviContext
 
   constructor(context: NaviContext) {
-    super(`A Navi <View> component attempted to use a segment that couldn't be found. This is likely due to its "where" prop.`)
+    super(`A Navi <View> component attempted to use a Chunk that couldn't be found. This is likely due to its "where" prop.`)
     this.context = context
   }
 }

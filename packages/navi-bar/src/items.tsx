@@ -33,9 +33,9 @@ export function getItems(
   let deepestSwitchIndex = 0
   for (let i = 0; i < routes.length; i++) {
     let pageRoute = routes[i]
-    let segments = pageRoute.segments.slice(0, -1) as Navi.Segment[]
-    for (let j = 0; j < segments.length; j++) {
-      let naviSwitch = segments[j].url.pathname
+    let chunks = pageRoute.chunks.slice(0, -1) as Navi.Chunk[]
+    for (let j = 0; j < chunks.length; j++) {
+      let naviSwitch = chunks[j].url.pathname
       let nextCount = (switchCounts.get(naviSwitch) || 0) + 1
       if (j > deepestSwitchIndex) {
         deepestSwitchIndex = j
@@ -53,39 +53,39 @@ export function getItems(
   let rootSwitch = switchPositions[rootSwitchIndex]
   let rootItems: Item[] = []
   let switchItems = new Map<string, Item[]>([[rootSwitch, rootItems]])
-  let partialRoute: Navi.Route = routes[0].segments.slice(0, rootSwitchIndex + 1).reduce(Navi.defaultRouteReducer, undefined)!
-  // Create a tree by iterating over each segment below the root segment
+  let partialRoute: Navi.Route = routes[0].chunks.slice(0, rootSwitchIndex + 1).reduce(Navi.defaultRouteReducer, undefined)!
+  // Create a tree by iterating over each chunk below the root chunk
   // for each route.
   for (let i = 0; i < routes.length; i++) {
     let pageRoute = routes[i]
-    let segments = pageRoute.segments.slice(rootSwitchIndex + 1)
+    let chunks = pageRoute.chunks.slice(rootSwitchIndex + 1)
     let lastSwitch = rootSwitch
     let route = { ...partialRoute }
-    for (let j = 0; j < segments.length; j++) {
-      let segment = segments[j]
-      route = Navi.defaultRouteReducer(route, segment)
-      if (segment.type === 'map' && (segment.patterns.length > 1 || segment.patterns[0] !== '/')) {
-        let segmentSwitch = segment.url.pathname
-        if (!switchItems.has(segmentSwitch)) {
+    for (let j = 0; j < chunks.length; j++) {
+      let chunk = chunks[j]
+      route = Navi.defaultRouteReducer(route, chunk)
+      if (chunk.type === 'mount' && (chunk.patterns.length > 1 || chunk.patterns[0] !== '/')) {
+        let chunkSwitch = chunk.url.pathname
+        if (!switchItems.has(chunkSwitch)) {
           let item: GroupItem = {
             level: j + 1,
             data: route.data,
             children: [],
-            url: segment.url,
+            url: chunk.url,
             title: route.title,
             type: 'group',
           }
           switchItems.get(lastSwitch)!.push(item)
-          switchItems.set(segmentSwitch, item.children)
+          switchItems.set(chunkSwitch, item.children)
         }
-        lastSwitch = segmentSwitch
+        lastSwitch = chunkSwitch
       }
-      else if (j === segments.length - 1) {
+      else if (j === chunks.length - 1) {
         let items = switchItems.get(lastSwitch)!
         items.push({
           level: j + 1,
           data: route.data,
-          url: segment.url,
+          url: chunk.url,
           title: route.title!,
           type: 'page',
         })
