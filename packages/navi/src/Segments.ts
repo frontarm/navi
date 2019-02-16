@@ -1,7 +1,6 @@
 import { joinPaths, URLDescriptor, createURLDescriptor } from './URLTools'
 import { NotFoundError } from './Errors'
 import { NaviRequest } from './NaviRequest'
-import { Resolution } from './Resolver'
 
 /**
  * A type that covers all Segment objects.
@@ -172,17 +171,6 @@ export function createSegment<Type extends string, Details>(
       query: request.query,
     }, { ensureTrailingSlash }),
   }, details)
-}
-
-export function createNotReadySegment(
-  request: NaviRequest,
-  resolution: Resolution<any>,
-  ensureTrailingSlash = true,
-): BusySegment | ErrorSegment {
-  if (resolution.error) {
-    return createSegment('error', request, { error: resolution.error }, ensureTrailingSlash)  
-  }
-  return createSegment('busy', request, { promise: resolution.promise! }, ensureTrailingSlash)
 }
 
 export function createNotFoundSegment(request: NaviRequest): ErrorSegment {

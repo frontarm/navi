@@ -296,39 +296,38 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
         ensureTrailingSlash: false,
         removeHash: true,
       })
-      let rootEnv = {
-        context: this.rootContext,
-        request: createRequest(this.rootContext, {
-          body: null,
-          headers: this.options.headers || {},
-          method: this.options.method || 'HEAD',
-          params: {},
-          hostname: this.options.hostname || '',
-          mountpath: '',
-          query: url.query,
-          search: url.search,
-          router: this.router,
-          path: url.pathname,
-          url: url.pathname+url.search,
-          originalUrl: url.href,
-        }),
-      }
-      let matchEnv = mappingAgainstPathname(
-        rootEnv,
+      let request = createRequest(this.rootContext, {
+        body: null,
+        headers: this.options.headers || {},
+        method: this.options.method || 'HEAD',
+        params: {},
+        hostname: this.options.hostname || '',
+        mountpath: '',
+        query: url.query,
+        search: url.search,
+        router: this.router,
+        path: url.pathname,
+        url: url.pathname+url.search,
+        originalUrl: url.href,
+      })
+      let matchRequest = mappingAgainstPathname(
+        request,
         this.rootMapping,
+        this.rootContext,
         false,
       )
-      if (matchEnv) {
+      if (matchRequest) {
         this.mapItems.push({
           url,
           fromPathname,
           depth,
           pathname,
           order,
-          matcherIterator: this.matcherGeneratorFunction({
-            env: matchEnv,
-            appendFinalSlash: false,
-          }),
+          matcherIterator: this.matcherGeneratorFunction(
+            matchRequest,
+            this.rootContext,
+            false,
+          ),
         })
       }
     }

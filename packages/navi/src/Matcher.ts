@@ -1,6 +1,6 @@
 import { Resolvable } from './resolve'
 import { Segment } from './Segments'
-import { Env } from './Env'
+import { NaviRequest } from './NaviRequest'
 
 export type Matcher<
   ParentContext extends object,
@@ -12,18 +12,12 @@ export interface ResolvableMatcher<
   M extends Matcher<Context> = Matcher<Context>
 > extends Resolvable<M, Context> {}
 
-export type MaybeResolvableMatcher<Context extends object = any> =
-  | Matcher<Context>
-  | ResolvableMatcher<Context, Matcher<Context>>
-
-export interface MatcherOptions<Context extends object> {
-  appendFinalSlash?: boolean
-  env: Env<Context>
-}
-
 export type MatcherGenerator<Context extends object> = (
-  options: MatcherOptions<Context>,
+  request: NaviRequest,
+  context: Context,
+  appendFinalSlash?: boolean
 ) => MatcherIterator
+
 export type MatcherIterator = IterableIterator<Segment[]>
 
 

@@ -1,4 +1,4 @@
-import { Resolvable } from '../resolve'
+import { Resolvable } from '../Resolvable'
 import { createSegment } from '../Segments'
 import { createSegmentsMatcher } from './createSegmentsMatcher'
 import { Matcher } from '../Matcher'

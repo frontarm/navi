@@ -1,10 +1,9 @@
-import resolve, { Resolvable } from '../resolve'
-import { Segment, createNotFoundSegment, createSegment } from '../Segments'
+import resolveSegments, { Resolvable } from '../Resolvable'
+import { Segment, createNotFoundSegment } from '../Segments'
 import {
   Matcher,
   MatcherIterator,
   MatcherGenerator,
-  MatcherOptions,
   concatMatcherIterators
 } from '../Matcher'
 import { NaviRequest } from '../NaviRequest';
@@ -15,26 +14,28 @@ export function createSegmentsMatcher<T, Context extends object>(
   getSegments: (value: T, request: NaviRequest) => Segment[],
 ): Matcher<Context> {
   function* segmentsMatcherGenerator(
-    options: MatcherOptions<Context>,
+    request: NaviRequest,
+    context: Context,
     child?: MatcherGenerator<Context>,
+    appendFinalSlash?: boolean,
   ): MatcherIterator {
-    let unmatchedPathnamePart = options.env.request.path
+    let unmatchedPathnamePart = request.path
     if (!child && unmatchedPathnamePart && unmatchedPathnamePart !== '/') {
-      yield [createNotFoundSegment(options.env.request)]
+      yield [createNotFoundSegment(request)]
     }
     else {
-      let parentIterator = resolve(
+      let parentIterator = resolveSegments(
         maybeResolvable,
-        options.env.request,
-        options.env.context,
-        (value: T) => getSegments(value, options.env.request),
-        options.appendFinalSlash
+        request,
+        context,
+        (value: T) => getSegments(value, request),
+        appendFinalSlash
       )
       
-      yield* (child ? concatMatcherIterators(parentIterator, child(options)) : parentIterator)
+      yield* (child ? concatMatcherIterators(parentIterator, child(request, context, appendFinalSlash)) : parentIterator)
     }
   }
 
-  return (childGenerator?: MatcherGenerator<Context>) => options =>
-    segmentsMatcherGenerator(options, forceChildMatcher ? forceChildMatcher() : childGenerator)
+  return (childGenerator?: MatcherGenerator<Context>) => (request: NaviRequest, context: Context, appendFinalSlash?: boolean) =>
+    segmentsMatcherGenerator(request, context, forceChildMatcher ? forceChildMatcher() : childGenerator, appendFinalSlash)
 }

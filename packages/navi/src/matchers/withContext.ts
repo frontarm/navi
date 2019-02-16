@@ -1,10 +1,10 @@
-import resolve, { Resolvable } from '../resolve'
+import resolveSegments, { Resolvable } from '../Resolvable'
 import {
   Matcher,
   MatcherIterator,
   MatcherGenerator,
-  MatcherOptions,
 } from '../Matcher'
+import { NaviRequest } from '../NaviRequest';
 
 export function withContext<
   ParentContext extends object = any,
@@ -24,25 +24,25 @@ export function withContext<
   }
 
   function* contextMatcherGenerator(
-    options: MatcherOptions<ParentContext>,
+    request: NaviRequest,
+    context: ParentContext,
     child: MatcherGenerator<ChildContext>,
+    appendFinalSlash?: boolean,
   ): MatcherIterator {
-    yield* resolve(
+    yield* resolveSegments(
       childContextMaybeResolvable,
-      options.env.request,
-      options.env.context,
+      request,
+      context,
       childContext =>
-        child({
-          ...options,
-          env: {
-            request: options.env.request,
-            context: childContext! || {},
-          },
-        }),
-      options.appendFinalSlash,
+        child(
+          request,
+          childContext! || {},
+          appendFinalSlash
+        ),
+      appendFinalSlash,
     )
   }
 
-  return (child: MatcherGenerator<ChildContext>) => options =>
-    contextMatcherGenerator(options, forceChild ? forceChild() : child)
+  return (child: MatcherGenerator<ChildContext>) => (request: NaviRequest, context: ParentContext, appendFinalSlash?: boolean) =>
+    contextMatcherGenerator(request, context, forceChild ? forceChild() : child, appendFinalSlash)
 }

@@ -8,8 +8,8 @@ import { map } from './map'
 import { mount } from './mount'
 import { redirect } from './redirect'
 import { withContext } from './withContext'
-import { MaybeResolvableMatcher, Matcher } from '../Matcher'
-import { Resolvable, extractDefault } from '../resolve'
+import { Matcher, ResolvableMatcher } from '../Matcher'
+import { Resolvable, extractDefault } from '../Resolvable'
 import { URLDescriptor } from '../URLTools'
 import { NaviRequest } from '../NaviRequest'
 import { withData } from './withData'
@@ -93,6 +93,10 @@ export function createPage<
 function inputOrEmptyObject(x) {
   return x || {}
 }
+
+export type MaybeResolvableMatcher<Context extends object = any> =
+  | Matcher<Context>
+  | ResolvableMatcher<Context, Matcher<Context>>
 
 export function createContext<
   ParentContext extends object = any,

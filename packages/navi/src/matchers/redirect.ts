@@ -1,7 +1,8 @@
 import { createSegment, Segment, createNotFoundSegment } from '../Segments'
-import resolve, { Resolvable } from '../resolve'
-import { Matcher, MatcherOptions, MatcherIterator } from '../Matcher'
+import resolveSegments, { Resolvable } from '../Resolvable'
+import { Matcher, MatcherIterator } from '../Matcher'
 import { URLDescriptor, joinPaths, createURLDescriptor } from '../URLTools'
+import { NaviRequest } from '../NaviRequest'
 
 export function redirect<Context extends object = any>(
   maybeResolvableTo: string | Partial<URLDescriptor> | Resolvable<Partial<URLDescriptor> | string>
@@ -12,23 +13,24 @@ export function redirect<Context extends object = any>(
       : () => maybeResolvableTo
 
   return () => function* redirectMatcherGenerator(
-    options: MatcherOptions<Context>,
+    request: NaviRequest,
+    context: Context
   ): MatcherIterator {
-    yield* resolve(
+    yield* resolveSegments(
       getTo,
-      options.env.request,
-      options.env.context,
+      request,
+      context,
       to => {
-        let unmatchedPathnamePart = options.env.request.path
+        let unmatchedPathnamePart = request.path
         if (unmatchedPathnamePart && unmatchedPathnamePart !== '/') {
-          return [createNotFoundSegment(options.env.request)]
+          return [createNotFoundSegment(request)]
         }
 
         // TODO: support all relative URLs
         let toHref: string | undefined
         if (typeof to === 'string') {
           if (to.slice(0, 2) === './') {
-            toHref = joinPaths(options.env.request.mountpath.split('/').slice(0, -1).join('/'), to.slice(2))
+            toHref = joinPaths(request.mountpath.split('/').slice(0, -1).join('/'), to.slice(2))
           }
           else {
             toHref = to
@@ -37,7 +39,7 @@ export function redirect<Context extends object = any>(
         else if (to) {
           toHref = createURLDescriptor(to).href
         }
-        return toHref ? [createSegment('redirect', options.env.request, { to: toHref })] as Segment[] : []
+        return toHref ? [createSegment('redirect', request, { to: toHref })] as Segment[] : []
       },
     )
   }

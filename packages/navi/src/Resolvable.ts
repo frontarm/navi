@@ -9,7 +9,7 @@ export type Resolvable<T, Context extends object = any, U = any> = (
   arg?: U
 ) => (T | PromiseLike<{ default: T } | T>)
 
-export default function* resolve<T>(
+export default function* resolveSegments<T>(
   maybeResolvable: T | Resolvable<T>,
   request: NaviRequest,
   context: any,

@@ -1,8 +1,8 @@
 import { MatcherIterator, MatcherGenerator } from './Matcher'
 import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
-import { Env } from './Env';
 import { URLDescriptor } from './URLTools';
 import { Segment, BusySegment } from './Segments'
+import { NaviRequest } from './NaviRequest';
 
 export class SegmentListObservable implements Observable<Segment[]> {
     readonly url: URLDescriptor
@@ -14,16 +14,14 @@ export class SegmentListObservable implements Observable<Segment[]> {
   
     constructor(
         url: URLDescriptor,
-        env: Env,
-        matcherGeneratorClass: MatcherGenerator<any>,
+        request: NaviRequest,
+        context: any,
+        matcherGenerator: MatcherGenerator<any>,
     ) {
         this.url = url
         this.lastListenId = 0
         this.observers = []
-        this.matcherIterator = matcherGeneratorClass({
-            appendFinalSlash: true,
-            env,
-        })
+        this.matcherIterator = matcherGenerator(request, context, true)
     }
 
     

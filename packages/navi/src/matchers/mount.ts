@@ -1,10 +1,7 @@
 import { Segment, createSegment, createNotFoundSegment } from '../Segments'
 import { createMapping, mappingAgainstPathname } from '../Mapping'
-import {
-  Matcher,
-  MatcherIterator,
-  MatcherOptions
-} from '../Matcher'
+import { Matcher, MatcherIterator } from '../Matcher'
+import { NaviRequest } from '../NaviRequest';
 
 export type MountPaths<Context extends object> = {
   [pattern: string]: Matcher<Context>
@@ -36,10 +33,10 @@ export function mount<Context extends object>(
     .sort((x, y) => compareStrings(x.key, y.key))
 
   return () => function* mountMatcherGenerator(
-    options: MatcherOptions<Context>,
+    request: NaviRequest,
+    context: Context,
+    appendFinalSlash?: boolean,
   ): MatcherIterator {
-    let { appendFinalSlash, env } = options
-
     let segments: Segment[]
     let childIterator: MatcherIterator | undefined
     let childResult: IteratorResult<Segment[]> | undefined
@@ -49,12 +46,13 @@ export function mount<Context extends object>(
     // precise match (and we always want to use the most precise match).
     for (let i = mappings.length - 1; i >= 0; i--) {
       let mapping = mappings[i]
-      let childEnv = mappingAgainstPathname(env, mapping, !!appendFinalSlash)
-      if (childEnv) {
-        childIterator = mapping.matcher()({
-          env: childEnv,
+      let childRequest = mappingAgainstPathname(request, mapping, context, !!appendFinalSlash)
+      if (childRequest) {
+        childIterator = mapping.matcher()(
+          childRequest,
+          context,
           appendFinalSlash,
-        })
+        )
 
         // The first match is always the only match, as we don't allow
         // for ambiguous patterns.
@@ -68,7 +66,7 @@ export function mount<Context extends object>(
       }
 
       segments = [
-        createSegment('mount', env.request, { patterns }, appendFinalSlash),
+        createSegment('mount', request, { patterns }, appendFinalSlash),
       ]
 
       let childSegments = childResult && childResult.value
@@ -76,10 +74,10 @@ export function mount<Context extends object>(
         segments = segments.concat(
           childSegments.length
             ? childSegments
-            : createSegment('null', env.request),
+            : createSegment('null', request),
         )
-      } else if (env.request.path) {
-        segments.push(createNotFoundSegment(env.request))
+      } else if (request.path) {
+        segments.push(createNotFoundSegment(request))
       } else {
         // We've matched the map exactly, and don't need to match
         // any child segments - which is useful for creating maps.

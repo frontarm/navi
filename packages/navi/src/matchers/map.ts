@@ -1,23 +1,25 @@
-import resolve from '../resolve'
+import resolveSegments from '../Resolvable'
 import {
   Matcher,
   MatcherIterator,
   ResolvableMatcher,
-  MatcherOptions,
 } from '../Matcher'
+import { NaviRequest } from '../NaviRequest'
 
 export function map<Context extends object, M extends Matcher<Context>>(
   resolvableMatcher: ResolvableMatcher<Context, M>,
 ): Matcher<Context> {
   return () => function* mapMatcherGenerator(
-    options: MatcherOptions<Context>,
+    request: NaviRequest,
+    context: Context,
+    appendFinalSlash?: boolean
   ): MatcherIterator {
-    yield* resolve(
+    yield* resolveSegments(
       resolvableMatcher,
-      options.env.request,
-      options.env.context,
-      (childMatcher) => childMatcher()(options),
-      options.appendFinalSlash
+      request,
+      context,
+      (childMatcher) => childMatcher()(request, context, appendFinalSlash),
+      appendFinalSlash
     )
   }
 }

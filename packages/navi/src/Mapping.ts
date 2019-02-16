@@ -1,7 +1,6 @@
 import { Matcher } from './Matcher'
-import { Env } from './Env'
 import { joinPaths } from './URLTools'
-import { createRequest } from './NaviRequest';
+import { createRequest, NaviRequest } from './NaviRequest'
 
 
 export const KEY_WILDCARD = '\0'
@@ -116,9 +115,8 @@ export function createMapping(pattern: string, matcher: Matcher<any>): Mapping {
 }
 
 
-export function mappingAgainstPathname<Context extends object>(env: Env<Context>, mapping: Mapping, appendFinalSlash: boolean): Env<Context> | undefined {
-    let request = env.request
-    let match = mapping.regExp.exec(env.request.path)
+export function mappingAgainstPathname(request: NaviRequest, mapping: Mapping, context: any, appendFinalSlash: boolean): NaviRequest | undefined {
+    let match = mapping.regExp.exec(request.path)
     if (!match) {
         return
     }
@@ -138,18 +136,13 @@ export function mappingAgainstPathname<Context extends object>(env: Env<Context>
     let unmatchedPath = request.path.slice(matchedPathname.length) || (appendFinalSlash ? '/' : '')
 
     let mountpath = joinPaths(request.mountpath, matchedPathname)
-    let mappedEnv: Env = {
-        context: env.context,
-        request: createRequest(env.context, {
-            ...request,
-            params,
-            mountpath,
-            path: unmatchedPath,
-            url: unmatchedPath+request.search,
-        })
-    }
-
-    return mappedEnv
+    return createRequest(context, {
+        ...request,
+        params,
+        mountpath,
+        path: unmatchedPath,
+        url: unmatchedPath+request.search,
+    })
 }
     
 

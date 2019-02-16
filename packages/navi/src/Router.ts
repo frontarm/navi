@@ -9,7 +9,6 @@ import { createPromiseFromObservable } from './Observable';
 import { createURLDescriptor, URLDescriptor } from './URLTools';
 import { createRequest, HTTPMethod } from './NaviRequest';
 import { OutOfRootError } from './Errors';
-import { Env } from './Env';
 import { Reducer } from './Reducer';
 
 
@@ -44,13 +43,13 @@ export function createRouter<Context extends object>(options: RouterOptions<Cont
 
 export class Router<Context extends object=any, R=Route> {
     private context: Context
-    private matcherGeneratorClass: MatcherGenerator<Context>
+    private matcherGenerator: MatcherGenerator<Context>
     private rootMapping: Mapping
     private reducer: Reducer<Segment, R>
     
     constructor(options: RouterOptions<Context, R>) {
         this.context = options.context || {} as any
-        this.matcherGeneratorClass = options.routes!()
+        this.matcherGenerator = options.routes!()
         this.reducer = options.reducer || (defaultRouteReducer as any)
 
         let basename = options.basename
@@ -75,29 +74,27 @@ export class Router<Context extends object=any, R=Route> {
             delete url.hash
         }
 
-        let rootEnv: Env = {
-            context: this.context,
-            request: createRequest(this.context, {
-                body: options.body,
-                headers: options.headers || {},
-                method: options.method || 'GET',
-                hostname: url.hostname,
-                mountpath: '',
-                params: url.query,
-                query: url.query,
-                search: url.search,
-                router: this,
-                url: url.pathname+url.search,
-                originalUrl: url.href,
-                path: url.pathname,
-            })
-        }
-        let matchEnv = mappingAgainstPathname(rootEnv, this.rootMapping, true)
-        if (matchEnv) {
+        let request = createRequest(this.context, {
+            body: options.body,
+            headers: options.headers || {},
+            method: options.method || 'GET',
+            hostname: url.hostname,
+            mountpath: '',
+            params: url.query,
+            query: url.query,
+            search: url.search,
+            router: this,
+            url: url.pathname+url.search,
+            originalUrl: url.href,
+            path: url.pathname,
+        })
+        let matchRequest = mappingAgainstPathname(request, this.rootMapping, this.context, true)
+        if (matchRequest) {
             return new SegmentListObservable(
                 url,
-                matchEnv,
-                this.matcherGeneratorClass
+                matchRequest,
+                this.context,
+                this.matcherGenerator
             )
         }
     }
@@ -106,7 +103,7 @@ export class Router<Context extends object=any, R=Route> {
         return new SegmentsMapObservable(
             createURLDescriptor(urlOrDescriptor, { ensureTrailingSlash: false }),
             this.context,
-            this.matcherGeneratorClass,
+            this.matcherGenerator,
             this.rootMapping,
             this,
             options,
