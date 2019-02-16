@@ -1,4 +1,4 @@
-import { createRouter, mount, route } from '../src'
+import { createRouter, mount, route, withData, withTitle } from '../src'
 import { fixtureMap } from './fixtures/switches'
 
 describe("routeMap", () => {
@@ -21,11 +21,16 @@ describe("routeMap", () => {
   })
 
   test("can map from an intermediate url and exclude its index", async () => {
-    let router = createRouter({ routes: fixtureMap })
-    let map = await router.resolveRouteMap('/examples', {
-      predicate: (chunk) => chunk.url.pathname !== '/examples/'
+    let router = createRouter({ routes: mount({
+      '/a': mount({
+        '/': withData('test', withTitle('a')),
+        '/b': withData('test', withTitle('b'))
+      })
+    }) })
+    let map = await router.resolveRouteMap('/a', {
+      predicate: (chunk) => chunk.url.pathname !== '/a/'
     })
-    expect(Object.keys(map).length).toBe(2)
+    expect(Object.keys(map).length).toBe(1)
   })
 
   test("supports expandPattern()", async () => {

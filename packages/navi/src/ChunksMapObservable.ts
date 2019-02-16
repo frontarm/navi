@@ -214,7 +214,10 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
     for (let i = 0; i < this.mapItems.length; i++) {
       let item = this.mapItems[i]
       let lastChunk = item.chunksCache![item.chunksCache!.length - 1]
-      if (lastChunk.type !== 'mount' && lastChunk.type !== 'error') {
+      if (
+        lastChunk.type !== 'mount' &&
+        lastChunk.type !== 'error' &&
+        (!this.options.predicate || this.options.predicate(lastChunk, item.chunksCache!))) {
         chunksMapArray.push([
           joinPaths(item.pathname, '/'),
           item.chunksCache!,
