@@ -74,13 +74,10 @@ export function mount<Context extends object>(
         segments = segments.concat(
           childSegments.length
             ? childSegments
-            : createSegment('null', request),
+            : [],
         )
-      } else if (request.path) {
-        segments.push(createNotFoundSegment(request))
       } else {
-        // We've matched the map exactly, and don't need to match
-        // any child segments - which is useful for creating maps.
+        segments.push(createNotFoundSegment(request))
       }
 
       yield segments

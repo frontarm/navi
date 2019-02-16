@@ -56,7 +56,7 @@ export default function* resolveSegments<T>(
 
   if (result) {
     if (Array.isArray(result)) {
-      yield result.length ? result : [createSegment('null', request)]
+      yield result.length ? result : []
     }
     else {
       yield* result

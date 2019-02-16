@@ -26,7 +26,6 @@ export type SegmentType =
   | 'headers'
   | 'error'
   | 'mount'
-  | 'null'
   | 'redirect'
   | 'status'
   | 'title'
@@ -105,14 +104,6 @@ export interface HeadersSegment extends GenericSegment {
 export interface MountSegment extends GenericSegment {
   type: 'mount'
   patterns: string[]
-}
-
-/**
- * Added in place of child segments when a child returns an empty list of
- * segments, to prevent the length of the segments list from decreasing.
- */
-export interface NullSegment extends GenericSegment {
-  type: 'null'
 }
 
 /**
