@@ -1,6 +1,7 @@
 import { Resolvable } from './Resolvable'
 import { Chunk } from './Chunks'
 import { NaviRequest } from './NaviRequest'
+import { joinPaths } from './URLTools'
 
 export type Matcher<
   ParentContext extends object,
@@ -18,6 +19,22 @@ export type MatcherGenerator<Context extends object> = (
 
 export type MatcherIterator = IterableIterator<Chunk[]>
 
+export function createMatcherIterator<Context extends object>(
+  matcherGenerator: MatcherGenerator<Context>, request: NaviRequest, context: Context, pattern = ''
+): MatcherIterator {
+  if (process.env.NODE_ENV !== 'production') {
+    if (typeof matcherGenerator !== 'function') {
+      console.error(
+        `A matcher at the URL "${joinPaths(
+          request.mountpath,
+          pattern,
+        )}" is invalid. A generator function was expected, but "${String(matcherGenerator)}" was received.`,
+      )
+    }
+  }
+
+  return matcherGenerator(request, context)
+}
 
 export function* concatMatcherIterators(x: MatcherIterator, y: MatcherIterator) {
   let xResult: IteratorResult<Chunk[]>

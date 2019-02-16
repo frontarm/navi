@@ -1,8 +1,7 @@
 import { Chunk, createChunk, createNotFoundChunk } from '../Chunks'
 import { createMapping, mappingAgainstPathname } from '../Mapping'
-import { Matcher, MatcherIterator } from '../Matcher'
+import { Matcher, MatcherIterator, createMatcherIterator } from '../Matcher'
 import { NaviRequest } from '../NaviRequest'
-import { joinPaths } from '../URLTools'
 
 export function mount<
   Context extends object,
@@ -52,18 +51,7 @@ export function mount<
         let mapping = mappings[i]
         let childRequest = mappingAgainstPathname(request, mapping, context)
         if (childRequest) {
-          let matcherGenerator = mapping.matcher()
-          if (process.env.NODE_ENV !== 'production') {
-            if (typeof matcherGenerator !== 'function') {
-              console.error(
-                `mount(): the pattern "${joinPaths(
-                  request.mountpath,
-                  mapping.pattern,
-                )}" is invalid. It's value should be a matcher object.`,
-              )
-            }
-          }
-          childIterator = matcherGenerator(childRequest, context)
+          childIterator = createMatcherIterator(mapping.matcher(), childRequest, context, mapping.pattern)
 
           // The first match is always the only match, as we don't allow
           // for ambiguous patterns.

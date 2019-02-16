@@ -3,6 +3,7 @@ import {
   Matcher,
   MatcherIterator,
   ResolvableMatcher,
+  createMatcherIterator,
 } from '../Matcher'
 import { NaviRequest } from '../NaviRequest'
 
@@ -17,7 +18,7 @@ export function map<Context extends object>(
       resolvableMatcher,
       request,
       context,
-      (childMatcher) => childMatcher()(request, context)
+      (childMatcher) => createMatcherIterator(childMatcher(), request, context)
     )
   }
 }

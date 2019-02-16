@@ -3,6 +3,7 @@ import {
   Matcher,
   MatcherIterator,
   MatcherGenerator,
+  createMatcherIterator,
 } from '../Matcher'
 import { NaviRequest } from '../NaviRequest';
 
@@ -33,7 +34,8 @@ export function withContext<
       request,
       context,
       childContext =>
-        child(
+        createMatcherIterator(
+          child,
           request,
           childContext! || {}
         )

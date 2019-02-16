@@ -4,7 +4,8 @@ import {
   Matcher,
   MatcherIterator,
   MatcherGenerator,
-  concatMatcherIterators
+  concatMatcherIterators,
+  createMatcherIterator
 } from './Matcher'
 import { NaviRequest } from './NaviRequest';
 
@@ -34,7 +35,7 @@ export function createChunksMatcher<T, Context extends object>(
               (value: T) => getChunks(value, request)
             )
         
-      yield* (child ? concatMatcherIterators(parentIterator, child(request, context)) : parentIterator)
+      yield* (child ? concatMatcherIterators(parentIterator, createMatcherIterator(child, request, context)) : parentIterator)
     }
   }
 

@@ -189,5 +189,5 @@ export function createRedirect<
       matcher,
     )
   }
-  return matcher
+  return Object.assign(matcher, { isDeprecatedMatcher: true })
 }
