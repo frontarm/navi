@@ -30,7 +30,7 @@ export interface RouterResolveOptions {
 export interface RouterMapOptions {
     followRedirects?: boolean,
     maxDepth?: number,
-    predicate?: (segment: Segment) => boolean,
+    predicate?: (segment: Segment, segments: Segment[]) => boolean,
     expandPattern?: (pattern: string, router: Router) => undefined | string[] | Promise<undefined | string[]>,
     method?: 'GET' | 'HEAD',
     headers?: { [name: string]: string },

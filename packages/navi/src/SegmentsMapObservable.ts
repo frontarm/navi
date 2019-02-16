@@ -5,7 +5,7 @@ import {
   SimpleSubscription,
   createOrPassthroughObserver,
 } from './Observable'
-import { Segment, BusySegment } from './Segments'
+import { Segment, BusySegment, MountSegment } from './Segments'
 import { MatcherGenerator, MatcherIterator } from './Matcher'
 import { RouterMapOptions, Router } from './Router'
 import { Mapping, mappingAgainstPathname } from './Mapping'
@@ -20,7 +20,9 @@ interface MapItem {
   matcherIterator: MatcherIterator
   lastResult?: IteratorResult<Segment[]>
   segmentsCache?: Segment[]
-  lastSegmentCache?: Segment
+  lastMountPatterns?: string[]
+  lastRedirectTo?: string
+  walkedPatternLists: Set<string>
 }
 
 export interface SegmentsMap {
@@ -67,7 +69,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
       pathname = pathname.substr(0, pathname.length - 1)
     }
 
-    this.addToQueue(pathname, 0)
+    this.addToQueue(pathname, 0, new Set)
   }
 
   subscribe(
@@ -129,68 +131,72 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
 
     let allSegments: Segment[] = []
     let i = 0
+    
+    // This is a while loop instead of a for loop, as new items can be added
+    // to this.mapItems within the loop body.
+    items:
     while (i < this.mapItems.length) {
       let item = this.mapItems[i]
+
       let pathname = item.pathname
       let result = item.matcherIterator.next()
       if (!item.lastResult || result.value) {
         item.lastResult = result
       }
       let segments = item.lastResult.value
-      let lastSegment = segments[segments.length-1]
-      let cachedLastSegment = item.lastSegmentCache
-      item.segmentsCache = segments
-      item.lastSegmentCache = lastSegment
+      item.segmentsCache = segments || []
+      let focusIndex = segments.findIndex(segment =>
+        segment.type === 'error' ||
+        (segment.url.href.length >= item.url.href.length) && (
+          (segment.type === 'mount' && item.lastMountPatterns !== segment.patterns) ||
+          (segment.type === 'redirect' && item.lastRedirectTo !== segment.to)
+        )
+      )
 
-      // If an item in the map cannot be found, throws an error, or is
-      // no longer referenced by other items, then remove it from the
-      // map.
-      //
-      // Note that later items in the map should always be "from" earlier
-      // items, so if an earlier item is removed, its referenced items
-      // will still be removed.
-      if (
-        lastSegment.type === "error" ||
-        (this.options.predicate && !this.options.predicate(lastSegment))
-      ) {
-        this.removeFromQueue(item)
-        continue
-      }
+      while (focusIndex >= 0 && focusIndex < segments.length) {
+        let focusSegment = segments[focusIndex]
+        focusIndex++
+      
+        // If an item in the map cannot be found, throws an error, or is
+        // no longer referenced by other items, then remove it from the
+        // map.
+        //
+        // Note that later items in the map should always be "from" earlier
+        // items, so if an earlier item is removed, its referenced items
+        // will still be removed.
+        if (
+          focusSegment.type === 'error' ||
+          (this.options.predicate && !this.options.predicate(focusSegment, segments))
+        ) {
+          this.removeFromQueue(item)
+          continue items
+        }
 
-      let lastSegmentRedirectsTo: string | undefined
-      let cachedLastSegmentRedirectTo: string | undefined
-      if (lastSegment.type === 'redirect') {
-        lastSegmentRedirectsTo = lastSegment.to
-      }
-      if (cachedLastSegment && cachedLastSegment.type === 'redirect') {
-        cachedLastSegmentRedirectTo = cachedLastSegment.to
-      }
+        if (focusSegment.type === 'redirect') {
+          item.lastRedirectTo = focusSegment.to
+          if (this.options.followRedirects) {
+            this.addToQueue(focusSegment.to, item.depth + 1, item.walkedPatternLists, pathname, item.order)
+          }
+        }
 
-      // If a redirect has been added or changed `to` location,
-      // then add the location to the map.
-      if (
-        this.options.followRedirects &&
-        lastSegmentRedirectsTo &&
-        lastSegmentRedirectsTo !== cachedLastSegmentRedirectTo
-      ) {
-        this.addToQueue(lastSegmentRedirectsTo, item.depth + 1, pathname, item.order)
-      }
-
-      if (
-        lastSegment.type === 'mount' &&
-        (!cachedLastSegment ||
-          cachedLastSegment.type !== 'mount')
-      ) {
-        let patterns = lastSegment.patterns
-        for (let j = 0; j < patterns.length; j++) {
-          let expandedPatterns = await this.expandPatterns(joinPaths(pathname, patterns[j]))
-          for (let k = 0; k < expandedPatterns.length; k++) {
-            this.addToQueue(
-              expandedPatterns[k],
-              item.depth + 1,
-              pathname,
-              item.order.concat(j, k)
-            )
+        if (focusSegment.type === 'mount') {
+          let patterns = focusSegment.patterns
+          item.lastMountPatterns = patterns
+          let key = patterns.slice(0).sort().join("\n")
+          if (patterns && !item.walkedPatternLists.has(key)) {
+            item.walkedPatternLists.add(key)
+            for (let j = 0; j < patterns.length; j++) {
+              let expandedPatterns = await this.expandPatterns(joinPaths(pathname, patterns[j]))
+              for (let k = 0; k < expandedPatterns.length; k++) {
+                this.addToQueue(
+                  expandedPatterns[k],
+                  item.depth + 1,
+                  item.walkedPatternLists,
+                  pathname,
+                  item.order.concat(j, k)
+                )
+              }
+            }
           }
         }
       }
@@ -198,13 +204,16 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
       if (segments) {
         allSegments = allSegments.concat(segments)
       }
+
+      // Increment at the end of the loop in case the current item has
+      // been removed, in which case the index won't change.
       i++
     }
 
     let segmentsMapArray = [] as [string, Segment[], number[]][]
     for (let i = 0; i < this.mapItems.length; i++) {
       let item = this.mapItems[i]
-      let lastSegment = item.lastSegmentCache!
+      let lastSegment = item.segmentsCache![item.segmentsCache!.length - 1]
       if (lastSegment.type !== 'mount' && lastSegment.type !== 'error') {
         segmentsMapArray.push([
           joinPaths(item.pathname, '/'),
@@ -284,7 +293,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     }
   }
 
-  private addToQueue(pathname: string, depth: number, fromPathname?: string, order = [0]) {
+  private addToQueue(pathname: string, depth: number, walkedPatternLists: Set<string>, fromPathname?: string, order = [0]) {
     if (this.seenPathnames.has(pathname)) {
       return
     }
@@ -314,7 +323,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
         request,
         this.rootMapping,
         this.rootContext,
-        false,
+        true,
       )
       if (matchRequest) {
         this.mapItems.push({
@@ -323,10 +332,11 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
           depth,
           pathname,
           order,
+          walkedPatternLists: new Set(walkedPatternLists),
           matcherIterator: this.matcherGeneratorFunction(
             matchRequest,
             this.rootContext,
-            false,
+            true,
           ),
         })
       }

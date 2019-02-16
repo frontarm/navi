@@ -66,7 +66,7 @@ export function mount<Context extends object>(
       }
 
       segments = [
-        createSegment('mount', request, { patterns }, appendFinalSlash),
+        createSegment('mount', request, { patterns }, false),
       ]
 
       let childSegments = childResult && childResult.value

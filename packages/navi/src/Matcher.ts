@@ -1,4 +1,4 @@
-import { Resolvable } from './resolve'
+import { Resolvable } from './Resolvable'
 import { Segment } from './Segments'
 import { NaviRequest } from './NaviRequest'
 
