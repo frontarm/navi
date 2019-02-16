@@ -1,7 +1,7 @@
-import { map, withView, NotFoundError, createMemoryNavigation } from '../src'
+import { mount, withView, NotFoundError, createMemoryNavigation } from '../src'
 
 describe("pageMap", () => {
-  const routes = map({
+  const routes = mount({
     '/declared/:id': withView(({ params }) => {
       if (params.id !== "1") {
         throw new NotFoundError()

@@ -5,7 +5,7 @@ import { Env } from './Env'
 export type Matcher<ParentContext extends object, ChildContext extends object = ParentContext> =
     ((child?: MatcherGenerator<ChildContext>) => MatcherGenerator<ParentContext>) & 
     {
-        isMatcher: true;
+        isMatcher?: true;
     }
 
 export interface ResolvableMatcher<Context extends object=any, M extends Matcher<Context> = Matcher<Context>> extends Resolvable<M, Context> {

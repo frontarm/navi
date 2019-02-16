@@ -12,7 +12,7 @@ export type Segment =
   | ErrorSegment
   | HeadSegment
   | HeadersSegment
-  | MapSegment
+  | MountSegment
   | NullSegment
   | RedirectSegment
   | StatusSegment
@@ -26,7 +26,7 @@ export type SegmentType =
   | 'head'
   | 'headers'
   | 'error'
-  | 'map'
+  | 'mount'
   | 'null'
   | 'redirect'
   | 'status'
@@ -99,11 +99,12 @@ export interface HeadersSegment extends GenericSegment {
 }
 
 /**
- * Map segments are added for each map that is routed through. They're
- * useful for building maps, as they hold metadata on other possible paths.
+ * Mount segments are added for each mount that is routed through. They're
+ * useful for building site maps, as they hold metadata on other possible
+ * paths.
  */
-export interface MapSegment extends GenericSegment {
-  type: 'map'
+export interface MountSegment extends GenericSegment {
+  type: 'mount'
   patterns: string[]
 }
 

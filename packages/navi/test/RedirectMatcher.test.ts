@@ -1,11 +1,11 @@
-import { createMemoryNavigation, map, redirect, route } from '../src'
+import { createMemoryNavigation, mount, redirect, route } from '../src'
 
 describe("Redirect", () => {
   test("Supports relative paths", async () => {
     let nav = createMemoryNavigation({
       url: '/switch/from',
-      routes: map({
-        '/switch': map({
+      routes: mount({
+        '/switch': mount({
           '/from': redirect('./to'),
           '/to': route({})
         }),

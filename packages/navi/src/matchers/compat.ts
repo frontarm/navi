@@ -2,9 +2,10 @@
 // Compat with Navi 0.10
 //
 
-import { composeMatchers } from './composeMatchers'
+import { compose } from '../utils/compose'
 import { withView } from './withView'
-import { map, MapPaths } from './map'
+import { map } from './map'
+import { mount } from './mount'
 import { redirect } from './redirect'
 import { withContext } from './withContext'
 import { MaybeResolvableMatcher, Matcher } from '../Matcher'
@@ -78,7 +79,7 @@ export function createPage<
   //   )
   // }
 
-  return composeMatchers(
+  return compose(
     withContext(createGetPage(options)),
     withData((req, context) => context.meta),
     withTitle((req, context) => context.title),
@@ -105,12 +106,12 @@ export function createContext<
   // }
 
   if (maybeChildNodeResolvable.isMatcher) {
-    return composeMatchers(
+    return compose(
       withContext(maybeChildContextResolvable),
       maybeChildNodeResolvable,
     )
   } else {
-    return composeMatchers(
+    return compose(
       withContext(maybeChildContextResolvable),
       map(maybeChildNodeResolvable as any),
     )
@@ -119,7 +120,7 @@ export function createContext<
 
 interface SwitchOptions<Context extends object, Meta extends object, Content>
   extends PageOptions<Context, Meta, Content> {
-  paths: MapPaths<Context>
+  paths: { [pattern: string]: MaybeResolvableMatcher }
 }
 
 export function createSwitch<
@@ -136,16 +137,22 @@ export function createSwitch<
   //   )
   // }
 
+  let mappedPaths = {}
+  for (let key of Object.keys(options.paths)) {
+    let matcher = options.paths[key]
+    mappedPaths[key] = matcher.isMatcher ? matcher : map(matcher as any)
+  }
+
   if (Object.keys(options).length === 1) {
-    return map(options.paths)
+    return mount(mappedPaths)
   } else {
     let { paths, ...pageOptions } = options
-    return composeMatchers(
+    return compose(
       withContext(createGetPage(pageOptions)),
       withData((req, context: Page<any, any>) => context.meta),
       withTitle((req, context: Page<any, any>) => context.title),
       withView((req, context: Page<any, any>) => context.content),
-      map(options.paths),
+      mount(mappedPaths),
     )
   }
 }
@@ -169,7 +176,7 @@ export function createRedirect<
 
   let matcher = redirect(to)
   if (meta) {
-    return composeMatchers(
+    return compose(
       withData(meta),
       matcher,
     )

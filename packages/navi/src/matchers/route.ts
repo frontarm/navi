@@ -1,5 +1,5 @@
 import { Resolvable, extractDefault } from '../Resolver'
-import { composeMatchers } from './composeMatchers'
+import { compose } from '../utils/compose'
 import { withContext } from './withContext'
 import { withData } from './withData'
 import { withHead } from './withHead'
@@ -120,7 +120,7 @@ export function route<Context extends object, Data extends object = any>(
     }
   }
 
-  return composeMatchers(
+  return compose(
     withContext(options),
     withData((req, context) => context.data),
     withHead((req, context) => context.head),

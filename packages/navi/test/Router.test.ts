@@ -1,4 +1,4 @@
-import { createRouter, map, route } from '../src'
+import { createRouter, mount, route } from '../src'
 import { fixtureMap } from './fixtures/switches'
 
 describe("routeMap", () => {
@@ -30,7 +30,7 @@ describe("routeMap", () => {
 
   test("supports expandPattern()", async () => {
     let router = createRouter({
-      routes: map({
+      routes: mount({
         '/about': route(),
         '/tags/:name': route()
       })
@@ -46,7 +46,7 @@ describe("routeMap", () => {
 
   test("excludes patterns with wildcards when expandPattern() is not supplied", async () => {
     let router = createRouter({
-      routes: map({
+      routes: mount({
         '/about': route(),
         '/tags/:name': route()
       })

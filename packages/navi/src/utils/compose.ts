@@ -2,8 +2,8 @@
 // The MIT License (MIT)
 // See: https://github.com/reduxjs/redux/blob/d53364c44b2fb75b59e2c98090b253c103d63c75/index.d.ts
 
-type Func0<R> = { isMatcher: true } & (() => R)
-type Func1<T1, R> = { isMatcher: true } & ((a1: T1) => R)
+type Func0<R> = (() => R)
+type Func1<T1, R> = ((a1: T1) => R)
 
 /**
  * Composes single-argument functions from right to left. The rightmost
@@ -15,35 +15,35 @@ type Func1<T1, R> = { isMatcher: true } & ((a1: T1) => R)
  *   to left. For example, `compose(f, g, h)` is identical to doing
  *   `(...args) => f(g(h(...args)))`.
  */
-export function composeMatchers<F extends Function>(f: F): F
+export function compose<F extends Function>(f: F): F
 
 /* two functions */
-export function composeMatchers<A, R>(f1: (b: A) => R, f2: Func0<A>): Func0<R>
-export function composeMatchers<A, T1, R>(
+export function compose<A, R>(f1: (b: A) => R, f2: Func0<A>): Func0<R>
+export function compose<A, T1, R>(
   f1: (x: A) => R,
   f2: Func1<T1, A>
 ): Func1<T1, R>
 
 /* three functions */
-export function composeMatchers<A, B, R>(
+export function compose<A, B, R>(
   f1: (x: B) => R,
   f2: (x: A) => B,
   f3: Func0<A>
 ): Func0<R>
-export function composeMatchers<A, B, T1, R>(
+export function compose<A, B, T1, R>(
   f1: (x: B) => R,
   f2: (x: A) => B,
   f3: Func1<T1, A>
 ): Func1<T1, R>
 
 /* four functions */
-export function composeMatchers<A, B, C, R>(
+export function compose<A, B, C, R>(
   f1: (x: C) => R,
   f2: (x: B) => C,
   f3: (x: A) => B,
   f4: Func0<A>
 ): Func0<R>
-export function composeMatchers<A, B, C, T1, R>(
+export function compose<A, B, C, T1, R>(
   f1: (x: C) => R,
   f2: (x: B) => C,
   f3: (x: A) => B,
@@ -51,14 +51,14 @@ export function composeMatchers<A, B, C, T1, R>(
 ): Func1<T1, R>
 
 /* five functions */
-export function composeMatchers<A, B, C, D, R>(
+export function compose<A, B, C, D, R>(
   f1: (x: D) => R,
   f2: (x: C) => D,
   f3: (x: B) => C,
   f4: (x: A) => B,
   f5: Func0<A>
 ): Func0<R>
-export function composeMatchers<A, B, C, D, T1, R>(
+export function compose<A, B, C, D, T1, R>(
   f1: (x: D) => R,
   f2: (x: C) => D,
   f3: (x: B) => C,
@@ -67,7 +67,7 @@ export function composeMatchers<A, B, C, D, T1, R>(
 ): Func1<T1, R>
 
 /* six functions */
-export function composeMatchers<A, B, C, D, E, R>(
+export function compose<A, B, C, D, E, R>(
   f1: (x: E) => R,
   f2: (x: D) => E,
   f3: (x: C) => D,
@@ -75,7 +75,7 @@ export function composeMatchers<A, B, C, D, E, R>(
   f5: (x: A) => B,
   f6: Func0<A>
 ): Func0<R>
-export function composeMatchers<A, B, C, D, E, T1, R>(
+export function compose<A, B, C, D, E, T1, R>(
   f1: (x: E) => R,
   f2: (x: D) => E,
   f3: (x: C) => D,
@@ -85,7 +85,7 @@ export function composeMatchers<A, B, C, D, E, T1, R>(
 ): Func1<T1, R>
 
 /* seven functions */
-export function composeMatchers<A, B, C, D, E, F, R>(
+export function compose<A, B, C, D, E, F, R>(
   f1: (x: F) => R,
   f2: (x: E) => F,
   f3: (x: D) => E,
@@ -94,7 +94,7 @@ export function composeMatchers<A, B, C, D, E, F, R>(
   f6: (x: A) => B,
   f7: Func0<A>
 ): Func0<R>
-export function composeMatchers<A, B, C, D, E, F, T1, R>(
+export function compose<A, B, C, D, E, F, T1, R>(
   f1: (x: F) => R,
   f2: (x: E) => F,
   f3: (x: D) => E,
@@ -105,12 +105,12 @@ export function composeMatchers<A, B, C, D, E, F, T1, R>(
 ): Func1<T1, R>
 
 /* rest */
-export function composeMatchers<R>(
+export function compose<R>(
   f1: (b: any) => R,
   ...funcs: Function[]
-): { isMatcher: true } & ((...args: any[]) => R)
+): ((...args: any[]) => R)
 
-export function composeMatchers<R>(...funcs: Function[]): { isMatcher: true } & ((...args: any[]) => R)
+export function compose<R>(...funcs: Function[]): ((...args: any[]) => R)
 
 /**
  * Composes single-argument functions from right to left. The rightmost
@@ -122,7 +122,7 @@ export function composeMatchers<R>(...funcs: Function[]): { isMatcher: true } & 
  * from right to left. For example, compose(f, g, h) is identical to doing
  * (...args) => f(g(h(...args))).
  */
-export function composeMatchers(...funcs) {
+export function compose(...funcs) {
   if (funcs.length === 0) {
     throw new Error('composeMatchers() expects at least one matcher.')
   }
@@ -131,8 +131,5 @@ export function composeMatchers(...funcs) {
     return funcs[0]
   }
 
-  return Object.assign(
-    funcs.reduce((a, b) => (...args) => a(b(...args))),
-    { isMatcher: true }
-  )
+  return funcs.reduce((a, b) => (...args) => a(b(...args)))
 }

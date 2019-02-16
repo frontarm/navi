@@ -182,9 +182,9 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
       }
 
       if (
-        lastSegment.type === 'map' &&
+        lastSegment.type === 'mount' &&
         (!cachedLastSegment ||
-          cachedLastSegment.type !== 'map')
+          cachedLastSegment.type !== 'mount')
       ) {
         let patterns = lastSegment.patterns
         for (let j = 0; j < patterns.length; j++) {
@@ -210,7 +210,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     for (let i = 0; i < this.mapItems.length; i++) {
       let item = this.mapItems[i]
       let lastSegment = item.lastSegmentCache!
-      if (lastSegment.type !== 'map' && lastSegment.type !== 'error') {
+      if (lastSegment.type !== 'mount' && lastSegment.type !== 'error') {
         segmentsMapArray.push([
           joinPaths(item.pathname, '/'),
           item.segmentsCache!,

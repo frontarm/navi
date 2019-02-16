@@ -1,4 +1,4 @@
-import { MaybeResolvableMatcher } from './Matcher'
+import { Matcher } from './Matcher'
 import { Env } from './Env'
 import { joinPaths } from './URLTools'
 import { createRequest } from './NaviRequest';
@@ -41,23 +41,23 @@ export interface Mapping {
      * The node that will be used to handle detailed matching of this path,
      * once a tentative match is found.
      */
-    maybeResolvableMatcher: MaybeResolvableMatcher,
+    matcher: Matcher<any>,
 }
 
-export function createRootMapping(maybeResolvableMatcher: MaybeResolvableMatcher, rootPath: string = ''): Mapping {
+export function createRootMapping(matcher: Matcher<any>, rootPath: string = ''): Mapping {
     return (
         rootPath !== ''
-            ?   createMapping(rootPath, maybeResolvableMatcher)
+            ?   createMapping(rootPath, matcher)
             :   {
                     pattern: rootPath,
                     key: '',
                     regExp: new RegExp(''),
-                    maybeResolvableMatcher,
+                    matcher,
                 }
     )
 }
 
-export function createMapping(pattern: string, maybeResolvableMatcher: MaybeResolvableMatcher): Mapping {
+export function createMapping(pattern: string, matcher: Matcher<any>): Mapping {
     let processedPattern = pattern
     if (processedPattern.length > 1 && processedPattern.substr(-1) === '/') {
         if (process.env.NODE_ENV !== 'production') {
@@ -108,7 +108,7 @@ export function createMapping(pattern: string, maybeResolvableMatcher: MaybeReso
     
     return {
         key: keyParts.join('/'),
-        maybeResolvableMatcher: maybeResolvableMatcher,
+        matcher,
         pattern: processedPattern,
         pathParamNames: pathParams.length ? pathParams : undefined,
         regExp: new RegExp(regExpParts.join('/')),

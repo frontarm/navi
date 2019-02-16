@@ -1,12 +1,12 @@
-import { createMemoryNavigation, map, redirect, route } from '../src'
+import { createMemoryNavigation, map, mount, redirect, route } from '../src'
 
-describe("Map", () => {
+describe("Mount", () => {
   test("Passes correct pathname into path getter function", async () => {
     let nav = createMemoryNavigation({
       url: '/from',
-      routes: map({
-        '/from': req => redirect('/to?from='+encodeURIComponent(req.mountpath)),
-        '/to': req => route({ view: 'test' }),
+      routes: mount({
+        '/from': map(req => redirect(req => '/to?from='+encodeURIComponent(req.mountpath))),
+        '/to': map(req => route({ view: 'test' })),
       }),
     })
 
@@ -20,7 +20,7 @@ describe("Map", () => {
     try {
       await createMemoryNavigation({
         url: '/from',
-        routes: map({
+        routes: mount({
           '/fail': {title: 'this fails'}
           '/this-also-fails': {title: 'this too'}
         })

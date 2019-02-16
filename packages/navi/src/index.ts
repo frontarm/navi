@@ -4,6 +4,7 @@
 
 export * from './matchers/compat'
 export * from './matchers/map'
+export * from './matchers/mount'
 export * from './matchers/redirect'
 export * from './matchers/route'
 export * from './matchers/withContext'
@@ -17,7 +18,7 @@ export * from './Errors'
 export * from './NaviRequest'
 export * from './Segments'
 export * from './URLTools'
-export { composeMatchers } from './matchers/composeMatchers'
+export { compose } from './utils/compose'
 export { Router, createRouter } from './Router'
 export { Route, RouteType, defaultRouteReducer } from './Route'
 export { SiteMap, RouteMap } from './Maps'
@@ -31,5 +32,4 @@ export { Observer, Subscription } from './Observable'
 // Aliases
 //
 
-export { withView as view } from './matchers/withView'
 export { map as lazy } from './matchers/map'

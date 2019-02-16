@@ -1,10 +1,10 @@
-import { createBrowserNavigation, route, map } from '../src'
+import { createBrowserNavigation, route, mount } from '../src'
 
 describe("BrowserNavigation", () => {
   test("can be created", async () => {
     let nav = createBrowserNavigation({
-      routes: map({
-        '/test': req => route({}),
+      routes: mount({
+        '/test': route({}),
       }),
     })
   })

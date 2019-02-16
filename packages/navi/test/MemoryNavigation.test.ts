@@ -1,9 +1,9 @@
-import { createMemoryNavigation, map, route } from '../src'
+import { createMemoryNavigation, mount, route } from '../src'
 
 describe("MemoryNavigation", () => {
   test("can specify method", async () => {
     let nav = createMemoryNavigation({
-      routes: map({
+      routes: mount({
         '/test': route(req => ({
           view: req.method === 'POST' ? 'result' : 'form'
         })),

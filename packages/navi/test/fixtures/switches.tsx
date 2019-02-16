@@ -1,11 +1,11 @@
-import { composeMatchers, map, lazy, route, redirect, withView, withData, withContext } from '../../src'
+import { compose, map, mount, lazy, route, redirect, withView, withData, withContext } from '../../src'
 
-export const fixtureMap = composeMatchers(
+export const fixtureMap = compose(
   withView('site-layout'),
   withData({
     title: 'Site',
   }),
-  map({
+  mount({
     '/': route(async req => ({
       title: 'Navi',
       data: {
@@ -14,24 +14,24 @@ export const fixtureMap = composeMatchers(
       view: await req.router.resolveRouteMap('/examples'),
     })),
 
-    '/examples': async () =>
+    '/examples': map(async () =>
       withContext(
         async (req, context) => ({
           ...context,
           contextName: 'examples'
         }),
-        composeMatchers(
+        compose(
           withView(() => 'example-layout'),
-          map({
-            '/': async () => redirect(req => req.mountpath+'basic'),
+          mount({
+            '/': map(async () => redirect(req => req.mountpath+'basic')),
 
-            '/basic': async () => route(req => ({
+            '/basic': map(async () => route(req => ({
               data: {
                 description: 'basic meta description'
               },
               title: 'Basic example',
               view: 'basic-example'
-            })),
+            }))),
 
             '/advanced': route({
               title: 'Advanced example',
@@ -45,17 +45,19 @@ export const fixtureMap = composeMatchers(
             })
           })
         )
-      ),
+      )
+    ),
 
-    '/goodies/cheatsheet': async () => map({
-      '/cheatsheet': async () => 
+    '/goodies/cheatsheet': map(async () => mount({
+      '/cheatsheet': map(async () => 
         lazy(async () =>
-          composeMatchers(
+          compose(
             route({
               view: 'cheatsheet'
             })
           )
         )
-    })
+      )
+    }))
   })
 )
