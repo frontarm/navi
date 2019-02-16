@@ -216,7 +216,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
       ...props,
 
-      href: typeof props.href === 'string' ? props.href : linkURL!.href
+      href: typeof props.href === 'string' ? props.href : (linkURL ? linkURL.href : '')
     }
 
     return (

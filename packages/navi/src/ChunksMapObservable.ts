@@ -135,7 +135,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
     // This is a while loop instead of a for loop, as new items can be added
     // to this.mapItems within the loop body.
     items:
-    while (i < this.mapItems.length) {
+    while (this.mapItems && i < this.mapItems.length) {
       let item = this.mapItems[i]
 
       let pathname = item.pathname
@@ -210,6 +210,11 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
       i++
     }
 
+    // It's possible for the map to finish while waiting for expandPatterns to return.
+    if (!this.mapItems) {
+      return
+    }
+
     let chunksMapArray = [] as [string, Chunk[], number[]][]
     for (let i = 0; i < this.mapItems.length; i++) {
       let item = this.mapItems[i]
@@ -217,7 +222,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
       if (
         lastChunk.type !== 'mount' &&
         lastChunk.type !== 'error' &&
-        (!this.options.predicate || this.options.predicate(lastChunk, item.chunksCache!))) {
+        (lastChunk.type === 'busy' || !this.options.predicate || this.options.predicate(lastChunk, item.chunksCache!))) {
         chunksMapArray.push([
           joinPaths(item.pathname, '/'),
           item.chunksCache!,

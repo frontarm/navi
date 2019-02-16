@@ -19,7 +19,7 @@
     "build:umd": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/navi.js && rimraf dist/umd-intermediate",
     "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/navi.min.js && rimraf dist/umd-intermediate",
     "build": "yarn run clean && yarn build:es && yarn build:commonjs && yarn build:types && yarn build:umd && yarn build:umd:min",
-    "build:watch": "yarn run clean && yarn build:es -- --watch",
+    "build:watch": "yarn run clean && yarn build:es -- --types --watch",
     "prepublish": "yarn test && yarn build && cp ../../README.md .",
     "test": "jest",
     "test:watch": "jest --watch"
