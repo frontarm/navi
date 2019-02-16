@@ -14,8 +14,7 @@ export interface ResolvableMatcher<
 
 export type MatcherGenerator<Context extends object> = (
   request: NaviRequest,
-  context: Context,
-  appendFinalSlash?: boolean
+  context: Context
 ) => MatcherIterator
 
 export type MatcherIterator = IterableIterator<Segment[]>

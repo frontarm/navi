@@ -13,8 +13,7 @@ export default function* resolveSegments<T>(
   maybeResolvable: T | Resolvable<T>,
   request: NaviRequest,
   context: any,
-  createSegments: (value: T) => Segment[] | IterableIterator<Segment[]>,
-  ensureTrailingSlash = true
+  createSegments: (value: T) => Segment[] | IterableIterator<Segment[]>
 ): IterableIterator<Segment[]> {
   let resolvable: Resolvable<T> =
     typeof maybeResolvable === 'function'
@@ -36,7 +35,7 @@ export default function* resolveSegments<T>(
   else {
     let promise = maybeValue.then(extractDefault)
     let unwrappedPromise = unwrapPromise(promise)
-    let busySegments = [createSegment('busy', request, { promise }, ensureTrailingSlash)] as Segment[]
+    let busySegments = [createSegment('busy', request, { promise })] as Segment[]
 
     while (!unwrappedPromise.outcome) {
       yield busySegments
@@ -47,7 +46,7 @@ export default function* resolveSegments<T>(
       if (error instanceof NotFoundError && !error.pathname) {
         error.pathname = joinPaths(request.mountpath, request.path)
       }
-      yield [createSegment('error', request, { error }, ensureTrailingSlash)]
+      yield [createSegment('error', request, { error })]
     }
     else {
       result = createSegments(unwrappedPromise.value!)

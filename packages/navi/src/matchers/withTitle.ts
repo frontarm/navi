@@ -1,6 +1,6 @@
 import { Resolvable } from '../Resolvable'
 import { createSegment } from '../Segments'
-import { createSegmentsMatcher } from './createSegmentsMatcher'
+import { createSegmentsMatcher } from '../createSegmentsMatcher'
 import { Matcher } from '../Matcher'
 
 export function withTitle<Context extends object>(

@@ -21,7 +21,7 @@ export class SegmentListObservable implements Observable<Segment[]> {
         this.url = url
         this.lastListenId = 0
         this.observers = []
-        this.matcherIterator = matcherGenerator(request, context, true)
+        this.matcherIterator = matcherGenerator(request, context)
     }
 
     

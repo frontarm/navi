@@ -11,15 +11,13 @@ export function map<Context extends object, M extends Matcher<Context>>(
 ): Matcher<Context> {
   return () => function* mapMatcherGenerator(
     request: NaviRequest,
-    context: Context,
-    appendFinalSlash?: boolean
+    context: Context
   ): MatcherIterator {
     yield* resolveSegments(
       resolvableMatcher,
       request,
       context,
-      (childMatcher) => childMatcher()(request, context, appendFinalSlash),
-      appendFinalSlash
+      (childMatcher) => childMatcher()(request, context)
     )
   }
 }

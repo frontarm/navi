@@ -115,7 +115,7 @@ export function createMapping(pattern: string, matcher: Matcher<any>): Mapping {
 }
 
 
-export function mappingAgainstPathname(request: NaviRequest, mapping: Mapping, context: any, appendFinalSlash: boolean): NaviRequest | undefined {
+export function mappingAgainstPathname(request: NaviRequest, mapping: Mapping, context: any): NaviRequest | undefined {
     let match = mapping.regExp.exec(request.path)
     if (!match) {
         return
@@ -133,7 +133,7 @@ export function mappingAgainstPathname(request: NaviRequest, mapping: Mapping, c
         }
     }
 
-    let unmatchedPath = request.path.slice(matchedPathname.length) || (appendFinalSlash ? '/' : '')
+    let unmatchedPath = request.path.slice(matchedPathname.length) || '/'
 
     let mountpath = joinPaths(request.mountpath, matchedPathname)
     return createRequest(context, {

@@ -1,7 +1,7 @@
 import { Segment, createSegment, createNotFoundSegment } from '../Segments'
 import { createMapping, mappingAgainstPathname } from '../Mapping'
 import { Matcher, MatcherIterator } from '../Matcher'
-import { NaviRequest } from '../NaviRequest';
+import { NaviRequest } from '../NaviRequest'
 
 export type MountPaths<Context extends object> = {
   [pattern: string]: Matcher<Context>
@@ -32,57 +32,47 @@ export function mount<Context extends object>(
     .map(pattern => createMapping(pattern, paths[pattern]))
     .sort((x, y) => compareStrings(x.key, y.key))
 
-  return () => function* mountMatcherGenerator(
-    request: NaviRequest,
-    context: Context,
-    appendFinalSlash?: boolean,
-  ): MatcherIterator {
-    let segments: Segment[]
-    let childIterator: MatcherIterator | undefined
-    let childResult: IteratorResult<Segment[]> | undefined
+  return () =>
+    function* mountMatcherGenerator(
+      request: NaviRequest,
+      context: Context
+    ): MatcherIterator {
+      let segments: Segment[]
+      let childIterator: MatcherIterator | undefined
+      let childResult: IteratorResult<Segment[]> | undefined
 
-    // Start from the beginning and take the first result, as child mounts
-    // are sorted such that the first matching mount is the the most
-    // precise match (and we always want to use the most precise match).
-    for (let i = mappings.length - 1; i >= 0; i--) {
-      let mapping = mappings[i]
-      let childRequest = mappingAgainstPathname(request, mapping, context, !!appendFinalSlash)
-      if (childRequest) {
-        childIterator = mapping.matcher()(
-          childRequest,
-          context,
-          appendFinalSlash,
-        )
+      // Start from the beginning and take the first result, as child mounts
+      // are sorted such that the first matching mount is the the most
+      // precise match (and we always want to use the most precise match).
+      for (let i = mappings.length - 1; i >= 0; i--) {
+        let mapping = mappings[i]
+        let childRequest = mappingAgainstPathname(request, mapping, context)
+        if (childRequest) {
+          childIterator = mapping.matcher()(childRequest, context)
 
-        // The first match is always the only match, as we don't allow
-        // for ambiguous patterns.
-        break
+          // The first match is always the only match, as we don't allow
+          // for ambiguous patterns.
+          break
+        }
       }
+
+      do {
+        if (childIterator && (!childResult || !childResult.done)) {
+          childResult = childIterator.next()
+        }
+
+        segments = [createSegment('mount', request, { patterns }, false)]
+
+        let childSegments = childResult && childResult.value
+        if (childSegments) {
+          segments = segments.concat(childSegments.length ? childSegments : [])
+        } else {
+          segments.push(createNotFoundSegment(request))
+        }
+
+        yield segments
+      } while (segments.filter(isBusy).length)
     }
-
-    do {
-      if (childIterator && (!childResult || !childResult.done)) {
-        childResult = childIterator.next()
-      }
-
-      segments = [
-        createSegment('mount', request, { patterns }, false),
-      ]
-
-      let childSegments = childResult && childResult.value
-      if (childSegments) {
-        segments = segments.concat(
-          childSegments.length
-            ? childSegments
-            : [],
-        )
-      } else {
-        segments.push(createNotFoundSegment(request))
-      }
-
-      yield segments
-    } while (segments.filter(isBusy).length)
-  }
 }
 
 function compareStrings(a, b) {

@@ -88,7 +88,7 @@ export class Router<Context extends object=any, R=Route> {
             originalUrl: url.href,
             path: url.pathname,
         })
-        let matchRequest = mappingAgainstPathname(request, this.rootMapping, this.context, true)
+        let matchRequest = mappingAgainstPathname(request, this.rootMapping, this.context)
         if (matchRequest) {
             return new SegmentListObservable(
                 url,

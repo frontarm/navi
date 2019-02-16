@@ -26,8 +26,7 @@ export function withContext<
   function* contextMatcherGenerator(
     request: NaviRequest,
     context: ParentContext,
-    child: MatcherGenerator<ChildContext>,
-    appendFinalSlash?: boolean,
+    child: MatcherGenerator<ChildContext>
   ): MatcherIterator {
     yield* resolveSegments(
       childContextMaybeResolvable,
@@ -36,13 +35,11 @@ export function withContext<
       childContext =>
         child(
           request,
-          childContext! || {},
-          appendFinalSlash
-        ),
-      appendFinalSlash,
+          childContext! || {}
+        )
     )
   }
 
-  return (child: MatcherGenerator<ChildContext>) => (request: NaviRequest, context: ParentContext, appendFinalSlash?: boolean) =>
-    contextMatcherGenerator(request, context, forceChild ? forceChild() : child, appendFinalSlash)
+  return (child: MatcherGenerator<ChildContext>) => (request: NaviRequest, context: ParentContext) =>
+    contextMatcherGenerator(request, context, forceChild ? forceChild() : child)
 }

@@ -323,7 +323,6 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
         request,
         this.rootMapping,
         this.rootContext,
-        true,
       )
       if (matchRequest) {
         this.mapItems.push({
@@ -336,7 +335,6 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
           matcherIterator: this.matcherGeneratorFunction(
             matchRequest,
             this.rootContext,
-            true,
           ),
         })
       }
