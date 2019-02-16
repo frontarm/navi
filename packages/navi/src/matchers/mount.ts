@@ -24,7 +24,7 @@ export function mount<
     if (invalidPaths.length > 0) {
       throw new TypeError(
         `The given paths: ${invalidPaths.join(', ')} are invalid. ` +
-          `Their values should be matcher objects. See https://frontarm.com/navi/reference/matchers/`,
+          `Their values should be matcher objects. See https://frontarm.com/navi/en/reference/matchers/`,
       )
     }
   }
