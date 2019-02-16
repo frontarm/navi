@@ -1,4 +1,4 @@
-import { route, map } from 'navi'
+import { route, mount } from 'navi'
 import React from 'react'
 import ReactTestRenderer from 'react-test-renderer'
 import { Router } from '../src'
@@ -10,7 +10,7 @@ describe("Navigation", () => {
         context={context}
         fallback={'waiting'}
         routes={
-          map({
+          mount({
             '/': route({
               getView: (req, context: any) => context.test
             }),
@@ -42,7 +42,7 @@ describe("Navigation", () => {
         context={context}
         fallback={'waiting'}
         routes={
-          map({
+          mount({
             '/': route({
               getView: (req, context: any) => {
                 getViewCount++

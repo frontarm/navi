@@ -57,7 +57,7 @@ npm start
 Getting Started
 ---------------
 
-For a full introduction, see the [Getting Started](https://frontarm.com/navi/guides/getting-started/) guide on the Navi website.
+For a full introduction, see the [Getting Started](https://frontarm.com/navi/en/guides/getting-started/) guide on the Navi website.
 
 
 Who's using Navi?

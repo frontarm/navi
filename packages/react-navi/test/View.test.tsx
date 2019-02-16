@@ -1,4 +1,4 @@
-import { createMemoryNavigation, composeMatchers, withView, route, map } from 'navi'
+import { createMemoryNavigation, compose, withView, route, mount } from 'navi'
 import React, { Component } from 'react'
 import ReactTestRenderer from 'react-test-renderer'
 import { View, NaviProvider } from '../src'
@@ -7,13 +7,13 @@ describe("View", () => {
   test("supports nested nested views", async () => {
     let navigation = createMemoryNavigation({
       url: '/test/',
-      routes: composeMatchers(
+      routes: compose(
         withView(() =>
           function Wrapper() {
             return <div><View /></div>
           }
         ),
-        map({
+        mount({
           '/test': route({
             view: 'nested content'
           }),
@@ -35,7 +35,7 @@ describe("View", () => {
   test("renders class component content as an element with a 'route' prop", async () => {
     let navigation = createMemoryNavigation({
       url: '/test/',
-      routes: map({
+      routes: mount({
         '/test': route({
           title: 'title',
           view:
@@ -63,7 +63,7 @@ describe("View", () => {
   test("renders function component content as an element with a 'route' prop", async () => {
     let navigation = createMemoryNavigation({
       url: '/test/',
-      routes: map({
+      routes: mount({
         '/test': route({
           title: 'title',
           view: ({ route }) => route.title
@@ -85,7 +85,7 @@ describe("View", () => {
   test("renders element content", async () => {
     let navigation = createMemoryNavigation({
       url: '/test/',
-      routes: map({
+      routes: mount({
         '/test': route({
           view: <>test content</>
         }),
@@ -106,7 +106,7 @@ describe("View", () => {
   test("renders string content", async () => {
     let navigation = createMemoryNavigation({
       url: '/test/',
-      routes: map({
+      routes: mount({
         '/test': route({
           view: "test content"
         }),
