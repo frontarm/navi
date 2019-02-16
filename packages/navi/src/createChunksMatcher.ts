@@ -38,8 +38,9 @@ export function createChunksMatcher<T, Context extends object>(
     }
   }
 
-  return (childGenerator?: MatcherGenerator<Context>) => (request: NaviRequest, context: Context) =>
+  return ((childGenerator?: MatcherGenerator<Context>) => (request: NaviRequest, context: Context) =>
     chunksMatcherGenerator(request, context, forceChildMatcher ? forceChildMatcher() : childGenerator)
+  ) as any
 }
 
 function* empty() {

@@ -2,27 +2,31 @@ import { Chunk, createChunk, createNotFoundChunk } from '../Chunks'
 import { createMapping, mappingAgainstPathname } from '../Mapping'
 import { Matcher, MatcherIterator } from '../Matcher'
 import { NaviRequest } from '../NaviRequest'
+import { joinPaths } from '../URLTools'
 
-export type MountPaths<Context extends object> = {
-  [pattern: string]: Matcher<Context>
-}
-
-export function mount<Context extends object>(
-  paths: MountPaths<Context>,
-): Matcher<Context> {
+export function mount<
+  Context extends object,
+  Contexts extends { [P in Patterns]: object } = any,
+  Patterns extends string = string
+>(paths: {
+  [P in Patterns]: Matcher<Context extends Contexts[P] ? Contexts[P] : {}>
+}): Matcher<Context> {
   if (!paths) {
     throw new Error(`mount() must be supplied with a paths object.`)
   }
 
   let patterns = Object.keys(paths)
-  let invalidPaths = patterns.filter(
-    pattern => typeof paths[pattern] !== 'function',
-  )
-  if (invalidPaths.length > 0) {
-    throw new TypeError(
-      `The given paths: ${invalidPaths.join(', ')} are invalid. ` +
-        `Their values should be matcher objects. See https://frontarm.com/navi/reference/matchers/`,
+
+  if (process.env.NODE_ENV !== 'production') {
+    let invalidPaths = patterns.filter(
+      pattern => typeof paths[pattern] !== 'function',
     )
+    if (invalidPaths.length > 0) {
+      throw new TypeError(
+        `The given paths: ${invalidPaths.join(', ')} are invalid. ` +
+          `Their values should be matcher objects. See https://frontarm.com/navi/reference/matchers/`,
+      )
+    }
   }
 
   // Wildcards in PatternMap objects are null (\0) characters, so they'll
@@ -35,7 +39,7 @@ export function mount<Context extends object>(
   return () =>
     function* mountMatcherGenerator(
       request: NaviRequest,
-      context: Context
+      context: Context,
     ): MatcherIterator {
       let chunks: Chunk[]
       let childIterator: MatcherIterator | undefined
@@ -48,7 +52,18 @@ export function mount<Context extends object>(
         let mapping = mappings[i]
         let childRequest = mappingAgainstPathname(request, mapping, context)
         if (childRequest) {
-          childIterator = mapping.matcher()(childRequest, context)
+          let matcherGenerator = mapping.matcher()
+          if (process.env.NODE_ENV !== 'production') {
+            if (typeof matcherGenerator !== 'function') {
+              console.error(
+                `mount(): the pattern "${joinPaths(
+                  request.mountpath,
+                  mapping.pattern,
+                )}" is invalid. It's value should be a matcher object.`,
+              )
+            }
+          }
+          childIterator = matcherGenerator(childRequest, context)
 
           // The first match is always the only match, as we don't allow
           // for ambiguous patterns.

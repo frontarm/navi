@@ -8,9 +8,8 @@ export type Matcher<
 > = (child?: MatcherGenerator<ChildContext>) => MatcherGenerator<ParentContext>
 
 export interface ResolvableMatcher<
-  Context extends object = any,
-  M extends Matcher<Context> = Matcher<Context>
-> extends Resolvable<M, Context> {}
+  Context extends object = any
+> extends Resolvable<Matcher<Context>, Context> {}
 
 export type MatcherGenerator<Context extends object> = (
   request: NaviRequest,

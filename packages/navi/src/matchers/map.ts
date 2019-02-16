@@ -6,8 +6,8 @@ import {
 } from '../Matcher'
 import { NaviRequest } from '../NaviRequest'
 
-export function map<Context extends object, M extends Matcher<Context> = Matcher<Context>>(
-  resolvableMatcher: ResolvableMatcher<Context, M>,
+export function map<Context extends object>(
+  resolvableMatcher: ResolvableMatcher<Context>,
 ): Matcher<Context> {
   return () => function* mapMatcherGenerator(
     request: NaviRequest,

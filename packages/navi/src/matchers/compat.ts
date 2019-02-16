@@ -96,7 +96,7 @@ function inputOrEmptyObject(x) {
 
 export type MaybeResolvableMatcher<Context extends object = any> =
   | Matcher<Context>
-  | ResolvableMatcher<Context, Matcher<Context>>
+  | ResolvableMatcher<Context>
 
 export function createContext<
   ParentContext extends object = any,
