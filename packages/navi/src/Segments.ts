@@ -12,7 +12,6 @@ export type Segment =
   | HeadSegment
   | HeadersSegment
   | MountSegment
-  | NullSegment
   | RedirectSegment
   | StatusSegment
   | TitleSegment
