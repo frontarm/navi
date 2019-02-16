@@ -5,11 +5,9 @@ import {
   SimpleSubscription,
   createOrPassthroughObserver,
 } from './Observable'
-import { Resolver } from './Resolver'
 import { Segment, BusySegment } from './Segments'
 import { MatcherGenerator, MatcherIterator } from './Matcher'
 import { RouterMapOptions, Router } from './Router'
-import { Env } from './Env'
 import { Mapping, mappingAgainstPathname } from './Mapping'
 import { createRequest } from './NaviRequest';
 
@@ -36,7 +34,6 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
   private observers: Observer<SegmentsMap>[]
   private isRefreshScheduled: boolean
   private isRefreshing: boolean
-  private resolver: Resolver
   private router: Router
   private options: RouterMapOptions
   private lastListenId: number
@@ -49,14 +46,12 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     rootContext: any,
     matcherGeneratorClass: MatcherGenerator<any>,
     rootMapping: Mapping,
-    resolver: Resolver,
     router: Router<any, any>,
     options: RouterMapOptions,
   ) {
     this.observers = []
     this.lastListenId = 0
     this.mapItems = []
-    this.resolver = resolver
     this.router = router
     this.rootContext = rootContext
     this.matcherGeneratorFunction = matcherGeneratorClass
@@ -82,7 +77,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     onError?: (error: any) => void,
     onComplete?: () => void,
   ): SimpleSubscription {
-    if (!this.resolver) {
+    if (!this.observers) {
       throw new Error("Can't subscribe to an already-complete RoutingObservable.")
     }
 
@@ -276,7 +271,6 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
         delete this.mapItems
         delete this.router
         delete this.observers
-        delete this.resolver
       }
 
       this.isRefreshing = false
@@ -334,7 +328,6 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
           matcherIterator: this.matcherGeneratorFunction({
             env: matchEnv,
             appendFinalSlash: false,
-            resolver: this.resolver,
           }),
         })
       }

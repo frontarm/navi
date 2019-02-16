@@ -1,32 +1,13 @@
-import { Resolvable } from '../Resolver'
+import { Resolvable } from '../resolve'
 import { createSegmentsMatcher } from './createSegmentsMatcher'
-import { createSegment, createNotReadySegment } from '../Segments'
-import {
-  Matcher,
-  MatcherOptions,
-} from '../Matcher'
+import { createSegment } from '../Segments'
+import { Matcher } from '../Matcher'
 
 export function withHead<Context extends object, Head>(
   maybeResolvableHead: Head | Resolvable<Head, Context>,
   child?: Matcher<Context>,
 ): Matcher<Context> {
-  let getHead: Resolvable<Head, Context> =
-    typeof maybeResolvableHead === 'function'
-      ? (maybeResolvableHead as any)
-      : () => maybeResolvableHead
-
-  return createSegmentsMatcher(({ env, resolver }: MatcherOptions<Context>) => {
-    if (env.request.method !== 'HEAD') {
-      let resolution = resolver.resolve(env, getHead)
-      let { status, value: head } = resolution
-      return (
-        status === 'ready'
-          ? (head ? [createSegment('head', env.request, { head })] : [])
-          : [createNotReadySegment(env.request, resolution)]
-      )
-    }
-    else {
-      return []
-    }
-  }, child)
+  return createSegmentsMatcher(maybeResolvableHead, child, (head, request) =>
+    head ? [createSegment('head', request, { head })] : [],
+  )
 }

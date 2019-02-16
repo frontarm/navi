@@ -1,6 +1,5 @@
 import { MatcherIterator, MatcherGenerator } from './Matcher'
 import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
-import { Resolver } from './Resolver'
 import { Env } from './Env';
 import { URLDescriptor } from './URLTools';
 import { Segment, BusySegment } from './Segments'
@@ -11,23 +10,19 @@ export class SegmentListObservable implements Observable<Segment[]> {
     private result: IteratorResult<Segment[]>
     private matcherIterator: MatcherIterator
     private observers: Observer<Segment[]>[]
-    private resolver: Resolver
     private lastListenId: number
   
     constructor(
         url: URLDescriptor,
         env: Env,
         matcherGeneratorClass: MatcherGenerator<any>,
-        resolver: Resolver,
     ) {
         this.url = url
         this.lastListenId = 0
-        this.resolver = resolver
         this.observers = []
         this.matcherIterator = matcherGeneratorClass({
             appendFinalSlash: true,
             env,
-            resolver: this.resolver
         })
     }
 
@@ -70,7 +65,6 @@ export class SegmentListObservable implements Observable<Segment[]> {
             }
             if (isDone) {
                 delete this.matcherIterator
-                delete this.resolver
             }
         }
     }

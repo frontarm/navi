@@ -1,14 +1,9 @@
-import {
-  Segment,
-  createSegment,
-  createNotFoundSegment,
-} from '../Segments'
+import { Segment, createSegment, createNotFoundSegment } from '../Segments'
 import { createMapping, mappingAgainstPathname } from '../Mapping'
 import {
   Matcher,
   MatcherIterator,
-  MatcherOptions,
-  createMatcher,
+  MatcherOptions
 } from '../Matcher'
 
 export type MountPaths<Context extends object> = {
@@ -16,7 +11,7 @@ export type MountPaths<Context extends object> = {
 }
 
 export function mount<Context extends object>(
-  paths: MountPaths<Context>
+  paths: MountPaths<Context>,
 ): Matcher<Context> {
   if (!paths) {
     throw new Error(`mount() must be supplied with a paths object.`)
@@ -40,11 +35,11 @@ export function mount<Context extends object>(
     .map(pattern => createMapping(pattern, paths[pattern]))
     .sort((x, y) => compareStrings(x.key, y.key))
 
-  function* mountMatcherGenerator(
+  return () => function* mountMatcherGenerator(
     options: MatcherOptions<Context>,
   ): MatcherIterator {
-    let { appendFinalSlash, env, resolver } = options
-    
+    let { appendFinalSlash, env } = options
+
     let segments: Segment[]
     let childIterator: MatcherIterator | undefined
     let childResult: IteratorResult<Segment[]> | undefined
@@ -58,7 +53,6 @@ export function mount<Context extends object>(
       if (childEnv) {
         childIterator = mapping.matcher()({
           env: childEnv,
-          resolver,
           appendFinalSlash,
         })
 
@@ -84,11 +78,9 @@ export function mount<Context extends object>(
             ? childSegments
             : createSegment('null', env.request),
         )
-      }
-      else if (env.request.path) {
+      } else if (env.request.path) {
         segments.push(createNotFoundSegment(env.request))
-      }
-      else {
+      } else {
         // We've matched the map exactly, and don't need to match
         // any child segments - which is useful for creating maps.
       }
@@ -96,8 +88,6 @@ export function mount<Context extends object>(
       yield segments
     } while (segments.filter(isBusy).length)
   }
-
-  return createMatcher(() => mountMatcherGenerator)
 }
 
 function compareStrings(a, b) {

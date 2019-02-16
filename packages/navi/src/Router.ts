@@ -2,7 +2,6 @@ import { Matcher, MatcherGenerator } from './Matcher'
 import { createRootMapping, mappingAgainstPathname, Mapping } from './Mapping'
 import { SegmentListObservable } from './SegmentListObservable'
 import { SegmentsMapObservable } from './SegmentsMapObservable'
-import { Resolver } from './Resolver'
 import { Route, defaultRouteReducer } from './Route'
 import { Segment } from './Segments'
 import { SiteMap, RouteMap } from './Maps'
@@ -39,21 +38,17 @@ export interface RouterMapOptions {
     hostname?: string,
 }
   
-
-// The public factory function creates a resolver.
 export function createRouter<Context extends object>(options: RouterOptions<Context>){
     return new Router(options)
 }
 
 export class Router<Context extends object=any, R=Route> {
-    private resolver: Resolver
     private context: Context
     private matcherGeneratorClass: MatcherGenerator<Context>
     private rootMapping: Mapping
     private reducer: Reducer<Segment, R>
     
     constructor(options: RouterOptions<Context, R>) {
-        this.resolver = new Resolver
         this.context = options.context || {} as any
         this.matcherGeneratorClass = options.routes!()
         this.reducer = options.reducer || (defaultRouteReducer as any)
@@ -102,8 +97,7 @@ export class Router<Context extends object=any, R=Route> {
             return new SegmentListObservable(
                 url,
                 matchEnv,
-                this.matcherGeneratorClass,
-                this.resolver
+                this.matcherGeneratorClass
             )
         }
     }
@@ -114,7 +108,6 @@ export class Router<Context extends object=any, R=Route> {
             this.context,
             this.matcherGeneratorClass,
             this.rootMapping,
-            this.resolver,
             this,
             options,
         )

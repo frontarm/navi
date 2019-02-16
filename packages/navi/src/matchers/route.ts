@@ -1,4 +1,4 @@
-import { Resolvable, extractDefault } from '../Resolver'
+import { Resolvable, extractDefault } from '../resolve'
 import { compose } from '../utils/compose'
 import { withContext } from './withContext'
 import { withData } from './withData'

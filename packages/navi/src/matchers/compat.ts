@@ -9,7 +9,7 @@ import { mount } from './mount'
 import { redirect } from './redirect'
 import { withContext } from './withContext'
 import { MaybeResolvableMatcher, Matcher } from '../Matcher'
-import { Resolvable, extractDefault } from '../Resolver'
+import { Resolvable, extractDefault } from '../resolve'
 import { URLDescriptor } from '../URLTools'
 import { NaviRequest } from '../NaviRequest'
 import { withData } from './withData'
@@ -79,11 +79,14 @@ export function createPage<
   //   )
   // }
 
-  return compose(
-    withContext(createGetPage(options)),
-    withData((req, context) => context.meta),
-    withTitle((req, context) => context.title),
-    withView((req, context) => context.content),
+  return Object.assign(
+    compose(
+      withContext(createGetPage(options)),
+      withData((req, context) => context.meta),
+      withTitle((req, context) => context.title),
+      withView((req, context) => context.content),
+    ),
+    { isDeprecatedMatcher: true }
   )
 }
 
@@ -105,17 +108,15 @@ export function createContext<
   //   )
   // }
 
-  if (maybeChildNodeResolvable.isMatcher) {
-    return compose(
-      withContext(maybeChildContextResolvable),
-      maybeChildNodeResolvable,
-    )
-  } else {
-    return compose(
-      withContext(maybeChildContextResolvable),
-      map(maybeChildNodeResolvable as any),
-    )
-  }
+  return Object.assign(
+    withContext(
+      maybeChildContextResolvable,
+      (maybeChildNodeResolvable as any).isDeprecatedMatcher
+        ? (maybeChildNodeResolvable as any)
+        : map(maybeChildNodeResolvable as any)
+    ),
+    { isDeprecatedMatcher: true }
+  )
 }
 
 interface SwitchOptions<Context extends object, Meta extends object, Content>
@@ -140,19 +141,22 @@ export function createSwitch<
   let mappedPaths = {}
   for (let key of Object.keys(options.paths)) {
     let matcher = options.paths[key]
-    mappedPaths[key] = matcher.isMatcher ? matcher : map(matcher as any)
+    mappedPaths[key] = (matcher as any).isDeprecatedMatcher ? matcher : map(matcher as any)
   }
 
   if (Object.keys(options).length === 1) {
-    return mount(mappedPaths)
+    return Object.assign(mount(mappedPaths), { isDeprecatedMatcher: true }) as any
   } else {
     let { paths, ...pageOptions } = options
-    return compose(
-      withContext(createGetPage(pageOptions)),
-      withData((req, context: Page<any, any>) => context.meta),
-      withTitle((req, context: Page<any, any>) => context.title),
-      withView((req, context: Page<any, any>) => context.content),
-      mount(mappedPaths),
+    return Object.assign(
+      compose(
+        withContext(createGetPage(pageOptions)),
+        withData((req, context: Page<any, any>) => context.meta),
+        withTitle((req, context: Page<any, any>) => context.title),
+        withView((req, context: Page<any, any>) => context.content),
+        mount(mappedPaths),
+      ),
+      { isDeprecatedMatcher: true }
     )
   }
 }

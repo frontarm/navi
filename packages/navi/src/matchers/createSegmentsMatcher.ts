@@ -1,66 +1,40 @@
+import resolve, { Resolvable } from '../resolve'
 import { Segment, createNotFoundSegment, createSegment } from '../Segments'
 import {
   Matcher,
   MatcherIterator,
   MatcherGenerator,
   MatcherOptions,
-  createMatcher,
+  concatMatcherIterators
 } from '../Matcher'
+import { NaviRequest } from '../NaviRequest';
 
-export function createSegmentsMatcher<Context extends object>(
-  getSegments: (options: MatcherOptions<Context>) => Segment[],
-  forceChild?: Matcher<any>
+export function createSegmentsMatcher<T, Context extends object>(
+  maybeResolvable: T | Resolvable<T, Context>,
+  forceChildMatcher: Matcher<any> | undefined,
+  getSegments: (value: T, request: NaviRequest) => Segment[],
 ): Matcher<Context> {
   function* segmentsMatcherGenerator(
     options: MatcherOptions<Context>,
     child?: MatcherGenerator<Context>,
   ): MatcherIterator {
-    let env = options.env
-    let unmatchedPathnamePart = env.request.path
+    let unmatchedPathnamePart = options.env.request.path
     if (!child && unmatchedPathnamePart && unmatchedPathnamePart !== '/') {
-      yield [createNotFoundSegment(env.request)]
-      return
+      yield [createNotFoundSegment(options.env.request)]
     }
-
-    let childIterator: MatcherIterator | undefined
-    let childResult: IteratorResult<Segment[]> | undefined
-    let childSegments: Segment[] = []
-    let segments: Segment[]
-    do {
-      segments = getSegments(options)
-      for (let i = 0; i < segments.length; i++) {
-        let segment = segments[i]
-        if (segment.type === 'error') {
-          yield segments
-          return
-        }
-      }
-
-      if (child && !childIterator) {
-        childIterator = child(options)
-      }
-      if (childIterator && (!childResult || !childResult.done)) {
-        childResult = childIterator.next()
-        if (childResult.value) {
-          // It's possible that the children finish before we do, so save
-          // they're last value.
-          childSegments = childResult.value
-        }
-      }
-
-      segments = segments.concat(childSegments)
-      if (segments.length === 0) {
-        segments = [createSegment('null', env.request)]
-      }
-      yield segments
-    } while (segments.filter(isBusy).length)
+    else {
+      let parentIterator = resolve(
+        maybeResolvable,
+        options.env.request,
+        options.env.context,
+        (value: T) => getSegments(value, options.env.request),
+        options.appendFinalSlash
+      )
+      
+      yield* (child ? concatMatcherIterators(parentIterator, child(options)) : parentIterator)
+    }
   }
 
-  return createMatcher((child?: MatcherGenerator<Context>) => options =>
-    segmentsMatcherGenerator(options, forceChild ? forceChild() : child),
-  )
-}
-
-function isBusy(segment: Segment) {
-  return segment.type === 'busy'
+  return (childGenerator?: MatcherGenerator<Context>) => options =>
+    segmentsMatcherGenerator(options, forceChildMatcher ? forceChildMatcher() : childGenerator)
 }

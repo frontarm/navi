@@ -1,27 +1,19 @@
-import { Resolvable } from '../Resolver'
+import { Resolvable } from '../resolve'
 import { createSegmentsMatcher } from './createSegmentsMatcher'
-import { createSegment, createNotReadySegment } from '../Segments'
-import {
-  Matcher,
-  MatcherOptions,
-} from '../Matcher'
+import { createSegment } from '../Segments'
+import { Matcher } from '../Matcher'
 
 export function withStatus<Context extends object>(
-  maybeResolvableStatus: number | undefined | Resolvable<number | undefined, Context>,
-  child?: Matcher<Context>
+  maybeResolvableStatus:
+    | number
+    | undefined
+    | Resolvable<number | undefined, Context>,
+  child?: Matcher<Context>,
 ): Matcher<Context> {
-  let getStatus: Resolvable<number, Context> =
-    typeof maybeResolvableStatus === 'function'
-      ? (maybeResolvableStatus as any)
-      : () => maybeResolvableStatus
-
-  return createSegmentsMatcher(({ env, resolver }: MatcherOptions<Context>) => {
-    let resolution = resolver.resolve(env, getStatus)
-    let { status, value } = resolution
-    return (
-      status === 'ready'
-        ? (value ? [createSegment('status', env.request, { status: value })] : [])
-        : [createNotReadySegment(env.request, resolution)]
-    )
-  }, child)
+  return createSegmentsMatcher(
+    maybeResolvableStatus,
+    child,
+    (status, request) =>
+      status ? [createSegment('status', request, { status })] : [],
+  )
 }
