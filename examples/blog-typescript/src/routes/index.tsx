@@ -1,4 +1,4 @@
-import { composeMatchers, map, redirect, route, withContext, withView, Route } from 'navi'
+import { compose, lazy, map, mount, redirect, route, withContext, withView, Route } from 'navi'
 import React from 'react'
 import { join } from 'path'
 import { chunk, fromPairs } from 'lodash'
@@ -17,7 +17,7 @@ interface AppNavContext {
 let chunks = chunk(posts, siteMetadata.indexPageSize)
 let chunkPagePairs = chunks.map((chunk, i) => [
   '/' + (i + 1),
-  async (req, context: AppNavContext) => {
+  map(async (req, context: AppNavContext) => {
     // Get metadata for all pages on this page
     let postRoutes = await Promise.all<Route>(
       chunk.map(async post => {
@@ -47,10 +47,10 @@ let chunkPagePairs = chunks.map((chunk, i) => [
         />
       ),
     })
-  },
+  }),
 ])
 
-const pagesSwitch = composeMatchers(
+const pagesSwitch = compose(
   withContext((req): AppNavContext => ({
     // By adding the point at which the blog was mounted to context, it
     // makes it possible to easily scope all URLs to the blog root, thus
@@ -71,26 +71,26 @@ const pagesSwitch = composeMatchers(
       />
     )
   }),
-  map({
+  mount({
     // The blog's index pages go here. The first index page is mapped to the
     // root URL, with a redirect from "/page/1". Subsequent index pages are
     // mapped to "/page/n".
     '/': chunkPagePairs.shift()[1],
-    '/page': map({
-      '/1': (req, context) => redirect(context.blogRoot),
+    '/page': mount({
+      '/1': redirect((req, context: AppNavContext) => context.blogRoot),
       ...fromPairs(chunkPagePairs),
     }),
 
     // Put posts under "/posts", so that they can be wrapped with a
     // "<BlogPostLayout />" that configures MDX and adds a post-specific layout.
-    '/posts': composeMatchers(
-      withView((req, context) => <BlogPostLayout blogRoot={context.blogRoot} />),
-      map(fromPairs(posts.map(post => ['/' + post.slug, post.getPage]))),
+    '/posts': compose(
+      withView((req, context: AppNavContext) => <BlogPostLayout blogRoot={context.blogRoot} />),
+      mount(fromPairs(posts.map(post => ['/' + post.slug, post.getPage]))),
     ),
 
     // Miscellaneous pages can be added directly to the root switch.
-    '/tags': () => import('./tags'),
-    '/about': () => import('./about'),
+    '/tags': lazy(() => import('./tags')),
+    '/about': lazy(() => import('./about')),
 
     // Only the statically built copy of the RSS feed is intended to be opened,
     // but the content is fetched here.

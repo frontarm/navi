@@ -1,4 +1,4 @@
-import { composeMatchers, map, redirect, route, withContext, withView } from 'navi'
+import { compose, lazy, map, mount, redirect, route, withContext, withView } from 'navi'
 import React from 'react'
 import { join } from 'path'
 import { chunk, fromPairs } from 'lodash'
@@ -13,7 +13,7 @@ import posts from './posts'
 let chunks = chunk(posts, siteMetadata.indexPageSize)
 let chunkPagePairs = chunks.map((chunk, i) => [
   '/' + (i + 1),
-  async (req, context) => {
+  map(async (req, context) => {
     // Get metadata for all pages on this page
     let postRoutes = await Promise.all(
       chunk.map(async post => {
@@ -43,10 +43,10 @@ let chunkPagePairs = chunks.map((chunk, i) => [
         />
       ),
     })
-  },
+  }),
 ])
 
-const routes = composeMatchers(
+const routes = compose(
   withContext((req, context) => ({
     ...context,
     blogRoot: req.mountpath || '/',
@@ -64,26 +64,26 @@ const routes = composeMatchers(
       />
     )
   }),
-  map({
+  mount({
     // The blog's index pages go here. The first index page is mapped to the
     // root URL, with a redirect from "/page/1". Subsequent index pages are
     // mapped to "/page/n".
     '/': chunkPagePairs.shift()[1],
-    '/page': map({
-      '/1': (req, context) => redirect(context.blogRoot),
+    '/page': mount({
+      '/1': redirect((req, context) => context.blogRoot),
       ...fromPairs(chunkPagePairs),
     }),
 
     // Put posts under "/posts", so that they can be wrapped with a
     // "<BlogPostLayout />" that configures MDX and adds a post-specific layout.
-    '/posts': composeMatchers(
+    '/posts': compose(
       withView((req, context) => <BlogPostLayout blogRoot={context.blogRoot} />),
-      map(fromPairs(posts.map(post => ['/' + post.slug, post.getPage]))),
+      mount(fromPairs(posts.map(post => ['/' + post.slug, post.getPage]))),
     ),
 
     // Miscellaneous pages can be added directly to the root switch.
-    '/tags': () => import('./tags'),
-    '/about': () => import('./about'),
+    '/tags': lazy(() => import('./tags')),
+    '/about': lazy(() => import('./about')),
 
     // Only the statically built copy of the RSS feed is intended to be opened,
     // but the content is fetched here.

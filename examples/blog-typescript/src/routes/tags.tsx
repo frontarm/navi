@@ -1,5 +1,5 @@
 import React from 'react'
-import { composeMatchers, map, route, withContext, Route } from 'navi'
+import { compose, mount, route, withContext, Route } from 'navi'
 import { join } from 'path'
 import { fromPairs } from 'lodash'
 import TagIndexPage from '../components/TagIndexPage'
@@ -11,12 +11,12 @@ interface TagsNavContext {
   tagsRoot: string
 }
 
-const tagRoutes = composeMatchers(
+const tagRoutes = compose(
   withContext((req, context): TagsNavContext => ({
     ...context,
     tagsRoot: req.mountpath,
   })),
-  map({
+  mount({
     '/': route({
       title: 'Tags',
 
@@ -55,7 +55,7 @@ const tagRoutes = composeMatchers(
 
     '/:tag': route({
       getTitle: req => req.params.tag,
-      getView: async (req, context) => {
+      getView: async (req, context: TagsNavContext) => {
         let lowerCaseTag = req.params.tag.toLowerCase()
 
         // Build a list of pages that include the tag from the site map

@@ -37,7 +37,7 @@ postDetails = sortBy(postDetails, ['slug']).reverse()
 // Create url-friendly slugs from post pathnames, and a `getPage()` function
 // that can be used to load and return the post's Page object.
 let posts = postDetails.map(({ slug, pathname, date }, i) => ({
-  getPage: async () => {
+  getPage: Navi.map(async () => {
     let { default: post } = await importPost(pathname)
     let { title, getContent, ...meta } = post
     let previousSlug, previousPost, nextSlug, nextPost
@@ -75,7 +75,7 @@ let posts = postDetails.map(({ slug, pathname, date }, i) => ({
         return { MDXComponent, ...other }
       },
     })
-  },
+  }),
   slug,
 }))
 

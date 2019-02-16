@@ -1,25 +1,25 @@
 import React from 'react'
-import { composeMatchers, map, route, withContext } from 'navi'
+import { compose, mount, route, withContext } from 'navi'
 import { join } from 'path'
 import { fromPairs } from 'lodash'
 import TagIndexPage from '../components/TagIndexPage'
 import TagPage from '../components/TagPage'
 import getTagsFromSiteMap from '../utils/getTagsFromSiteMap'
 
-const tagRoutes = composeMatchers(
+const tagRoutes = compose(
   withContext((req, context) => ({
     ...context,
     tagsRoot: req.mountpath,
   })),
-  map({
+  mount({
     '/': route({
       title: 'Tags',
 
       getView: async (req, context) => {
         // Build a list of pages for each tag
         let siteMap = await req.router.resolveSiteMap(context.blogRoot, {
-          predicate: segment =>
-            segment.url.pathname.indexOf(context.tagsRoot) === -1,
+          predicate: chunk =>
+            chunk.url.pathname.indexOf(context.tagsRoot) === -1,
         })
         let tags = getTagsFromSiteMap(siteMap)
         let tagRoutes = fromPairs(tags.map(name => [name.toLowerCase(), []]))
@@ -55,8 +55,8 @@ const tagRoutes = composeMatchers(
 
         // Build a list of pages that include the tag from the site map
         let siteMap = await req.router.resolveSiteMap(context.blogRoot, {
-          predicate: segment =>
-            segment.url.pathname.indexOf(context.tagsRoot) === -1,
+          predicate: chunk =>
+            chunk.url.pathname.indexOf(context.tagsRoot) === -1,
         })
         let routes = []
         Object.entries(siteMap.routes).forEach(([_, route]) => {
