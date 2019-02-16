@@ -1,15 +1,15 @@
 import { Resolvable } from '../Resolvable'
-import { createSegmentsMatcher } from '../createSegmentsMatcher'
-import { createSegment } from '../Segments'
+import { createChunksMatcher } from '../createChunksMatcher'
+import { createChunk } from '../Chunks'
 import { Matcher } from '../Matcher'
 
 export function withData<Context extends object, Data>(
   maybeResolvableData: Data | Resolvable<Data, Context>,
   child?: Matcher<Context>,
 ): Matcher<Context> {
-  return createSegmentsMatcher(
+  return createChunksMatcher(
     maybeResolvableData,
     child,
-    (data, request) => (data ? [createSegment('data', request, { data })] : [])
+    (data, request) => (data ? [createChunk('data', request, { data })] : [])
   )
 }

@@ -7,7 +7,7 @@ import { Route, defaultRouteReducer } from './Route'
 import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { CurrentRouteObservable } from './CurrentRouteObservable';
 import { URLDescriptor, createURLDescriptor } from './URLTools';
-import { Segment } from './Segments';
+import { Chunk } from './Chunks';
 
 
 export interface MemoryNavigationOptions<Context extends object, R = Route> {
@@ -36,9 +36,9 @@ export interface MemoryNavigationOptions<Context extends object, R = Route> {
     context?: Context,
 
     /**
-     * The function that reduces segments into a Route object.
+     * The function that reduces chunks into a Route object.
      */
-    reducer?: Reducer<Segment, R>,
+    reducer?: Reducer<Chunk, R>,
 }
 
 
@@ -66,7 +66,7 @@ export class MemoryNavigation<Context extends object, R> implements Navigation<C
             options.routes = options.pages
         }
 
-        let reducer = options.reducer || defaultRouteReducer as any as Reducer<Segment, R>
+        let reducer = options.reducer || defaultRouteReducer as any as Reducer<Chunk, R>
         let url = options.url || (options.request && options.request.url)
 
         if (!url) {

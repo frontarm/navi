@@ -1,16 +1,16 @@
 import { Resolvable } from '../Resolvable'
-import { createSegmentsMatcher } from '../createSegmentsMatcher'
-import { createSegment } from '../Segments'
+import { createChunksMatcher } from '../createChunksMatcher'
+import { createChunk } from '../Chunks'
 import { Matcher } from '../Matcher'
 
 export function withHead<Context extends object, Head>(
   maybeResolvableHead: Head | Resolvable<Head, Context>,
   child?: Matcher<Context>,
 ): Matcher<Context> {
-  return createSegmentsMatcher(
+  return createChunksMatcher(
     maybeResolvableHead,
     child,
-    (head, request) => head ? [createSegment('head', request, { head })] : [],
+    (head, request) => head ? [createChunk('head', request, { head })] : [],
     (request) => request.method !== 'HEAD',
   )
 }

@@ -3,22 +3,22 @@ import { NotFoundError } from './Errors'
 import { NaviRequest } from './NaviRequest'
 
 /**
- * A type that covers all Segment objects.
+ * A type that covers all Chunk objects.
  */
-export type Segment =
-  | BusySegment
-  | DataSegment
-  | ErrorSegment
-  | HeadSegment
-  | HeadersSegment
-  | MountSegment
-  | RedirectSegment
-  | StatusSegment
-  | TitleSegment
-  | URLSegment
-  | ViewSegment
+export type Chunk =
+  | BusyChunk
+  | DataChunk
+  | ErrorChunk
+  | HeadChunk
+  | HeadersChunk
+  | MountChunk
+  | RedirectChunk
+  | StatusChunk
+  | TitleChunk
+  | URLChunk
+  | ViewChunk
 
-export type SegmentType =
+export type ChunkType =
   | 'busy'
   | 'data'
   | 'head'
@@ -32,11 +32,11 @@ export type SegmentType =
   | 'view'
 
 /**
- * All segments extend this interface. It includes all information that can be
+ * All chunks extend this interface. It includes all information that can be
  * inferred from just a pattern string and a location.
  */
-export interface GenericSegment {
-  type: SegmentType
+export interface GenericChunk {
+  type: ChunkType
 
   /**
    * The part of the URL pathname that has been matched.
@@ -51,19 +51,19 @@ export interface GenericSegment {
 
 
 /**
- * This is used in place of a segment of another type whose final result is
+ * This is used in place of a chunk of another type whose final result is
  * not yet known.
  */
-export interface BusySegment extends GenericSegment {
+export interface BusyChunk extends GenericChunk {
   type: 'busy'
   promise: PromiseLike<any>
 }
 
 /**
- * Data segments contain information that will be available on the produced
+ * Data chunks contain information that will be available on the produced
  * route object, but isn't meant to be rendered with the page itself.
  */
-export interface DataSegment<Data=any> extends GenericSegment {
+export interface DataChunk<Data=any> extends GenericChunk {
   type: 'data'
   data: Data
 }
@@ -71,9 +71,9 @@ export interface DataSegment<Data=any> extends GenericSegment {
 /**
  * When encountered in a route by a `<NavView>`, this will be thrown, and
  * can then be handled by an Error Boundary. Behavior for handling error
- * segments on the server side is undefined.
+ * chunks on the server side is undefined.
  */
-export interface ErrorSegment extends GenericSegment {
+export interface ErrorChunk extends GenericChunk {
   type: 'error'
   error: any
 }
@@ -82,7 +82,7 @@ export interface ErrorSegment extends GenericSegment {
  * Can be used to specify data for your page's <head> separately from
  * the view content.
  */
-export interface HeadSegment extends GenericSegment {
+export interface HeadChunk extends GenericChunk {
   type: 'head'
   head: any
 }
@@ -90,17 +90,17 @@ export interface HeadSegment extends GenericSegment {
 /**
  * Used to specify any headers for your HTTP response.
  */
-export interface HeadersSegment extends GenericSegment {
+export interface HeadersChunk extends GenericChunk {
   type: 'headers'
   headers: { [name: string]: string }
 }
 
 /**
- * Mount segments are added for each mount that is routed through. They're
+ * Mount chunks are added for each mount that is routed through. They're
  * useful for building site maps, as they hold metadata on other possible
  * paths.
  */
-export interface MountSegment extends GenericSegment {
+export interface MountChunk extends GenericChunk {
   type: 'mount'
   patterns: string[]
 }
@@ -109,7 +109,7 @@ export interface MountSegment extends GenericSegment {
  * When added to a route, indicates that the client should follow the redirect
  * to the given address.
  */
-export interface RedirectSegment extends GenericSegment {
+export interface RedirectChunk extends GenericChunk {
   type: 'redirect'
   to: string
 }
@@ -117,7 +117,7 @@ export interface RedirectSegment extends GenericSegment {
 /**
  * Used to specify the status of your HTTP response.
  */
-export interface StatusSegment extends GenericSegment {
+export interface StatusChunk extends GenericChunk {
   type: 'status'
   status: number
 }
@@ -125,7 +125,7 @@ export interface StatusSegment extends GenericSegment {
 /**
  * Allows matchers to specify a <title> tag, or document title.
  */
-export interface TitleSegment extends GenericSegment {
+export interface TitleChunk extends GenericChunk {
   type: 'title'
   title: string
 }
@@ -133,22 +133,22 @@ export interface TitleSegment extends GenericSegment {
 /**
  * Contains the full URL that should be used for the route, including any hash.
  */
-export interface URLSegment extends GenericSegment {
+export interface URLChunk extends GenericChunk {
   type: 'url'
 }
 
 /**
- * View segments contain data that will be used in a response on the
+ * View chunks contain data that will be used in a response on the
  * server, or that will be rendered in the browser. They can contain error
  * or redirect information, but they'll still be rendered as-is in the client.
  */
-export interface ViewSegment<View=any> extends GenericSegment {
+export interface ViewChunk<View=any> extends GenericChunk {
   type: 'view'
   view: View
 }
 
 
-export function createSegment<Type extends string, Details>(
+export function createChunk<Type extends string, Details>(
   type: Type,
   request: NaviRequest,
   details?: Details,
@@ -163,7 +163,7 @@ export function createSegment<Type extends string, Details>(
   }, details)
 }
 
-export function createNotFoundSegment(request: NaviRequest): ErrorSegment {
+export function createNotFoundChunk(request: NaviRequest): ErrorChunk {
   let fullPathname = joinPaths(request.mountpath, request.path)
   return {
     type: 'error',

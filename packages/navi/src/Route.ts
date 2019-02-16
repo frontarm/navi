@@ -1,5 +1,5 @@
 import { URLDescriptor } from './URLTools'
-import { Segment } from './Segments'
+import { Chunk } from './Chunks'
 
 export type RouteType =
   | 'busy'
@@ -10,8 +10,8 @@ export type RouteType =
 export interface Route<Data = any> {
   type: RouteType
   url: URLDescriptor
-  segments: Segment[]
-  lastSegment: Segment
+  chunks: Chunk[]
+  lastChunk: Chunk
   
   /**
    * When "type" is "redirect", contains the redirected to URL.
@@ -24,12 +24,12 @@ export interface Route<Data = any> {
   error?: any
 
   /**
-   * An object containing merged values from all data segments.
+   * An object containing merged values from all data chunks.
    */
   data?: Data
 
   /**
-   * An object contains HTTP headers added by header segments. 
+   * An object contains HTTP headers added by header chunks. 
    */
   headers: { [name: string]: string }
 
@@ -58,8 +58,8 @@ export interface Route<Data = any> {
   content?: any
 }
 
-export function defaultRouteReducer(route: Route | undefined, segment: Segment): Route {
-  route = defaultRouteReducerWithoutCompat(route, segment)
+export function defaultRouteReducer(route: Route | undefined, chunk: Chunk): Route {
+  route = defaultRouteReducerWithoutCompat(route, chunk)
   Object.defineProperties(route, {
     meta: {
       configurable: true,
@@ -76,20 +76,20 @@ export function defaultRouteReducer(route: Route | undefined, segment: Segment):
         // if (process.env.NODE_ENV !== 'production') {
         //   console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.12. Please use "route.views" instead.`)
         // }
-        return segment.view
+        return chunk.view
       },
     }
   })
   return route
 }
 
-function defaultRouteReducerWithoutCompat(route: Route | undefined, segment: Segment): Route {
+function defaultRouteReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Route {
   if (route) {
-    if (segment.type === 'url') {
+    if (chunk.type === 'url') {
       return {
         ...route,
-        segments: route.segments.filter(segment => segment.type !== 'url'),
-        url: segment.url,
+        chunks: route.chunks.filter(chunk => chunk.type !== 'url'),
+        url: chunk.url,
       }
     }
     if (route.type !== 'ready') {
@@ -98,57 +98,57 @@ function defaultRouteReducerWithoutCompat(route: Route | undefined, segment: Seg
   }
 
   let base = {
-    lastSegment: segment,
-    segments: route ? route.segments.concat(segment) : [segment],
+    lastChunk: chunk,
+    chunks: route ? route.chunks.concat(chunk) : [chunk],
     
     data: route ? route.data : {},
     headers: route ? route.headers : {},
     heads: route ? route.heads : [],
     status: route ? route.status : 200,
     title: route && route.title,
-    url: route ? route.url : segment.url,
+    url: route ? route.url : chunk.url,
     views: route ? route.views : [],
   }
   
-  switch (segment.type) {
+  switch (chunk.type) {
     case 'busy':
       return { ...base, type: 'busy' }
     case 'data':
       return {
         ...base,
         type: 'ready',
-        data: { ...base.data, ...segment.data }
+        data: { ...base.data, ...chunk.data }
       }
     case 'error':
       return {
         ...base,
         type: 'error',
-        error: segment.error,
-        status: (base.status && base.status >= 400) ? base.status : (segment.error.status || 500),
+        error: chunk.error,
+        status: (base.status && base.status >= 400) ? base.status : (chunk.error.status || 500),
       }
     case 'head':
       return {
         ...base,
         type: 'ready',
-        heads: base.heads.concat(segment.head)
+        heads: base.heads.concat(chunk.head)
       }
     case 'headers':
       return {
         ...base,
         type: 'ready',
-        headers: { ...base.headers, ...segment.headers }
+        headers: { ...base.headers, ...chunk.headers }
       }
     case 'redirect':
-      return { ...base, type: 'redirect', to: segment.to }
+      return { ...base, type: 'redirect', to: chunk.to }
     case 'status':
-      return { ...base, type: 'ready', status: segment.status }
+      return { ...base, type: 'ready', status: chunk.status }
     case 'title':
-      return { ...base, type: 'ready', title: segment.title }
+      return { ...base, type: 'ready', title: chunk.title }
     case 'view':
       return {
         ...base,
         type: 'ready',
-        views: base.views.concat(segment.view),
+        views: base.views.concat(chunk.view),
       }
     default:
       return { ...base, type: 'ready' }

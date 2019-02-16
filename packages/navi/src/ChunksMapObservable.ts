@@ -5,7 +5,7 @@ import {
   SimpleSubscription,
   createOrPassthroughObserver,
 } from './Observable'
-import { Segment, BusySegment, MountSegment } from './Segments'
+import { Chunk, BusyChunk, MountChunk } from './Chunks'
 import { MatcherGenerator, MatcherIterator } from './Matcher'
 import { RouterMapOptions, Router } from './Router'
 import { Mapping, mappingAgainstPathname } from './Mapping'
@@ -18,22 +18,22 @@ interface MapItem {
   depth: number
   order: number[]
   matcherIterator: MatcherIterator
-  lastResult?: IteratorResult<Segment[]>
-  segmentsCache?: Segment[]
+  lastResult?: IteratorResult<Chunk[]>
+  chunksCache?: Chunk[]
   lastMountPatterns?: string[]
   lastRedirectTo?: string
   walkedPatternLists: Set<string>
 }
 
-export interface SegmentsMap {
-  [name: string]: Segment[]
+export interface ChunksMap {
+  [name: string]: Chunk[]
 }
 
-export class SegmentsMapObservable implements Observable<SegmentsMap> {
+export class ChunksMapObservable implements Observable<ChunksMap> {
   private rootContext: any
   private matcherGeneratorFunction: MatcherGenerator<any>
   private rootMapping: Mapping
-  private observers: Observer<SegmentsMap>[]
+  private observers: Observer<ChunksMap>[]
   private isRefreshScheduled: boolean
   private isRefreshing: boolean
   private router: Router
@@ -74,8 +74,8 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
 
   subscribe(
     onNextOrObserver:
-      | Observer<SegmentsMap>
-      | ((value: SegmentsMap) => void),
+      | Observer<ChunksMap>
+      | ((value: ChunksMap) => void),
     onError?: (error: any) => void,
     onComplete?: () => void,
   ): SimpleSubscription {
@@ -106,7 +106,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     return [pattern].filter(pattern => !/\/:/.test(pattern))
   }
 
-  private handleUnsubscribe = (observer: Observer<SegmentsMap>) => {
+  private handleUnsubscribe = (observer: Observer<ChunksMap>) => {
     let index = this.observers.indexOf(observer)
     if (index !== -1) {
       this.observers.splice(index, 1)
@@ -129,7 +129,7 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     this.isRefreshScheduled = false
     this.isRefreshing = true
 
-    let allSegments: Segment[] = []
+    let allChunks: Chunk[] = []
     let i = 0
     
     // This is a while loop instead of a for loop, as new items can be added
@@ -143,18 +143,18 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
       if (!item.lastResult || result.value) {
         item.lastResult = result
       }
-      let segments = item.lastResult.value
-      item.segmentsCache = segments || []
-      let focusIndex = segments.findIndex(segment =>
-        segment.type === 'error' ||
-        (segment.url.href.length >= item.url.href.length) && (
-          (segment.type === 'mount' && item.lastMountPatterns !== segment.patterns) ||
-          (segment.type === 'redirect' && item.lastRedirectTo !== segment.to)
+      let chunks = item.lastResult.value
+      item.chunksCache = chunks || []
+      let focusIndex = chunks.findIndex(chunk =>
+        chunk.type === 'error' ||
+        (chunk.url.href.length >= item.url.href.length) && (
+          (chunk.type === 'mount' && item.lastMountPatterns !== chunk.patterns) ||
+          (chunk.type === 'redirect' && item.lastRedirectTo !== chunk.to)
         )
       )
 
-      while (focusIndex >= 0 && focusIndex < segments.length) {
-        let focusSegment = segments[focusIndex]
+      while (focusIndex >= 0 && focusIndex < chunks.length) {
+        let focusChunk = chunks[focusIndex]
         focusIndex++
       
         // If an item in the map cannot be found, throws an error, or is
@@ -165,22 +165,22 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
         // items, so if an earlier item is removed, its referenced items
         // will still be removed.
         if (
-          focusSegment.type === 'error' ||
-          (this.options.predicate && !this.options.predicate(focusSegment, segments))
+          focusChunk.type === 'error' ||
+          (this.options.predicate && !this.options.predicate(focusChunk, chunks))
         ) {
           this.removeFromQueue(item)
           continue items
         }
 
-        if (focusSegment.type === 'redirect') {
-          item.lastRedirectTo = focusSegment.to
+        if (focusChunk.type === 'redirect') {
+          item.lastRedirectTo = focusChunk.to
           if (this.options.followRedirects) {
-            this.addToQueue(focusSegment.to, item.depth + 1, item.walkedPatternLists, pathname, item.order)
+            this.addToQueue(focusChunk.to, item.depth + 1, item.walkedPatternLists, pathname, item.order)
           }
         }
 
-        if (focusSegment.type === 'mount') {
-          let patterns = focusSegment.patterns
+        if (focusChunk.type === 'mount') {
+          let patterns = focusChunk.patterns
           item.lastMountPatterns = patterns
           let key = patterns.slice(0).sort().join("\n")
           if (patterns && !item.walkedPatternLists.has(key)) {
@@ -201,8 +201,8 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
         }
       }
 
-      if (segments) {
-        allSegments = allSegments.concat(segments)
+      if (chunks) {
+        allChunks = allChunks.concat(chunks)
       }
 
       // Increment at the end of the loop in case the current item has
@@ -210,14 +210,14 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
       i++
     }
 
-    let segmentsMapArray = [] as [string, Segment[], number[]][]
+    let chunksMapArray = [] as [string, Chunk[], number[]][]
     for (let i = 0; i < this.mapItems.length; i++) {
       let item = this.mapItems[i]
-      let lastSegment = item.segmentsCache![item.segmentsCache!.length - 1]
-      if (lastSegment.type !== 'mount' && lastSegment.type !== 'error') {
-        segmentsMapArray.push([
+      let lastChunk = item.chunksCache![item.chunksCache!.length - 1]
+      if (lastChunk.type !== 'mount' && lastChunk.type !== 'error') {
+        chunksMapArray.push([
           joinPaths(item.pathname, '/'),
-          item.segmentsCache!,
+          item.chunksCache!,
           item.order
         ])
       }
@@ -226,12 +226,12 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
     let listenId = ++this.lastListenId
     let handleUpdate = () => this.handleResolverUpdate(listenId)
     Promise.race(
-      allSegments
+      allChunks
             .filter(isBusy)
-            .map(pickSegmentPromise)
+            .map(pickChunkPromise)
     ).then(handleUpdate, handleUpdate)
 
-    segmentsMapArray.sort((itemX, itemY) => {
+    chunksMapArray.sort((itemX, itemY) => {
       let x = itemX[2]
       let y = itemY[2]
     
@@ -258,19 +258,19 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
       this.refresh()
     }
     else {
-      let segmentsMap: SegmentsMap = {}
+      let chunksMap: ChunksMap = {}
       let isSteady = true
-      for (let i = 0; i < segmentsMapArray.length; i++) {
-        let [pathname, segments] = segmentsMapArray[i]
-        if (segments.some(segment => segment.type === 'busy')) {
+      for (let i = 0; i < chunksMapArray.length; i++) {
+        let [pathname, chunks] = chunksMapArray[i]
+        if (chunks.some(chunk => chunk.type === 'busy')) {
           isSteady = false
         }
-        segmentsMap[pathname] = segments
+        chunksMap[pathname] = chunks
       }
       
       for (let i = 0; i < this.observers.length; i++) {
         let observer = this.observers[i]
-        observer.next(segmentsMap)
+        observer.next(chunksMap)
         if (isSteady && observer.complete) {
           observer.complete()
         }
@@ -342,10 +342,10 @@ export class SegmentsMapObservable implements Observable<SegmentsMap> {
   }
 }
 
-function isBusy(segment: Segment): segment is BusySegment {
-  return segment.type === 'busy'
+function isBusy(chunk: Chunk): chunk is BusyChunk {
+  return chunk.type === 'busy'
 }
 
-function pickSegmentPromise(segment: BusySegment): PromiseLike<any> {
-  return segment.promise
+function pickChunkPromise(chunk: BusyChunk): PromiseLike<any> {
+  return chunk.promise
 }

@@ -16,7 +16,7 @@ export interface NaviRequest {
   readonly mountpath: string
 
   /**
-   * The values of any URL parameters matched from parameter segments in the
+   * The values of any URL parameters matched from parameter chunks in the
    * URLs, pathname, along with information from the URL's query string.
    */
   readonly params: { [name: string]: string }

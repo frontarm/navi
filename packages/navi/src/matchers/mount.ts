@@ -1,4 +1,4 @@
-import { Segment, createSegment, createNotFoundSegment } from '../Segments'
+import { Chunk, createChunk, createNotFoundChunk } from '../Chunks'
 import { createMapping, mappingAgainstPathname } from '../Mapping'
 import { Matcher, MatcherIterator } from '../Matcher'
 import { NaviRequest } from '../NaviRequest'
@@ -37,9 +37,9 @@ export function mount<Context extends object>(
       request: NaviRequest,
       context: Context
     ): MatcherIterator {
-      let segments: Segment[]
+      let chunks: Chunk[]
       let childIterator: MatcherIterator | undefined
-      let childResult: IteratorResult<Segment[]> | undefined
+      let childResult: IteratorResult<Chunk[]> | undefined
 
       // Start from the beginning and take the first result, as child mounts
       // are sorted such that the first matching mount is the the most
@@ -61,17 +61,17 @@ export function mount<Context extends object>(
           childResult = childIterator.next()
         }
 
-        segments = [createSegment('mount', request, { patterns }, false)]
+        chunks = [createChunk('mount', request, { patterns }, false)]
 
-        let childSegments = childResult && childResult.value
-        if (childSegments) {
-          segments = segments.concat(childSegments.length ? childSegments : [])
+        let childChunks = childResult && childResult.value
+        if (childChunks) {
+          chunks = chunks.concat(childChunks.length ? childChunks : [])
         } else {
-          segments.push(createNotFoundSegment(request))
+          chunks.push(createNotFoundChunk(request))
         }
 
-        yield segments
-      } while (segments.filter(isBusy).length)
+        yield chunks
+      } while (chunks.filter(isBusy).length)
     }
 }
 
@@ -79,6 +79,6 @@ function compareStrings(a, b) {
   return a < b ? -1 : a > b ? 1 : 0
 }
 
-function isBusy(segment: Segment) {
-  return segment.type === 'busy'
+function isBusy(chunk: Chunk) {
+  return chunk.type === 'busy'
 }

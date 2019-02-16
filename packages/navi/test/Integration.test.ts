@@ -1,4 +1,4 @@
-import { createMemoryNavigation, ViewSegment, NotFoundError } from '../src'
+import { createMemoryNavigation, ViewChunk, NotFoundError } from '../src'
 import { fixtureMap } from './fixtures/switches'
 
 describe("integration", () => {
@@ -13,9 +13,9 @@ describe("integration", () => {
         let nav = createTestNavigation('/examples')
 
         let route = await nav.getSteadyValue()
-        let firstSegment = route.segments[0]
+        let firstChunk = route.chunks[0]
         
-        expect(firstSegment.type).toBe('url')
+        expect(firstChunk.type).toBe('url')
         expect(route.status).toBe(200)
         expect(route.views[0]).toBe('site-layout')
         expect(route.views[1]).toBe('example-layout')
@@ -25,10 +25,10 @@ describe("integration", () => {
 
         nav.history.push('/examples/advanced?referrer=frontarm')
 
-        firstSegment = nav.getCurrentValue().segments[0]
+        firstChunk = nav.getCurrentValue().chunks[0]
         route = nav.getCurrentValue()
         
-        expect(firstSegment.url.query).toEqual({ referrer: 'frontarm' })
+        expect(firstChunk.url.query).toEqual({ referrer: 'frontarm' })
         expect(route.type).toEqual('busy')
 
         route = await nav.getSteadyValue()
@@ -44,7 +44,7 @@ describe("integration", () => {
 
         route = await nav.getSteadyValue()
 
-        expect((route.lastSegment as ViewSegment).view).toEqual({
+        expect((route.lastChunk as ViewChunk).view).toEqual({
             isPaywalled: true,
         })
 
@@ -62,9 +62,9 @@ describe("integration", () => {
         let nav = createTestNavigation('/')
 
         let route = await nav.getSteadyValue()
-        let lastSegment = route.lastSegment as ViewSegment
+        let lastChunk = route.lastChunk as ViewChunk
         
-        expect(Object.keys(lastSegment.view)).toEqual(['/examples/basic/', '/examples/advanced/'])
+        expect(Object.keys(lastChunk.view)).toEqual(['/examples/basic/', '/examples/advanced/'])
         expect(route.type).toBe('ready')
         expect(route.title).toBe('Navi')
     })

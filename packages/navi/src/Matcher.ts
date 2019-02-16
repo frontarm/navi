@@ -1,5 +1,5 @@
 import { Resolvable } from './Resolvable'
-import { Segment } from './Segments'
+import { Chunk } from './Chunks'
 import { NaviRequest } from './NaviRequest'
 
 export type Matcher<
@@ -17,23 +17,23 @@ export type MatcherGenerator<Context extends object> = (
   context: Context
 ) => MatcherIterator
 
-export type MatcherIterator = IterableIterator<Segment[]>
+export type MatcherIterator = IterableIterator<Chunk[]>
 
 
 export function* concatMatcherIterators(x: MatcherIterator, y: MatcherIterator) {
-  let xResult: IteratorResult<Segment[]>
-  let yResult: IteratorResult<Segment[]>
-  let xSegments: Segment[] = []
-  let ySegments: Segment[] = []
+  let xResult: IteratorResult<Chunk[]>
+  let yResult: IteratorResult<Chunk[]>
+  let xChunks: Chunk[] = []
+  let yChunks: Chunk[] = []
   do {
     xResult = x.next()
     if (!xResult.done) {
-      xSegments = xResult.value || []
+      xChunks = xResult.value || []
     }
     yResult = y.next()
     if (!yResult.done) {
-      ySegments = yResult.value || []
+      yChunks = yResult.value || []
     }
-    yield xSegments.concat(ySegments)
+    yield xChunks.concat(yChunks)
   } while (!xResult.done || !yResult.done)
 }

@@ -1,4 +1,4 @@
-import resolveSegments, { Resolvable } from '../Resolvable'
+import resolveChunks, { Resolvable } from '../Resolvable'
 import {
   Matcher,
   MatcherIterator,
@@ -28,7 +28,7 @@ export function withContext<
     context: ParentContext,
     child: MatcherGenerator<ChildContext>
   ): MatcherIterator {
-    yield* resolveSegments(
+    yield* resolveChunks(
       childContextMaybeResolvable,
       request,
       context,

@@ -1,4 +1,4 @@
-import resolveSegments from '../Resolvable'
+import resolveChunks from '../Resolvable'
 import {
   Matcher,
   MatcherIterator,
@@ -13,7 +13,7 @@ export function map<Context extends object, M extends Matcher<Context>>(
     request: NaviRequest,
     context: Context
   ): MatcherIterator {
-    yield* resolveSegments(
+    yield* resolveChunks(
       resolvableMatcher,
       request,
       context,

@@ -1,19 +1,19 @@
-import { createSegment, Segment, createNotFoundSegment } from '../Segments'
+import { createChunk, Chunk, createNotFoundChunk } from '../Chunks'
 import { Resolvable } from '../Resolvable'
 import { Matcher } from '../Matcher'
 import { URLDescriptor, joinPaths, createURLDescriptor } from '../URLTools'
-import { createSegmentsMatcher } from '../createSegmentsMatcher'
+import { createChunksMatcher } from '../createChunksMatcher'
 
 export function redirect<Context extends object = any>(
   maybeResolvableTo: string | Partial<URLDescriptor> | Resolvable<Partial<URLDescriptor> | string>
 ): Matcher<Context> {
-  return createSegmentsMatcher(
+  return createChunksMatcher(
     maybeResolvableTo,
     undefined,
     (to, request) => {
       let unmatchedPathnamePart = request.path
       if (unmatchedPathnamePart && unmatchedPathnamePart !== '/') {
-        return [createNotFoundSegment(request)]
+        return [createNotFoundChunk(request)]
       }
 
       // TODO: support all relative URLs
@@ -29,7 +29,7 @@ export function redirect<Context extends object = any>(
       else if (to) {
         toHref = createURLDescriptor(to).href
       }
-      return toHref ? [createSegment('redirect', request, { to: toHref })] as Segment[] : []
+      return toHref ? [createChunk('redirect', request, { to: toHref })] as Chunk[] : []
     },
   )
 }

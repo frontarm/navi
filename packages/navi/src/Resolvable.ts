@@ -1,7 +1,7 @@
 import { joinPaths } from './URLTools'
 import { NotFoundError } from './Errors'
 import { NaviRequest } from './NaviRequest'
-import { Segment, createSegment } from './Segments'
+import { Chunk, createChunk } from './Chunks'
 
 export type Resolvable<T, Context extends object = any, U = any> = (
   request: NaviRequest,
@@ -9,12 +9,12 @@ export type Resolvable<T, Context extends object = any, U = any> = (
   arg?: U
 ) => (T | PromiseLike<{ default: T } | T>)
 
-export default function* resolveSegments<T>(
+export default function* resolveChunks<T>(
   maybeResolvable: T | Resolvable<T>,
   request: NaviRequest,
   context: any,
-  createSegments: (value: T) => Segment[] | IterableIterator<Segment[]>
-): IterableIterator<Segment[]> {
+  createChunks: (value: T) => Chunk[] | IterableIterator<Chunk[]>
+): IterableIterator<Chunk[]> {
   let resolvable: Resolvable<T> =
     typeof maybeResolvable === 'function'
       ? (maybeResolvable as any)
@@ -28,17 +28,17 @@ export default function* resolveSegments<T>(
     maybeValue = Promise.reject(e)
   }
 
-  let result: Segment[] | IterableIterator<Segment[]> | undefined
+  let result: Chunk[] | IterableIterator<Chunk[]> | undefined
   if (!isPromiseLike(maybeValue)) {
-    result = createSegments(maybeValue)
+    result = createChunks(maybeValue)
   }
   else {
     let promise = maybeValue.then(extractDefault)
     let unwrappedPromise = unwrapPromise(promise)
-    let busySegments = [createSegment('busy', request, { promise })] as Segment[]
+    let busyChunks = [createChunk('busy', request, { promise })] as Chunk[]
 
     while (!unwrappedPromise.outcome) {
-      yield busySegments
+      yield busyChunks
     }
 
     if (unwrappedPromise.outcome === 'rejected') {
@@ -46,10 +46,10 @@ export default function* resolveSegments<T>(
       if (error instanceof NotFoundError && !error.pathname) {
         error.pathname = joinPaths(request.mountpath, request.path)
       }
-      yield [createSegment('error', request, { error })]
+      yield [createChunk('error', request, { error })]
     }
     else {
-      result = createSegments(unwrappedPromise.value!)
+      result = createChunks(unwrappedPromise.value!)
     }
   }
 

@@ -23,7 +23,7 @@ describe("routeMap", () => {
   test("can map from an intermediate url and exclude its index", async () => {
     let router = createRouter({ routes: fixtureMap })
     let map = await router.resolveRouteMap('/examples', {
-      predicate: (segment) => segment.url.pathname !== '/examples/'
+      predicate: (chunk) => chunk.url.pathname !== '/examples/'
     })
     expect(Object.keys(map).length).toBe(2)
   })

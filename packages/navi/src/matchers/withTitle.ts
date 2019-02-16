@@ -1,6 +1,6 @@
 import { Resolvable } from '../Resolvable'
-import { createSegment } from '../Segments'
-import { createSegmentsMatcher } from '../createSegmentsMatcher'
+import { createChunk } from '../Chunks'
+import { createChunksMatcher } from '../createChunksMatcher'
 import { Matcher } from '../Matcher'
 
 export function withTitle<Context extends object>(
@@ -10,7 +10,7 @@ export function withTitle<Context extends object>(
     | Resolvable<string | undefined, Context>,
   child?: Matcher<Context>,
 ): Matcher<Context> {
-  return createSegmentsMatcher(maybeResolvableTitle, child, (title, request) =>
-    title ? [createSegment('title', request, { title })] : [],
+  return createChunksMatcher(maybeResolvableTitle, child, (title, request) =>
+    title ? [createChunk('title', request, { title })] : [],
   )
 }

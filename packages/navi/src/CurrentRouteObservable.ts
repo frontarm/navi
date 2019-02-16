@@ -5,7 +5,7 @@ import { Reducer } from './Reducer'
 import { Router, RouterResolveOptions } from './Router'
 import { Deferred } from './Deferred';
 import { Observer, Observable, Subscription, SimpleSubscription, createOrPassthroughObserver } from './Observable'
-import { Segment } from './Segments'
+import { Chunk } from './Chunks'
 
 /**
  * An observable that tracks the current location of a History object,
@@ -15,7 +15,7 @@ import { Segment } from './Segments'
 export class CurrentRouteObservable<Context extends object, R> implements Observable<R> {
     private history: History
     private router: Router<Context, R>
-    private reducer: Reducer<Segment, R>
+    private reducer: Reducer<Chunk, R>
 
     // Stores the last receive location, even if we haven't processed it.
     // Used to detect and defuse loops where a change to history results
@@ -167,7 +167,7 @@ export class CurrentRouteObservable<Context extends object, R> implements Observ
 
         let observable = this.router.createObservable(url, this.resolveOptions)
         if (observable) {
-            this.observableSubscription = observable.subscribe(this.handleSegmentList)
+            this.observableSubscription = observable.subscribe(this.handleChunkList)
         }
         else if (!lastURL) {
             throw new OutOfRootError(url)
@@ -175,22 +175,22 @@ export class CurrentRouteObservable<Context extends object, R> implements Observ
     }
 
     // Allows for either the location or route or both to be changed at once.
-    private handleSegmentList = (segments: Segment[]) => {
+    private handleChunkList = (chunks: Chunk[]) => {
         let isSteady = true
-        for (let i = 0; i < segments.length; i++) {
-            let segment = segments[i]
-            if (segment.type === 'busy') {
+        for (let i = 0; i < chunks.length; i++) {
+            let chunk = chunks[i]
+            if (chunk.type === 'busy') {
                 isSteady = false
             }
-            if (segment.type === 'redirect') {
-                this.history.replace(segment.to)
+            if (chunk.type === 'redirect') {
+                this.history.replace(chunk.to)
                 return
             }
         }
         
         this.setRoute(
             [{ type: 'url', url: this.lastURL }]
-                .concat(segments)
+                .concat(chunks)
                 .reduce(this.reducer, undefined as any) as R,
             isSteady
         )

@@ -1,9 +1,9 @@
 import { Matcher, MatcherGenerator } from './Matcher'
 import { createRootMapping, mappingAgainstPathname, Mapping } from './Mapping'
-import { SegmentListObservable } from './SegmentListObservable'
-import { SegmentsMapObservable } from './SegmentsMapObservable'
+import { ChunkListObservable } from './ChunkListObservable'
+import { ChunksMapObservable } from './ChunksMapObservable'
 import { Route, defaultRouteReducer } from './Route'
-import { Segment } from './Segments'
+import { Chunk } from './Chunks'
 import { SiteMap, RouteMap } from './Maps'
 import { createPromiseFromObservable } from './Observable';
 import { createURLDescriptor, URLDescriptor } from './URLTools';
@@ -16,7 +16,7 @@ export interface RouterOptions<Context extends object, R = Route> {
     context?: Context,
     routes?: Matcher<Context>,
     basename?: string,
-    reducer?: Reducer<Segment, R>,
+    reducer?: Reducer<Chunk, R>,
 }
 
 export interface RouterResolveOptions {
@@ -30,7 +30,7 @@ export interface RouterResolveOptions {
 export interface RouterMapOptions {
     followRedirects?: boolean,
     maxDepth?: number,
-    predicate?: (segment: Segment, segments: Segment[]) => boolean,
+    predicate?: (chunk: Chunk, chunks: Chunk[]) => boolean,
     expandPattern?: (pattern: string, router: Router) => undefined | string[] | Promise<undefined | string[]>,
     method?: 'GET' | 'HEAD',
     headers?: { [name: string]: string },
@@ -45,7 +45,7 @@ export class Router<Context extends object=any, R=Route> {
     private context: Context
     private matcherGenerator: MatcherGenerator<Context>
     private rootMapping: Mapping
-    private reducer: Reducer<Segment, R>
+    private reducer: Reducer<Chunk, R>
     
     constructor(options: RouterOptions<Context, R>) {
         this.context = options.context || {} as any
@@ -66,7 +66,7 @@ export class Router<Context extends object=any, R=Route> {
         this.context = context || {}
     }
 
-    createObservable(url: URLDescriptor, options: RouterResolveOptions = {}): SegmentListObservable | undefined {
+    createObservable(url: URLDescriptor, options: RouterResolveOptions = {}): ChunkListObservable | undefined {
         // need to somehow keep track of which promises in the resolver correspond to which observables,
         // so that I don't end up updating observables which haven't actually changed.
         if (url.hash) {
@@ -90,7 +90,7 @@ export class Router<Context extends object=any, R=Route> {
         })
         let matchRequest = mappingAgainstPathname(request, this.rootMapping, this.context)
         if (matchRequest) {
-            return new SegmentListObservable(
+            return new ChunkListObservable(
                 url,
                 matchRequest,
                 this.context,
@@ -99,8 +99,8 @@ export class Router<Context extends object=any, R=Route> {
         }
     }
 
-    createMapObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): SegmentsMapObservable {
-        return new SegmentsMapObservable(
+    createMapObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): ChunksMapObservable {
+        return new ChunksMapObservable(
             createURLDescriptor(urlOrDescriptor, { ensureTrailingSlash: false }),
             this.context,
             this.matcherGenerator,
@@ -141,22 +141,22 @@ export class Router<Context extends object=any, R=Route> {
     }
 
     resolveSiteMap(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): Promise<SiteMap<R>> {
-        return createPromiseFromObservable(this.createMapObservable(urlOrDescriptor, options)).then(segmentsMap => {
+        return createPromiseFromObservable(this.createMapObservable(urlOrDescriptor, options)).then(chunksMap => {
             let routeMap = {} as RouteMap<R>
             let redirectMap = {} as { [name: string]: string }
-            let urls = Object.keys(segmentsMap)
+            let urls = Object.keys(chunksMap)
             for (let i = 0; i < urls.length; i++) {
                 let url = urls[i]
-                let segments = segmentsMap[url]
-                let lastSegment = segments[segments.length - 1]
-                if (lastSegment.type === 'redirect') {
-                    redirectMap[url] = lastSegment.to
+                let chunks = chunksMap[url]
+                let lastChunk = chunks[chunks.length - 1]
+                if (lastChunk.type === 'redirect') {
+                    redirectMap[url] = lastChunk.to
                     continue
                 }
                 else {
                     routeMap[url] =
                         [{ type: 'url', url: createURLDescriptor(url) }]
-                            .concat(segments)
+                            .concat(chunks)
                             .reduce(this.reducer, undefined)!
                 }
             }
@@ -177,23 +177,23 @@ export class Router<Context extends object=any, R=Route> {
             return Promise.reject(new OutOfRootError(url))
         }
 
-        return createPromiseFromObservable(observable).then(segments => {
-            for (let i = 0; i < segments.length; i++) {
-                let segment = segments[i]
-                if (segment.type === 'busy') {
+        return createPromiseFromObservable(observable).then(chunks => {
+            for (let i = 0; i < chunks.length; i++) {
+                let chunk = chunks[i]
+                if (chunk.type === 'busy') {
                     break
                 }
-                if (segment.type === 'redirect' && options.followRedirects) {
-                    return this.getPageRoutePromise(createURLDescriptor(segment.to), options)
+                if (chunk.type === 'redirect' && options.followRedirects) {
+                    return this.getPageRoutePromise(createURLDescriptor(chunk.to), options)
                 }
-                if (segment.type === 'error') {
-                    throw segment.error
+                if (chunk.type === 'error') {
+                    throw chunk.error
                 }
             }
 
             return (
                 [{ type: 'url', url: createURLDescriptor(url) }]
-                    .concat(segments)
+                    .concat(chunks)
                     .reduce(this.reducer, undefined)!
             )
         })

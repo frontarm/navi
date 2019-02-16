@@ -1,15 +1,15 @@
 import { MatcherIterator, MatcherGenerator } from './Matcher'
 import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
 import { URLDescriptor } from './URLTools';
-import { Segment, BusySegment } from './Segments'
+import { Chunk, BusyChunk } from './Chunks'
 import { NaviRequest } from './NaviRequest';
 
-export class SegmentListObservable implements Observable<Segment[]> {
+export class ChunkListObservable implements Observable<Chunk[]> {
     readonly url: URLDescriptor
 
-    private result: IteratorResult<Segment[]>
+    private result: IteratorResult<Chunk[]>
     private matcherIterator: MatcherIterator
-    private observers: Observer<Segment[]>[]
+    private observers: Observer<Chunk[]>[]
     private lastListenId: number
   
     constructor(
@@ -26,7 +26,7 @@ export class SegmentListObservable implements Observable<Segment[]> {
 
     
     subscribe(
-        onNextOrObserver: Observer<Segment[]> | ((value: Segment[]) => void),
+        onNextOrObserver: Observer<Chunk[]> | ((value: Chunk[]) => void),
         onError?: (error: any) => void,
         onComplete?: () => void
     ): SimpleSubscription {
@@ -42,7 +42,7 @@ export class SegmentListObservable implements Observable<Segment[]> {
         return subscription
     }
 
-    private handleUnsubscribe = (observer: Observer<Segment[]>) => {
+    private handleUnsubscribe = (observer: Observer<Chunk[]>) => {
         let index = this.observers.indexOf(observer)
         if (index !== -1) {
             this.observers.splice(index, 1)
@@ -53,7 +53,7 @@ export class SegmentListObservable implements Observable<Segment[]> {
         if (listenId === this.lastListenId) {
             this.lastListenId++
             this.refresh()
-            let isDone = this.result.done || this.result.value.every(segment => segment.type !== 'busy')
+            let isDone = this.result.done || this.result.value.every(chunk => chunk.type !== 'busy')
             for (let i = 0; i < this.observers.length; i++) {
                 let observer = this.observers[i]
                 observer.next(this.result.value)
@@ -78,16 +78,16 @@ export class SegmentListObservable implements Observable<Segment[]> {
             Promise.race(
                 this.result.value
                     .filter(isBusy)
-                    .map(pickSegmentPromise)
+                    .map(pickChunkPromise)
             ).then(handleUpdate, handleUpdate)
         }
     }
 }
 
-function isBusy(segment: Segment): segment is BusySegment {
-    return segment.type === 'busy'
+function isBusy(chunk: Chunk): chunk is BusyChunk {
+    return chunk.type === 'busy'
 }
 
-function pickSegmentPromise(segment: BusySegment): PromiseLike<any> {
-    return segment.promise
+function pickChunkPromise(chunk: BusyChunk): PromiseLike<any> {
+    return chunk.promise
 }

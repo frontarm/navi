@@ -1,6 +1,6 @@
 import { createBrowserHistory, History } from 'history'
 import { Navigation } from './Navigation'
-import { Segment } from './Segments'
+import { Chunk } from './Chunks'
 import { Reducer } from './Reducer'
 import { Router } from './Router'
 import { Route, defaultRouteReducer } from './Route'
@@ -37,9 +37,9 @@ export interface BrowserNavigationOptions<Context extends object, R = Route> {
     history?: History,
 
     /**
-     * The function that reduces segments into a Route object.
+     * The function that reduces chunks into a Route object.
      */
-    reducer?: Reducer<Segment, R>,
+    reducer?: Reducer<Chunk, R>,
 }
 
 
@@ -65,7 +65,7 @@ export class BrowserNavigation<Context extends object, R> implements Navigation<
             options.routes = options.pages
         }
 
-        let reducer = options.reducer || defaultRouteReducer as any as Reducer<Segment, R>
+        let reducer = options.reducer || defaultRouteReducer as any as Reducer<Chunk, R>
 
         this.history = options.history || createBrowserHistory()
         this.router = new Router({
