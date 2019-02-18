@@ -48,6 +48,17 @@ interface InnerViewState {
   error?: Error
 }
 
+// Memoize these to stop a bizarre react-helmet infinite loop bug when titles
+// are recreated on each render
+const titles = {} as { [name: string]: React.ReactNode }
+function createTitleElement(str: string) {
+  let title = titles[str]
+  if (!title) {
+    title = titles[str] = <title>{str}</title>
+  }
+  return title
+}
+
 class InnerView extends React.Component<InnerViewProps, InnerViewState> {
   static getDerivedStateFromProps(props: InnerViewProps, state: InnerViewState): Partial<InnerViewState> | null {
     // If there's no steady route, then we'll need to wait until a steady
@@ -174,7 +185,7 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
         null,
         ...headAndTitleChunks.map(Chunk =>
           Chunk.type === 'title' ? (
-            <title>{Chunk.title}</title>
+            createTitleElement(Chunk.title)
           ) : ( 
             (Chunk.head.type === React.Fragment || Chunk.head.type === 'head')
               ? Chunk.head.props.children 

@@ -12,7 +12,7 @@ describe("Navigation", () => {
         routes={
           mount({
             '/': route({
-              getView: (req, context: any) => context.test
+              getView: async (req, context: any) => context.test
             }),
           })
         }
@@ -44,7 +44,7 @@ describe("Navigation", () => {
         routes={
           mount({
             '/': route({
-              getView: (req, context: any) => {
+              getView: async (req, context: any) => {
                 getViewCount++
                 return context.test
               }
