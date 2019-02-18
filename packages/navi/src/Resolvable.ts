@@ -86,7 +86,7 @@ function unwrapPromise<T>(promise: PromiseLike<T>): UnwrappedPromise<T> {
 
 // Not all promise libraries use the ES6 `Promise` constructor,
 // so there isn't a better way to check if it's a promise :-(
-function isPromiseLike<T>(
+export function isPromiseLike<T>(
   x: PromiseLike<{ default: T } | T> | T,
 ): x is PromiseLike<{ default: T } | T> {
   return !!x && !!x['then']

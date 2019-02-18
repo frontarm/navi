@@ -1,4 +1,4 @@
-import { Resolvable, extractDefault } from '../Resolvable'
+import { Resolvable, extractDefault, isPromiseLike } from '../Resolvable'
 import { compose } from '../utils/compose'
 import { withContext } from './withContext'
 import { withData } from './withData'
@@ -64,58 +64,52 @@ export function route<Context extends object, Data extends object = any>(
       }
     }
 
-    options = async function getRoute(
+    options = function getRoute(
       req: NaviRequest,
       context: Context,
-    ): Promise<Route<Data>> {
-      let dataPromise: Promise<Data> = getData
-        ? Promise.resolve(getData(req, context, undefined as any))
-            .then(extractDefault)
-            .then(inputOrEmptyObject)
-        : Promise.resolve(data || {})
-
-      let headersPromise: Promise<{ [name: string]: string } | undefined> = getHeaders
-        ? Promise.resolve(getHeaders(req, context, dataPromise)).then(
-            extractDefault,
-          )
-        : Promise.resolve(headers)
-
-      let statusPromise: Promise<number | undefined> = getStatus
-        ? Promise.resolve(getStatus(req, context, dataPromise)).then(
-            extractDefault,
-          )
-        : Promise.resolve(status)
-
-      let titlePromise: Promise<string | undefined> = getTitle
-        ? Promise.resolve(getTitle(req, context, dataPromise)).then(
-            extractDefault,
-          )
-        : Promise.resolve(title)
-
-      let headPromise: Promise<any | undefined> | undefined
-      let viewPromise: Promise<any | undefined> | undefined
-
-      if (req.method !== 'HEAD') {
-        headPromise = getHead
-          ? Promise.resolve(getHead(req, context, dataPromise)).then(
-              extractDefault,
-            )
-          : Promise.resolve(head)
-
-        viewPromise = getView
-          ? Promise.resolve(getView(req, context, dataPromise)).then(
-              extractDefault,
-            )
-          : Promise.resolve(view)
+    ): Route<Data> | Promise<Route<Data>> {
+      let [dataMaybePromise, a]: [Data | PromiseLike<Data>, boolean] = extractValue(data, getData, req, context)
+      if (!dataMaybePromise) {
+        dataMaybePromise = {} as Data
+      }
+      else if (isPromiseLike(dataMaybePromise)) {
+        dataMaybePromise = dataMaybePromise.then(inputOrEmptyObject)
       }
 
-      return {
-        data: await dataPromise,
-        head: await headPromise,
-        headers: await headersPromise,
-        status: await statusPromise,
-        title: await titlePromise,
-        view: await viewPromise,
+      let [headersMaybePromise, b] = extractValue(headers, getHeaders, req, context)
+      let [statusMaybePromise, c] = extractValue(status, getStatus, req, context)
+      let [titleMaybePromise, d] = extractValue(title, getTitle, req, context)
+
+      let headMaybePromise: any | Promise<any | undefined> | undefined
+      let viewMaybePromise: any | Promise<any | undefined> | undefined
+      let e: boolean | undefined
+      let f: boolean | undefined
+      if (req.method !== 'HEAD') {
+        [headMaybePromise, e] = extractValue(head, getHead, req, context);
+        [viewMaybePromise, f] = extractValue(view, getView, req, context)
+      }
+
+      // If anything is a promise, return a promise
+      if (a || b || c || d || e || f) {
+        return (async () => ({
+          data: await dataMaybePromise,
+          head: await headMaybePromise,
+          headers: await headersMaybePromise,
+          status: await statusMaybePromise,
+          title: await titleMaybePromise,
+          view: await viewMaybePromise,
+        }))()
+      }
+      // If nothing is a promise, return a synchronous result
+      else {
+        return {
+          data: dataMaybePromise as Data,
+          head: headMaybePromise as { [name: string]: string },
+          headers: headersMaybePromise as any,
+          status: statusMaybePromise as number,
+          title: titleMaybePromise as string,
+          view: viewMaybePromise as any,
+        }
       }
     }
   }
@@ -133,4 +127,17 @@ export function route<Context extends object, Data extends object = any>(
 
 function inputOrEmptyObject(x) {
   return x || {}
+}
+
+function extractValue<T, Context extends object>(value: T | undefined, getter: Resolvable<T, Context> | undefined, request: NaviRequest, context: Context): [T | PromiseLike<T>, boolean] {
+  if (getter) {
+    let valueOrPromise: T | PromiseLike<T | { default: T }> = getter(request, context)
+    if (isPromiseLike(valueOrPromise)) {
+      return [valueOrPromise.then(extractDefault), true]
+    }
+    return [valueOrPromise, false]
+  }
+  else {
+    return [value!, false]
+  }
 }
