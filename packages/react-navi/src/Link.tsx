@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { join as pathJoin } from 'path'
-import { URLDescriptor, Navigation, createURLDescriptor } from 'navi'
+import { URLDescriptor, Navigation, createURLDescriptor, HTTPMethod } from 'navi'
 import { NaviContext } from './NaviContext'
 import { scrollToHash } from './scrollToHash';
 
@@ -17,13 +17,13 @@ export interface LinkProps {
   href: string | Partial<URLDescriptor>,
   id?: string,
   lang?: string,
+  prefetch?: HTTPMethod,
   ref?: React.Ref<HTMLAnchorElement>,
   rel?: string,
   style?: object,
   tabIndex?: number,
   target?: string,
   title?: string,
-  precache?: boolean,
   onClick?: React.MouseEventHandler<HTMLAnchorElement>,
 
   render?: (props: LinkRendererProps) => any,
@@ -142,7 +142,8 @@ Link.defaultProps = {
         style={Object.assign({}, style, active ? activeStyle : {})}
       />
     )
-  }
+  },
+  prefetch: 'HEAD'
 }
 
 
@@ -154,20 +155,24 @@ interface InnerLinkProps extends LinkProps {
 class InnerLink extends React.Component<InnerLinkProps> {
   navigation: Navigation
 
+  static defaultProps = {
+    prefetch: true,
+  }
+
   constructor(props: InnerLinkProps) {
     super(props)
 
     let url = this.getURL()
     let navigation = props.context.navigation
-    if (navigation && url && url.pathname) {
+    if (navigation && url && url.pathname && props.prefetch) {
       navigation.router.resolve(url, {
-        method: 'HEAD',
+        method: props.prefetch,
         followRedirects: true,
       })
-        .catch(() => {
+        .catch((e) => {
           console.warn(
-            `A <Link> referred to href "${url!.pathname}", but the ` +
-            `router could not find this path.`
+            `A <Link> referred to tried to prefetch "${url!.pathname}", but the ` +
+            `router was unable to fetch this path.`
           )
         })
     }
