@@ -76,6 +76,12 @@ describe("resolve", () => {
     let route = await router.resolve('/examples/', { followRedirects: true })
     expect(route.url.pathname).toBe('/examples/basic/')
   })
+
+  test("can accept an array of routes", async () => {
+    let router = createRouter({ routes: fixtureMap })
+    let route = await router.resolve(['/examples/basic/', '/examples/advanced/'])
+    expect(route.length).toBe(2)
+  })
 })
 
 describe("siteMap", () => {
