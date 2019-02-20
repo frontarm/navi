@@ -64,6 +64,7 @@ Who's using Navi?
 -----------------
 
 - [Frontend Armory](http://frontarm.com)
+- [Otovo](https://www.otovo.com/) uses Navi for serving 80+ pages across three different markets ([.no](https://www.otovo.no), [.se](https://www.otovo.se) and [.fr](https://prod-www.otovo.fr/))
 - *Using Navi? Submit a Pull Request to add your site here!*
 
 
