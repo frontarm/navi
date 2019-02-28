@@ -64,7 +64,41 @@ Who's using Navi?
 -----------------
 
 - [Frontend Armory](http://frontarm.com)
+- [Otovo](https://www.otovo.com/) uses Navi for serving 80+ pages across three different markets ([.no](https://www.otovo.no), [.se](https://www.otovo.se) and [.fr](https://www.otovo.fr/))
 - *Using Navi? Submit a Pull Request to add your site here!*
+
+
+Contributing
+------------
+
+We are grateful to the community for contributing bugfixes, documentation, translations, and any other improvements.
+
+This repository is monorepo that holds the source for Navi and it's related packages, while the Navi website -- which includes Navi's documentation, is part of the [navi-website](https://github.com/frontarm/navi-website) repository.
+
+### Building and Testing Navi
+
+To contribute code to Navi, you'll need to be able to build it and run the tests. To start, make sure you have [lerna](https://www.npmjs.com/package/lerna) 3.x installed globally:
+
+```bash
+npm install -g lerna
+```
+
+Then fork, clone and bootstrap the repository:
+
+```bash
+lerna bootstrap
+yarn build
+yarn test
+```
+
+If you're working on Navi itself, it's often easier to run builds and tests from `packages/navi`
+
+```bash
+cd packages/navi
+yarn test:watch
+```
+
+The [examples](./examples) are set up to use the copy of Navi at `packages/navi/dist`, so they can also be useful for quickly testing changes.
 
 
 License
