@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { BrowserNavigation, Route, Matcher, createBrowserNavigation } from 'navi'
+import { Navigation, Route, Matcher, createBrowserNavigation } from 'navi'
 import { NaviProvider } from './NaviProvider'
 import { View } from './View'
 
@@ -19,6 +19,8 @@ export interface RouterProps<Context extends object> {
 
   history?: any
 
+  navigation?: Navigation<Context, Route>
+
   routes?: Matcher<Context>
 }
 
@@ -27,11 +29,24 @@ export class Router<Context extends object={}> extends React.Component<RouterPro
     fallback: undefined,
   }
 
-  navigation: BrowserNavigation<Context, Route>
+  navigation: Navigation<Context, Route>
 
   constructor(props: RouterProps<Context>) {
     super(props)
-    this.navigation = createBrowserNavigation({
+
+    if (process.env.NODE_ENV !== 'production' && props.navigation) {
+      if (props.basename) {
+        console.warn(`Warning: <Router> can't receive both a "basename" and a "navigation" prop. Proceeding by ignoring "basename".`)
+      }
+      if (props.routes) {
+        console.warn(`Warning: <Router> can't receive both a "routes" and a "navigation" prop. Proceeding by ignoring "routes".`)
+      }
+      if (props.history) {
+        console.warn(`Warning: <Router> can't receive both a "history" and a "navigation" prop. Proceeding by ignoring "history".`)
+      }
+    }
+
+    this.navigation = props.navigation || createBrowserNavigation({
       basename: props.basename,
       context: props.context,
       history: props.history,
@@ -48,6 +63,12 @@ export class Router<Context extends object={}> extends React.Component<RouterPro
     )
   }
 
+  componentDidMount() {
+    if (this.props.navigation && this.props.context) {
+      this.props.navigation.setContext(this.props.context!)
+    }
+  }
+
   componentDidUpdate(prevProps: RouterProps<Context>) {
     if (shallowDiffers(prevProps.context || {}, this.props.context || {})) {
       this.navigation.setContext(this.props.context! || {})
@@ -55,9 +76,10 @@ export class Router<Context extends object={}> extends React.Component<RouterPro
   }
 
   componentWillUnmount() {
-    // When control returns to react-router, you'll want to clean up the
-    // navigation object.
-    this.navigation.dispose()
+    // Clean up any navigation object that we've created.
+    if (!this.props.navigation) {
+      this.navigation.dispose()
+    }
     delete this.navigation
   }
 }
