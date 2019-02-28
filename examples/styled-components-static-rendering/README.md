@@ -1,18 +1,29 @@
-# Styled Components w/ Static Rendering
+# create-react-app w/ styled-components and static rendering
 
-This example gives you static rendering, two pages, and styled-components integration. It statically renders each page's critical styles, preventing a Flash Of Unstyled Content.
+This example adds static rendering to a create-react-app project, complete with statically rendered critical CSS using styled-components -- ensuring that your pages render immediately, with *no* flash of unstyled content.
 
-To try it, change into this directory, install the dependencies, and then start the dev server or build the production version:
+To try this example, you'll either need to make sure that Navi is available. You can either do this by adding `navi`, `navi-scripts` and `react-navi` to the package.json, or by building Navi from source:
 
+```bash
+# To build from source, you'll need to install lerna globally.
+yarn global add lerna
+
+lerna bootstrap
+yarn build
 ```
-cd styled-components-static-rendering
+
+Once Navi has been added to package.json or bootstrapped from source, you'll need to change into this directory, install the dependencies, and then start the dev server or build the production version:
+
+```bash
+cd examples/styled-components-static-rendering
 
 # Install dependencies
-npm install
+yarn install
 
 # Start the dev server
-npm start
+yarn start
 
-# Build the production version
-npm run build
+# Or build and server the production version
+yarn build
+yarn serve
 ```
