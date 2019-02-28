@@ -12,7 +12,7 @@ export interface ViewProps {
   children?: (view: any, route: Route) => React.ReactNode
 
   disableScrolling?: boolean
-  hashScrollBehavior?: 'smooth' | 'instant'
+  hashScrollBehavior?: 'smooth' | 'auto' | 'instant'
 
   /**
    * The first Chunk that matches this will be consumed, along with
@@ -153,7 +153,7 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
               nextRoute.url.hash,
               prevRoute && prevRoute.url && prevRoute.url.pathname === nextRoute.url.pathname
                   ? this.props.hashScrollBehavior
-                  : 'instant'
+                  : 'auto'
           )
         }
       }
