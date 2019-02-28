@@ -1212,10 +1212,10 @@
   resolved "https://registry.yarnpkg.com/@csstools/convert-colors/-/convert-colors-1.4.0.tgz#ad495dc41b12e75d588c6db8b9834f08fa131eb7"
   integrity sha512-5a6wqoJV/xEdbRNKVo6I4hO3VjyDq//8q2f9I6PBAvMesJHFauXDorcNCsr9RzvsZnaWi5NYCcfyqP1QeFHFbw==
 
-"@frontarm/doc@^0.4.13":
-  version "0.4.13"
-  resolved "https://registry.yarnpkg.com/@frontarm/doc/-/doc-0.4.13.tgz#97fc024e79b10f9f6fc62d6ed86ec4bf29cacc81"
-  integrity sha512-vElzwgV02mPCTYNHNNUlTgIPgprnSm7EyAZyg19cCYCpaEvIQ794t/RS36W/EOGAQoBTZjE3Q2qrRZ4Lt8ZLRg==
+"@frontarm/doc@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@frontarm/doc/-/doc-0.5.0.tgz#493e98eb2a72a0677f4347c75c1cd611f6789410"
+  integrity sha512-Ryr/USIyeiffet0mPx9jcrcZWd0pvfiBcNm78tQSZr9K+834TT96bSm/Cyu8L6s/337A+mIlFBdWvTX2Jsy36Q==
 
 "@lerna/add@3.10.6":
   version "3.10.6"
