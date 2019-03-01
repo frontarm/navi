@@ -27,7 +27,6 @@ export class CurrentRouteObservable<Context extends object, R> implements Observ
     private lastURL: URLDescriptor
     private lastRoute?: R
     private isLastRouteSteady: boolean
-    private resolveOptions?: RouterResolveOptions
     private observableSubscription?: Subscription
     private unlisten: () => void
 
@@ -35,14 +34,12 @@ export class CurrentRouteObservable<Context extends object, R> implements Observ
         history: History,
         router: Router<Context, R>,
         reducer: Reducer,
-        resolveOptions?: RouterResolveOptions,
     ) {
         this.observers = []
         this.isLastRouteSteady = false
         this.router = router
         this.history = history
         this.reducer = reducer
-        this.resolveOptions = resolveOptions
         this.lastURL = createURLDescriptor(this.history.location)
         this.unlisten = this.history.listen(location => this.handleURLChange(createURLDescriptor(location)))
         this.refresh()
@@ -164,8 +161,9 @@ export class CurrentRouteObservable<Context extends object, R> implements Observ
         if (this.observableSubscription) {
             this.observableSubscription.unsubscribe()
         }
-
-        let observable = this.router.createObservable(url, this.resolveOptions)
+        
+        // TODO: extract resolve options from history.state
+        let observable = this.router.createObservable(url)
         if (observable) {
             this.observableSubscription = observable.subscribe(this.handleChunkList)
         }

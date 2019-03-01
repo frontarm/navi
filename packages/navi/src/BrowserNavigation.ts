@@ -2,10 +2,7 @@ import { createBrowserHistory, History } from 'history'
 import { Navigation } from './Navigation'
 import { Chunk } from './Chunks'
 import { Reducer } from './Reducer'
-import { Router } from './Router'
-import { Route, defaultRouteReducer } from './Route'
-import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
-import { CurrentRouteObservable } from './CurrentRouteObservable';
+import { Route } from './Route'
 import { Matcher } from './Matcher'
 
 
@@ -44,78 +41,23 @@ export interface BrowserNavigationOptions<Context extends object, R = Route> {
 
 
 export function createBrowserNavigation<Context extends object, R = Route>(options: BrowserNavigationOptions<Context, R>) {
-    return new BrowserNavigation(options)
-}
-
-
-export class BrowserNavigation<Context extends object, R> implements Navigation<Context, R> {
-    router: Router<Context, R>
-    history: History
-
-    private currentRouteObservable: CurrentRouteObservable<Context, R>
-
-    constructor(options: BrowserNavigationOptions<Context, R>) {
-        if (options.pages) {
-            // if (process.env.NODE_ENV !== 'production') {
-            //     console.warn(
-            //         `Deprecation Warning: passing a "pages" option to "createBrowserNavigation()" will `+
-            //         `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
-            //     )
-            // }
-            options.routes = options.pages
-        }
-
-        let reducer = options.reducer || defaultRouteReducer as any as Reducer<Chunk, R>
-
-        this.history = options.history || createBrowserHistory()
-        this.router = new Router({
-            context: options.context,
-            routes: options.routes!,
-            basename: options.basename,
-            reducer,
-        })
-
-        this.currentRouteObservable = new CurrentRouteObservable(
-            this.history,
-            this.router,
-            reducer,
-        )
+    if (options.pages) {
+        // if (process.env.NODE_ENV !== 'production') {
+        //     console.warn(
+        //         `Deprecation Warning: passing a "pages" option to "createBrowserNavigation()" will `+
+        //         `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
+        //     )
+        // }
+        options.routes = options.pages
     }
 
-    dispose() {
-        this.currentRouteObservable.dispose()
-        delete this.currentRouteObservable
-        delete this.router
-        delete this.history
-    }
+    let history = options.history || createBrowserHistory()
 
-    setContext(context: Context) {
-        this.currentRouteObservable.setContext(context)
-    }
-
-    getCurrentValue(): R {
-        return this.currentRouteObservable.getValue()
-    }
-
-    getSteadyValue(): Promise<R> {
-        return this.currentRouteObservable.getSteadyRoute()
-    }
-
-    async steady() {
-        await this.getSteadyValue()
-        return
-    }
-
-    /**
-     * If you're using code splitting, you'll need to subscribe to changes to
-     * the snapshot, as the route may change as new code chunks are received.
-     */
-    subscribe(
-        onNextOrObserver: Observer<R> | ((value: R) => void),
-        onError?: (error: any) => void,
-        onComplete?: () => void
-    ): SimpleSubscription {
-        let navigationObserver = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
-        return this.currentRouteObservable.subscribe(navigationObserver)
-    }
+    return new Navigation({
+        history,
+        basename: options.basename,
+        context: options.context,
+        routes: options.routes!,
+        reducer: options.reducer,
+    })
 }

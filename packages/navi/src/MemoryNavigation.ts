@@ -1,11 +1,9 @@
-import { createMemoryHistory, History } from 'history';
+import { createMemoryHistory } from 'history';
 import { Matcher } from './Matcher'
 import { Navigation } from './Navigation'
 import { Reducer } from './Reducer'
-import { Router, RouterResolveOptions } from './Router'
-import { Route, defaultRouteReducer } from './Route'
-import { Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
-import { CurrentRouteObservable } from './CurrentRouteObservable';
+import { RouterResolveOptions } from './Router'
+import { Route } from './Route'
 import { URLDescriptor, createURLDescriptor } from './URLTools';
 import { Chunk } from './Chunks';
 
@@ -43,88 +41,31 @@ export interface MemoryNavigationOptions<Context extends object, R = Route> {
 
 
 export function createMemoryNavigation<Context extends object, R = Route>(options: MemoryNavigationOptions<Context, R>) {
-    return new MemoryNavigation(options)
-}
-
-
-export class MemoryNavigation<Context extends object, R> implements Navigation<Context, R> {
-    router: Router<Context, R>
-
-    readonly history: History
-
-    private options: MemoryNavigationOptions<Context, R>
-    private currentRouteObservable: CurrentRouteObservable<Context, R>
-
-    constructor(options: MemoryNavigationOptions<Context, R>) {
-        if (options.pages) {
-            // if (process.env.NODE_ENV !== 'production') {
-            //     console.warn(
-            //         `Deprecation Warning: passing a "pages" option to "createMemoryNavigation()" will `+
-            //         `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
-            //     )
-            // }
-            options.routes = options.pages
-        }
-
-        let reducer = options.reducer || defaultRouteReducer as any as Reducer<Chunk, R>
-        let url = options.url || (options.request && options.request.url)
-
-        if (!url) {
-            throw new Error(`createMemoryNavigation() could not find a URL.`)
-        }
-
-        this.history = createMemoryHistory({
-            initialEntries: [createURLDescriptor(url!).href],
-        })
-        this.options = options
-        this.router = new Router({
-            context: options.context,
-            routes: (this.options.routes || this.options.pages)!,
-            basename: this.options.basename,
-            reducer,
-        })
-        this.currentRouteObservable = new CurrentRouteObservable(
-            this.history,
-            this.router,
-            reducer,
-            options.request
-        )
+    if (options.pages) {
+        // if (process.env.NODE_ENV !== 'production') {
+        //     console.warn(
+        //         `Deprecation Warning: passing a "pages" option to "createMemoryNavigation()" will `+
+        //         `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
+        //     )
+        // }
+        options.routes = options.pages
     }
 
-    dispose() {
-        this.currentRouteObservable.dispose()
-        delete this.currentRouteObservable
-        delete this.router
-        delete this.options
+    let url = options.url || (options.request && options.request.url)
+
+    if (!url) {
+        throw new Error(`createMemoryNavigation() could not find a URL.`)
     }
 
-    setContext(context: Context) {
-        this.currentRouteObservable.setContext(context)
-    }
+    let history = createMemoryHistory({
+        initialEntries: [createURLDescriptor(url!).href],
+    })
 
-    getCurrentValue(): R {
-        return this.currentRouteObservable.getValue()
-    }
-
-    getSteadyValue(): Promise<R> {
-        return this.currentRouteObservable.getSteadyRoute()
-    }
-
-    async steady() {
-        await this.getSteadyValue()
-        return
-    }
-
-    /**
-     * If you're using code splitting, you'll need to subscribe to changes to
-     * the snapshot, as the route may change as new code chunks are received.
-     */
-    subscribe(
-        onNextOrObserver: Observer<R> | ((value: R) => void),
-        onError?: (error: any) => void,
-        onComplete?: () => void
-    ): SimpleSubscription {
-        let navigationObserver = createOrPassthroughObserver(onNextOrObserver, onError, onComplete)
-        return this.currentRouteObservable.subscribe(navigationObserver)
-    }
+    return new Navigation({
+        history,
+        basename: options.basename,
+        context: options.context,
+        routes: options.routes!,
+        reducer: options.reducer,
+    })
 }
