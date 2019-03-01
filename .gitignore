@@ -1,5 +1,6 @@
 .esm-cache
 .vscode
+.env.local
 node_modules
 website/build
 notes
