@@ -48,7 +48,7 @@ export interface NavigationOptions<Context extends object, R = Route> {
    *
    * By default, a browser history object will be created.
    */
-  history: History,
+  history: History
 
   /**
    * When true, the initial HTTP method will be respect, instead of reverting
@@ -110,7 +110,11 @@ export class Navigation<Context extends object = any, R = Route>
       reducer: this.reducer,
     })
     this.unlisten = this.history.listen((location, action) =>
-      this.handleURLChange(createURLDescriptor(location), false, action === 'POP'),
+      this.handleURLChange(
+        createURLDescriptor(location),
+        false,
+        action === 'POP',
+      ),
     )
   }
 
@@ -166,10 +170,9 @@ export class Navigation<Context extends object = any, R = Route>
         state: {
           ...nextLocation.state,
           _navi: naviState,
-        }
+        },
       }
-    }
-    else if (nextLocation.state) {
+    } else if (nextLocation.state) {
       delete nextLocation.state['_navi']
     }
 
@@ -243,7 +246,11 @@ export class Navigation<Context extends object = any, R = Route>
     }
   }
 
-  private handleURLChange(url: URLDescriptor, force?: boolean, forceGet: boolean = true) {
+  private handleURLChange(
+    url: URLDescriptor,
+    force?: boolean,
+    forceGet: boolean = true,
+  ) {
     // Bail without change is the URL hasn't changed
     if (
       !force &&
@@ -275,12 +282,17 @@ export class Navigation<Context extends object = any, R = Route>
     if (url && lastURL) {
       pathHasChanged = url.pathname !== lastURL.pathname
       searchHasChanged = url.search !== lastURL.search
-      naviStateHasChanged = naviState !== (lastURL.state && lastURL.state['_navi'])
+      naviStateHasChanged =
+        naviState !== (lastURL.state && lastURL.state['_navi'])
     }
 
     // We don't want to recompute the route unless something relevant has
     // changed.
-    if (!force && !(pathHasChanged || searchHasChanged || naviStateHasChanged) && this.lastRoute) {
+    if (
+      !force &&
+      !(pathHasChanged || searchHasChanged || naviStateHasChanged) &&
+      this.lastRoute
+    ) {
       if (url.hash !== lastURL!.hash || url.state !== lastURL!.state) {
         this.setRoute(
           this.reducer(this.lastRoute, {
