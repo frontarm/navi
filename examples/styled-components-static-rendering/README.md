@@ -2,7 +2,13 @@
 
 This example adds static rendering to a create-react-app project, complete with statically rendered critical CSS using styled-components -- ensuring that your pages render immediately, with *no* flash of unstyled content.
 
-To try this example, you'll either need to make sure that Navi is available. You can either do this by adding `navi`, `navi-scripts` and `react-navi` to the package.json, or by building Navi from source:
+To try this example, you'll need to make sure that Navi is available. You can either do this by adding the required dependencies:
+
+```bash
+yarn add react react-dom navi navi-scripts react-navi
+````
+
+or by building Navi from source:
 
 ```bash
 # To build from source, you'll need to install lerna globally.
