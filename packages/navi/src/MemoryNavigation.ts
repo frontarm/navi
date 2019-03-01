@@ -70,7 +70,7 @@ export class MemoryNavigation<Context extends object, R> implements Navigation<C
         let url = options.url || (options.request && options.request.url)
 
         if (!url) {
-            throw new Error(`createMemoriNavigation() could not find a URL.`)
+            throw new Error(`createMemoryNavigation() could not find a URL.`)
         }
 
         this.history = createMemoryHistory({
