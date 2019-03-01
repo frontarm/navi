@@ -1,14 +1,5 @@
 import { Router } from './Router'
 
-export type HTTPMethod =
-  | 'POST'
-  | 'GET'
-  | 'PUT'
-  | 'PATCH'
-  | 'DELETE'
-  | 'HEAD'
-  | 'OPTIONS'
-
 export interface NaviRequest {
   /**
    * The path at which the matcher is mounted.
@@ -39,7 +30,13 @@ export interface NaviRequest {
   /**
    * A HTTP method as an uppercase string. This defaults to "GET".
    */
-  readonly method: HTTPMethod
+  readonly method: string
+
+  /**
+   * The original HTTP method -- useful for checking if this was originally a
+   * POST/PATCH/PUT/DELETE action that's been changed to get due to navigation.
+   */
+  readonly originalMethod?: string
 
   /**
    * Contains the unmatched part of the request URL.
@@ -55,7 +52,7 @@ export interface NaviRequest {
   readonly url: string
 
   /**
-   * The originally requested URL
+   * The originally requested URL, before any changes applied by matchers.
    */
   readonly originalUrl: string
 

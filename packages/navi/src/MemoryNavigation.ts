@@ -1,8 +1,7 @@
 import { createMemoryHistory } from 'history';
 import { Matcher } from './Matcher'
-import { Navigation } from './Navigation'
+import { Navigation, NavigateOptions } from './Navigation'
 import { Reducer } from './Reducer'
-import { RouterResolveOptions } from './Router'
 import { Route } from './Route'
 import { URLDescriptor, createURLDescriptor } from './URLTools';
 import { Chunk } from './Chunks';
@@ -19,7 +18,7 @@ export interface MemoryNavigationOptions<Context extends object, R = Route> {
      * The initial URL to match.
      */
     url?: string | Partial<URLDescriptor>
-    request?: RouterResolveOptions,
+    request?: NavigateOptions,
 
     /**
      * If provided, this part of any URLs will be ignored. This is useful
@@ -58,14 +57,21 @@ export function createMemoryNavigation<Context extends object, R = Route>(option
     }
 
     let history = createMemoryHistory({
-        initialEntries: [createURLDescriptor(url!).href],
+        // The initial entry is ignored, and replaced during the call
+        // to navigate below.
+        initialEntries: ['/'],
     })
-
-    return new Navigation({
+    let navigation = new Navigation({
         history,
         basename: options.basename,
         context: options.context,
         routes: options.routes!,
         reducer: options.reducer,
     })
+    navigation.navigate({
+        url,
+        ...options.request,
+        replace: true,
+    })
+    return navigation
 }

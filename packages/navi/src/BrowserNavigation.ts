@@ -52,12 +52,13 @@ export function createBrowserNavigation<Context extends object, R = Route>(optio
     }
 
     let history = options.history || createBrowserHistory()
-
-    return new Navigation({
+    let navigation = new Navigation({
         history,
         basename: options.basename,
         context: options.context,
         routes: options.routes!,
         reducer: options.reducer,
     })
+    navigation.refresh()
+    return navigation
 }

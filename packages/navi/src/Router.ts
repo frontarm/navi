@@ -7,7 +7,7 @@ import { Chunk } from './Chunks'
 import { SiteMap, RouteMap } from './Maps'
 import { createPromiseFromObservable } from './Observable';
 import { createURLDescriptor, URLDescriptor } from './URLTools';
-import { createRequest, HTTPMethod } from './NaviRequest';
+import { createRequest } from './NaviRequest';
 import { OutOfRootError } from './Errors';
 import { Reducer } from './Reducer';
 
@@ -23,7 +23,8 @@ export interface RouterResolveOptions {
     followRedirects?: boolean,
     body?: any,
     headers?: { [name: string]: string },
-    method?: HTTPMethod,
+    method?: string,
+    originalMethod?: string,
     url?: string | URLDescriptor,
 }
 
@@ -67,8 +68,6 @@ export class Router<Context extends object=any, R=Route> {
     }
 
     createObservable(url: URLDescriptor, options: RouterResolveOptions = {}): ChunkListObservable | undefined {
-        // need to somehow keep track of which promises in the resolver correspond to which observables,
-        // so that I don't end up updating observables which haven't actually changed.
         if (url.hash) {
             url = Object.assign({}, url)
             delete url.hash
@@ -78,6 +77,7 @@ export class Router<Context extends object=any, R=Route> {
             body: options.body,
             headers: options.headers || {},
             method: options.method || 'GET',
+            originalMethod: options.originalMethod,
             hostname: url.hostname,
             mountpath: '',
             params: url.query,
