@@ -10,6 +10,7 @@ export type RouteType =
 export interface Route<Data = any> {
   type: RouteType
   url: URLDescriptor
+  method: string
   chunks: Chunk[]
   lastChunk: Chunk
   
@@ -117,6 +118,7 @@ function defaultRouteReducerWithoutCompat(route: Route | undefined, chunk: Chunk
 
   let base = {
     lastChunk: chunk,
+    method: (chunk.request && chunk.request.method)!,
     chunks: route ? route.chunks.concat(chunk) : [chunk],
     
     data: route ? route.data : {},

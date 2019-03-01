@@ -1,16 +1,9 @@
 import * as React from 'react'
-import { BrowserNavigation, Navigation, Subscription, Route } from 'navi'
+import { Navigation, Subscription, Route } from 'navi'
 import { NaviContext } from './NaviContext'
 
 export interface NaviProviderProps {
   navigation: Navigation
-
-  /**
-   * Navi will attempt to detect a non browser environment in order to
-   * prevent rendering of <Suspense>, but if it fails, you can manually
-   * set `fallback` to `undefined`.
-   */
-  fallback?: React.ReactNode | undefined
 }
 
 export interface NaviProviderState {
@@ -46,31 +39,11 @@ export class NaviProvider extends React.Component<NaviProviderProps, NaviProvide
   }
 
   render() {
-    let context = this.state
-    let result = (
-      <NaviContext.Provider value={context}>
+    return (
+      <NaviContext.Provider value={this.state}>
         {this.props.children}
       </NaviContext.Provider>
     )
-
-    // If <Suspense> is supported and the app is being rendered in a browser,
-    // then wrap the app with a <Suspense> with an empty fallback, so that
-    // the fallback doesn't need to be provided manually.
-    let Suspense: React.ComponentType<any> = (React as any).Suspense
-    if (Suspense) {
-      let fallback = this.props.fallback
-      if (!('fallback' in this.props) && this.props.navigation instanceof BrowserNavigation) {
-        fallback = null
-      }
-      if (fallback !== undefined) {
-        result = <Suspense fallback={fallback}>{result}</Suspense>
-      }
-    }
-    else if (this.props.fallback !== undefined) {
-      console.warn(`You supplied a "fallback" prop to your <NaviProvider>, but the version of React that you're using doesn't support Suspense. To use the "fallback" prop, upgrade to React 16.6 or later.`)
-    }
-
-    return result
   }
 
   componentDidMount() {

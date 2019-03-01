@@ -37,6 +37,12 @@ export type ChunkType =
  */
 export interface GenericChunk {
   type: ChunkType
+ 
+  /**
+   * Contains any Request object that was used to generate this chunk.
+   * Note that for URL segments, this will be undefined.
+   */
+  request?: NaviRequest
 
   /**
    * The part of the URL pathname that has been matched.
@@ -135,6 +141,7 @@ export interface TitleChunk extends GenericChunk {
  */
 export interface URLChunk extends GenericChunk {
   type: 'url'
+  url: URLDescriptor
 }
 
 /**
@@ -156,6 +163,7 @@ export function createChunk<Type extends string, Details>(
 ) {
   return Object.assign({
     type: type,
+    request,
     url: createURLDescriptor({
       pathname: request.mountpath,
       query: request.query,
@@ -167,6 +175,7 @@ export function createNotFoundChunk(request: NaviRequest): ErrorChunk {
   let fullPathname = joinPaths(request.mountpath, request.path)
   return {
     type: 'error',
+    request,
     url: createURLDescriptor({
       pathname: fullPathname,
       query: request.query,

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { join as pathJoin } from 'path'
-import { URLDescriptor, Navigation, createURLDescriptor, HTTPMethod } from 'navi'
+import { URLDescriptor, Navigation, createURLDescriptor } from 'navi'
 import { NaviContext } from './NaviContext'
 import { scrollToHash } from './scrollToHash';
 
@@ -17,7 +17,7 @@ export interface LinkProps {
   href: string | Partial<URLDescriptor>,
   id?: string,
   lang?: string,
-  prefetch?: HTTPMethod,
+  prefetch?: string,
   ref?: React.Ref<HTMLAnchorElement>,
   rel?: string,
   style?: object,
@@ -143,7 +143,6 @@ Link.defaultProps = {
       />
     )
   },
-  prefetch: 'HEAD'
 }
 
 
@@ -155,18 +154,15 @@ interface InnerLinkProps extends LinkProps {
 class InnerLink extends React.Component<InnerLinkProps> {
   navigation: Navigation
 
-  static defaultProps = {
-    prefetch: true,
-  }
-
   constructor(props: InnerLinkProps) {
     super(props)
 
     let url = this.getURL()
     let navigation = props.context.navigation
     if (navigation && url && url.pathname && props.prefetch) {
+      let prefetch = props.prefetch
       navigation.router.resolve(url, {
-        method: props.prefetch,
+        method: typeof prefetch === 'string' ? prefetch : 'GET',
         followRedirects: true,
       })
         .catch((e) => {
@@ -276,15 +272,9 @@ class InnerLink extends React.Component<InnerLinkProps> {
 
         let currentURL = (this.props.context.busyRoute || this.props.context.steadyRoute)!.url
         let isSamePathname = url.pathname === currentURL.pathname
-        if ((!isSamePathname && url.pathname !== '') || url.hash !== currentURL.hash) {
-          this.props.context.navigation.history.push(url)
-        }
-        else {
-          // Don't keep pushing the same URL onto the history.
-          this.props.context.navigation.history.replace(url)
-          if (url.hash) {
-            scrollToHash(currentURL.hash, 'smooth')
-          }
+        this.props.context.navigation.navigate(url)
+        if ((isSamePathname || url.pathname === '') && url.hash === currentURL.hash && url.hash) {
+          scrollToHash(currentURL.hash, 'smooth')
         }
       }
     }

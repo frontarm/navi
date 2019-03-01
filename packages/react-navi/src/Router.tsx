@@ -10,13 +10,6 @@ export interface RouterProps<Context extends object> {
 
   context?: Context
 
-  /**
-   * Navi will attempt to detect a non browser environment in order to
-   * prevent rendering of <Suspense>, but if it fails, you can manually
-   * set `fallback` to `undefined`.
-   */
-  fallback?: React.ReactNode | undefined
-
   history?: any
 
   navigation?: Navigation<Context, Route>
@@ -55,9 +48,9 @@ export class Router<Context extends object={}> extends React.Component<RouterPro
   }
 
   render() {
-    let { children, fallback } = this.props
+    let { children } = this.props
     return (
-      <NaviProvider fallback={fallback} navigation={this.navigation}>
+      <NaviProvider navigation={this.navigation}>
         {children || <View />}
       </NaviProvider>
     )
