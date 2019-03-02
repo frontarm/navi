@@ -15,10 +15,10 @@ function serve({ port, root }) {
     serve(req, res, finalhandler(req, res))
   })
 
-  console.log(chalk.cyan(`Starting server on port ${port} to view production build...`));
-
   // Listen
-  server.listen(port)
+  server.listen(port, () => {
+    console.log(chalk.green(`Serving! http://localhost:${port}`))
+  })
 }
 
 module.exports = { serve }
