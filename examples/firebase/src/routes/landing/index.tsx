@@ -6,7 +6,7 @@ export default route((request, context: RoutingContext) => {
   return {
     view: (
       <div>
-        {JSON.stringify(context.currentUser)}
+        {JSON.stringify(context.currentUser && context.currentUser.email)}
       </div>
     )
   }

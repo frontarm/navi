@@ -3,8 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@types/blueimp-md5": "^2.7.0",
+    "@types/lodash-es": "^4.17.3",
+    "@types/ramda": "^0.25.51",
     "@types/styled-components": "^4.1.11",
+    "blueimp-md5": "^2.10.0",
+    "final-form": "^4.11.1",
     "firebase": "^5.8.4",
+    "polished": "^3.0.3",
+    "ramda": "^0.26.1",
+    "react-final-form": "^4.0.2",
     "react-scripts": "2.1.2",
     "styled-components": "^4.1.3"
   },

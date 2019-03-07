@@ -1,4 +1,5 @@
 import { createGlobalStyle } from 'styled-components/macro'
+import { base, colors } from './utils/theme'
 
 const GlobalStyle = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css?family=Lato:300,400,400i,700,900|Inconsolata:400,700');
@@ -9,11 +10,11 @@ const GlobalStyle = createGlobalStyle`
 
   html {
     font-family: Lato, sans-serif;
-    font-size: 16px;
+    font-size: ${base};
   }
 
   body {
-    color: ${({ theme }) => theme.colors.text};
+    color: ${colors.text};
     margin: 0;
     padding: 0;
     font-size: 1rem;
