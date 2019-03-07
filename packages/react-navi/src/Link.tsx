@@ -30,6 +30,7 @@ export interface LinkProps {
 }
 
 export interface LinkRendererProps {
+  anchorProps: LinkContext,
   active: boolean,
   activeClassName?: string,
   activeStyle?: object,
@@ -45,16 +46,15 @@ export interface LinkRendererProps {
   target?: string,
   title?: string,
   onClick: React.MouseEventHandler<any>,
-} 
+}
 
+export interface LinkAnchorProps extends LinkContext {}
 
 export const LinkContext = React.createContext<LinkContext>(undefined as any)
 
 export interface LinkContext {
-  url: URLDescriptor | undefined;
-  handleClick: (event: React.MouseEvent<HTMLAnchorElement>) => void;
-  anchorRef: React.Ref<HTMLAnchorElement>
-
+  onClick: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+  ref: React.Ref<HTMLAnchorElement>
   id?: string;
   lang?: string;
   rel?: string;
@@ -71,30 +71,20 @@ export class LinkAnchor extends React.Component<React.AnchorHTMLAttributes<HTMLA
   }
 
   renderChildren = (context: LinkContext) => {
-    let linkURL = context.url
-    let handleClick: React.MouseEventHandler<HTMLAnchorElement> = context.handleClick
+    let handleClick: React.MouseEventHandler<HTMLAnchorElement> = context.onClick
     if (this.props.onClick) {
       handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         this.props.onClick!(e)
         if (!e.defaultPrevented) {
-          context.handleClick(e)
+          context.onClick(e)
         }
       }
     }
 
     return (
       <a
-        id={context.id}
-        lang={context.lang}
-        ref={context.anchorRef}
-        rel={context.rel}
-        tabIndex={context.tabIndex}
-        target={context.target}
-        title={context.title}
-
+        {...context}
         {...this.props}
-
-        href={linkURL ? linkURL.href : context.href as string}
         onClick={handleClick}
       />
     )
@@ -105,6 +95,7 @@ export class LinkAnchor extends React.Component<React.AnchorHTMLAttributes<HTMLA
 export namespace Link {
   export type Props = LinkProps
   export type RendererProps = LinkRendererProps
+  export type AnchorProps = LinkAnchorProps
 }
 
 // Need to include this type definition, as the automatically generated one
@@ -200,7 +191,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
   }
   
   render() {
-    let props = this.props
+    let { activeStyle, activeClassName, anchorRef, onClick, prefetch, render, ...props } = this.props
     let navigationURL = this.getNavigationURL()
     let linkURL = this.getURL()
     let active = props.active !== undefined ? props.active : !!(
@@ -212,20 +203,20 @@ class InnerLink extends React.Component<InnerLinkProps> {
     )
 
     let context = {
-      url: linkURL,
-      handleClick: this.handleClick,
-
       ...props,
-
+      url: linkURL,
+      onClick: this.handleClick,
+      ref: anchorRef,
       href: typeof props.href === 'string' ? props.href : (linkURL ? linkURL.href : '')
     }
 
     return (
       <LinkContext.Provider value={context} >
-        {props.render!({
+        {render!({
           active,
-          activeClassName: props.activeClassName,
-          activeStyle: props.activeStyle,
+          activeClassName: activeClassName,
+          activeStyle: activeStyle,
+          anchorProps: context,
           children: props.children,
           className: props.className,
           disabled: props.disabled,

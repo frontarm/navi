@@ -8,9 +8,12 @@ import { withStatus } from './withStatus'
 import { withView } from './withView'
 import { NaviRequest } from '../NaviRequest'
 import { withTitle } from './withTitle'
+import { createChunksMatcher } from '../createChunksMatcher';
+import { createChunk } from '../Chunks';
 
 interface Route<Data extends object = any> {
   data?: Data
+  error?: any
   head?: any
   headers?: { [name: string]: string }
   status?: number
@@ -21,6 +24,7 @@ interface Route<Data extends object = any> {
 interface RouteOptions<Context extends object, Data extends object = any> {
   data?: Data
   getData?: Resolvable<Data, Context>
+  error?: any
   head?: any
   getHead?: Resolvable<any, Context, Promise<Data>>
   headers?: { [name: string]: string }
@@ -40,6 +44,7 @@ export function route<Context extends object, Data extends object = any>(
     let {
       data,
       getData,
+      error,
       head,
       getHead,
       headers,
@@ -93,6 +98,7 @@ export function route<Context extends object, Data extends object = any>(
       if (a || b || c || d || e || f) {
         return (async () => ({
           data: await dataMaybePromise,
+          error,
           head: await headMaybePromise,
           headers: await headersMaybePromise,
           status: await statusMaybePromise,
@@ -104,6 +110,7 @@ export function route<Context extends object, Data extends object = any>(
       else {
         return {
           data: dataMaybePromise as Data,
+          error,
           head: headMaybePromise as { [name: string]: string },
           headers: headersMaybePromise as any,
           status: statusMaybePromise as number,
@@ -121,7 +128,12 @@ export function route<Context extends object, Data extends object = any>(
     withHeaders((req, context) => context.headers),
     withStatus((req, context) => context.status),
     withTitle((req, context) => context.title),
-    withView((req, context) => context.view),
+    withView((req, context) => context.view, undefined, true),
+    createChunksMatcher(
+      (req, context) => context.error,
+      undefined,
+      (error, request) => (error ? [createChunk('error', request, { error })] : []),
+    )
   )
 }
 

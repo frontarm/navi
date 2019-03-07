@@ -139,12 +139,12 @@ export class Navigation<Context extends object = any, R = Route>
   navigate(
     url: string | Partial<URLDescriptor>,
     options?: NavigateOptionsWithoutURL,
-  )
-  navigate(url: NavigateOptions)
+  ): Promise<R>
+  navigate(url: NavigateOptions): Promise<R>
   navigate(
     url: string | Partial<URLDescriptor> | NavigateOptions,
     options: NavigateOptionsWithoutURL = {},
-  ) {
+  ): Promise<R> {
     let nextLocation: URLDescriptor
     if (typeof url === 'string') {
       nextLocation = createURLDescriptor(url)
@@ -185,6 +185,8 @@ export class Navigation<Context extends object = any, R = Route>
         currentLocation.hash === nextLocation.hash)
 
     this.history[shouldReplace ? 'replace' : 'push'](nextLocation)
+
+    return this.getSteadyValue()
   }
 
   refresh() {
@@ -355,12 +357,16 @@ export class Navigation<Context extends object = any, R = Route>
     if (route !== this.lastRoute) {
       this.lastRoute = route
       this.isLastRouteSteady = isSteady
-      if (isSteady && this.waitUntilSteadyDeferred) {
-        this.waitUntilSteadyDeferred.resolve(route)
-        delete this.waitUntilSteadyDeferred
-      }
+      
       for (let i = 0; i < this.observers.length; i++) {
         this.observers[i].next(route)
+      }
+
+      // Check this.isLastRouteSteady instead of isSteady, in case one of our
+      // subscribers causes navigation again.
+      if (this.isLastRouteSteady && this.waitUntilSteadyDeferred) {
+        this.waitUntilSteadyDeferred.resolve(route)
+        delete this.waitUntilSteadyDeferred
       }
     }
   }

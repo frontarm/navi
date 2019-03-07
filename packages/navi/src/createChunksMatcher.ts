@@ -13,7 +13,8 @@ export function createChunksMatcher<T, Context extends object>(
   maybeResolvable: T | Resolvable<T, Context>,
   forceChildMatcher: Matcher<any> | undefined,
   getChunks: (value: T, request: NaviRequest) => Chunk[],
-  shouldResolve?: (request: NaviRequest) => boolean
+  shouldResolve?: (request: NaviRequest) => boolean,
+  exact?: boolean,
 ): Matcher<Context> {
   function* chunksMatcherGenerator(
     request: NaviRequest,
@@ -21,7 +22,7 @@ export function createChunksMatcher<T, Context extends object>(
     child?: MatcherGenerator<Context>
   ): MatcherIterator {
     let unmatchedPathnamePart = request.path
-    if (!child && unmatchedPathnamePart && unmatchedPathnamePart !== '/') {
+    if ((!child || exact) && unmatchedPathnamePart && unmatchedPathnamePart !== '/') {
       yield [createNotFoundChunk(request)]
     }
     else {

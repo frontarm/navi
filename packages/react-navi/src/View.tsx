@@ -41,7 +41,7 @@ interface InnerViewProps extends ViewProps {
 }
 
 interface InnerViewState {
-  steadyRoute?: Route,
+  route?: Route,
   childContext?: NaviContext,
   Chunk?: ViewChunk,
   headAndTitleChunks?: (HeadChunk | TitleChunk)[],
@@ -61,21 +61,25 @@ function createTitleElement(str: string) {
 
 class InnerView extends React.Component<InnerViewProps, InnerViewState> {
   static getDerivedStateFromProps(props: InnerViewProps, state: InnerViewState): Partial<InnerViewState> | null {
+    let route = props.context.steadyRoute || props.context.busyRoute
+
     // If there's no steady route, then we'll need to wait until a steady
     // route becomes available.
-    if (!props.context.steadyRoute) {
+    if (!route) {
       return null
     }
 
+    console.log(route)
+
     // Bail if nothing has changed
-    if (state.steadyRoute === props.context.steadyRoute &&
+    if (state.route === route &&
         state.childContext && state.childContext.busyRoute === props.context.busyRoute) {
       return null
     }
 
     let unconsumedChunks =
       props.context.unconsumedSteadyRouteChunks ||
-      props.context.steadyRoute.chunks
+      route.chunks
 
     let index = unconsumedChunks.findIndex(props.where!)
     let errorSearchChunks = index === -1 ? unconsumedChunks : unconsumedChunks.slice(0, index + 1)
@@ -86,9 +90,7 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
       }
     }
     if (index === -1) {
-      return {
-        error: new MissingChunk(props.context),
-      }
+      return null
     }
     let Chunk = unconsumedChunks[index] as ViewChunk
 
@@ -111,7 +113,7 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
     return {
       Chunk,
       headAndTitleChunks,
-      steadyRoute: props.context.steadyRoute,
+      route,
       childContext: {
         ...props.context,
         busyRoute: props.context.busyRoute,
@@ -134,9 +136,9 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
   }
 
   handleUpdate(prevState?: InnerViewState) {
-    if (this.state.steadyRoute && (!prevState || !prevState.steadyRoute || prevState.steadyRoute !== this.state.steadyRoute)) {
-      let prevRoute = prevState && prevState.steadyRoute
-      let nextRoute = this.state.steadyRoute
+    if (this.state.route && (!prevState || !prevState.route || prevState.route !== this.state.route)) {
+      let prevRoute = prevState && prevState.route
+      let nextRoute = this.state.route
 
       if (nextRoute && nextRoute.type !== 'busy') {
         if (prevRoute && areURLDescriptorsEqual(nextRoute.url, prevRoute.url)) {
@@ -201,7 +203,7 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
       if (typeof render !== "function") {
         throw new Error(`A Navi <View> expects any children to be a function, but instead received "${render}".`)
       }
-      content = this.props.children(Chunk.view, this.state.steadyRoute!)
+      content = this.props.children(Chunk.view, this.state.route!)
     }
     else if (Chunk.view) {
       if (typeof Chunk.view === 'function') {

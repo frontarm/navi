@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { join as pathJoin } from 'path'
-import { URLDescriptor, Navigation, createURLDescriptor } from 'navi'
+import { URLDescriptor, createURLDescriptor, Route } from 'navi'
 import { NaviContext } from './NaviContext'
 
-function useAction(method: string, href?: string | Partial<URLDescriptor>): [boolean, (body?: any) => void] {
+function useURL(href?: string | Partial<URLDescriptor>) {
   let context = React.useContext(NaviContext)
   let busyRoute = context.busyRoute
   let route = (context.steadyRoute || busyRoute)!
@@ -11,29 +11,26 @@ function useAction(method: string, href?: string | Partial<URLDescriptor>): [boo
   if (!href) {
     href = navigationURL
   }
-
   // The route `pathname` should always end with a `/`, so this
   // will give us a consistent behavior for `.` and `..` links.
   if (navigationURL && typeof href === 'string' && href[0] === '.') {
     href = pathJoin(navigationURL.pathname, href)
   }
-  let url = createURLDescriptor(href)
-  let busyURL = busyRoute && busyRoute.url
-  let callback = React.useCallback((body?: any) => {
-    this.props.context.navigation.navigate({
+  return createURLDescriptor(href)
+}
+
+export function useAction(method: string, href?: string | Partial<URLDescriptor>): (body?: any) => Promise<Route> {
+  let context = React.useContext(NaviContext)
+  let url = useURL(href)
+  let callback = React.useCallback((body?: any) => (
+    context.navigation.navigate({
       url,
       method,
       body,
     })
-  }, [method, href])
-  let isBusy = !!(
-    busyURL && 
-    busyURL.pathname === url.pathname &&
-    busyURL.search === url.search &&
-    method === busyRoute!.method
-  )
+  ), [method, href])
   
-  return [isBusy, callback]
+  return callback
 }
 
 
@@ -56,6 +53,25 @@ export interface ActionProps {
   title?: string,
   type?: string
   onClick?: React.MouseEventHandler<HTMLElement>,
+  onComplete?: (route: Route) => void,
+}
+
+function useRefCounter(): [boolean, () => void, () => void] {
+  let counterRef = React.useRef(0)
+  let [isZero, setIsZero] = React.useState(true)
+
+  let increase = React.useCallback(() => {
+    if (counterRef.current++ === 0) {
+      setIsZero(false)
+    }
+  }, [])
+  let decrease = React.useCallback(() => {
+    if (--counterRef.current === 0) {
+      setIsZero(true)
+    }
+  }, [])
+  
+  return [isZero, increase, decrease]
 }
 
 export function Action(props: ActionProps) {
@@ -72,7 +88,8 @@ export function Action(props: ActionProps) {
     ...passthrough
   } = props
 
-  let [isBusy, act] = useAction(method, href)
+  let [busy, increaseBusy, decreaseBusy] = useRefCounter()
+  let act = useAction(method, href)
   let handleClick: React.MouseEventHandler<HTMLElement> = (event) => {
     if (props.disabled) {
       event.preventDefault()
@@ -84,12 +101,21 @@ export function Action(props: ActionProps) {
     }
 
     if (!event.defaultPrevented) {
-      act(body)
+      increaseBusy()
+      act(body).then(
+        route => {
+          decreaseBusy()
+          if (props.onComplete) {
+            props.onComplete(route)
+          }
+        },
+        decreaseBusy,
+      )
     }
   }
   handleClick = React.useCallback(handleClick, [onClick, body, act])
 
-  if (isBusy && busyClassName) {
+  if (busy && busyClassName) {
     className = className ? (className+' '+busyClassName) : busyClassName
     style = style ? { ...style, ...busyStyle } : busyStyle
   }
