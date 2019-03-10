@@ -1,5 +1,5 @@
 import { createBrowserHistory, History } from 'history'
-import { Navigation } from './Navigation'
+import { Navigation, NaviState, NAVI_STATE_KEY } from './Navigation'
 import { Chunk } from './Chunks'
 import { Reducer } from './Reducer'
 import { Route } from './Route'
@@ -34,6 +34,13 @@ export interface BrowserNavigationOptions<Context extends object, R = Route> {
     history?: History,
 
     /**
+     * Accepts the state of the Navigation object used to generate the initial
+     * screen on the server. This allows the BrowserNavigation to generate the
+     * correct route for non-GET methods, and to reuse any memoized values.
+     */
+    serverState?: NaviState,
+
+    /**
      * The function that reduces chunks into a Route object.
      */
     reducer?: Reducer<Chunk, R>,
@@ -51,7 +58,21 @@ export function createBrowserNavigation<Context extends object, R = Route>(optio
         options.routes = options.pages
     }
 
+    // If there's a server state on the window object, use it.
+    if (!options.serverState && typeof window !== undefined && window['__NAVI_STATE__']) {
+        options.serverState = window['__NAVI_STATE__']
+    }
+
     let history = options.history || createBrowserHistory()
+    if (options.serverState) {
+        history.replace({
+            ...history.location,
+            state: {
+                ...history.location.state,
+                [NAVI_STATE_KEY]: options.serverState,
+            }
+        })
+    }
     let navigation = new Navigation({
         history,
         basename: options.basename,

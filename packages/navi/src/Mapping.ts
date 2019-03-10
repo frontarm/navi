@@ -5,6 +5,7 @@ import { createRequest, NaviRequest } from './NaviRequest'
 
 export const KEY_WILDCARD = '\0'
 export const KEY_WILDCARD_REGEXP = /\0/g
+export const MEMO_KEY_PREFIX = '\0'
 
 
 /**
@@ -115,7 +116,7 @@ export function createMapping(pattern: string, matcher: Matcher<any>): Mapping {
 }
 
 
-export function mappingAgainstPathname(request: NaviRequest, mapping: Mapping, context: any): NaviRequest | undefined {
+export function matchAgainstPathname(request: NaviRequest, mapping: Mapping, context: any): NaviRequest | undefined {
     let match = mapping.regExp.exec(request.path)
     if (!match) {
         return
@@ -134,12 +135,16 @@ export function mappingAgainstPathname(request: NaviRequest, mapping: Mapping, c
     }
 
     let unmatchedPath = request.path.slice(matchedPathname.length) || '/'
+    let memo = request.memo
 
     let mountpath = joinPaths(request.mountpath, matchedPathname)
     return createRequest(context, {
         ...request,
         params,
         mountpath,
+        memo: <T>(getter: () => T | Promise<T>, ...keys: string[]) => {
+            return memo(getter, ...keys, MEMO_KEY_PREFIX+matchedPathname)
+        },
         path: unmatchedPath,
         url: unmatchedPath+request.search,
     })

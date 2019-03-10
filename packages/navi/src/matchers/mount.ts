@@ -1,5 +1,5 @@
 import { Chunk, createChunk, createNotFoundChunk } from '../Chunks'
-import { createMapping, mappingAgainstPathname } from '../Mapping'
+import { createMapping, matchAgainstPathname } from '../Mapping'
 import { Matcher, MatcherIterator, createMatcherIterator } from '../Matcher'
 import { NaviRequest } from '../NaviRequest'
 
@@ -49,7 +49,7 @@ export function mount<
       // precise match (and we always want to use the most precise match).
       for (let i = mappings.length - 1; i >= 0; i--) {
         let mapping = mappings[i]
-        let childRequest = mappingAgainstPathname(request, mapping, context)
+        let childRequest = matchAgainstPathname(request, mapping, context)
         if (childRequest) {
           childIterator = createMatcherIterator(mapping.matcher(), childRequest, context, mapping.pattern)
 

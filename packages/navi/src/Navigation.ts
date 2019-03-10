@@ -19,6 +19,16 @@ import { Chunk } from './Chunks'
 import { OutOfRootError } from './Errors'
 import { Deferred } from './Deferred'
 
+export const NAVI_STATE_KEY = '\0navi'
+
+export interface NaviState {
+  method?: string,
+  body?: string,
+  headers?: { [name: string]: string },
+  memos?: { [name: string]: string }, 
+  key?: number
+}
+
 export interface NavigationOptions<Context extends object, R = Route> {
   /**
    * The Matcher that declares your app's pages.
@@ -83,6 +93,7 @@ export class Navigation<Context extends object = any, R = Route>
   // Used to detect and defuse loops where a change to history results
   // in a new change to history before the previous one completes.
   private lastReceivedURL?: URLDescriptor
+  private lastHandledURL?: URLDescriptor
 
   private waitUntilSteadyDeferred?: Deferred<R>
   private observers: Observer<R>[]
@@ -91,10 +102,7 @@ export class Navigation<Context extends object = any, R = Route>
   private isLastRouteSteady: boolean
   private observableSubscription?: Subscription
   private unlisten: () => void
-
-  // Bodies are stored on a WeakMap instead of in history.state, as
-  // history.state must be serializable, and bodies shouldn't have to be.
-  private bodies: WeakMap<any, any>
+  private nextStateKey: number
 
   constructor(options: NavigationOptions<Context, R>) {
     this.reducer =
@@ -102,7 +110,7 @@ export class Navigation<Context extends object = any, R = Route>
     this.history = options.history
     this.observers = []
     this.isLastRouteSteady = false
-    this.bodies = new WeakMap()
+    this.nextStateKey = 1
     this.router = new Router({
       context: options.context,
       routes: options.routes,
@@ -110,11 +118,7 @@ export class Navigation<Context extends object = any, R = Route>
       reducer: this.reducer,
     })
     this.unlisten = this.history.listen((location, action) =>
-      this.handleURLChange(
-        createURLDescriptor(location),
-        false,
-        action === 'POP',
-      ),
+      this.handleURLChange(createURLDescriptor(location), false),
     )
   }
 
@@ -132,7 +136,6 @@ export class Navigation<Context extends object = any, R = Route>
     delete this.router
     delete this.waitUntilSteadyDeferred
     delete this.lastRoute
-    delete this.history
     delete this.router
   }
 
@@ -158,22 +161,23 @@ export class Navigation<Context extends object = any, R = Route>
     }
 
     if (options.method || options.headers || options.body) {
-      let naviState = {
+      let naviState: NaviState = {
         method: options.method,
         headers: options.headers,
+        body: JSON.stringify(options.body),
+        memos: {},
+        key: this.nextStateKey++,
       }
-
-      this.bodies.set(naviState, options.body)
 
       nextLocation = {
         ...nextLocation,
         state: {
           ...nextLocation.state,
-          _navi: naviState,
+          [NAVI_STATE_KEY]: naviState,
         },
       }
     } else if (nextLocation.state) {
-      delete nextLocation.state['_navi']
+      delete nextLocation.state[NAVI_STATE_KEY]
     }
 
     let currentLocation = this.history.location
@@ -223,6 +227,11 @@ export class Navigation<Context extends object = any, R = Route>
     await this.getSteadyValue()
   }
 
+  extract(): NaviState {
+    let state = this.history.location.state || { [NAVI_STATE_KEY]: undefined }
+    return state[NAVI_STATE_KEY] || {}
+  }
+
   /**
    * If you're using code splitting, you'll need to subscribe to changes to
    * Route, as the route may change as new code chunks are received.
@@ -251,7 +260,6 @@ export class Navigation<Context extends object = any, R = Route>
   private handleURLChange(
     url: URLDescriptor,
     force?: boolean,
-    forceGet: boolean = true,
   ) {
     // Bail without change is the URL hasn't changed
     if (
@@ -279,13 +287,13 @@ export class Navigation<Context extends object = any, R = Route>
 
     let lastURL = this.lastURL
     this.lastURL = url
-    let naviState = url.state && url.state['_navi']
+    let naviState: NaviState = (url.state && url.state[NAVI_STATE_KEY]) || { key: undefined }
     let pathHasChanged, searchHasChanged, naviStateHasChanged
     if (url && lastURL) {
+      let lastNaviState: NaviState = lastURL.state && lastURL.state[NAVI_STATE_KEY] || { key: undefined }
+      naviStateHasChanged = naviState.key !== lastNaviState.key
       pathHasChanged = url.pathname !== lastURL.pathname
       searchHasChanged = url.search !== lastURL.search
-      naviStateHasChanged =
-        naviState !== (lastURL.state && lastURL.state['_navi'])
     }
 
     // We don't want to recompute the route unless something relevant has
@@ -311,15 +319,45 @@ export class Navigation<Context extends object = any, R = Route>
       this.observableSubscription.unsubscribe()
     }
 
-    let observableOptions: RouterResolveOptions = {}
-    if (naviState) {
-      let body = this.bodies.get(naviState)
-      this.bodies.delete(naviState)
-      observableOptions = {
-        body,
-        method: forceGet || !naviState.method ? 'GET' : naviState.method,
-        originalMethod: forceGet && naviState.method,
-        headers: naviState.headers,
+    this.lastHandledURL = url
+
+    let body = naviState.body === undefined ? undefined : JSON.parse(naviState.body)
+    let memos = naviState.memos || {}
+    let keyCounters: { [name: string]: number } = {}
+    let observableOptions: RouterResolveOptions = {
+      body,
+      method: naviState.method || 'GET',
+      headers: naviState.headers || {},
+      memo: async <T>(callback: () => T | Promise<T>, ...keys: string[]) => {
+        let key = keys.join('.')
+        let count = keyCounters[key] || 0
+        keyCounters[key] = count + 1
+        key += '.'+count
+
+        if (key in memos) {
+          let serializedValue = memos[key]
+          return serializedValue && JSON.parse(serializedValue)
+        }
+
+        let value = await callback()
+
+        // Record the memoized value
+        memos[key] = JSON.stringify(value)
+        if (this.lastHandledURL === url) {
+          let location = this.history.location
+          this.history.replace({
+            ...location,
+            state: {
+              ...location.state,
+              [NAVI_STATE_KEY]: {
+                ...naviState,
+                memos
+              },
+            },
+          })
+        }
+
+        return value
       }
     }
 

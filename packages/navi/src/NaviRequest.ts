@@ -33,12 +33,6 @@ export interface NaviRequest {
   readonly method: string
 
   /**
-   * The original HTTP method -- useful for checking if this was originally a
-   * POST/PATCH/PUT/DELETE action that's been changed to get due to navigation.
-   */
-  readonly originalMethod?: string
-
-  /**
    * Contains the unmatched part of the request URL.
    */
   readonly path: string
@@ -60,10 +54,14 @@ export interface NaviRequest {
   readonly hostname: string
   readonly headers: { [name: string]: string }
 
+  readonly memo: <T>(getter: () => T | Promise<T>, ...keys: string[]) => Promise<T>;
+
+  // TODO: see if I can put typing back onto this
+  readonly context?: any
+
   // TODO: these are deprecated, remove in Navi 0.12
   readonly mountname?: string
   readonly pathname?: string
-  readonly context?: any
 }
 
 export function createRequest(context: any, request: NaviRequest) {
@@ -94,4 +92,8 @@ export function createRequest(context: any, request: NaviRequest) {
     },
   })
   return request
+}
+
+export function passthroughMemo<T>(callback: () => T | Promise<T>) {
+  return Promise.resolve(callback())
 }

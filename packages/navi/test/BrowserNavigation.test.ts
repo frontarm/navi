@@ -1,20 +1,35 @@
 import { createBrowserNavigation, mount, route } from '../src'
 
+function createRoutes() {
+  let i = 0
+
+  return mount({
+    '/': route(),
+    '/test': route(async req => {
+      if (req.method === 'POST' && !req.headers.token) {
+        throw new Error('unauthenticated')
+      }
+
+      let memo1 = await req.memo(() => ++i)
+      let memo2 = await req.memo(() => ++i)
+
+      return {
+        view: {
+          method: req.method,
+          body: req.body,
+          memo1,
+          memo2,
+          memoExecutions: i,
+        }
+      }
+    }),
+  })
+}
+
 function createTestNavigation() {
   history.pushState({}, '', '/')
   return createBrowserNavigation({
-    routes: mount({
-      '/': route(),
-      '/test': route(req => {
-        if (req.method === 'POST' && !req.headers.token) {
-          throw new Error('unauthenticated')
-        }
-
-        return {
-          view: req.method === 'POST' ? req.body : (req.originalMethod ? 'original:'+req.originalMethod : 'get')
-        }
-      }),
-    }),
+    routes: createRoutes()
   })
 }
 
@@ -36,7 +51,7 @@ describe("BrowserNavigation", () => {
     let r = await nav.getSteadyValue()
 
     expect(r.url.pathname).toBe('/test/')
-    expect(r.views[0]).toBe('hello')
+    expect(r.views[0].body).toBe('hello')
     expect(nav.history.length).toBe(originalHistoryLength + 1)
   })
 
@@ -53,7 +68,7 @@ describe("BrowserNavigation", () => {
 
     let r = await nav.getSteadyValue()
 
-    expect(r.views[0]).toBe('get')
+    expect(r.views[0].method).toBe('GET')
     expect(nav.history.length).toBe(originalHistoryLength + 1)
   })
 
@@ -68,7 +83,7 @@ describe("BrowserNavigation", () => {
     expect(nav.history.length).toBe(originalHistoryLength + 2)
   })
 
-  test("on 'back', POST requests are converted to GET with originalMethod", async () => {
+  test("on 'back', request.memoize() callbacks are not called again", async () => {
     let nav = createTestNavigation()
     let originalHistoryLength = nav.history.length
     nav.navigate('/test', {
@@ -89,6 +104,45 @@ describe("BrowserNavigation", () => {
 
     expect(nav.history.length).toBe(originalHistoryLength + 2)
     expect(r.url.pathname).toBe('/test/')
-    expect(r.views[0]).toBe('original:POST')
+    expect(r.views[0].method).toBe('POST')
+    expect(r.views[0].memo1).toBe(1)
+    expect(r.views[0].memo2).toBe(2)
+    expect(r.views[0].memoExecutions).toBe(2)
+  })
+
+  describe("extract()ing a state and reusing it in another BrowserNavigation", () => {
+    test("does not call memo callbacks again", async () => {
+      let nav = createTestNavigation()
+      let originalHistoryLength = nav.history.length
+      nav.navigate('/test', {
+        body: 'hello',
+        headers: { token: 'auth' },
+        method: 'POST',
+      })
+      nav.navigate('/')
+  
+      await nav.steady()
+  
+      nav.history.goBack()
+  
+      // Need to wait a bit for the popstate to be fired
+      await new Promise(resolve => setTimeout(resolve, 50))
+  
+      await nav.getSteadyValue()
+
+      let nav1 = createBrowserNavigation({
+        serverState: nav.extract(),
+        routes: createRoutes()
+      })
+      
+      let r = await nav1.getSteadyValue()
+
+      expect(nav.history.length).toBe(originalHistoryLength + 2)
+      expect(r.url.pathname).toBe('/test/')
+      expect(r.views[0].method).toBe('POST')
+      expect(r.views[0].memo1).toBe(1)
+      expect(r.views[0].memo2).toBe(2)
+      expect(r.views[0].memoExecutions).toBe(0)
+    })
   })
 })

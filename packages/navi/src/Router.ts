@@ -1,5 +1,5 @@
 import { Matcher, MatcherGenerator } from './Matcher'
-import { createRootMapping, mappingAgainstPathname, Mapping } from './Mapping'
+import { createRootMapping, matchAgainstPathname, Mapping } from './Mapping'
 import { ChunkListObservable } from './ChunkListObservable'
 import { ChunksMapObservable } from './ChunksMapObservable'
 import { Route, defaultRouteReducer } from './Route'
@@ -7,7 +7,7 @@ import { Chunk } from './Chunks'
 import { SiteMap, RouteMap } from './Maps'
 import { createPromiseFromObservable } from './Observable';
 import { createURLDescriptor, URLDescriptor } from './URLTools';
-import { createRequest } from './NaviRequest';
+import { createRequest, NaviRequest, passthroughMemo } from './NaviRequest';
 import { OutOfRootError } from './Errors';
 import { Reducer } from './Reducer';
 
@@ -24,7 +24,7 @@ export interface RouterResolveOptions {
     body?: any,
     headers?: { [name: string]: string },
     method?: string,
-    originalMethod?: string,
+    memo?: NaviRequest['memo'],
     url?: string | URLDescriptor,
 }
 
@@ -67,7 +67,7 @@ export class Router<Context extends object=any, R=Route> {
         this.context = context || {}
     }
 
-    createObservable(url: URLDescriptor, options: RouterResolveOptions = {}): ChunkListObservable | undefined {
+    createObservable(url: URLDescriptor, options: RouterResolveOptions): ChunkListObservable | undefined {
         if (url.hash) {
             url = Object.assign({}, url)
             delete url.hash
@@ -77,7 +77,6 @@ export class Router<Context extends object=any, R=Route> {
             body: options.body,
             headers: options.headers || {},
             method: options.method || 'GET',
-            originalMethod: options.originalMethod,
             hostname: url.hostname,
             mountpath: '',
             params: url.query,
@@ -87,8 +86,9 @@ export class Router<Context extends object=any, R=Route> {
             url: url.pathname+url.search,
             originalUrl: url.href,
             path: url.pathname,
+            memo: options.memo || passthroughMemo,
         })
-        let matchRequest = mappingAgainstPathname(request, this.rootMapping, this.context)
+        let matchRequest = matchAgainstPathname(request, this.rootMapping, this.context)
         if (matchRequest) {
             return new ChunkListObservable(
                 url,

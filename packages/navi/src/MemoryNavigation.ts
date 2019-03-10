@@ -69,8 +69,8 @@ export function createMemoryNavigation<Context extends object, R = Route>(option
         reducer: options.reducer,
     })
     navigation.navigate({
-        url,
         ...options.request,
+        url,
         replace: true,
     })
     return navigation
