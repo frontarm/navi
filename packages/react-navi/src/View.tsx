@@ -69,8 +69,6 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
       return null
     }
 
-    console.log(route)
-
     // Bail if nothing has changed
     if (state.route === route &&
         state.childContext && state.childContext.busyRoute === props.context.busyRoute) {
