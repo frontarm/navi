@@ -6,27 +6,24 @@ import AuthFormLayout from '../styled/AuthFormLayout'
 import { colors } from '../utils/theme'
 
 export default map(async (request, context: RoutingContext) => {
-  if (context.currentUser) {
+  try {
+    if (request.method !== 'post') {
+      throw undefined
+    }
+
+    let { email, password } = request.body
+    await request.effect(() =>
+      context.firebase.auth.signInWithEmailAndPassword(email, password)
+    )
     return redirect('/')
   }
-
-  if (request.method === 'post') {
-    let { email, password } = request.body
-    try {
-      await context.firebase.auth.signInWithEmailAndPassword(email, password);
-      return redirect('/')
-    }
-    catch (error) {
-      return route({
-        error,
-        view: <Login />
-      })
-    }
+  catch (error) {
+    return route({
+      error,
+      view: <Login />,
+      title: 'Login',
+    })
   }
-
-  return route({
-    view: <Login />
-  })
 })
 
 function Login() {

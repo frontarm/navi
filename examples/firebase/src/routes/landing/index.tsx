@@ -4,6 +4,7 @@ import { RoutingContext } from '../../types/RoutingContext'
 
 export default route((request, context: RoutingContext) => {
   return {
+    title: 'Welcome',
     view: (
       <div>
         {JSON.stringify(context.currentUser && context.currentUser.email)}

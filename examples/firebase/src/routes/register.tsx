@@ -7,26 +7,25 @@ import { colors } from '../utils/theme';
 
 export default map(async (request, context: RoutingContext) => {
   if (context.currentUser) {
-    return redirect('/')
+    return redirect('/?welcome')
   }
 
-  if (request.method === 'post') {
+  try {
+    if (request.method !== 'post') {
+      throw undefined
+    }
+    
     let { email, password } = request.body
-    try {
-      await context.firebase.auth.createUserWithEmailAndPassword(email, password);
-      return redirect('/?welcome')
-    }
-    catch (error) {
-      return route({
-        error,
-        view: <Register />
-      })
-    }
+    await context.firebase.auth.createUserWithEmailAndPassword(email, password);
+    return redirect('/?welcome')
   }
-
-  return route({
-    view: <Register />
-  })
+  catch (error) {
+    return route({
+      error,
+      view: <Register />,
+      title: 'Register',
+    })
+  }
 })
 
 function Register() {
