@@ -34,6 +34,9 @@ async function renderPageToString({ config, exports={}, routes, siteMap, depende
   // Wait for any asynchronous content to finish fetching
   let route = await navigation.getSteadyValue()
 
+  // Extract the navigation state into a script tag to bootstrap the browser Navigation.
+  let state = `<script>window.__NAVI_STATE__=${JSON.stringify(state).replace(/</g, '\\u003c')};</script>`
+
   // react-helmet thinks it's in a browser because of JSDOM, so we need to
   // manually let it know that we're doing static rendering.
   Helmet.canUseDOM = false
@@ -70,7 +73,8 @@ async function renderPageToString({ config, exports={}, routes, siteMap, depende
     replaceTitleWith:
       `<link rel="canonical" href="${canonicalURLBase+url.href}" />\n`+
       metaHTML+
-      stylesheetTags,
+      stylesheetTags+
+      state,
   })
 }
 
