@@ -18,16 +18,19 @@ import { Reducer } from './Reducer'
 import { Chunk } from './Chunks'
 import { OutOfRootError } from './Errors'
 import { Deferred } from './Deferred'
+import { serializePromise, deserializePromise } from './utils/serializeDeserializePromise';
 
-export const NAVI_STATE_KEY = '\0navi'
+export const NAVI_STATES_KEY = '\0navi'
 
 export interface NaviState {
   method?: string,
   body?: string,
   headers?: { [name: string]: string },
-  memos?: { [name: string]: string }, 
+  effects?: { [name: string]: string }, 
   key?: number
 }
+
+export type NaviStates = NaviState[]
 
 export interface NavigationOptions<Context extends object, R = Route> {
   /**
@@ -85,7 +88,8 @@ export interface NavigateOptions extends NavigateOptionsWithoutURL {
 export class Navigation<Context extends object = any, R = Route>
   implements Observable<R> {
   router: Router<Context, R>
-  history: History
+  
+  private _history: History
 
   private reducer: Reducer<Chunk, R>
 
@@ -99,6 +103,7 @@ export class Navigation<Context extends object = any, R = Route>
   private observers: Observer<R>[]
   private lastURL?: URLDescriptor
   private lastRoute?: R
+  private ignoreNextURLChange?: boolean
   private isLastRouteSteady: boolean
   private observableSubscription?: Subscription
   private unlisten: () => void
@@ -107,7 +112,7 @@ export class Navigation<Context extends object = any, R = Route>
   constructor(options: NavigationOptions<Context, R>) {
     this.reducer =
       options.reducer || ((defaultRouteReducer as any) as Reducer<Chunk, R>)
-    this.history = options.history
+    this._history = options.history
     this.observers = []
     this.isLastRouteSteady = false
     this.nextStateKey = 1
@@ -117,16 +122,23 @@ export class Navigation<Context extends object = any, R = Route>
       basename: options.basename,
       reducer: this.reducer,
     })
-    this.unlisten = this.history.listen((location, action) =>
-      this.handleURLChange(createURLDescriptor(location), false),
+    this.unlisten = this._history.listen((location, action) =>
+      this.handleURLChange(createURLDescriptor(location, { ensureTrailingSlash: false }), false),
     )
+  }
+
+  get history() {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`Deprecation Warning: "navigation.history" will be removed in Navi 0.13. Please use "navigation.navigate()", "navigation.goBack()" or "navigation.goForward()" instead.`)
+    }
+    return this._history
   }
 
   dispose() {
     this.observers.length = 0
     this.unlisten()
     delete this.unlisten
-    delete this.history
+    delete this._history
 
     if (this.observableSubscription) {
       this.observableSubscription.unsubscribe()
@@ -137,6 +149,26 @@ export class Navigation<Context extends object = any, R = Route>
     delete this.waitUntilSteadyDeferred
     delete this.lastRoute
     delete this.router
+  }
+
+  async go(n: number) {
+    let urlChanged = new Promise(resolve => {
+      let unlisten = this._history.listen(() => {
+        unlisten()
+        resolve()
+      })
+    })
+    this._history.go(n)
+    await urlChanged
+    return this.getSteadyValue()
+  }
+
+  goBack() {
+    return this.go(-1)  
+  }
+
+  goForward() {
+    return this.go(1)  
   }
 
   navigate(
@@ -160,27 +192,7 @@ export class Navigation<Context extends object = any, R = Route>
       throw new Error(`You must specify a URL for navigation.navigate().`)
     }
 
-    if (options.method || options.headers || options.body) {
-      let naviState: NaviState = {
-        method: options.method,
-        headers: options.headers,
-        body: JSON.stringify(options.body),
-        memos: {},
-        key: this.nextStateKey++,
-      }
-
-      nextLocation = {
-        ...nextLocation,
-        state: {
-          ...nextLocation.state,
-          [NAVI_STATE_KEY]: naviState,
-        },
-      }
-    } else if (nextLocation.state) {
-      delete nextLocation.state[NAVI_STATE_KEY]
-    }
-
-    let currentLocation = this.history.location
+    let currentLocation = this._history.location
     let shouldReplace =
       options.replace ||
       (options.replace !== false &&
@@ -188,13 +200,38 @@ export class Navigation<Context extends object = any, R = Route>
         currentLocation.search === nextLocation.search &&
         currentLocation.hash === nextLocation.hash)
 
-    this.history[shouldReplace ? 'replace' : 'push'](nextLocation)
+    let previousNaviStates = shouldReplace ? this.extract(currentLocation) : []
+    let naviState: NaviState = {}
+
+    // TODO: only add a NaviState to the state if there is anything unusual in this
+    // navigation or previous ones at the same location, as otherwise we'll have
+    // trouble skipping updates to hashes.
+    if (options.method || options.headers || options.body || previousNaviStates.length) {
+      naviState = {
+        method: options.method || 'GET',
+        headers: options.headers || {},
+        body: JSON.stringify(options.body),
+        effects: {},
+        key: this.nextStateKey++,
+      }
+    }
+
+    let naviStates = [naviState].concat(previousNaviStates)
+    nextLocation = {
+      ...nextLocation,
+      state: {
+        ...nextLocation.state,
+        [NAVI_STATES_KEY]: naviStates,
+      },
+    }
+    
+    this._history[shouldReplace ? 'replace' : 'push'](nextLocation)
 
     return this.getSteadyValue()
   }
 
   refresh() {
-    this.handleURLChange(createURLDescriptor(this.history.location), true)
+    this.handleURLChange(createURLDescriptor(this._history.location), true)
   }
 
   setContext(context: Context) {
@@ -227,9 +264,12 @@ export class Navigation<Context extends object = any, R = Route>
     await this.getSteadyValue()
   }
 
-  extract(): NaviState {
-    let state = this.history.location.state || { [NAVI_STATE_KEY]: undefined }
-    return state[NAVI_STATE_KEY] || {}
+  extract(location?): NaviStates {
+    if (!location) {
+      location = this._history.location
+    }
+    let state = location.state || { [NAVI_STATES_KEY]: undefined }
+    return state[NAVI_STATES_KEY] || []
   }
 
   /**
@@ -261,6 +301,11 @@ export class Navigation<Context extends object = any, R = Route>
     url: URLDescriptor,
     force?: boolean,
   ) {
+    if (this.ignoreNextURLChange) {
+      this.ignoreNextURLChange = false
+      return
+    }
+
     // Bail without change is the URL hasn't changed
     if (
       !force &&
@@ -281,16 +326,17 @@ export class Navigation<Context extends object = any, R = Route>
         ...url,
         pathname: url.pathname + '/',
       }
-      this.history.replace(url)
+      this._history.replace(url)
       return
     }
 
     let lastURL = this.lastURL
     this.lastURL = url
-    let naviState: NaviState = (url.state && url.state[NAVI_STATE_KEY]) || { key: undefined }
+    let naviStates: NaviStates = this.extract(url)
+    let naviState = naviStates[0] || { key: undefined }
     let pathHasChanged, searchHasChanged, naviStateHasChanged
     if (url && lastURL) {
-      let lastNaviState: NaviState = lastURL.state && lastURL.state[NAVI_STATE_KEY] || { key: undefined }
+      let lastNaviState: NaviState = this.extract(lastURL)[0] || { key: undefined }
       naviStateHasChanged = naviState.key !== lastNaviState.key
       pathHasChanged = url.pathname !== lastURL.pathname
       searchHasChanged = url.search !== lastURL.search
@@ -322,42 +368,44 @@ export class Navigation<Context extends object = any, R = Route>
     this.lastHandledURL = url
 
     let body = naviState.body === undefined ? undefined : JSON.parse(naviState.body)
-    let memos = naviState.memos || {}
+    let effects = naviState.effects || {}
     let keyCounters: { [name: string]: number } = {}
     let observableOptions: RouterResolveOptions = {
       body,
       method: naviState.method || 'GET',
       headers: naviState.headers || {},
-      memo: async <T>(callback: () => T | Promise<T>, ...keys: string[]) => {
+      effect: async <T>(callback: () => T | Promise<T>, ...keys: string[]) => {
         let key = keys.join('.')
         let count = keyCounters[key] || 0
         keyCounters[key] = count + 1
         key += '.'+count
 
-        if (key in memos) {
-          let serializedValue = memos[key]
-          return serializedValue && JSON.parse(serializedValue)
+        if (key in effects) {
+          let serializedValue = effects[key]
+          return await deserializePromise(serializedValue)
         }
 
-        let value = await callback()
+        let promise = Promise.resolve(callback())
 
         // Record the memoized value
-        memos[key] = JSON.stringify(value)
+        effects[key] = await serializePromise(promise)
         if (this.lastHandledURL === url) {
-          let location = this.history.location
-          this.history.replace({
+          let location = this._history.location
+          let newNaviState: NaviState = {
+            ...naviState,
+            effects,
+          }
+          let newNaviStates: NaviStates = [newNaviState].concat(naviStates.slice(1))
+          this._history.replace({
             ...location,
             state: {
               ...location.state,
-              [NAVI_STATE_KEY]: {
-                ...naviState,
-                memos
-              },
+              [NAVI_STATES_KEY]: newNaviStates,
             },
           })
         }
 
-        return value
+        return await promise
       }
     }
 
@@ -378,7 +426,24 @@ export class Navigation<Context extends object = any, R = Route>
         isSteady = false
       }
       if (chunk.type === 'redirect') {
-        this.history.replace(chunk.to)
+        let states = this.extract()
+        let location = this._history.location
+        let newStates: NaviStates | undefined
+        if (states.length > 1) {
+          this.ignoreNextURLChange = true
+          newStates = states.slice(1)
+          this._history.replace({
+            ...location,
+            state: {
+              ...location.state,
+              [NAVI_STATES_KEY]: newStates,
+            }
+          })
+          this._history.push(chunk.to)
+        }
+        else {
+          this._history.replace(chunk.to)
+        }
         return
       }
     }

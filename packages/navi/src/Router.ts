@@ -7,7 +7,7 @@ import { Chunk } from './Chunks'
 import { SiteMap, RouteMap } from './Maps'
 import { createPromiseFromObservable } from './Observable';
 import { createURLDescriptor, URLDescriptor } from './URLTools';
-import { createRequest, NaviRequest, passthroughMemo } from './NaviRequest';
+import { createRequest, NaviRequest, passthroughEffect } from './NaviRequest';
 import { OutOfRootError } from './Errors';
 import { Reducer } from './Reducer';
 
@@ -24,7 +24,7 @@ export interface RouterResolveOptions {
     body?: any,
     headers?: { [name: string]: string },
     method?: string,
-    memo?: NaviRequest['memo'],
+    effect?: NaviRequest['effect'],
     url?: string | URLDescriptor,
 }
 
@@ -86,7 +86,7 @@ export class Router<Context extends object=any, R=Route> {
             url: url.pathname+url.search,
             originalUrl: url.href,
             path: url.pathname,
-            memo: options.memo || passthroughMemo,
+            effect: options.effect || passthroughEffect,
         })
         let matchRequest = matchAgainstPathname(request, this.rootMapping, this.context)
         if (matchRequest) {

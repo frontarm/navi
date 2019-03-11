@@ -9,7 +9,7 @@ import { Chunk, BusyChunk, MountChunk } from './Chunks'
 import { MatcherGenerator, MatcherIterator } from './Matcher'
 import { RouterMapOptions, Router } from './Router'
 import { Mapping, matchAgainstPathname } from './Mapping'
-import { createRequest, passthroughMemo } from './NaviRequest';
+import { createRequest, passthroughEffect } from './NaviRequest';
 
 interface MapItem {
   url: URLDescriptor
@@ -324,7 +324,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         search: url.search,
         router: this.router,
         path: url.pathname,
-        memo: passthroughMemo,
+        effect: passthroughEffect,
         url: url.pathname+url.search,
         originalUrl: url.href,
       })

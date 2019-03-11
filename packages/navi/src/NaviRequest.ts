@@ -54,7 +54,7 @@ export interface NaviRequest {
   readonly hostname: string
   readonly headers: { [name: string]: string }
 
-  readonly memo: <T>(getter: () => T | Promise<T>, ...keys: string[]) => Promise<T>;
+  readonly effect: <T>(run: () => T | Promise<T>, ...keys: string[]) => Promise<T>;
 
   // TODO: see if I can put typing back onto this
   readonly context?: any
@@ -94,6 +94,6 @@ export function createRequest(context: any, request: NaviRequest) {
   return request
 }
 
-export function passthroughMemo<T>(callback: () => T | Promise<T>) {
+export function passthroughEffect<T>(callback: () => T | Promise<T>) {
   return Promise.resolve(callback())
 }

@@ -23,7 +23,7 @@ describe("integration", () => {
         expect(route.views[2]).toBe('basic-example')
         expect(route.title).toBe('Basic example')
 
-        nav.history.push('/examples/advanced?referrer=frontarm')
+        nav.navigate('/examples/advanced?referrer=frontarm')
 
         firstChunk = nav.getCurrentValue().chunks[0]
         route = nav.getCurrentValue()
@@ -48,7 +48,7 @@ describe("integration", () => {
             isPaywalled: true,
         })
 
-        nav.history.push('/examples/intermediate')
+        nav.navigate('/examples/intermediate')
 
         route = await nav.getSteadyValue()
         
