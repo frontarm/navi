@@ -187,7 +187,7 @@ export function modifyTrailingSlash(pathname: string, action: 'add' | 'remove' |
   if (action === 'add' && !hasTrailingSlash) {
     return pathname + '/'
   }
-  else if (action === 'remove' && hasTrailingSlash) {
+  else if (action === 'remove' && hasTrailingSlash && pathname.length > 1) {
     return pathname.slice(0, -1)
   }
   return pathname

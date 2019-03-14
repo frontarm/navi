@@ -78,7 +78,7 @@ export class Router<Context extends object=any, R=Route> {
             headers: options.headers || {},
             method: options.method || 'GET',
             hostname: url.hostname,
-            mountpath: '',
+            mountpath: '/',
             params: url.query,
             query: url.query,
             search: url.search,

@@ -1,4 +1,4 @@
-import { URLDescriptor, createURLDescriptor, join } from './URLTools'
+import { URLDescriptor, createURLDescriptor, join, modifyTrailingSlash } from './URLTools'
 import {
   Observable,
   Observer,
@@ -273,7 +273,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         if (chunks.some(chunk => chunk.type === 'busy')) {
           isSteady = false
         }
-        chunksMap[pathname] = chunks
+        chunksMap[modifyTrailingSlash(pathname, 'remove')] = chunks
       }
       
       for (let i = 0; i < this.observers.length; i++) {

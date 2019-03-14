@@ -137,7 +137,7 @@ export function matchAgainstPathname(request: NaviRequest, mapping: Mapping, con
     let unmatchedPath = request.path.slice(matchedPathname.length) || ''
     let memo = request.serializeEffectToHistory
 
-    let mountpath = join(request.mountpath, matchedPathname)
+    let mountpath = join(request.mountpath, matchedPathname) || '/'
     return createRequest(context, {
         ...request,
         params,
