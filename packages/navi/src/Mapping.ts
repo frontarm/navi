@@ -135,14 +135,14 @@ export function matchAgainstPathname(request: NaviRequest, mapping: Mapping, con
     }
 
     let unmatchedPath = request.path.slice(matchedPathname.length) || '/'
-    let memo = request.effect
+    let memo = request.serializeEffectToHistory
 
     let mountpath = joinPaths(request.mountpath, matchedPathname)
     return createRequest(context, {
         ...request,
         params,
         mountpath,
-        effect: <T>(getter: () => T | Promise<T>, ...keys: string[]) => {
+        serializeEffectToHistory: <T>(getter: () => T | Promise<T>, ...keys: string[]) => {
             return memo(getter, ...keys, MEMO_KEY_PREFIX+matchedPathname)
         },
         path: unmatchedPath,

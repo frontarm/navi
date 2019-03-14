@@ -3,7 +3,7 @@ import { Matcher } from './Matcher'
 import { Navigation, NavigateOptions } from './Navigation'
 import { Reducer } from './Reducer'
 import { Route } from './Route'
-import { URLDescriptor, createURLDescriptor } from './URLTools';
+import { URLDescriptor } from './URLTools';
 import { Chunk } from './Chunks';
 
 
@@ -32,6 +32,8 @@ export interface MemoryNavigationOptions<Context extends object, R = Route> {
      */
     context?: Context,
 
+    history?: any,
+
     /**
      * The function that reduces chunks into a Route object.
      */
@@ -41,12 +43,12 @@ export interface MemoryNavigationOptions<Context extends object, R = Route> {
 
 export function createMemoryNavigation<Context extends object, R = Route>(options: MemoryNavigationOptions<Context, R>) {
     if (options.pages) {
-        // if (process.env.NODE_ENV !== 'production') {
-        //     console.warn(
-        //         `Deprecation Warning: passing a "pages" option to "createMemoryNavigation()" will `+
-        //         `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
-        //     )
-        // }
+        if (process.env.NODE_ENV !== 'production') {
+            console.warn(
+                `Deprecation Warning: passing a "pages" option to "createMemoryNavigation()" will `+
+                `no longer be supported from Navi 0.13. Use the "routes" option instead.`
+            )
+        }
         options.routes = options.pages
     }
 
@@ -61,6 +63,7 @@ export function createMemoryNavigation<Context extends object, R = Route>(option
         // to navigate below.
         initialEntries: ['/'],
     })
+
     let navigation = new Navigation({
         history,
         basename: options.basename,

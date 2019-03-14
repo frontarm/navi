@@ -324,7 +324,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         search: url.search,
         router: this.router,
         path: url.pathname,
-        effect: passthroughEffect,
+        serializeEffectToHistory: passthroughEffect,
         url: url.pathname+url.search,
         originalUrl: url.href,
       })

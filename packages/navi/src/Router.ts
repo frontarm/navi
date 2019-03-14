@@ -24,7 +24,7 @@ export interface RouterResolveOptions {
     body?: any,
     headers?: { [name: string]: string },
     method?: string,
-    effect?: NaviRequest['effect'],
+    effect?: NaviRequest['serializeEffectToHistory'],
     url?: string | URLDescriptor,
 }
 
@@ -86,7 +86,7 @@ export class Router<Context extends object=any, R=Route> {
             url: url.pathname+url.search,
             originalUrl: url.href,
             path: url.pathname,
-            effect: options.effect || passthroughEffect,
+            serializeEffectToHistory: options.effect || passthroughEffect,
         })
         let matchRequest = matchAgainstPathname(request, this.rootMapping, this.context)
         if (matchRequest) {

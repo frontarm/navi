@@ -54,7 +54,7 @@ export interface NaviRequest {
   readonly hostname: string
   readonly headers: { [name: string]: string }
 
-  readonly effect: <T>(run: () => T | Promise<T>, ...keys: string[]) => Promise<T>;
+  readonly serializeEffectToHistory: <T>(run: () => T | Promise<T>, ...keys: string[]) => Promise<T>;
 
   // TODO: see if I can put typing back onto this
   readonly context?: any
@@ -68,25 +68,25 @@ export function createRequest(context: any, request: NaviRequest) {
   Object.defineProperties(request, {
     mountname: {
       get: () => {
-        // if (process.env.NODE_ENV !== 'production') {
-        //   console.warn(`Deprecation Warning: "request.mountname" will be removed in Navi 0.12. Please use "request.mountpath" instead.`)
-        // }
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Deprecation Warning: "request.mountname" will be removed in Navi 0.13. Please use "request.mountpath" instead.`)
+        }
         return request.mountpath
       },
     },
     pathname: {
       get: () => {
-        // if (process.env.NODE_ENV !== 'production') {
-        //   console.warn(`Deprecation Warning: "request.pathname" will be removed in Navi 0.12. Please use "request.mountpath" instead.`)
-        // }
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Deprecation Warning: "request.pathname" will be removed in Navi 0.13. Please use "request.mountpath" instead.`)
+        }
         return request.mountpath
       }
     },
     context: {
       get: () => {
-        // if (process.env.NODE_ENV !== 'production') {
-        //   console.warn(`Deprecation Warning: "request.context" will be removed in Navi 0.12. Please use the separate context argument instead.`)
-        // }
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Deprecation Warning: "request.context" will be removed in Navi 0.13. Please use the separate context argument instead.`)
+        }
         return context
       }
     },

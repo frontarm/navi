@@ -26,10 +26,9 @@ export interface BrowserNavigationOptions<Context extends object, R = Route> {
     context?: Context,
 
     /**
-     * You can manually supply a history object. This is useful for
-     * integration with react-router.
-     * 
-     * By default, a browser history object will be created.
+     * If you specify a react-router style `history` object, then Navi will
+     * use it to interact with the browser history -- allowing for integration
+     * with react-router (and other custom behaviors).
      */
     history?: History,
 
@@ -49,12 +48,12 @@ export interface BrowserNavigationOptions<Context extends object, R = Route> {
 
 export function createBrowserNavigation<Context extends object, R = Route>(options: BrowserNavigationOptions<Context, R>) {
     if (options.pages) {
-        // if (process.env.NODE_ENV !== 'production') {
-        //     console.warn(
-        //         `Deprecation Warning: passing a "pages" option to "createBrowserNavigation()" will `+
-        //         `no longer be supported from Navi 0.12. Use the "matcher" option instead.`
-        //     )
-        // }
+        if (process.env.NODE_ENV !== 'production') {
+            console.warn(
+                `Deprecation Warning: passing a "pages" option to "createBrowserNavigation()" will `+
+                `no longer be supported from Navi 0.13. Use the "routes" option instead.`
+            )
+        }
         options.routes = options.pages
     }
 

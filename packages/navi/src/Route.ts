@@ -65,36 +65,36 @@ export function defaultRouteReducer(route: Route | undefined, chunk: Chunk): Rou
     meta: {
       configurable: true,
       get: () => {
-        // if (process.env.NODE_ENV !== 'production') {
-        //   console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.12. Please use "route.data" instead.`)
-        // }
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.13. Please use "route.data" instead.`)
+        }
         return route!.data
       },
     },
     content: {
       configurable: true,
       get: () => {
-        // if (process.env.NODE_ENV !== 'production') {
-        //   console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.12. Please use "route.views" instead.`)
-        // }
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.13. Please use "route.views" instead.`)
+        }
         return chunk.view
       },
     },
     segments: {
       configurable: true,
       get: () => {
-        // if (process.env.NODE_ENV !== 'production') {
-        //   console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.12. Please use "route.views" instead.`)
-        // }
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.13. Please use "route.views" instead.`)
+        }
         return route!.chunks
       },
     },
     lastSegment: {
       configurable: true,
       get: () => {
-        // if (process.env.NODE_ENV !== 'production') {
-        //   console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.12. Please use "route.views" instead.`)
-        // }
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.13. Please use "route.views" instead.`)
+        }
         return route!.lastChunk
       },
     }
