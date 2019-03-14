@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { join as pathJoin } from 'path'
-import { URLDescriptor, createURLDescriptor, Route } from 'navi'
+import { URLDescriptor, createURLDescriptor, Route, resolve } from 'navi'
 import { NaviContext } from './NaviContext'
 
 function useURL(href?: string | Partial<URLDescriptor>) {
@@ -13,8 +12,8 @@ function useURL(href?: string | Partial<URLDescriptor>) {
   }
   // The route `pathname` should always end with a `/`, so this
   // will give us a consistent behavior for `.` and `..` links.
-  if (navigationURL && typeof href === 'string' && href[0] === '.') {
-    href = pathJoin(navigationURL.pathname, href)
+  if (navigationURL && typeof href === 'string') {
+    href = resolve(href, navigationURL.pathname)
   }
   return createURLDescriptor(href)
 }

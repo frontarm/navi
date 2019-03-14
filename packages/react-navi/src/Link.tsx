@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { join as pathJoin } from 'path'
-import { URLDescriptor, Navigation, createURLDescriptor } from 'navi'
+import { URLDescriptor, Navigation, createURLDescriptor, resolve } from 'navi'
 import { NaviContext } from './NaviContext'
 import { scrollToHash } from './scrollToHash';
 
@@ -180,11 +179,10 @@ class InnerLink extends React.Component<InnerLinkProps> {
       return
     }
 
-    // The route `pathname` should always end with a `/`, so this
-    // will give us a consistent behavior for `.` and `..` links.
+    // Resolve relative to the current "directory"
     let navigationURL = this.getNavigationURL()
-    if (navigationURL && typeof href === 'string' && href[0] === '.') {
-      href = pathJoin(navigationURL.pathname, href)
+    if (navigationURL && typeof href === 'string') {
+      href = resolve(href, navigationURL.pathname)
     }
 
     return createURLDescriptor(href)
