@@ -43,6 +43,12 @@ export interface BrowserNavigationOptions<Context extends object, R = Route> {
      * The function that reduces chunks into a Route object.
      */
     reducer?: Reducer<Chunk, R>,
+
+    /**
+     * Configures whether a trailing slash will be added or removed. By default,
+     * the trailing slash will be removed.
+     */
+    trailingSlash?: 'add' | 'remove' | null
 }
 
 
@@ -78,6 +84,7 @@ export function createBrowserNavigation<Context extends object, R = Route>(optio
         context: options.context,
         routes: options.routes!,
         reducer: options.reducer,
+        trailingSlash: options.trailingSlash,
     })
     navigation.refresh()
     return navigation

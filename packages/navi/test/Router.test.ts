@@ -65,7 +65,7 @@ describe("routeMap", () => {
   test("follows redirects when { followRedirects: true }", async () => {
     let router = createRouter({ routes: fixtureMap })
     let route = await router.resolve('/examples', { followRedirects: true })
-    expect(route.url.pathname).toBe('/examples/basic/')
+    expect(route.url.pathname).toBe('/examples/basic')
   })
 })
 
@@ -74,7 +74,7 @@ describe("resolve", () => {
   test("follows redirects when { followRedirects: true }", async () => {
     let router = createRouter({ routes: fixtureMap })
     let route = await router.resolve('/examples/', { followRedirects: true })
-    expect(route.url.pathname).toBe('/examples/basic/')
+    expect(route.url.pathname).toBe('/examples/basic')
   })
 
   test("can accept an array of routes", async () => {

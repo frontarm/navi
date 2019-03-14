@@ -68,6 +68,12 @@ export interface NavigationOptions<Context extends object, R = Route> {
    * it to "GET".
    */
   respectInitialMethod?: boolean
+
+  /**
+   * Configures whether a trailing slash will be added or removed. By default,
+   * the trailing slash will be removed.
+   */
+  trailingSlash?: 'add' | 'remove' | null
 }
 
 export interface NavigateOptionsWithoutURL {
@@ -108,6 +114,7 @@ export class Navigation<Context extends object = any, R = Route>
   private observableSubscription?: Subscription
   private unlisten: () => void
   private nextStateKey: number
+  private trailingSlash: 'add' | 'remove' | null
 
   constructor(options: NavigationOptions<Context, R>) {
     this.reducer =
@@ -122,8 +129,9 @@ export class Navigation<Context extends object = any, R = Route>
       basename: options.basename,
       reducer: this.reducer,
     })
-    this.unlisten = this._history.listen((location, action) =>
-      this.handleURLChange(createURLDescriptor(location, { ensureTrailingSlash: false }), false),
+    this.trailingSlash = options.trailingSlash === undefined ? 'remove' : options.trailingSlash
+    this.unlisten = this._history.listen(location =>
+      this.handleURLChange(createURLDescriptor(location), false),
     )
   }
 
@@ -321,13 +329,23 @@ export class Navigation<Context extends object = any, R = Route>
 
     // Ensure the pathname always has a trailing `/`, so that we don't
     // have multiple URLs referring to the same page.
-    if (url.pathname.substr(-1) !== '/') {
-      url = {
-        ...url,
-        pathname: url.pathname + '/',
+    if (this.trailingSlash !== null) {
+      let hasTrailingSlash = url.pathname.slice(-1) === '/'
+      let newPathname: string | undefined
+      if (this.trailingSlash === 'add' && !hasTrailingSlash) {
+        newPathname = url.pathname + '/'
       }
-      this._history.replace(url)
-      return
+      else if (this.trailingSlash === 'remove' && hasTrailingSlash) {
+        newPathname = url.pathname.slice(0, -1)
+      }
+      if (newPathname) {
+        url = {
+          ...url,
+          pathname: newPathname,
+        }
+        this._history.replace(url)
+        return
+      }
     }
 
     let lastURL = this.lastURL

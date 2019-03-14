@@ -1,4 +1,4 @@
-import { joinPaths, URLDescriptor, createURLDescriptor } from './URLTools'
+import { join, URLDescriptor, createURLDescriptor } from './URLTools'
 import { NotFoundError } from './Errors'
 import { NaviRequest } from './NaviRequest'
 
@@ -159,7 +159,6 @@ export function createChunk<Type extends string, Details>(
   type: Type,
   request: NaviRequest,
   details?: Details,
-  ensureTrailingSlash = true,
 ) {
   return Object.assign({
     type: type,
@@ -167,12 +166,12 @@ export function createChunk<Type extends string, Details>(
     url: createURLDescriptor({
       pathname: request.mountpath,
       query: request.query,
-    }, { ensureTrailingSlash }),
+    }),
   }, details)
 }
 
 export function createNotFoundChunk(request: NaviRequest): ErrorChunk {
-  let fullPathname = joinPaths(request.mountpath, request.path)
+  let fullPathname = join(request.mountpath, request.path)
   return {
     type: 'error',
     request,

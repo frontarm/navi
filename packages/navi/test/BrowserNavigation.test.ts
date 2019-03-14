@@ -16,7 +16,7 @@ function createRoutes() {
 
       let memo1
       try {
-        memo1 = await req.effect(async () => {
+        memo1 = await req.serializeEffectToHistory(async () => {
           ++i
           if (req.params.fail !== undefined) {
             throw new Error()
@@ -26,7 +26,7 @@ function createRoutes() {
       }
       catch (e) {}
 
-      let memo2 = await req.effect(() => ++i)
+      let memo2 = await req.serializeEffectToHistory(() => ++i)
 
       return route({
         view: {
@@ -65,7 +65,7 @@ describe("BrowserNavigation", () => {
 
     let r = await nav.getSteadyValue()
 
-    expect(r.url.pathname).toBe('/test/')
+    expect(r.url.pathname).toBe('/test')
     expect(r.views[0].body).toBe('hello')
     expect(window.history.length).toBe(originalHistoryLength + 1)
   })
@@ -73,8 +73,8 @@ describe("BrowserNavigation", () => {
   test("navigating to the same path but a different hash defaults to history.push", async () => {
     let nav = createTestNavigation()
     let originalHistoryLength = window.history.length
-    nav.navigate('/test/#1')
-    nav.navigate('/test/#2')
+    nav.navigate('/test#1')
+    nav.navigate('/test#2')
 
     await nav.steady()
 
@@ -111,7 +111,7 @@ describe("BrowserNavigation", () => {
     r = await nav.navigate('/test?redirect')
     expect(r.url.pathname).toBe('/')
     r = await nav.goBack()
-    expect(r.url.pathname).toBe('/test/')
+    expect(r.url.pathname).toBe('/test')
     expect(r.views[0].memo1).toBe(1)
     expect(r.views[0].memo2).toBe(2)
     expect(r.views[0].memoExecutions).toBe(2)
@@ -131,7 +131,7 @@ describe("BrowserNavigation", () => {
     let r = await nav.goBack()
 
     expect(window.history.length).toBe(originalHistoryLength + 2)
-    expect(r.url.pathname).toBe('/test/')
+    expect(r.url.pathname).toBe('/test')
     expect(r.views[0].method).toBe('POST')
     expect(r.views[0].memo1).toBe(1)
     expect(r.views[0].memo2).toBe(2)
@@ -153,7 +153,7 @@ describe("BrowserNavigation", () => {
     let r = await nav.goBack()
 
     expect(window.history.length).toBe(originalHistoryLength + 2)
-    expect(r.url.pathname).toBe('/test/')
+    expect(r.url.pathname).toBe('/test')
     expect(r.views[0].method).toBe('POST')
     expect(r.views[0].memo2).toBe(2)
     expect(r.views[0].memoExecutions).toBe(2)
@@ -181,7 +181,7 @@ describe("BrowserNavigation", () => {
       let r = await nav1.getSteadyValue()
 
       expect(window.history.length).toBe(originalHistoryLength + 2)
-      expect(r.url.pathname).toBe('/test/')
+      expect(r.url.pathname).toBe('/test')
       expect(r.views[0].method).toBe('POST')
       expect(r.views[0].memo1).toBe(1)
       expect(r.views[0].memo2).toBe(2)

@@ -7,6 +7,7 @@ describe("ViewMatcher", () => {
       routes: mount({
         '/test': route({}),
       }),
+      trailingSlash: null,
     })
 
     let r = await nav.getSteadyValue()
@@ -33,10 +34,11 @@ describe("ViewMatcher", () => {
       routes: mount({
         '/test': route({}),
       }),
+      trailingSlash: null,
     })
 
     let r = await nav.getSteadyValue()
     
-    expect(r.url.pathname).toBe('/test/')
+    expect(r.url.pathname).toBe('/test')
   })
 })

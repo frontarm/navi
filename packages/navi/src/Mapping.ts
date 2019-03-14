@@ -1,5 +1,5 @@
 import { Matcher } from './Matcher'
-import { joinPaths } from './URLTools'
+import { join } from './URLTools'
 import { createRequest, NaviRequest } from './NaviRequest'
 
 
@@ -117,7 +117,7 @@ export function createMapping(pattern: string, matcher: Matcher<any>): Mapping {
 
 
 export function matchAgainstPathname(request: NaviRequest, mapping: Mapping, context: any): NaviRequest | undefined {
-    let match = mapping.regExp.exec(request.path)
+    let match = mapping.regExp.exec(request.path || '/')
     if (!match) {
         return
     }
@@ -134,10 +134,10 @@ export function matchAgainstPathname(request: NaviRequest, mapping: Mapping, con
         }
     }
 
-    let unmatchedPath = request.path.slice(matchedPathname.length) || '/'
+    let unmatchedPath = request.path.slice(matchedPathname.length) || ''
     let memo = request.serializeEffectToHistory
 
-    let mountpath = joinPaths(request.mountpath, matchedPathname)
+    let mountpath = join(request.mountpath, matchedPathname)
     return createRequest(context, {
         ...request,
         params,

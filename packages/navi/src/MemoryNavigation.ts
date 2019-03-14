@@ -32,12 +32,16 @@ export interface MemoryNavigationOptions<Context extends object, R = Route> {
      */
     context?: Context,
 
-    history?: any,
-
     /**
      * The function that reduces chunks into a Route object.
      */
     reducer?: Reducer<Chunk, R>,
+
+    /**
+     * Configures whether a trailing slash will be added or removed. By default,
+     * the trailing slash will be removed.
+     */
+    trailingSlash?: 'add' | 'remove' | null
 }
 
 
@@ -70,6 +74,7 @@ export function createMemoryNavigation<Context extends object, R = Route>(option
         context: options.context,
         routes: options.routes!,
         reducer: options.reducer,
+        trailingSlash: options.trailingSlash,
     })
     navigation.navigate({
         ...options.request,

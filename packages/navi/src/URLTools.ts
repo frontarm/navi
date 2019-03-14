@@ -48,8 +48,15 @@ export type URLDescriptor = {
   state?: object,
 }
 
+export type TrailingSlashAction = 'add' | 'remove' | null
+
 export type Params = {
   [name: string]: string
+}
+
+export interface URLDescriptorOptions {
+  removeHash?: boolean
+  trailingSlash?: TrailingSlashAction
 }
 
 export function areURLDescriptorsEqual(x?: URLDescriptor, y?: URLDescriptor): boolean {
@@ -68,7 +75,7 @@ export function areURLDescriptorsEqual(x?: URLDescriptor, y?: URLDescriptor): bo
 }
 
 const parsePattern = /((((\/?(?:[^\/\?#]+\/+)*)([^\?#]*)))?(\?[^#]+)?)(#.*)?/
-export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescriptor>, { ensureTrailingSlash = true, removeHash = false } = {}): URLDescriptor {
+export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescriptor>, { removeHash = false, trailingSlash = null }: URLDescriptorOptions = {}): URLDescriptor {
   let hostname: string
   let pathname: string
   let query: Params
@@ -81,21 +88,18 @@ export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescrip
         throw new Error("Couldn't parse the provided URL.")
     }
     hostname = ''
-    pathname = matches[2] || ''
+    pathname = modifyTrailingSlash(matches[2] || '', trailingSlash)
     search = matches[6] || ''
     query = parseQuery(search)
     hash = matches[7] || ''
   }
   else {
     hostname = urlOrDescriptor.hostname || ''
-    pathname = urlOrDescriptor.pathname || ''
+    pathname = modifyTrailingSlash(urlOrDescriptor.pathname || '', trailingSlash)
     query = urlOrDescriptor.query || (urlOrDescriptor.search ? parseQuery(urlOrDescriptor.search) : {})
     search = urlOrDescriptor.search || stringifyQuery(query)
     hash = urlOrDescriptor.hash || ''
     state = urlOrDescriptor.state
-  }
-  if (ensureTrailingSlash && pathname.length && pathname.substr(-1) !== '/') {
-    pathname += '/'
   }
   return {
     hostname,
@@ -138,15 +142,53 @@ export function stringifyQuery(query: { [name: string]: any }, leadingCharacter=
   return leadingCharacter + parts.join('&')
 }
 
-export function joinPaths(a, b) {
-  if (!b) {
-      return a
+function splitPath(path: string): string[] {
+  if (path === '') {
+    return []
   }
-  if (a[a.length-1] === '/') {
-      a = a.substr(0, a.length - 1)
+  return path.split('/')
+}
+
+// users/789/, profile      => users/789/profile/
+// /users/123, .           => /users/123
+// /users/123, ..          => /users
+// /users/123, ../..       => /
+// /a/b/c/d,   ../../one   => /a/b/one
+// /a/b/c/d,   .././one/    => /a/b/c/one/
+export function join(base: string, ...paths: string[]): string {
+  let allSegments = splitPath(base)
+  for (let i = 0; i < paths.length; i++) {
+    allSegments.push(...splitPath(paths[i]))
   }
-  if (b[0] === '/') {
-      b = b.substr(1)
+
+  let pathSegments: string[] = []
+  let lastSegmentIndex = allSegments.length - 1
+  for (let i = 0; i <= lastSegmentIndex; i++) {
+    let segment = allSegments[i]
+    if (segment === "..") {
+      pathSegments.pop()
+    }
+    // Allow empty segments on the first and final characters, so that leading
+    // and trailing slashes will not be affected.
+    else if (segment !== '.' && (segment !== '' || i === 0 || i === lastSegmentIndex)) {
+      pathSegments.push(segment)
+    }
   }
-  return a + '/' + b
+
+  return pathSegments.join('/')
+}
+
+export function resolve(to: string, base: string): string {
+  return to[0] === '/' ? to : join('/', base, to)
+}
+
+export function modifyTrailingSlash(pathname: string, action: 'add' | 'remove' | null): string {
+  let hasTrailingSlash = pathname.slice(-1) === '/'
+  if (action === 'add' && !hasTrailingSlash) {
+    return pathname + '/'
+  }
+  else if (action === 'remove' && hasTrailingSlash) {
+    return pathname.slice(0, -1)
+  }
+  return pathname
 }

@@ -1,11 +1,11 @@
-import { URLDescriptor, createURLDescriptor, joinPaths } from './URLTools'
+import { URLDescriptor, createURLDescriptor, join } from './URLTools'
 import {
   Observable,
   Observer,
   SimpleSubscription,
   createOrPassthroughObserver,
 } from './Observable'
-import { Chunk, BusyChunk, MountChunk } from './Chunks'
+import { Chunk, BusyChunk } from './Chunks'
 import { MatcherGenerator, MatcherIterator } from './Matcher'
 import { RouterMapOptions, Router } from './Router'
 import { Mapping, matchAgainstPathname } from './Mapping'
@@ -186,7 +186,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
           if (patterns && !item.walkedPatternLists.has(key)) {
             item.walkedPatternLists.add(key)
             for (let j = 0; j < patterns.length; j++) {
-              let expandedPatterns = await this.expandPatterns(joinPaths(pathname, patterns[j]))
+              let expandedPatterns = await this.expandPatterns(join(pathname, patterns[j]))
               for (let k = 0; k < expandedPatterns.length; k++) {
                 this.addToQueue(
                   expandedPatterns[k],
@@ -224,7 +224,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         lastChunk.type !== 'error' &&
         (lastChunk.type === 'busy' || !this.options.predicate || this.options.predicate(lastChunk, item.chunksCache!))) {
         chunksMapArray.push([
-          joinPaths(item.pathname, '/'),
+          join(item.pathname, '/'),
           item.chunksCache!,
           item.order
         ])
@@ -310,7 +310,6 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
       this.seenPathnames.add(pathname)
 
       let url = createURLDescriptor(pathname, {
-        ensureTrailingSlash: false,
         removeHash: true,
       })
       let request = createRequest(this.rootContext, {

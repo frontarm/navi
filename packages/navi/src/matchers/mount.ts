@@ -64,7 +64,7 @@ export function mount<
           childResult = childIterator.next()
         }
 
-        chunks = [createChunk('mount', request, { patterns }, false)]
+        chunks = [createChunk('mount', request, { patterns })]
 
         let childChunks = childResult && childResult.value
         if (childChunks) {

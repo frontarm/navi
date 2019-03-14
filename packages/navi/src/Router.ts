@@ -101,7 +101,7 @@ export class Router<Context extends object=any, R=Route> {
 
     createMapObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): ChunksMapObservable {
         return new ChunksMapObservable(
-            createURLDescriptor(urlOrDescriptor, { ensureTrailingSlash: false }),
+            createURLDescriptor(urlOrDescriptor),
             this.context,
             this.matcherGenerator,
             this.rootMapping,

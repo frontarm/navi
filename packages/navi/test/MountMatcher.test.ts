@@ -12,7 +12,7 @@ describe("Mount", () => {
 
     let r = await nav.getSteadyValue()
     
-    expect(r.url.pathname).toBe('/to/')
+    expect(r.url.pathname).toBe('/to')
     expect(r.url.query.from).toBe('/from')
   })
 

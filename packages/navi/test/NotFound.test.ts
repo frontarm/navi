@@ -13,7 +13,7 @@ describe("pageMap", () => {
       let navi = createMemoryNavigation({ routes: routes, url: '/undeclared' })
       let route = await navi.getSteadyValue()
       expect(route.error).toBeInstanceOf(NotFoundError)
-      expect(route.error.pathname).toBe('/undeclared/')
+      expect(route.error.pathname).toBe('/undeclared')
   })
 
   test("getView can choose not to throw a NotFoundError", async () => {
@@ -26,6 +26,6 @@ describe("pageMap", () => {
     let navi = createMemoryNavigation({ routes: routes, url: '/declared/2' })
     let route = await navi.getSteadyValue()
     expect(route.error).toBeInstanceOf(NotFoundError)
-    expect(route.error.pathname).toBe('/declared/2/')
+    expect(route.error.pathname).toBe('/declared/2')
   })
 })

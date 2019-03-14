@@ -6,7 +6,7 @@ describe("Redirect", () => {
       url: '/switch/from',
       routes: mount({
         '/switch': mount({
-          '/from': redirect('./to'),
+          '/from': redirect('../to'),
           '/to': route({})
         }),
       }),
@@ -14,6 +14,6 @@ describe("Redirect", () => {
 
     let r = await nav.getSteadyValue()
     
-    expect(r.url.pathname).toBe('/switch/to/')
+    expect(r.url.pathname).toBe('/switch/to')
   })
 })
