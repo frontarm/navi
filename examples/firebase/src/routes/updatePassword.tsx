@@ -7,7 +7,9 @@ export default map(async (request, context: RoutingContext) => {
   if (request.method === 'post') {
     let { password } = request.body
     try {
-      await context.firebase.auth.currentUser!.updatePassword(password);
+      await request.serializeEffectToHistory(() =>
+        context.firebase.auth.currentUser!.updatePassword(password)
+      )
       return redirect('/')
     }
     catch (error) {

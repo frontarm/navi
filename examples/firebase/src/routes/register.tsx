@@ -16,7 +16,9 @@ export default map(async (request, context: RoutingContext) => {
     }
     
     let { email, password } = request.body
-    await context.firebase.auth.createUserWithEmailAndPassword(email, password);
+    await request.serializeEffectToHistory(() =>
+      context.firebase.auth.createUserWithEmailAndPassword(email, password)
+    )
     return redirect('/?welcome')
   }
   catch (error) {

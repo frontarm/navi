@@ -11,7 +11,9 @@ export default map(async (request, context: RoutingContext) => {
   if (request.method === 'post') {
     let { email, password } = request.body
     try {
-      await context.firebase.auth.signInWithEmailAndPassword(email, password);
+      await request.serializeEffectToHistory(() =>
+        context.firebase.auth.signInWithEmailAndPassword(email, password)
+      )
       return redirect('/')
     }
     catch (error) {

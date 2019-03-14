@@ -12,7 +12,7 @@ export default map(async (request, context: RoutingContext) => {
     }
 
     let { email, password } = request.body
-    await request.effect(() =>
+    await request.serializeEffectToHistory(() =>
       context.firebase.auth.signInWithEmailAndPassword(email, password)
     )
     return redirect('/')
