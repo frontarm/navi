@@ -1,11 +1,11 @@
 import * as React from 'react'
 import * as Navi from 'navi'
-import { NavRoute, NavLink } from 'react-navi'
+import { Link, useCurrentRoute } from 'react-navi'
 import { defaultTheme } from './defaultTheme'
-import { Item, ItemType, getItems } from './items'
+import { Item, getItems } from './items'
 import { Anchor } from './Anchor'
 import { CloseOverlay, CloseOverlayContext } from './CloseOverlay'
-import { ScrollSpy } from './ScrollSpy'
+import { useScrollSpy } from './useScrollSpy'
 import { TableOfContents, TableOfContentsItem } from './TableOfContents'
 
 
@@ -94,20 +94,17 @@ export namespace NaviBar {
 
 export const NaviBar = Object.assign(
   function NaviBar<Data extends object = any>(props: NaviBarProps<Data>) {
+    let { id, parentIds } = useScrollSpy({
+      tableOfContents: props.tableOfContents!
+    })
+    let route = useCurrentRoute()
+
     return (
-      <ScrollSpy tableOfContents={props.tableOfContents || []}>
-        {({id, parentIds}) =>
-          <NavRoute>
-            {route =>
-              <InnerNaviBar
-                activeURL={route.url} {...props}
-                activeId={id}
-                activeParentIds={parentIds || []}
-              />
-            }
-          </NavRoute>
-        }
-      </ScrollSpy>
+      <InnerNaviBar
+        activeURL={route.url} {...props}
+        activeId={id}
+        activeParentIds={parentIds || []}
+      />
     )
   },
   {
@@ -188,9 +185,9 @@ export class InnerNaviBar<Data extends object = any> extends React.Component<
 
     return (
       headingContent && (
-        <NavLink href={'#' + heading.id} key={heading.id} render={renderChildren}>
+        <Link href={'#' + heading.id} key={heading.id} render={renderChildren}>
           {headingContent}
-        </NavLink>
+        </Link>
       )
     )
   }
@@ -212,13 +209,13 @@ export class InnerNaviBar<Data extends object = any> extends React.Component<
 
       return (
         pageContent && (
-          <NavLink
+          <Link
             href={item.url.href}
             key={item.url.href}
             ref={active ? this.activePageRef : undefined}
             render={renderChildren}>
             {pageContent}
-          </NavLink>
+          </Link>
         )
       )
     } else {
@@ -289,6 +286,6 @@ function getHeadings(toc?: TableOfContents): TableOfContents {
 }
 
 // Renderer for <NavLink> elements
-function renderChildren(props: NavLink.RendererProps) {
+function renderChildren(props: Link.RendererProps) {
   return props.children
 }
