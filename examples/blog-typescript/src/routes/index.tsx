@@ -55,7 +55,7 @@ const pagesSwitch = compose(
     // By adding the point at which the blog was mounted to context, it
     // makes it possible to easily scope all URLs to the blog root, thus
     // making it possible to mount the entire route on a subdirectory.
-    blogRoot: req.mountpath || '/',
+    blogRoot: req.mountpath,
   })),
   withView((req, context) => {
     // Check if the current page is an index page by comparing the remaining

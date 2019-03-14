@@ -49,7 +49,7 @@ let chunkPagePairs = chunks.map((chunk, i) => [
 const routes = compose(
   withContext((req, context) => ({
     ...context,
-    blogRoot: req.mountpath || '/',
+    blogRoot: req.mountpath,
   })),
   withView((req, context) => {
     // Check if the current page is an index page by comparing the remaining
