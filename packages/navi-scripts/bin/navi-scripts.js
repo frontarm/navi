@@ -4,7 +4,10 @@ const chalk = require('chalk')
 const program = require('commander')
 const path = require('path')
 const fs = require('fs-extra')
+const dotenv = require('dotenv')
 const { processConfig, configSchema, defaultConfig } = require('../lib/config')
+
+dotenv.config()
 
 let defaultHost = process.platform === 'win32'
   ? 'localhost'
