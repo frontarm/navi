@@ -158,7 +158,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
       })
         .catch((e) => {
           console.warn(
-            `A <Link> referred to tried to prefetch "${url!.pathname}", but the ` +
+            `A <Link> tried to prefetch "${url!.pathname}", but the ` +
             `router was unable to fetch this path.`
           )
         })
