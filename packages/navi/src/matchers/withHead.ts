@@ -11,6 +11,5 @@ export function withHead<Context extends object, Head>(
     maybeResolvableHead,
     child,
     (head, request) => head ? [createChunk('head', request, { head })] : [],
-    (request) => request.method !== 'HEAD',
   )
 }

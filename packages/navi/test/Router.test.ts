@@ -14,12 +14,6 @@ describe("routeMap", () => {
     expect(Object.keys(map).length).toBe(4)
   })
 
-  test("does not include views", async () => {
-    let router = createRouter({ routes: fixtureMap })
-    let map = await router.resolveRouteMap('/')
-    expect(map['/'].views.length).toBe(0)
-  })
-
   test("can map from an intermediate url and exclude its index", async () => {
     let router = createRouter({ routes: mount({
       '/a': mount({

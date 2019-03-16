@@ -1,8 +1,9 @@
 import { MatcherIterator, MatcherGenerator } from './Matcher'
 import { Observable, Observer, SimpleSubscription, createOrPassthroughObserver } from './Observable'
-import { URLDescriptor } from './URLTools';
+import { URLDescriptor } from './URLTools'
 import { Chunk, BusyChunk } from './Chunks'
-import { NaviRequest } from './NaviRequest';
+import { NaviRequest } from './NaviRequest'
+import { Crawler } from './Crawler'
 
 export class ChunkListObservable implements Observable<Chunk[]> {
     readonly url: URLDescriptor
@@ -15,13 +16,13 @@ export class ChunkListObservable implements Observable<Chunk[]> {
     constructor(
         url: URLDescriptor,
         request: NaviRequest,
-        context: any,
         matcherGenerator: MatcherGenerator<any>,
+        crawler: Crawler | null,
     ) {
         this.url = url
         this.lastListenId = 0
         this.observers = []
-        this.matcherIterator = matcherGenerator(request, context)
+        this.matcherIterator = matcherGenerator(request, crawler)
     }
 
     

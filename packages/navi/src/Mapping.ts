@@ -116,7 +116,7 @@ export function createMapping(pattern: string, matcher: Matcher<any>): Mapping {
 }
 
 
-export function matchAgainstPathname(request: NaviRequest, mapping: Mapping, context: any): NaviRequest | undefined {
+export function matchAgainstPathname(request: NaviRequest, mapping: Mapping): NaviRequest | undefined {
     let match = mapping.regExp.exec(request.path || '/')
     if (!match) {
         return
@@ -135,16 +135,11 @@ export function matchAgainstPathname(request: NaviRequest, mapping: Mapping, con
     }
 
     let unmatchedPath = request.path.slice(matchedPathname.length) || ''
-    let memo = request.serializeEffectToHistory
-
     let mountpath = join(request.mountpath, matchedPathname) || '/'
-    return createRequest(context, {
+    return createRequest({
         ...request,
         params,
         mountpath,
-        serializeEffectToHistory: <T>(getter: () => T | Promise<T>, ...keys: string[]) => {
-            return memo(getter, ...keys, MEMO_KEY_PREFIX+matchedPathname)
-        },
         path: unmatchedPath,
         url: unmatchedPath+request.search,
     })

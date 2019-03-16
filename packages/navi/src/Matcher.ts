@@ -2,6 +2,7 @@ import { Resolvable } from './Resolvable'
 import { Chunk } from './Chunks'
 import { NaviRequest } from './NaviRequest'
 import { join } from './URLTools'
+import { Crawler } from './Crawler'
 
 export type Matcher<
   ParentContext extends object,
@@ -13,14 +14,14 @@ export interface ResolvableMatcher<
 > extends Resolvable<Matcher<Context>, Context> {}
 
 export type MatcherGenerator<Context extends object> = (
-  request: NaviRequest,
-  context: Context
+  request: NaviRequest<Context>,
+  crawler: null | Crawler,
 ) => MatcherIterator
 
 export type MatcherIterator = IterableIterator<Chunk[]>
 
 export function createMatcherIterator<Context extends object>(
-  matcherGenerator: MatcherGenerator<Context>, request: NaviRequest, context: Context, pattern = ''
+  matcherGenerator: MatcherGenerator<Context>, request: NaviRequest<Context>, crawler: null | Crawler, pattern = ''
 ): MatcherIterator {
   if (process.env.NODE_ENV !== 'production') {
     if (typeof matcherGenerator !== 'function') {
@@ -33,7 +34,7 @@ export function createMatcherIterator<Context extends object>(
     }
   }
 
-  return matcherGenerator(request, context)
+  return matcherGenerator(request, crawler)
 }
 
 export function* concatMatcherIterators(x: MatcherIterator, y: MatcherIterator) {

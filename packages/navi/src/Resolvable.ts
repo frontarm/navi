@@ -4,7 +4,7 @@ import { NaviRequest } from './NaviRequest'
 import { Chunk, createChunk } from './Chunks'
 
 export type Resolvable<T, Context extends object = any, U = any> = (
-  request: NaviRequest,
+  request: NaviRequest<Context>,
   context: Context,
   arg?: U
 ) => (T | PromiseLike<{ default: T } | T>)
@@ -12,7 +12,6 @@ export type Resolvable<T, Context extends object = any, U = any> = (
 export default function* resolveChunks<T>(
   maybeResolvable: T | Resolvable<T>,
   request: NaviRequest,
-  context: any,
   createChunks: (value: T) => Chunk[] | IterableIterator<Chunk[]>
 ): IterableIterator<Chunk[]> {
   let resolvable: Resolvable<T> =
@@ -22,7 +21,7 @@ export default function* resolveChunks<T>(
 
   let maybeValue
   try {
-    maybeValue = resolvable(request, context)
+    maybeValue = resolvable(request, request.context)
   }
   catch (e) {
     maybeValue = Promise.reject(e)

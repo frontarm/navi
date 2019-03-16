@@ -18,7 +18,6 @@ import { Reducer } from './Reducer'
 import { Chunk } from './Chunks'
 import { OutOfRootError } from './Errors'
 import { Deferred } from './Deferred'
-import { serializePromise, deserializePromise } from './utils/serializeDeserializePromise';
 
 export const NAVI_STATES_KEY = '\0navi'
 
@@ -103,7 +102,6 @@ export class Navigation<Context extends object = any, R = Route>
   // Used to detect and defuse loops where a change to history results
   // in a new change to history before the previous one completes.
   private lastReceivedURL?: URLDescriptor
-  private lastHandledURL?: URLDescriptor
 
   private waitUntilSteadyDeferred?: Deferred<R>
   private observers: Observer<R>[]
@@ -383,48 +381,11 @@ export class Navigation<Context extends object = any, R = Route>
       this.observableSubscription.unsubscribe()
     }
 
-    this.lastHandledURL = url
-
     let body = naviState.body === undefined ? undefined : JSON.parse(naviState.body)
-    let effects = naviState.effects || {}
-    let keyCounters: { [name: string]: number } = {}
     let observableOptions: RouterResolveOptions = {
       body,
       method: naviState.method || 'GET',
       headers: naviState.headers || {},
-      effect: async <T>(callback: () => T | Promise<T>, ...keys: string[]) => {
-        let key = keys.join('.')
-        let count = keyCounters[key] || 0
-        keyCounters[key] = count + 1
-        key += '.'+count
-
-        if (key in effects) {
-          let serializedValue = effects[key]
-          return await deserializePromise(serializedValue)
-        }
-
-        let promise = Promise.resolve(callback())
-
-        // Record the memoized value
-        effects[key] = await serializePromise(promise)
-        if (this.lastHandledURL === url) {
-          let location = this._history.location
-          let newNaviState: NaviState = {
-            ...naviState,
-            effects,
-          }
-          let newNaviStates: NaviStates = [newNaviState].concat(naviStates.slice(1))
-          this._history.replace({
-            ...location,
-            state: {
-              ...location.state,
-              [NAVI_STATES_KEY]: newNaviStates,
-            },
-          })
-        }
-
-        return await promise
-      }
     }
 
     let observable = this.router.createObservable(url, observableOptions)

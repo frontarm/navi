@@ -4,21 +4,22 @@ import {
   MatcherIterator,
   ResolvableMatcher,
   createMatcherIterator,
+  MatcherGenerator,
 } from '../Matcher'
 import { NaviRequest } from '../NaviRequest'
+import { Crawler } from '../Crawler';
 
 export function map<Context extends object>(
   resolvableMatcher: ResolvableMatcher<Context>,
 ): Matcher<Context> {
-  return () => function* mapMatcherGenerator(
+  return (child: MatcherGenerator<any>) => function* mapMatcherGenerator(
     request: NaviRequest,
-    context: Context
+    crawler: null | Crawler
   ): MatcherIterator {
     yield* resolveChunks(
       resolvableMatcher,
       request,
-      context,
-      (childMatcher) => createMatcherIterator(childMatcher(), request, context)
+      (childMatcher) => createMatcherIterator(childMatcher(child), request, crawler)
     )
   }
 }

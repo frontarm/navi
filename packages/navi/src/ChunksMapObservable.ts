@@ -9,7 +9,7 @@ import { Chunk, BusyChunk } from './Chunks'
 import { MatcherGenerator, MatcherIterator } from './Matcher'
 import { RouterMapOptions, Router } from './Router'
 import { Mapping, matchAgainstPathname } from './Mapping'
-import { createRequest, passthroughEffect } from './NaviRequest';
+import { createRequest } from './NaviRequest';
 
 interface MapItem {
   url: URLDescriptor
@@ -312,8 +312,9 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
       let url = createURLDescriptor(pathname, {
         removeHash: true,
       })
-      let request = createRequest(this.rootContext, {
+      let request = createRequest({
         body: null,
+        context: this.rootContext,
         headers: this.options.headers || {},
         method: this.options.method || 'HEAD',
         params: {},
@@ -323,15 +324,12 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         search: url.search,
         router: this.router,
         path: url.pathname,
-        serializeEffectToHistory: passthroughEffect,
         url: url.pathname+url.search,
         originalUrl: url.href,
+        crawling: false,
+        state: {},
       })
-      let matchRequest = matchAgainstPathname(
-        request,
-        this.rootMapping,
-        this.rootContext,
-      )
+      let matchRequest = matchAgainstPathname(request, this.rootMapping)
       if (matchRequest) {
         this.mapItems.push({
           url,
@@ -342,7 +340,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
           walkedPatternLists: new Set(walkedPatternLists),
           matcherIterator: this.matcherGeneratorFunction(
             matchRequest,
-            this.rootContext,
+            null,
           ),
         })
       }

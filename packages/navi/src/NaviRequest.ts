@@ -1,6 +1,6 @@
 import { Router } from './Router'
 
-export interface NaviRequest {
+export interface NaviRequest<Context extends object=any> {
   /**
    * The path at which the matcher is mounted.
    */
@@ -11,11 +11,6 @@ export interface NaviRequest {
    * URLs, pathname, along with information from the URL's query string.
    */
   readonly params: { [name: string]: string }
-
-  /**
-   * A Router object, which can be used to make further requests.
-   */
-  readonly router: Router<any, any>
 
   /**
    * An object containing the information from the URL's query string.
@@ -54,17 +49,28 @@ export interface NaviRequest {
   readonly hostname: string
   readonly headers: { [name: string]: string }
 
-  readonly serializeEffectToHistory: <T>(run: () => T | Promise<T>, ...keys: string[]) => Promise<T>;
+  /**
+   * Set to true if this request is being used to build an index.
+   */
+  readonly crawling: boolean
 
-  // TODO: see if I can put typing back onto this
-  readonly context?: any
+  /**
+   * Contains any state associated with the request's history entry.
+   */
+  readonly state: any
 
-  // TODO: these are deprecated, remove in Navi 0.12
+  /**
+   * The current routing context
+   */
+  readonly context: Context
+
+  // TODO: these are deprecated, remove in Navi 0.13
   readonly mountname?: string
   readonly pathname?: string
+  readonly router: Router<any, any>
 }
 
-export function createRequest(context: any, request: NaviRequest) {
+export function createRequest<Context extends object=any>(request: NaviRequest<Context>) {
   Object.defineProperties(request, {
     mountname: {
       get: () => {
@@ -82,18 +88,6 @@ export function createRequest(context: any, request: NaviRequest) {
         return request.mountpath
       }
     },
-    context: {
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "request.context" will be removed in Navi 0.13. Please use the separate context argument instead.`)
-        }
-        return context
-      }
-    },
   })
   return request
-}
-
-export function passthroughEffect<T>(callback: () => T | Promise<T>) {
-  return Promise.resolve(callback())
 }

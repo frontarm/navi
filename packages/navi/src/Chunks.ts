@@ -7,6 +7,7 @@ import { NaviRequest } from './NaviRequest'
  */
 export type Chunk =
   | BusyChunk
+  | CrawlChunk
   | DataChunk
   | ErrorChunk
   | HeadChunk
@@ -20,10 +21,11 @@ export type Chunk =
 
 export type ChunkType =
   | 'busy'
+  | 'crawl'
   | 'data'
+  | 'error'
   | 'head'
   | 'headers'
-  | 'error'
   | 'mount'
   | 'redirect'
   | 'status'
@@ -63,6 +65,13 @@ export interface GenericChunk {
 export interface BusyChunk extends GenericChunk {
   type: 'busy'
   promise: PromiseLike<any>
+}
+
+/**
+ * A chunk that is added for each crawled pattern.
+ */
+export interface CrawlChunk extends GenericChunk {
+  type: 'crawl'
 }
 
 /**

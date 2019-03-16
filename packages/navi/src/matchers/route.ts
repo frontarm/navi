@@ -123,14 +123,14 @@ export function route<Context extends object, Data extends object = any>(
 
   return compose(
     withContext(options),
-    withData((req, context) => context.data),
-    withHead((req, context) => context.head),
-    withHeaders((req, context) => context.headers),
-    withStatus((req, context) => context.status),
-    withTitle((req, context) => context.title),
-    withView((req, context) => context.view, undefined, true),
+    withData(req => req.context.data),
+    withHead(req => req.context.head),
+    withHeaders(req => req.context.headers),
+    withStatus(req => req.context.status),
+    withTitle(req => req.context.title),
+    withView(req => req.context.view, undefined, true),
     createChunksMatcher(
-      (req, context) => context.error,
+      req => req.context.error,
       undefined,
       (error, request) => (error ? [createChunk('error', request, { error })] : []),
     )

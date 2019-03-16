@@ -14,26 +14,26 @@ function createRoutes() {
         return redirect('/')
       }
 
-      let memo1
-      try {
-        memo1 = await req.serializeEffectToHistory(async () => {
-          ++i
-          if (req.params.fail !== undefined) {
-            throw new Error()
-          }
-          return i
-        })
-      }
-      catch (e) {}
+      // let memo1
+      // try {
+      //   memo1 = await req.serializeEffectToHistory(async () => {
+      //     ++i
+      //     if (req.params.fail !== undefined) {
+      //       throw new Error()
+      //     }
+      //     return i
+      //   })
+      // }
+      // catch (e) {}
 
-      let memo2 = await req.serializeEffectToHistory(() => ++i)
+      // let memo2 = await req.serializeEffectToHistory(() => ++i)
 
       return route({
         view: {
           method: req.method,
           body: req.body,
-          memo1,
-          memo2,
+          // memo1,
+          // memo2,
           memoExecutions: i,
         }
       })
@@ -57,13 +57,11 @@ describe("BrowserNavigation", () => {
     let nav = createTestNavigation()
     let originalHistoryLength = window.history.length
     await nav.steady()
-    nav.navigate('/test', {
+    let r = await nav.navigate('/test', {
       body: 'hello',
       headers: { token: 'auth' },
       method: 'POST',
     })
-
-    let r = await nav.getSteadyValue()
 
     expect(r.url.pathname).toBe('/test')
     expect(r.views[0].body).toBe('hello')

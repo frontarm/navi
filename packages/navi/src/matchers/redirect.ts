@@ -26,5 +26,7 @@ export function redirect<Context extends object = any>(
       }
       return toHref ? [createChunk('redirect', request, { to: toHref })] as Chunk[] : []
     },
+    undefined,
+    true // proccess during crawl
   )
 }

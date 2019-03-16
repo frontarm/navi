@@ -5,11 +5,12 @@ import { ChunksMapObservable } from './ChunksMapObservable'
 import { Route, defaultRouteReducer } from './Route'
 import { Chunk } from './Chunks'
 import { SiteMap, RouteMap } from './Maps'
-import { createPromiseFromObservable } from './Observable';
-import { createURLDescriptor, URLDescriptor } from './URLTools';
-import { createRequest, NaviRequest, passthroughEffect } from './NaviRequest';
-import { OutOfRootError } from './Errors';
-import { Reducer } from './Reducer';
+import { createPromiseFromObservable } from './Observable'
+import { createURLDescriptor, URLDescriptor } from './URLTools'
+import { createRequest } from './NaviRequest'
+import { OutOfRootError } from './Errors'
+import { Reducer } from './Reducer'
+import { Crawler } from './Crawler'
 
 
 export interface RouterOptions<Context extends object, R = Route> {
@@ -24,8 +25,8 @@ export interface RouterResolveOptions {
     body?: any,
     headers?: { [name: string]: string },
     method?: string,
-    effect?: NaviRequest['serializeEffectToHistory'],
     url?: string | URLDescriptor,
+    crawler?: Crawler,
 }
 
 export interface RouterMapOptions {
@@ -35,7 +36,7 @@ export interface RouterMapOptions {
     expandPattern?: (pattern: string, router: Router) => undefined | string[] | Promise<undefined | string[]>,
     method?: 'GET' | 'HEAD',
     headers?: { [name: string]: string },
-    hostname?: string,
+    hostname?: string
 }
   
 export function createRouter<Context extends object>(options: RouterOptions<Context>){
@@ -73,8 +74,9 @@ export class Router<Context extends object=any, R=Route> {
             delete url.hash
         }
 
-        let request = createRequest(this.context, {
+        let request = createRequest({
             body: options.body,
+            context: this.context,
             headers: options.headers || {},
             method: options.method || 'GET',
             hostname: url.hostname,
@@ -86,15 +88,16 @@ export class Router<Context extends object=any, R=Route> {
             url: url.pathname+url.search,
             originalUrl: url.href,
             path: url.pathname,
-            serializeEffectToHistory: options.effect || passthroughEffect,
+            crawling: !!options.crawler,
+            state: url.state || {},
         })
-        let matchRequest = matchAgainstPathname(request, this.rootMapping, this.context)
+        let matchRequest = matchAgainstPathname(request, this.rootMapping)
         if (matchRequest) {
             return new ChunkListObservable(
                 url,
                 matchRequest,
-                this.context,
-                this.matcherGenerator
+                this.matcherGenerator,
+                options.crawler || null,
             )
         }
     }
