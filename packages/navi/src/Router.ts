@@ -90,7 +90,7 @@ export class Router<Context extends object=any, R=Route> {
             path: url.pathname,
             crawling: !!options.crawler,
             state: url.state || {},
-        })
+        }, this as any)
         let matchRequest = matchAgainstPathname(request, this.rootMapping)
         if (matchRequest) {
             return new ChunkListObservable(

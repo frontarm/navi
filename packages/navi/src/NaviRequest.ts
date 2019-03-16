@@ -70,7 +70,7 @@ export interface NaviRequest<Context extends object=any> {
   readonly router: Router<any, any>
 }
 
-export function createRequest<Context extends object=any>(request: NaviRequest<Context>) {
+export function createRequest<Context extends object=any>(request: NaviRequest<Context>, router?: Router) {
   Object.defineProperties(request, {
     mountname: {
       get: () => {
@@ -89,5 +89,23 @@ export function createRequest<Context extends object=any>(request: NaviRequest<C
       }
     },
   })
+
+  if (router) {
+    Object.defineProperties(request, {
+      router: {
+        get: () => {
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn(`Deprecation Warning: "request.router" will be removed in Navi 0.13. Please import and use the "resolve()" or "crawl()" functions instead.`)
+          }
+          return router
+        },
+        enumerable: false,
+      },
+      _router: {
+        value: router,
+      },
+    })
+  }
+
   return request
 }

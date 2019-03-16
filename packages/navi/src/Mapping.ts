@@ -142,7 +142,7 @@ export function matchAgainstPathname(request: NaviRequest, mapping: Mapping): Na
         mountpath,
         path: unmatchedPath,
         url: unmatchedPath+request.search,
-    })
+    }, request['_router'])
 }
     
 

@@ -86,8 +86,8 @@ export interface NavigateOptions extends NavigateOptionsWithoutURL {
 
 export class Navigation<Context extends object = any>
   implements Observable<Route> {
-  router: Router<Context, Route>
-  
+
+  private _router: Router<Context, Route>
   private _history: History
 
   // Stores the last receive location, even if we haven't processed it.
@@ -111,7 +111,7 @@ export class Navigation<Context extends object = any>
     this.observers = []
     this.isLastRouteSteady = false
     this.nextStateKey = 1
-    this.router = new Router({
+    this._router = new Router({
       context: options.context,
       routes: options.routes,
       basename: options.basename,
@@ -130,6 +130,13 @@ export class Navigation<Context extends object = any>
     return this._history
   }
 
+  get router() {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`Deprecation Warning: "navigation.router" will be removed in Navi 0.13. Please import and use the "resolve()" or "crawl()" functions instead.`)
+    }
+    return this._router
+  }
+
   dispose() {
     this.observers.length = 0
     this.unlisten()
@@ -141,10 +148,10 @@ export class Navigation<Context extends object = any>
     }
     delete this.observableSubscription
 
-    delete this.router
+    delete this._router
     delete this.waitUntilSteadyDeferred
     delete this.lastRoute
-    delete this.router
+    delete this._router
   }
 
   async go(n: number) {
@@ -231,7 +238,7 @@ export class Navigation<Context extends object = any>
   }
 
   setContext(context: Context) {
-    this.router.setContext(context)
+    this._router.setContext(context)
     this.refresh()
   }
 
@@ -378,7 +385,7 @@ export class Navigation<Context extends object = any>
       headers: naviState.headers || {},
     }
 
-    let observable = this.router.createObservable(url, observableOptions)
+    let observable = this._router.createObservable(url, observableOptions)
     if (observable) {
       this.observableSubscription = observable.subscribe(this.handleChunkList)
     } else if (!lastURL) {
