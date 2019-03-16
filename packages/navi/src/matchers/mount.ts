@@ -51,7 +51,7 @@ export function mount<
       // When crawling, if there, is no unmatched path remaining, then
       // create requests for all mappings, and calls those matchers.
       if (crawling) {
-        let crawlTuplesPromise  = createCrawlTuplesPromise(mappings, crawler!, request)
+        let crawlTuplesPromise  = createCrawlTuplesPromise(paths, crawler!, request)
         let crawlTuples: CrawlTuple[] | undefined
         let error
         crawlTuplesPromise.then(
@@ -64,7 +64,7 @@ export function mount<
             throw error
           }
         } while (!crawlTuples)
-        childIterators = crawlTuples.map(([mapping, crawlItem], i) => {
+        childIterators = crawlTuples.map(([matcher, crawlItem], i) => {
           let crawlRequest: NaviRequest = {
             ...request,
             mountpath: crawlItem.url.pathname,
@@ -72,7 +72,7 @@ export function mount<
             path: '',
           }
           crawlRequests[i] = crawlRequest
-          return createMatcherIterator(mapping.matcher(child), crawlRequest, crawler, crawlRequest.mountpath)
+          return createMatcherIterator(matcher(child), crawlRequest, crawler, crawlRequest.mountpath)
         })
       }
       else {
@@ -140,18 +140,18 @@ function concat<T>(args: (T | T[])[]): T[] {
 }
 
 async function createCrawlTuplesPromise(
-  mappings: Mapping[],
+  paths: { [pattern: string]: Matcher<any> },
   crawler: Crawler,
   parentRequest: NaviRequest
 ): Promise<CrawlTuple[]> {
   return concat(
-    await Promise.all(mappings.map(mapping =>
-      crawler!(mapping.pattern, parentRequest).then(createTuplesWith(mapping))
+    await Promise.all(Object.entries(paths).map(([pattern, matcher]) =>
+      crawler!(pattern, parentRequest).then(createTuplesWith(matcher))
     ))
   )
 }
 
-type CrawlTuple = [Mapping, CrawlItem]
+type CrawlTuple = [Matcher<any>, CrawlItem]
 
 function createTuplesWith<X>(x: X): <Y>(ys: Y[]) => [X, Y][] {
   return <Y>(ys: Y[]) => ys.map(y => [x, y] as [X, Y])

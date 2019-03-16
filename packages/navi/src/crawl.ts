@@ -68,7 +68,7 @@ export async function crawl(options: CrawlOptions): Promise<CrawlResult> {
   let chunkList = await createPromiseFromObservable(chunkListObservable!)
 
   // Build a list of pages and redirects from the list of chunks
-  let paths = new Set<string>()
+  let paths: string[] = []
   let redirects: { [name: string]: string } = {}
   chunk:
   for (let i = 0; i < chunkList.length; i++) {
@@ -88,12 +88,12 @@ export async function crawl(options: CrawlOptions): Promise<CrawlResult> {
           continue chunk
         }
       }
-      paths.add(pathname)
+      paths.push(pathname)
     }
   }
 
   return {
-    paths: Array.from(paths),
+    paths,
     redirects,
   }
 }

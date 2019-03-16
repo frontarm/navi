@@ -57,15 +57,4 @@ describe("integration", () => {
 
         nav.dispose()
     })
-
-    test("map-based view", async () => {
-        let nav = createTestNavigation('/')
-
-        let route = await nav.getSteadyValue()
-        let lastChunk = route.lastChunk as ViewChunk
-        
-        expect(Object.keys(lastChunk.view)).toEqual(['/examples/basic', '/examples/advanced'])
-        expect(route.type).toBe('ready')
-        expect(route.title).toBe('Navi')
-    })
 })

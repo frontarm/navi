@@ -65,4 +65,15 @@ describe("crawl", () => {
     })
     expect(paths.length).toBe(1)
   })
+
+  test("crawled paths follow same order as mount() definitions", async () => {
+    let { paths } = await crawl({
+      routes: fixtureMap,
+      root: '/examples/',
+    })
+    expect(paths).toEqual([
+      '/examples/basic',
+      '/examples/advanced'
+    ])
+  })
 })

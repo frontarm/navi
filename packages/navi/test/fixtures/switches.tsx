@@ -1,4 +1,4 @@
-import { compose, map, mount, lazy, route, redirect, withView, withData, withContext } from '../../src'
+import { compose, crawl, map, mount, lazy, route, redirect, withView, withData, withContext } from '../../src'
 
 export const fixtureMap = compose(
   withView('site-layout'),
@@ -6,13 +6,20 @@ export const fixtureMap = compose(
     title: 'Site',
   }),
   mount({
-    '/': route(async req => ({
-      title: 'Navi',
-      data: {
-        description: 'Navi Is A Router/Loader',
-      },
-      view: await req.router.resolveRouteMap('/examples'),
-    })),
+    '/': route(async req => {
+      let map = await crawl({
+        routes: fixtureMap,
+        root: '/examples'
+      })
+
+      return {
+        title: 'Navi',
+        data: {
+          description: 'Navi Is A Router/Loader',
+        },
+        view: map.paths,
+      }
+    }),
 
     '/examples': map(async () =>
       withContext(
