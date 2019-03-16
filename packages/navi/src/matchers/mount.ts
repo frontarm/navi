@@ -1,6 +1,6 @@
 import { Chunk, createChunk, createNotFoundChunk } from '../Chunks'
 import { createMapping, matchAgainstPathname, Mapping } from '../Mapping'
-import { Matcher, MatcherIterator, createMatcherIterator } from '../Matcher'
+import { Matcher, MatcherIterator, createMatcherIterator, MatcherGenerator } from '../Matcher'
 import { NaviRequest } from '../NaviRequest'
 import { Crawler, CrawlItem } from '../Crawler'
 
@@ -36,7 +36,7 @@ export function mount<
     .map(pattern => createMapping(pattern, paths[pattern]))
     .sort((x, y) => compareStrings(x.key, y.key))
 
-  return () =>
+  return (child: MatcherGenerator<any>) =>
     function* mountMatcherGenerator(
       request: NaviRequest<Context>,
       crawler: null | Crawler,
@@ -72,7 +72,7 @@ export function mount<
             path: '',
           }
           crawlRequests[i] = crawlRequest
-          return createMatcherIterator(mapping.matcher(), crawlRequest, crawler, crawlRequest.mountpath)
+          return createMatcherIterator(mapping.matcher(child), crawlRequest, crawler, crawlRequest.mountpath)
         })
       }
       else {
@@ -83,7 +83,7 @@ export function mount<
           let mapping = mappings[i]
           let childRequest = matchAgainstPathname(request, mapping)
           if (childRequest) {
-            childIterators = [createMatcherIterator(mapping.matcher(), childRequest, crawler, mapping.pattern)]
+            childIterators = [createMatcherIterator(mapping.matcher(child), childRequest, crawler, mapping.pattern)]
 
             // The first match is always the only match, as we don't allow
             // for ambiguous patterns.
