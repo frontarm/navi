@@ -6,7 +6,7 @@ import { Route } from './Route'
 import { Matcher } from './Matcher'
 
 
-export interface BrowserNavigationOptions<Context extends object, R = Route> {
+export interface BrowserNavigationOptions<Context extends object> {
     /**
      * The Matcher that declares your app's pages.
      */
@@ -42,7 +42,7 @@ export interface BrowserNavigationOptions<Context extends object, R = Route> {
     /**
      * The function that reduces chunks into a Route object.
      */
-    reducer?: Reducer<Chunk, R>,
+    reducer?: Reducer<Chunk, Route>,
 
     /**
      * Configures whether a trailing slash will be added or removed. By default,
@@ -52,7 +52,7 @@ export interface BrowserNavigationOptions<Context extends object, R = Route> {
 }
 
 
-export function createBrowserNavigation<Context extends object, R = Route>(options: BrowserNavigationOptions<Context, R>) {
+export function createBrowserNavigation<Context extends object, R = Route>(options: BrowserNavigationOptions<Context>) {
     if (options.pages) {
         if (process.env.NODE_ENV !== 'production') {
             console.warn(
@@ -83,7 +83,6 @@ export function createBrowserNavigation<Context extends object, R = Route>(optio
         basename: options.basename,
         context: options.context,
         routes: options.routes!,
-        reducer: options.reducer,
         trailingSlash: options.trailingSlash,
     })
     navigation.refresh()

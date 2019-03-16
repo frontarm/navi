@@ -1,13 +1,11 @@
 import { createMemoryHistory } from 'history';
 import { Matcher } from './Matcher'
 import { Navigation, NavigateOptions } from './Navigation'
-import { Reducer } from './Reducer'
 import { Route } from './Route'
-import { URLDescriptor } from './URLTools';
-import { Chunk } from './Chunks';
+import { URLDescriptor } from './URLTools'
 
 
-export interface MemoryNavigationOptions<Context extends object, R = Route> {
+export interface MemoryNavigationOptions<Context extends object> {
     /**
      * The Matcher that declares your app's pages.
      */
@@ -33,11 +31,6 @@ export interface MemoryNavigationOptions<Context extends object, R = Route> {
     context?: Context,
 
     /**
-     * The function that reduces chunks into a Route object.
-     */
-    reducer?: Reducer<Chunk, R>,
-
-    /**
      * Configures whether a trailing slash will be added or removed. By default,
      * the trailing slash will be removed.
      */
@@ -45,7 +38,7 @@ export interface MemoryNavigationOptions<Context extends object, R = Route> {
 }
 
 
-export function createMemoryNavigation<Context extends object, R = Route>(options: MemoryNavigationOptions<Context, R>) {
+export function createMemoryNavigation<Context extends object, R = Route>(options: MemoryNavigationOptions<Context>) {
     if (options.pages) {
         if (process.env.NODE_ENV !== 'production') {
             console.warn(
@@ -73,7 +66,6 @@ export function createMemoryNavigation<Context extends object, R = Route>(option
         basename: options.basename,
         context: options.context,
         routes: options.routes!,
-        reducer: options.reducer,
         trailingSlash: options.trailingSlash,
     })
     navigation.navigate({

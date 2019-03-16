@@ -1,6 +1,6 @@
 import { History } from 'history'
 import { Router, RouterResolveOptions } from './Router'
-import { Route, defaultRouteReducer } from './Route'
+import { Route, defaultRouteReducer as routeReducer } from './Route'
 import {
   URLDescriptor,
   areURLDescriptorsEqual,
@@ -14,7 +14,6 @@ import {
   createOrPassthroughObserver,
 } from './Observable'
 import { Matcher } from './Matcher'
-import { Reducer } from './Reducer'
 import { Chunk } from './Chunks'
 import { OutOfRootError } from './Errors'
 import { Deferred } from './Deferred'
@@ -48,11 +47,6 @@ export interface NavigationOptions<Context extends object, R = Route> {
    * the second argument passed to any getter functions.
    */
   context?: Context
-
-  /**
-   * The function that reduces chunks into a Route object.
-   */
-  reducer?: Reducer<Chunk, R>
 
   /**
    * You can manually supply a history object. This is useful for
@@ -90,23 +84,21 @@ export interface NavigateOptions extends NavigateOptionsWithoutURL {
   url: string | Partial<URLDescriptor>
 }
 
-export class Navigation<Context extends object = any, R = Route>
-  implements Observable<R> {
-  router: Router<Context, R>
+export class Navigation<Context extends object = any>
+  implements Observable<Route> {
+  router: Router<Context, Route>
   
   private _history: History
-
-  private reducer: Reducer<Chunk, R>
 
   // Stores the last receive location, even if we haven't processed it.
   // Used to detect and defuse loops where a change to history results
   // in a new change to history before the previous one completes.
   private lastReceivedURL?: URLDescriptor
 
-  private waitUntilSteadyDeferred?: Deferred<R>
-  private observers: Observer<R>[]
+  private waitUntilSteadyDeferred?: Deferred<Route>
+  private observers: Observer<Route>[]
   private lastURL?: URLDescriptor
-  private lastRoute?: R
+  private lastRoute?: Route
   private ignoreNextURLChange?: boolean
   private isLastRouteSteady: boolean
   private observableSubscription?: Subscription
@@ -114,9 +106,7 @@ export class Navigation<Context extends object = any, R = Route>
   private nextStateKey: number
   private trailingSlash: 'add' | 'remove' | null
 
-  constructor(options: NavigationOptions<Context, R>) {
-    this.reducer =
-      options.reducer || ((defaultRouteReducer as any) as Reducer<Chunk, R>)
+  constructor(options: NavigationOptions<Context, Route>) {
     this._history = options.history
     this.observers = []
     this.isLastRouteSteady = false
@@ -125,7 +115,7 @@ export class Navigation<Context extends object = any, R = Route>
       context: options.context,
       routes: options.routes,
       basename: options.basename,
-      reducer: this.reducer,
+      reducer: routeReducer,
     })
     this.trailingSlash = options.trailingSlash === undefined ? 'remove' : options.trailingSlash
     this.unlisten = this._history.listen(location =>
@@ -180,12 +170,12 @@ export class Navigation<Context extends object = any, R = Route>
   navigate(
     url: string | Partial<URLDescriptor>,
     options?: NavigateOptionsWithoutURL,
-  ): Promise<R>
-  navigate(url: NavigateOptions): Promise<R>
+  ): Promise<Route>
+  navigate(url: NavigateOptions): Promise<Route>
   navigate(
     url: string | Partial<URLDescriptor> | NavigateOptions,
     options: NavigateOptionsWithoutURL = {},
-  ): Promise<R> {
+  ): Promise<Route> {
     let nextLocation: URLDescriptor
     if (typeof url === 'string') {
       nextLocation = createURLDescriptor(url)
@@ -248,7 +238,7 @@ export class Navigation<Context extends object = any, R = Route>
   /**
    * Get the latest route
    */
-  getCurrentValue(): R {
+  getCurrentValue(): Route {
     return this.lastRoute!
   }
 
@@ -257,7 +247,7 @@ export class Navigation<Context extends object = any, R = Route>
    * This is useful for implementing static rendering, or for waiting until
    * view is loaded before making the first render.
    */
-  async getSteadyValue(): Promise<R> {
+  async getSteadyValue(): Promise<Route> {
     if (this.isLastRouteSteady) {
       return Promise.resolve(this.lastRoute!)
     } else if (!this.waitUntilSteadyDeferred) {
@@ -283,7 +273,7 @@ export class Navigation<Context extends object = any, R = Route>
    * Route, as the route may change as new code chunks are received.
    */
   subscribe(
-    onNextOrObserver: Observer<R> | ((value: R) => void),
+    onNextOrObserver: Observer<Route> | ((value: Route) => void),
     onError?: (error: any) => void,
     onComplete?: () => void,
   ): SimpleSubscription {
@@ -296,7 +286,7 @@ export class Navigation<Context extends object = any, R = Route>
     return new SimpleSubscription(this.handleUnsubscribe, observer)
   }
 
-  private handleUnsubscribe = (observer: Observer<R>) => {
+  private handleUnsubscribe = (observer: Observer<Route>) => {
     let index = this.observers.indexOf(observer)
     if (index !== -1) {
       this.observers.splice(index, 1)
@@ -367,7 +357,7 @@ export class Navigation<Context extends object = any, R = Route>
     ) {
       if (url.hash !== lastURL!.hash || url.state !== lastURL!.state) {
         this.setRoute(
-          this.reducer(this.lastRoute, {
+          routeReducer(this.lastRoute, {
             type: 'url',
             url: url,
           }),
@@ -430,12 +420,12 @@ export class Navigation<Context extends object = any, R = Route>
     this.setRoute(
       [{ type: 'url', url: this.lastURL }]
         .concat(chunks)
-        .reduce(this.reducer, undefined as any) as R,
+        .reduce(routeReducer, undefined as any) as Route,
       isSteady,
     )
   }
 
-  private setRoute(route: R, isSteady: boolean) {
+  private setRoute(route: Route, isSteady: boolean) {
     if (route !== this.lastRoute) {
       this.lastRoute = route
       this.isLastRouteSteady = isSteady
