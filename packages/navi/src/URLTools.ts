@@ -41,11 +41,6 @@ export type URLDescriptor = {
    * string.
    */
   href: string,
-
-  /**
-   * The `state` object, as stored in your browser's `history` object.
-   */
-  state?: object,
 }
 
 export type TrailingSlashAction = 'add' | 'remove' | null
@@ -59,21 +54,6 @@ export interface URLDescriptorOptions {
   trailingSlash?: TrailingSlashAction
 }
 
-export function areURLDescriptorsEqual(x?: URLDescriptor, y?: URLDescriptor): boolean {
-  if (x == y) {
-      return true
-  }
-  else if (!x || !y) {
-      return false
-  }
-  return (
-    x.pathname == y.pathname &&
-    x.search == y.search &&
-    x.hash == y.hash && 
-    x.state == y.state
-  )
-}
-
 const parsePattern = /((((\/?(?:[^\/\?#]+\/+)*)([^\?#]*)))?(\?[^#]+)?)(#.*)?/
 export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescriptor>, { removeHash = false, trailingSlash = null }: URLDescriptorOptions = {}): URLDescriptor {
   let hostname: string
@@ -81,7 +61,6 @@ export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescrip
   let query: Params
   let search: string
   let hash: string
-  let state: any
   if (typeof urlOrDescriptor === 'string') {
     let matches = parsePattern.exec(urlOrDescriptor)
     if (!matches) {
@@ -99,7 +78,6 @@ export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescrip
     query = urlOrDescriptor.query || (urlOrDescriptor.search ? parseQuery(urlOrDescriptor.search) : {})
     search = urlOrDescriptor.search || stringifyQuery(query)
     hash = urlOrDescriptor.hash || ''
-    state = urlOrDescriptor.state
   }
   return {
     hostname,
@@ -108,7 +86,6 @@ export function createURLDescriptor(urlOrDescriptor: string | Partial<URLDescrip
     search,
     hash: removeHash ? '' : hash,
     href: pathname+search+hash,
-    state,
   }
 }
 

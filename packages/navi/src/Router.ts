@@ -25,6 +25,7 @@ export interface RouterResolveOptions {
     method?: string,
     url?: string | URLDescriptor,
     crawler?: Crawler,
+    state?: any,
 }
 
 export interface RouterMapOptions {
@@ -86,7 +87,7 @@ export class Router<Context extends object=any> {
             originalUrl: url.href,
             path: url.pathname,
             crawler: options.crawler,
-            state: url.state || {},
+            state: options.state || {},
         }, this as any)
         let matchRequest = matchAgainstPathname(request, this.rootMapping)
         if (matchRequest) {

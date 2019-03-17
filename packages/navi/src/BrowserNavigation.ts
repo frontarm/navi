@@ -1,5 +1,5 @@
 import { createBrowserHistory, History } from 'history'
-import { Navigation, NaviStates, NAVI_STATES_KEY } from './Navigation'
+import { Navigation } from './Navigation'
 import { Matcher } from './Matcher'
 
 
@@ -30,11 +30,10 @@ export interface BrowserNavigationOptions<Context extends object> {
     history?: History,
 
     /**
-     * Accepts the state of the Navigation object used to generate the initial
-     * screen on the server. This allows the BrowserNavigation to generate the
-     * correct route for non-GET methods, and to reuse any memoized values.
+     * Accepts the history.state of the Navigation object used to pre-render
+     * the page on the server.
      */
-    serverStates?: NaviStates,
+    state?: any,
 
     /**
      * Configures whether a trailing slash will be added or removed. By default,
@@ -55,19 +54,18 @@ export function createBrowserNavigation<Context extends object>(options: Browser
         options.routes = options.pages
     }
 
-    // If there's a server state on the window object, use it.
-    if (!options.serverStates && typeof window !== undefined && window['__NAVI_STATE__']) {
-        options.serverStates = window['__NAVI_STATE__']
+    // If there's a server state on the window object, use it and then remove
+    // it so that it won't be picked up by any nested navigation objects.
+    if (!options.state && typeof window !== undefined && window['__NAVI_STATE__']) {
+        options.state = window['__NAVI_STATE__']
+        delete window['__NAVI_STATE__']
     }
 
     let history = options.history || createBrowserHistory()
-    if (options.serverStates) {
+    if (options.state) {
         history.replace({
             ...history.location,
-            state: {
-                ...history.location.state,
-                [NAVI_STATES_KEY]: options.serverStates,
-            }
+            state: options.state,
         })
     }
     let navigation = new Navigation({

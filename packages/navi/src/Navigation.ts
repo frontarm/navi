@@ -1,12 +1,8 @@
-import { History } from 'history'
+import { History, Location } from 'history'
 import { Router, RouterResolveOptions } from './Router'
 import { Route, routeReducer } from './Route'
 import { resolve } from './resolve'
-import {
-  URLDescriptor,
-  areURLDescriptorsEqual,
-  createURLDescriptor,
-} from './URLTools'
+import { URLDescriptor, createURLDescriptor } from './URLTools'
 import {
   Observer,
   Observable,
@@ -18,18 +14,6 @@ import { Matcher } from './Matcher'
 import { Chunk } from './Chunks'
 import { OutOfRootError } from './Errors'
 import { Deferred } from './Deferred'
-
-export const NAVI_STATES_KEY = '\0navi'
-
-export interface NaviState {
-  method?: string,
-  body?: string,
-  headers?: { [name: string]: string },
-  effects?: { [name: string]: string }, 
-  key?: number
-}
-
-export type NaviStates = NaviState[]
 
 export interface NavigationOptions<Context extends object> {
   /**
@@ -68,6 +52,7 @@ export interface NavigateOptionsWithoutURL {
   body?: any
   headers?: { [name: string]: string }
   method?: string
+  state?: any
 
   /**
    * Whether to replace the current history entry.
@@ -86,22 +71,18 @@ export class Navigation<Context extends object = any>
   private _history: History
 
   // Stores the last receive location, even if we haven't processed it.
-  // Used to detect and defuse loops where a change to history results
-  // in a new change to history before the previous one completes.
-  private lastReceivedURL?: URLDescriptor
+  private lastHandledLocation?: Location
 
   private basename?: string
   private matcher: Matcher<Context>
 
   private waitUntilSteadyDeferred?: Deferred<Route>
   private observers: Observer<Route>[]
-  private lastURL?: URLDescriptor
   private lastRoute?: Route
-  private ignoreNextURLChange?: boolean
+  private ignoreNextLocationChange?: boolean
   private isLastRouteSteady: boolean
   private observableSubscription?: Subscription
   private unlisten: () => void
-  private nextStateKey: number
   private trailingSlash: 'add' | 'remove' | null
 
   constructor(options: NavigationOptions<Context>) {
@@ -110,7 +91,6 @@ export class Navigation<Context extends object = any>
     this.isLastRouteSteady = false
     this.basename = options.basename
     this.matcher = options.routes
-    this.nextStateKey = 1
     this._router = new Router({
       context: options.context,
       routes: options.routes,
@@ -118,7 +98,7 @@ export class Navigation<Context extends object = any>
     })
     this.trailingSlash = options.trailingSlash === undefined ? 'remove' : options.trailingSlash
     this.unlisten = this._history.listen(location =>
-      this.handleURLChange(createURLDescriptor(location), false),
+      this.handleLocationChange(location, false),
     )
   }
 
@@ -182,52 +162,41 @@ export class Navigation<Context extends object = any>
     url: string | Partial<URLDescriptor> | NavigateOptions,
     options: NavigateOptionsWithoutURL = {},
   ): Promise<Route> {
-    let nextLocation: URLDescriptor
+    let nextURL: URLDescriptor
     if (typeof url === 'string') {
-      nextLocation = createURLDescriptor(url)
+      nextURL = createURLDescriptor(url)
     } else if ((url as NavigateOptions).url) {
       options = url as NavigateOptions
-      nextLocation = createURLDescriptor((options as NavigateOptions).url)
+      nextURL = createURLDescriptor((options as NavigateOptions).url)
     } else if (url) {
-      nextLocation = createURLDescriptor(url as Partial<URLDescriptor>)
+      nextURL = createURLDescriptor(url as Partial<URLDescriptor>)
     } else {
-      throw new Error(`You must specify a URL for navigation.navigate().`)
+      throw new Error(`You must specify a URL or state to navigation.navigate().`)
     }
 
     let currentLocation = this._history.location
+
+    // Default to replace when we're not changing the URL itself, but only
+    // changing state.
     let shouldReplace =
       options.replace ||
       (options.replace !== false &&
-        currentLocation.pathname === nextLocation.pathname &&
-        currentLocation.search === nextLocation.search &&
-        currentLocation.hash === nextLocation.hash)
-
-    let previousNaviStates = shouldReplace ? this.extract(currentLocation) : []
-    let naviState: NaviState = {}
-
-    // TODO: only add a NaviState to the state if there is anything unusual in this
-    // navigation or previous ones at the same location, as otherwise we'll have
-    // trouble skipping updates to hashes.
-    if (options.method || options.headers || options.body || previousNaviStates.length) {
-      naviState = {
-        method: options.method || 'GET',
-        headers: options.headers || {},
-        body: JSON.stringify(options.body),
-        effects: {},
-        key: this.nextStateKey++,
-      }
-    }
-
-    let naviStates = [naviState].concat(previousNaviStates)
-    nextLocation = {
-      ...nextLocation,
-      state: {
-        ...nextLocation.state,
-        [NAVI_STATES_KEY]: naviStates,
-      },
-    }
+        currentLocation.pathname === nextURL.pathname &&
+        currentLocation.search === nextURL.search &&
+        currentLocation.hash === nextURL.hash)
     
-    this._history[shouldReplace ? 'replace' : 'push'](nextLocation)
+    this._history[shouldReplace ? 'replace' : 'push']({
+      pathname: nextURL.pathname,
+      search: nextURL.search,
+      hash: nextURL.hash,
+      state: packLocationState({
+        revertTo: shouldReplace ? currentLocation.state : undefined,
+        method: options.method,
+        headers: options.headers,
+        body: options.body,
+        state: options.state,
+      }),
+    })
 
     return this.getRoute()
   }
@@ -245,7 +214,7 @@ export class Navigation<Context extends object = any>
   }
 
   refresh(): Promise<Route> {
-    this.handleURLChange(createURLDescriptor(this._history.location), true)
+    this.handleLocationChange(this._history.location, true)
     return this.getRoute()
   }
 
@@ -299,12 +268,11 @@ export class Navigation<Context extends object = any>
     await this.getRoute()
   }
 
-  extract(location?): NaviStates {
-    if (!location) {
-      location = this._history.location
-    }
-    let state = location.state || { [NAVI_STATES_KEY]: undefined }
-    return state[NAVI_STATES_KEY] || []
+  /**
+   * Returns the current history state
+   */
+  extractState(): any {
+    return this._history.location.state
   }
 
   /**
@@ -332,95 +300,54 @@ export class Navigation<Context extends object = any>
     }
   }
 
-  private handleURLChange(
-    url: URLDescriptor,
+  private handleLocationChange(
+    location: Location,
     force?: boolean,
   ) {
-    if (this.ignoreNextURLChange) {
-      this.ignoreNextURLChange = false
+    if (this.ignoreNextLocationChange) {
+      this.ignoreNextLocationChange = false
       return
     }
-
-    // Bail without change is the URL hasn't changed
-    if (
-      !force &&
-      this.lastReceivedURL &&
-      areURLDescriptorsEqual(this.lastReceivedURL, url)
-    ) {
-      for (let i = 0; i < this.observers.length; i++) {
-        this.observers[i].next(this.lastRoute!)
-      }
-      return
-    }
-    this.lastReceivedURL = url
 
     // Ensure the pathname always has a trailing `/`, so that we don't
     // have multiple URLs referring to the same page.
     if (this.trailingSlash !== null) {
-      let hasTrailingSlash = url.pathname.slice(-1) === '/'
+      let hasTrailingSlash = location.pathname.slice(-1) === '/'
       let newPathname: string | undefined
       if (this.trailingSlash === 'add' && !hasTrailingSlash) {
-        newPathname = url.pathname + '/'
+        newPathname = location.pathname + '/'
       }
       else if (this.trailingSlash === 'remove' && hasTrailingSlash) {
-        newPathname = url.pathname.slice(0, -1)
+        newPathname = location.pathname.slice(0, -1)
       }
       if (newPathname) {
-        url = {
-          ...url,
+        this._history.replace({
+          ...location,
           pathname: newPathname,
-        }
-        this._history.replace(url)
+        })
         return
       }
     }
 
-    let lastURL = this.lastURL
-    this.lastURL = url
-    let naviStates: NaviStates = this.extract(url)
-    let naviState = naviStates[0] || { key: undefined }
-    let pathHasChanged, searchHasChanged, naviStateHasChanged
-    if (url && lastURL) {
-      let lastNaviState: NaviState = this.extract(lastURL)[0] || { key: undefined }
-      naviStateHasChanged = naviState.key !== lastNaviState.key
-      pathHasChanged = url.pathname !== lastURL.pathname
-      searchHasChanged = url.search !== lastURL.search
-    }
-
-    // We don't want to recompute the route unless something relevant has
-    // changed.
+    // Bail if the URL hasn't changed
     if (
       !force &&
-      !(pathHasChanged || searchHasChanged || naviStateHasChanged) &&
-      this.lastRoute
+      this.lastHandledLocation &&
+      areLocationsEqual(this.lastHandledLocation, location)
     ) {
-      if (url.hash !== lastURL!.hash || url.state !== lastURL!.state) {
-        this.setRoute(
-          routeReducer(this.lastRoute, {
-            type: 'url',
-            url: url,
-          }),
-          this.isLastRouteSteady,
-        )
-      }
       return
     }
 
+    let url = createURLDescriptor(location)
+    let lastHandledLocation = this.lastHandledLocation
+    this.lastHandledLocation = location
     if (this.observableSubscription) {
       this.observableSubscription.unsubscribe()
     }
-
-    let body = naviState.body === undefined ? undefined : JSON.parse(naviState.body)
-    let observableOptions: RouterResolveOptions = {
-      body,
-      method: naviState.method || 'GET',
-      headers: naviState.headers || {},
-    }
-
-    let observable = this._router.createObservable(url, observableOptions)
+    let observable = this._router.createObservable(url, unpackLocationState(location.state))
     if (observable) {
       this.observableSubscription = observable.subscribe(this.handleChunkList)
-    } else if (!lastURL) {
+    } else if (!lastHandledLocation) {
       throw new OutOfRootError(url)
     }
   }
@@ -428,24 +355,26 @@ export class Navigation<Context extends object = any>
   // Allows for either the location or route or both to be changed at once.
   private handleChunkList = (chunks: Chunk[]) => {
     let isSteady = true
+    let location = this._history.location
     for (let i = 0; i < chunks.length; i++) {
       let chunk = chunks[i]
       if (chunk.type === 'busy') {
         isSteady = false
       }
+      if (chunk.type === 'state') {
+        this.ignoreNextLocationChange = true
+        this._history.replace({
+          ...location,
+          state: setLocationRequestState(location.state, chunk.state),
+        })
+      }
       if (chunk.type === 'redirect') {
-        let states = this.extract()
-        let location = this._history.location
-        let newStates: NaviStates | undefined
-        if (states.length > 1) {
-          this.ignoreNextURLChange = true
-          newStates = states.slice(1)
+        let revertedState = revertLocationState(location.state)
+        if (revertedState) {
+          this.ignoreNextLocationChange = true
           this._history.replace({
             ...location,
-            state: {
-              ...location.state,
-              [NAVI_STATES_KEY]: newStates,
-            }
+            state: revertedState,
           })
           this._history.push(chunk.to)
         }
@@ -457,7 +386,7 @@ export class Navigation<Context extends object = any>
     }
 
     this.setRoute(
-      [{ type: 'url', url: this.lastURL }]
+      [{ type: 'url', url: createURLDescriptor(this.lastHandledLocation!) }]
         .concat(chunks)
         .reduce(routeReducer, undefined as any) as Route,
       isSteady,
@@ -481,4 +410,89 @@ export class Navigation<Context extends object = any>
       }
     }
   }
+}
+
+// Compares states using reference equality, as opposed to the version of this
+// function exported from `history`, which compares by value.
+function areLocationsEqual(x: Location, y: Location): boolean {
+  if (x == y) {
+      return true
+  }
+  let xData = x && unpackLocationState(x.state)
+  let yData = y && unpackLocationState(y.state)
+  return (
+    x.pathname == y.pathname &&
+    x.search == y.search &&
+    x.hash == y.hash &&
+    (x.state === y.state || (
+      xData.body === yData.body &&
+      xData.headers === yData.headers &&
+      xData.method === yData.method &&
+      xData.state === yData.state
+    ))
+  )
+}
+
+
+const NAVI_STATE_KEY = '__navi__'
+
+interface RequestDataWithoutState {
+  method?: string,
+  body?: string,
+  headers?: { [name: string]: string },
+}
+
+interface RequestData extends RequestDataWithoutState {
+  // The current `request.state` is stored directly on `window.history.state`.  
+  state?: any,
+}
+
+interface NaviState {
+  requestDataWithoutState?: RequestDataWithoutState,
+  revertTo?: any
+}
+
+interface PackLocationStateOptions extends RequestData {
+  revertTo?: any
+}
+
+/**
+ * Set the value of request.state without changing the other request data.
+ */
+function setLocationRequestState(locationState: any, newState: any): any {
+  return {
+    ...newState,
+    [NAVI_STATE_KEY]: locationState[NAVI_STATE_KEY],
+  }
+}
+
+function packLocationState({ revertTo, state, ...requestDataWithoutState }: PackLocationStateOptions): any {
+  if (revertTo) {
+    revertTo = { ...revertTo }
+    if (revertTo[NAVI_STATE_KEY]) {
+      delete revertTo[NAVI_STATE_KEY].revertTo
+    }
+  }
+  return {
+    ...state,
+    [NAVI_STATE_KEY]: {
+      requestDataWithoutState,
+      revertTo,
+    }
+  }
+}
+
+function unpackLocationState(state: any = {}): RequestData { 
+  let requestDataState = { ...state }
+  delete requestDataState[NAVI_STATE_KEY]
+  let naviState: NaviState = state[NAVI_STATE_KEY] || {}  
+  return {
+    ...naviState.requestDataWithoutState,
+    state: Object.keys(requestDataState).length ? requestDataState : undefined,
+  }
+}
+
+function revertLocationState(state: any = {}): any {
+  let naviState: NaviState = state[NAVI_STATE_KEY] || {}
+  return naviState.revertTo
 }

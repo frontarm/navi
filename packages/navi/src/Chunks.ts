@@ -14,6 +14,7 @@ export type Chunk =
   | HeadersChunk
   | MountChunk
   | RedirectChunk
+  | StateChunk
   | StatusChunk
   | TitleChunk
   | URLChunk
@@ -28,6 +29,7 @@ export type ChunkType =
   | 'headers'
   | 'mount'
   | 'redirect'
+  | 'state'
   | 'status'
   | 'title'
   | 'url'
@@ -127,6 +129,15 @@ export interface MountChunk extends GenericChunk {
 export interface RedirectChunk extends GenericChunk {
   type: 'redirect'
   to: string
+}
+
+/**
+ * Specifies that history.state for this request should be set to the given
+ * value.
+ */
+export interface StateChunk extends GenericChunk {
+  type: 'state'
+  state: any
 }
 
 /**

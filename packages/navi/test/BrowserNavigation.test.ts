@@ -1,4 +1,4 @@
-import { createBrowserNavigation, map, mount, redirect, route } from '../src'
+import { createBrowserNavigation, compose, map, mount, redirect, route, withState } from '../src'
 
 function createRoutes() {
   let i = 0
@@ -14,29 +14,23 @@ function createRoutes() {
         return redirect('/')
       }
 
-      // let memo1
-      // try {
-      //   memo1 = await req.serializeEffectToHistory(async () => {
-      //     ++i
-      //     if (req.params.fail !== undefined) {
-      //       throw new Error()
-      //     }
-      //     return i
-      //   })
-      // }
-      // catch (e) {}
-
-      // let memo2 = await req.serializeEffectToHistory(() => ++i)
-
-      return route({
-        view: {
-          method: req.method,
-          body: req.body,
-          // memo1,
-          // memo2,
-          memoExecutions: i,
-        }
-      })
+      return compose(
+        withState(req => {
+          let memo
+          if (!req.state.memo) {
+            return { memo: ++i }
+          }
+          return null
+        }),
+        route(req => ({
+          view: {
+            method: req.method,
+            body: req.body,
+            memo: req.state.memo,
+            memoExecutions: i,
+          }
+        }))
+      )
     }),
   })
 }
@@ -92,29 +86,27 @@ describe("BrowserNavigation", () => {
     expect(window.history.length).toBe(originalHistoryLength + 1)
   })
 
-  test("navigating to a redirect away from the current URL, and then navigating back remembers the effects", async () => {
+  test("navigating to a redirect away from the current URL, and then navigating back remembers state", async () => {
     let nav = createTestNavigation()
     let r = await nav.navigate('/test', {
       body: 'hello',
       headers: { token: 'auth' },
       method: 'POST',
     })
-    expect(r.views[0].memo1).toBe(1)
-    expect(r.views[0].memo2).toBe(2)
-    expect(r.views[0].memoExecutions).toBe(2)
+    expect(r.views[0].memo).toBe(1)
+    expect(r.views[0].memoExecutions).toBe(1)
     r = await nav.navigate('/test?redirect')
     expect(r.url.pathname).toBe('/')
     r = await nav.goBack()
     expect(r.url.pathname).toBe('/test')
-    expect(r.views[0].memo1).toBe(1)
-    expect(r.views[0].memo2).toBe(2)
-    expect(r.views[0].memoExecutions).toBe(2)
+    expect(r.views[0].memo).toBe(1)
+    expect(r.views[0].memoExecutions).toBe(1)
   })
 
-  test("on 'back', successful request.memoize() callbacks are not called again", async () => {
+  test("on 'back', previous state is reused", async () => {
     let nav = createTestNavigation()
     let originalHistoryLength = window.history.length
-    nav.navigate('/test', {
+    await nav.navigate('/test', {
       body: 'hello',
       headers: { token: 'auth' },
       method: 'POST',
@@ -126,55 +118,32 @@ describe("BrowserNavigation", () => {
     expect(window.history.length).toBe(originalHistoryLength + 2)
     expect(r.url.pathname).toBe('/test')
     expect(r.views[0].method).toBe('POST')
-    expect(r.views[0].memo1).toBe(1)
-    expect(r.views[0].memo2).toBe(2)
-    expect(r.views[0].memoExecutions).toBe(2)
+    expect(r.views[0].memo).toBe(1)
+    expect(r.views[0].memoExecutions).toBe(1)
   })
 
-  test("on 'back', failed request.memoize() callbacks are not called again", async () => {
+  test("extractState() can be used to pass state to another Navigation object", async () => {
     let nav = createTestNavigation()
     let originalHistoryLength = window.history.length
-    nav.navigate('/test?fail', {
+    await nav.navigate('/test', {
       body: 'hello',
       headers: { token: 'auth' },
       method: 'POST',
     })
     await nav.navigate('/')
+    await nav.goBack()
 
-    let r = await nav.goBack()
+    let nav1 = createBrowserNavigation({
+      state: nav.extractState(),
+      routes: createRoutes()
+    })
+    
+    let r = await nav1.getRoute()
 
     expect(window.history.length).toBe(originalHistoryLength + 2)
     expect(r.url.pathname).toBe('/test')
     expect(r.views[0].method).toBe('POST')
-    expect(r.views[0].memo2).toBe(2)
-    expect(r.views[0].memoExecutions).toBe(2)
-  })
-
-  describe("extract()ing a state and reusing it in another BrowserNavigation", () => {
-    test("does not call memo callbacks again", async () => {
-      let nav = createTestNavigation()
-      let originalHistoryLength = window.history.length
-      nav.navigate('/test', {
-        body: 'hello',
-        headers: { token: 'auth' },
-        method: 'POST',
-      })
-      await nav.navigate('/')
-      await nav.goBack()
-  
-      let nav1 = createBrowserNavigation({
-        serverStates: nav.extract(),
-        routes: createRoutes()
-      })
-      
-      let r = await nav1.getRoute()
-
-      expect(window.history.length).toBe(originalHistoryLength + 2)
-      expect(r.url.pathname).toBe('/test')
-      expect(r.views[0].method).toBe('POST')
-      expect(r.views[0].memo1).toBe(1)
-      expect(r.views[0].memo2).toBe(2)
-      expect(r.views[0].memoExecutions).toBe(0)
-    })
+    expect(r.views[0].memo).toBe(1)
+    expect(r.views[0].memoExecutions).toBe(0)
   })
 })
