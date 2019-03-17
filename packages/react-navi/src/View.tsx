@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Helmet } from 'react-helmet'
-import { NaviError, Route, Chunk, ViewChunk, areURLDescriptorsEqual, HeadChunk, TitleChunk } from 'navi'
+import { NaviError, Route, Chunk, ViewChunk, HeadChunk, TitleChunk } from 'navi'
 import { NaviContext } from './NaviContext'
 import { scrollToHash } from './scrollToHash'
 
@@ -139,7 +139,10 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
       let nextRoute = this.state.route
 
       if (nextRoute && nextRoute.type !== 'busy') {
-        if (prevRoute && areURLDescriptorsEqual(nextRoute.url, prevRoute.url)) {
+        if (prevRoute && 
+          nextRoute.url.pathname === prevRoute.url.pathname &&
+          nextRoute.url.search === prevRoute.url.search &&
+          nextRoute.url.hash === prevRoute.url.hash) {
           return
         }
 
@@ -169,10 +172,10 @@ class InnerView extends React.Component<InnerViewProps, InnerViewState> {
     if (!Chunk || !Chunk.view) {
       let Suspense: React.ComponentType<any> = (React as any).Suspense
       if (Suspense) {
-        throw this.props.context.navigation.steady()
+        throw this.props.context.navigation.getRoute()
       }
       else {
-        console.warn(`A Navi <View> component was rendered before your Navigation store's state had become steady. Consider waiting before rendering with "await navigation.steady()", or upgrading React to version 16.6 to handle this with Suspense.`)
+        console.warn(`A Navi <View> component was rendered before your Navigation store's state had become steady. Consider waiting before rendering with "await navigation.getRoute()", or upgrading React to version 16.6 to handle this with Suspense.`)
         return null
       }
     }
