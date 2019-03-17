@@ -14,7 +14,8 @@ export function createChunksMatcher<T, Context extends object>(
   forceChildMatcher: Matcher<any> | undefined,
   getChunks: (value: T, request: NaviRequest<Context>) => Chunk[],
   exact?: boolean,
-  processDuringCrawl?: boolean
+  processDuringCrawl?: boolean,
+  predicate?: (request: NaviRequest) => boolean
 ): Matcher<Context> {
   function* chunksMatcherGenerator(
     request: NaviRequest,
@@ -26,13 +27,13 @@ export function createChunksMatcher<T, Context extends object>(
     }
     else {
       let parentIterator =
-        (request.crawler && !processDuringCrawl)
-          ? empty()
-          : resolveChunks(
-              maybeResolvable,
-              request,
-              (value: T) => getChunks(value, request)
-            )
+        ((request.crawler && !processDuringCrawl) || (predicate && !predicate(request)))
+        ? empty()
+        : resolveChunks(
+            maybeResolvable,
+            request,
+            (value: T) => getChunks(value, request)
+          )
         
       yield* (child ? concatMatcherIterators(parentIterator, createMatcherIterator(child, request)) : parentIterator)
     }

@@ -40,7 +40,12 @@ interface RouteOptions<Context extends object, Data extends object = any> {
 export function route<Context extends object, Data extends object = any>(
   options: RouteOptions<Context, Data> | Resolvable<Route<Data>, Context> = {},
 ) {
-  if (typeof options !== 'function') {
+  let contextGetter: Resolvable<Route<Data>, Context>
+
+  if (typeof options === 'function') {
+    contextGetter = options
+  }
+  else {
     let {
       data,
       getData,
@@ -69,7 +74,7 @@ export function route<Context extends object, Data extends object = any>(
       }
     }
 
-    options = function getRoute(
+    contextGetter = function getRoute(
       req: NaviRequest,
       context: Context,
     ): Route<Data> | Promise<Route<Data>> {
@@ -84,13 +89,11 @@ export function route<Context extends object, Data extends object = any>(
       let [headersMaybePromise, b] = extractValue(headers, getHeaders, req, context)
       let [statusMaybePromise, c] = extractValue(status, getStatus, req, context)
       let [titleMaybePromise, d] = extractValue(title, getTitle, req, context)
+      let [headMaybePromise, e] = extractValue(head, getHead, req, context)
 
-      let headMaybePromise: any | Promise<any | undefined> | undefined
       let viewMaybePromise: any | Promise<any | undefined> | undefined
-      let e: boolean | undefined
       let f: boolean | undefined
       if (req.method !== 'HEAD') {
-        [headMaybePromise, e] = extractValue(head, getHead, req, context);
         [viewMaybePromise, f] = extractValue(view, getView, req, context)
       }
 
@@ -122,7 +125,9 @@ export function route<Context extends object, Data extends object = any>(
   }
 
   return compose(
-    withContext(options),
+    withContext((req, context) =>
+      req.crawler ? {} : contextGetter(req, context)
+    ),
     withData(req => req.context.data),
     withHead(req => req.context.head),
     withHeaders(req => req.context.headers),

@@ -13,5 +13,7 @@ export function withView<Context extends object, View>(
     child,
     ((view, request) => view ? [createChunk('view', request, { view })] : []),
     exact,
+    false,
+    (request) => request.method !== 'HEAD'
   )
 }

@@ -27,6 +27,7 @@ export interface CrawlOptions<Context extends object = any> {
   ) => undefined | string[] | Promise<undefined | string[]>
   headers?: { [name: string]: string }
   hostname?: string
+  method?: string
 
   /**
    * Configures whether a trailing slash will be added or removed. By default,
@@ -70,6 +71,7 @@ export async function crawl<Context extends object = any>(options: CrawlOptions<
   let chunkListObservable = router.createObservable(url, {
     crawler,
     headers: options.headers,
+    method: 'HEAD',
   })
   let chunkList = await createPromiseFromObservable(chunkListObservable!)
 
