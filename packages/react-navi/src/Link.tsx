@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { URLDescriptor, Navigation, createURLDescriptor, joinPaths } from 'navi'
+import { URLDescriptor, Navigation, createURLDescriptor, joinPaths, modifyTrailingSlash } from 'navi'
 import { NaviContext } from './NaviContext'
 import { scrollToHash } from './scrollToHash';
 
@@ -192,7 +192,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
       navigationURL &&
       (props.exact
         ? linkURL.pathname === navigationURL.pathname
-        : navigationURL.pathname.indexOf(linkURL.pathname) === 0)
+        : modifyTrailingSlash(navigationURL.pathname, 'add').indexOf(linkURL.pathname) === 0)
     )
 
     let context = {
@@ -255,7 +255,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
         event.preventDefault()
 
         let currentURL = (this.props.context.busyRoute || this.props.context.steadyRoute)!.url
-        let isSamePathname = url.pathname === currentURL.pathname
+        let isSamePathname = modifyTrailingSlash(url.pathname, 'remove') === modifyTrailingSlash(currentURL.pathname, 'remove')
         this.props.context.navigation.navigate(url)
         if ((isSamePathname || url.pathname === '') && url.hash === currentURL.hash && url.hash) {
           scrollToHash(currentURL.hash, 'smooth')
