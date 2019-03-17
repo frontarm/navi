@@ -1,7 +1,7 @@
 import { createChunk, Chunk, createNotFoundChunk } from '../Chunks'
 import { Resolvable } from '../Resolvable'
 import { Matcher } from '../Matcher'
-import { URLDescriptor, resolve, createURLDescriptor } from '../URLTools'
+import { URLDescriptor, join, createURLDescriptor } from '../URLTools'
 import { createChunksMatcher } from '../createChunksMatcher'
 
 export function redirect<Context extends object = any>(
@@ -19,7 +19,7 @@ export function redirect<Context extends object = any>(
       // TODO: support all relative URLs
       let toHref: string | undefined
       if (typeof to === 'string') {
-        toHref = resolve(to, request.mountpath)
+        toHref = to[0] === '/' ? to : join('/', request.mountpath, to)
       }
       else if (to) {
         toHref = createURLDescriptor(to).href

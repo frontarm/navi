@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { URLDescriptor, Navigation, createURLDescriptor, resolve } from 'navi'
+import { URLDescriptor, Navigation, createURLDescriptor, join } from 'navi'
 import { NaviContext } from './NaviContext'
 import { scrollToHash } from './scrollToHash';
 
@@ -16,7 +16,7 @@ export interface LinkProps {
   href: string | Partial<URLDescriptor>,
   id?: string,
   lang?: string,
-  prefetch?: string,
+  prefetch?: boolean,
   ref?: React.Ref<HTMLAnchorElement>,
   rel?: string,
   style?: object,
@@ -150,17 +150,12 @@ class InnerLink extends React.Component<InnerLinkProps> {
     let url = this.getURL()
     let navigation = props.context.navigation
     if (navigation && url && url.pathname && props.prefetch) {
-      let prefetch = props.prefetch
-      navigation.router.resolve(url, {
-        method: typeof prefetch === 'string' ? prefetch : 'GET',
-        followRedirects: true,
+      navigation.prefetch(url).catch((e) => {
+        console.warn(
+          `A <Link> tried to prefetch "${url!.pathname}", but the ` +
+          `router was unable to fetch this path.`
+        )
       })
-        .catch((e) => {
-          console.warn(
-            `A <Link> tried to prefetch "${url!.pathname}", but the ` +
-            `router was unable to fetch this path.`
-          )
-        })
     }
   }
 
@@ -182,7 +177,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
     // Resolve relative to the current "directory"
     let navigationURL = this.getNavigationURL()
     if (navigationURL && typeof href === 'string') {
-      href = resolve(href, navigationURL.pathname)
+      href = href[0] === '/' ? href : join('/', navigationURL.pathname, href)
     }
 
     return createURLDescriptor(href)

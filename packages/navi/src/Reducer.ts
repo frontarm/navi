@@ -1,1 +1,0 @@
-export type Reducer<X=any, Y=any> = (accumulator: Y | undefined, chunkData: X) => Y

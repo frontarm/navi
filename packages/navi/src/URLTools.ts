@@ -178,10 +178,6 @@ export function join(base: string, ...paths: string[]): string {
   return pathSegments.join('/')
 }
 
-export function resolve(to: string, base: string): string {
-  return to[0] === '/' ? to : join('/', base, to)
-}
-
 export function modifyTrailingSlash(pathname: string, action: 'add' | 'remove' | null): string {
   let hasTrailingSlash = pathname.slice(-1) === '/'
   if (action === 'add' && !hasTrailingSlash) {

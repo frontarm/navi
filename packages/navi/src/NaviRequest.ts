@@ -68,7 +68,7 @@ export interface NaviRequest<Context extends object=any> {
   // TODO: these are deprecated, remove in Navi 0.13
   readonly mountname?: string
   readonly pathname?: string
-  readonly router: Router<any, any>
+  readonly router: Router<any>
 }
 
 export function createRequest<Context extends object=any>(request: NaviRequest<Context>, router?: Router) {

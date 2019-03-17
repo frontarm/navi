@@ -48,7 +48,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
     rootContext: any,
     matcherGeneratorClass: MatcherGenerator<any>,
     rootMapping: Mapping,
-    router: Router<any, any>,
+    router: Router<any>,
     options: RouterMapOptions,
   ) {
     this.observers = []
@@ -337,10 +337,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
           pathname,
           order,
           walkedPatternLists: new Set(walkedPatternLists),
-          matcherIterator: this.matcherGeneratorFunction(
-            matchRequest,
-            null,
-          ),
+          matcherIterator: this.matcherGeneratorFunction(matchRequest),
         })
       }
     }

@@ -1,8 +1,5 @@
 import { createBrowserHistory, History } from 'history'
 import { Navigation, NaviStates, NAVI_STATES_KEY } from './Navigation'
-import { Chunk } from './Chunks'
-import { Reducer } from './Reducer'
-import { Route } from './Route'
 import { Matcher } from './Matcher'
 
 
@@ -40,11 +37,6 @@ export interface BrowserNavigationOptions<Context extends object> {
     serverStates?: NaviStates,
 
     /**
-     * The function that reduces chunks into a Route object.
-     */
-    reducer?: Reducer<Chunk, Route>,
-
-    /**
      * Configures whether a trailing slash will be added or removed. By default,
      * the trailing slash will be removed.
      */
@@ -52,7 +44,7 @@ export interface BrowserNavigationOptions<Context extends object> {
 }
 
 
-export function createBrowserNavigation<Context extends object, R = Route>(options: BrowserNavigationOptions<Context>) {
+export function createBrowserNavigation<Context extends object>(options: BrowserNavigationOptions<Context>) {
     if (options.pages) {
         if (process.env.NODE_ENV !== 'production') {
             console.warn(

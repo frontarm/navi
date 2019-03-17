@@ -1,5 +1,5 @@
-import { URLDescriptor } from './URLTools'
 import { Chunk } from './Chunks'
+import { URLDescriptor } from './URLTools'
 
 export type RouteType =
   | 'busy'
@@ -59,8 +59,8 @@ export interface Route<Data = any> {
   content?: any
 }
 
-export function defaultRouteReducer(route: Route | undefined, chunk: Chunk): Route {
-  route = defaultRouteReducerWithoutCompat(route, chunk)
+export function routeReducer(route: Route | undefined, chunk: Chunk): Route {
+  route = routeReducerWithoutCompat(route, chunk)
   Object.defineProperties(route, {
     meta: {
       configurable: true,
@@ -102,7 +102,7 @@ export function defaultRouteReducer(route: Route | undefined, chunk: Chunk): Rou
   return route
 }
 
-function defaultRouteReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Route {
+function routeReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Route {
   if (route) {
     if (chunk.type === 'url') {
       return {

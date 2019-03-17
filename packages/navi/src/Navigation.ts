@@ -1,6 +1,7 @@
 import { History } from 'history'
 import { Router, RouterResolveOptions } from './Router'
-import { Route, defaultRouteReducer as routeReducer } from './Route'
+import { Route, routeReducer } from './Route'
+import { resolve } from './resolve'
 import {
   URLDescriptor,
   areURLDescriptorsEqual,
@@ -30,7 +31,7 @@ export interface NaviState {
 
 export type NaviStates = NaviState[]
 
-export interface NavigationOptions<Context extends object, R = Route> {
+export interface NavigationOptions<Context extends object> {
   /**
    * The Matcher that declares your app's pages.
    */
@@ -57,12 +58,6 @@ export interface NavigationOptions<Context extends object, R = Route> {
   history: History
 
   /**
-   * When true, the initial HTTP method will be respect, instead of reverting
-   * it to "GET".
-   */
-  respectInitialMethod?: boolean
-
-  /**
    * Configures whether a trailing slash will be added or removed. By default,
    * the trailing slash will be removed.
    */
@@ -70,9 +65,9 @@ export interface NavigationOptions<Context extends object, R = Route> {
 }
 
 export interface NavigateOptionsWithoutURL {
+  body?: any
   headers?: { [name: string]: string }
   method?: string
-  body?: any
 
   /**
    * Whether to replace the current history entry.
@@ -87,13 +82,16 @@ export interface NavigateOptions extends NavigateOptionsWithoutURL {
 export class Navigation<Context extends object = any>
   implements Observable<Route> {
 
-  private _router: Router<Context, Route>
+  private _router: Router<Context>
   private _history: History
 
   // Stores the last receive location, even if we haven't processed it.
   // Used to detect and defuse loops where a change to history results
   // in a new change to history before the previous one completes.
   private lastReceivedURL?: URLDescriptor
+
+  private basename?: string
+  private matcher: Matcher<Context>
 
   private waitUntilSteadyDeferred?: Deferred<Route>
   private observers: Observer<Route>[]
@@ -106,16 +104,17 @@ export class Navigation<Context extends object = any>
   private nextStateKey: number
   private trailingSlash: 'add' | 'remove' | null
 
-  constructor(options: NavigationOptions<Context, Route>) {
+  constructor(options: NavigationOptions<Context>) {
     this._history = options.history
     this.observers = []
     this.isLastRouteSteady = false
+    this.basename = options.basename
+    this.matcher = options.routes
     this.nextStateKey = 1
     this._router = new Router({
       context: options.context,
       routes: options.routes,
       basename: options.basename,
-      reducer: routeReducer,
     })
     this.trailingSlash = options.trailingSlash === undefined ? 'remove' : options.trailingSlash
     this.unlisten = this._history.listen(location =>
@@ -231,6 +230,18 @@ export class Navigation<Context extends object = any>
     this._history[shouldReplace ? 'replace' : 'push'](nextLocation)
 
     return this.getSteadyValue()
+  }
+
+  // TODO:
+  // Put any history state on a "prefetched state" object, so that on
+  // navigation, any prefetched state can be reused.
+  prefetch(url: string | Partial<URLDescriptor>): Promise<Route> {
+    return resolve({
+      basename: this.basename,
+      routes: this.matcher,
+      context: this._router.context,
+      url,
+    })
   }
 
   refresh() {

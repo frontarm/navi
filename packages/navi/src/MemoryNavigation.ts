@@ -1,7 +1,6 @@
 import { createMemoryHistory } from 'history';
 import { Matcher } from './Matcher'
 import { Navigation, NavigateOptions } from './Navigation'
-import { Route } from './Route'
 import { URLDescriptor } from './URLTools'
 
 
@@ -38,7 +37,7 @@ export interface MemoryNavigationOptions<Context extends object> {
 }
 
 
-export function createMemoryNavigation<Context extends object, R = Route>(options: MemoryNavigationOptions<Context>) {
+export function createMemoryNavigation<Context extends object>(options: MemoryNavigationOptions<Context>) {
     if (options.pages) {
         if (process.env.NODE_ENV !== 'production') {
             console.warn(

@@ -2,22 +2,20 @@ import { Matcher, MatcherGenerator } from './Matcher'
 import { createRootMapping, matchAgainstPathname, Mapping } from './Mapping'
 import { ChunkListObservable } from './ChunkListObservable'
 import { ChunksMapObservable } from './ChunksMapObservable'
-import { Route, defaultRouteReducer } from './Route'
+import { Route, routeReducer } from './Route'
 import { Chunk } from './Chunks'
 import { SiteMap, RouteMap } from './Maps'
 import { createPromiseFromObservable } from './Observable'
 import { createURLDescriptor, URLDescriptor } from './URLTools'
 import { createRequest } from './NaviRequest'
 import { OutOfRootError } from './Errors'
-import { Reducer } from './Reducer'
 import { Crawler } from './Crawler'
 
 
-export interface RouterOptions<Context extends object, R = Route> {
+export interface RouterOptions<Context extends object> {
     context?: Context,
     routes?: Matcher<Context>,
     basename?: string,
-    reducer?: Reducer<Chunk, R>,
 }
 
 export interface RouterResolveOptions {
@@ -43,16 +41,15 @@ export function createRouter<Context extends object>(options: RouterOptions<Cont
     return new Router(options)
 }
 
-export class Router<Context extends object=any, R=Route> {
-    private context: Context
+export class Router<Context extends object=any> {
+    context: Context
+    
     private matcherGenerator: MatcherGenerator<Context>
     private rootMapping: Mapping
-    private reducer: Reducer<Chunk, R>
     
-    constructor(options: RouterOptions<Context, R>) {
+    constructor(options: RouterOptions<Context>) {
         this.context = options.context || {} as any
         this.matcherGenerator = options.routes!()
-        this.reducer = options.reducer || (defaultRouteReducer as any)
 
         let basename = options.basename
         if (basename && basename.slice(-1) === '/') {
@@ -96,8 +93,7 @@ export class Router<Context extends object=any, R=Route> {
             return new ChunkListObservable(
                 url,
                 matchRequest,
-                this.matcherGenerator,
-                options.crawler || null,
+                this.matcherGenerator
             )
         }
     }
@@ -113,9 +109,9 @@ export class Router<Context extends object=any, R=Route> {
         )
     }
 
-    resolve(url: string | Partial<URLDescriptor> | RouterResolveOptions, options?: RouterResolveOptions): Promise<R>;
-    resolve(urls: (string | Partial<URLDescriptor>)[], options?: RouterResolveOptions): Promise<R[]>;
-    resolve(urls: string | Partial<URLDescriptor> | (string | Partial<URLDescriptor>)[] | RouterResolveOptions, options: RouterResolveOptions = {}): Promise<R | R[]> {
+    resolve(url: string | Partial<URLDescriptor> | RouterResolveOptions, options?: RouterResolveOptions): Promise<Route>;
+    resolve(urls: (string | Partial<URLDescriptor>)[], options?: RouterResolveOptions): Promise<Route[]>;
+    resolve(urls: string | Partial<URLDescriptor> | (string | Partial<URLDescriptor>)[] | RouterResolveOptions, options: RouterResolveOptions = {}): Promise<Route | Route[]> {
         let urlDescriptors: URLDescriptor[]
 
         if (Array.isArray(urls)) {
@@ -143,9 +139,9 @@ export class Router<Context extends object=any, R=Route> {
         return !Array.isArray(urls) ? promises[0] : Promise.all(promises)
     }
 
-    resolveSiteMap(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): Promise<SiteMap<R>> {
+    resolveSiteMap(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): Promise<SiteMap<Route>> {
         return createPromiseFromObservable(this.createMapObservable(urlOrDescriptor, options)).then(chunksMap => {
-            let routeMap = {} as RouteMap<R>
+            let routeMap = {} as RouteMap<Route>
             let redirectMap = {} as { [name: string]: string }
             let urls = Object.keys(chunksMap)
             for (let i = 0; i < urls.length; i++) {
@@ -160,7 +156,7 @@ export class Router<Context extends object=any, R=Route> {
                     routeMap[url] =
                         [{ type: 'url', url: createURLDescriptor(url) }]
                             .concat(chunks)
-                            .reduce(this.reducer, undefined)!
+                            .reduce(routeReducer, undefined)!
                 }
             }
             return {
@@ -170,11 +166,11 @@ export class Router<Context extends object=any, R=Route> {
         })
     }
 
-    resolveRouteMap(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): Promise<RouteMap<R>> {
+    resolveRouteMap(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): Promise<RouteMap<Route>> {
         return this.resolveSiteMap(urlOrDescriptor, options).then(siteMap => siteMap.routes)
     }
 
-    private getPageRoutePromise(url: URLDescriptor, options: RouterResolveOptions): Promise<R> {
+    private getPageRoutePromise(url: URLDescriptor, options: RouterResolveOptions): Promise<Route> {
         let observable = this.createObservable(url, options)
         if (!observable) {
             return Promise.reject(new OutOfRootError(url))
@@ -197,7 +193,7 @@ export class Router<Context extends object=any, R=Route> {
             return (
                 [{ type: 'url', url: createURLDescriptor(url) }]
                     .concat(chunks)
-                    .reduce(this.reducer, undefined)!
+                    .reduce(routeReducer, undefined)!
             )
         })
     }
