@@ -5,7 +5,7 @@ import ReactDOMServer from 'react-dom/server'
 import { Helmet } from 'react-helmet'
 import { NaviProvider, View } from 'react-navi'
 
-async function renderPageToString({ config, exports={}, routes, siteMap, dependencies, url }) {
+async function renderPageToString({ config, exports={}, routes, dependencies, url }) {
   let canonicalURLBase = process.env.CANONICAL_URL || process.env.PUBLIC_URL || ''
 
   // Create an in-memory Navigation object with the given URL
