@@ -152,7 +152,7 @@ export function createScrollSpy(options: ScrollSpyOptions) {
 	function dispose() {
     // Remove event listeners
 		container.removeEventListener('resize', refresh, false);
-		container.removeEventListener('scroll', refresh, false);
+    container.removeEventListener('scroll', refresh, false);
 
     // Clear out variables
     callback = null;

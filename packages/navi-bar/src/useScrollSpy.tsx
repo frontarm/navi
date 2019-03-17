@@ -45,7 +45,15 @@ export function useScrollSpy(options: Omit<ScrollSpyOptions, 'callback'>) {
         }
       }
     }
-  }, [options.tableOfContents, options.offset, options.container])
+  }, [
+    // Skipping this, as tableOfContents is a deeply nested object that
+    // probably changes on every render, and we don't want to recreate the
+    // scrollspy on each render.
+    // options.tableOfContents,
+
+    options.offset,
+    options.container,
+  ])
 
   return state
 }

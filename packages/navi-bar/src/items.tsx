@@ -1,10 +1,10 @@
-import * as Navi from 'navi'
+import { Chunk, Route, URLDescriptor, routeReducer } from 'navi'
 
 export interface GroupItem {
   level: number
   data: any
   children: Item[]
-  url: Navi.URLDescriptor
+  url: URLDescriptor
   title?: string
   type: 'group'
 }
@@ -12,7 +12,7 @@ export interface GroupItem {
 export interface PageItem {
   level: number
   data: any
-  url: Navi.URLDescriptor
+  url: URLDescriptor
   title: string
   type: 'page'
 }
@@ -22,18 +22,16 @@ export type Item = PageItem | GroupItem
 export type ItemType = 'group' | 'page'
 
 export function getItems(
-  routeMap: Navi.RouteMap,
+  routes: Route[],
   comparator?: (x: Item, y: Item) => -1 | 0 | 1,
 ): Item[] {
-  let routes = Object.values(routeMap)
-
   // Find the deepest switch that every page has in common
   let switchCounts = new Map<string, number>()
   let switchPositions = [] as string[]
   let deepestSwitchIndex = 0
   for (let i = 0; i < routes.length; i++) {
     let pageRoute = routes[i]
-    let chunks = pageRoute.chunks.slice(0, -1) as Navi.Chunk[]
+    let chunks = pageRoute.chunks.slice(0, -1) as Chunk[]
     for (let j = 0; j < chunks.length; j++) {
       let naviSwitch = chunks[j].url.pathname
       let nextCount = (switchCounts.get(naviSwitch) || 0) + 1
@@ -53,7 +51,7 @@ export function getItems(
   let rootSwitch = switchPositions[rootSwitchIndex]
   let rootItems: Item[] = []
   let switchItems = new Map<string, Item[]>([[rootSwitch, rootItems]])
-  let partialRoute: Navi.Route = routes[0].chunks.slice(0, rootSwitchIndex + 1).reduce(Navi.defaultRouteReducer, undefined)!
+  let partialRoute: Route = routes[0].chunks.slice(0, rootSwitchIndex + 1).reduce(routeReducer, undefined)!
   // Create a tree by iterating over each chunk below the root chunk
   // for each route.
   for (let i = 0; i < routes.length; i++) {
@@ -63,7 +61,7 @@ export function getItems(
     let route = { ...partialRoute }
     for (let j = 0; j < chunks.length; j++) {
       let chunk = chunks[j]
-      route = Navi.defaultRouteReducer(route, chunk)
+      route = routeReducer(route, chunk)
       if (chunk.type === 'mount' && (chunk.patterns.length > 1 || chunk.patterns[0] !== '/')) {
         let chunkSwitch = chunk.url.pathname
         if (!switchItems.has(chunkSwitch)) {

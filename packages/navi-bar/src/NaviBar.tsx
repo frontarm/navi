@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as Navi from 'navi'
+import { Route, URLDescriptor } from 'navi'
 import { Link, useCurrentRoute } from 'react-navi'
 import { defaultTheme } from './defaultTheme'
 import { Item, getItems } from './items'
@@ -10,7 +10,7 @@ import { TableOfContents, TableOfContentsItem } from './TableOfContents'
 
 
 export interface NaviBarProps<Data extends object = any> {
-  routeMap?: Navi.RouteMap<Navi.Route<Data>>
+  routes?: Route<Data>[]
 
   /**
    * A table of contents to display for the current document.
@@ -116,7 +116,7 @@ export const NaviBar = Object.assign(
 
 export interface InnerNaviBarProps<Data extends object = any>
   extends NaviBarProps<Data> {
-  activeURL: Navi.URLDescriptor
+  activeURL: URLDescriptor
   activeId?: string
   activeParentIds: string[]
 }
@@ -149,11 +149,11 @@ export class InnerNaviBar<Data extends object = any> extends React.Component<
 
   render() {
     let children: React.ReactNode = null
-    if (!this.props.routeMap) {
+    if (!this.props.routes) {
       children = this.renderTableOfContents()
     }
     else {
-      let items = getItems(this.props.routeMap, this.props.comparator)
+      let items = getItems(this.props.routes, this.props.comparator)
       if (items.length !== 0) {
         children = items.map(this.renderItem)
       }
