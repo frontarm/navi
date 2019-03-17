@@ -1,4 +1,3 @@
-import { createRouter } from 'navi'
 import renderReactPageToString from 'react-navi/create-react-app'
 import renderRSSFeedToString from './renderRSSFeedToString'
 
@@ -8,9 +7,7 @@ import renderRSSFeedToString from './renderRSSFeedToString'
  */
 async function renderPageToString(props) {
   if (props.url.pathname === '/rss') {
-    let router = createRouter({ routes: props.routes })
-    let route = await router.resolve(props.url)
-    return await renderRSSFeedToString(route.data)
+    return await renderRSSFeedToString(props)
   }
 
   return renderReactPageToString(props)

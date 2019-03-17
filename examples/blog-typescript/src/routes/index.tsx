@@ -1,4 +1,4 @@
-import { compose, lazy, map, mount, redirect, route, withContext, withView, Route } from 'navi'
+import { compose, lazy, map, mount, redirect, resolve, route, withContext, withView, Route } from 'navi'
 import React from 'react'
 import { join } from 'path'
 import { chunk, fromPairs } from 'lodash'
@@ -18,14 +18,21 @@ let chunks = chunk(posts, siteMetadata.indexPageSize)
 let chunkPagePairs = chunks.map((chunk, i) => [
   '/' + (i + 1),
   map(async (req, context: AppNavContext) => {
+    // Don't load anything when just crawling
+    if (req.method === 'HEAD') {
+      return route()
+    }
+
     // Get metadata for all pages on this page
     let postRoutes = await Promise.all<Route>(
       chunk.map(async post => {
         let href = join(context.blogRoot, 'posts', post.slug)
-        return await req.router.resolve(href, {
+        return await resolve({
           // If you want to show the page content on the index page, set
           // this to 'GET' to be able to access it.
           method: 'HEAD',
+          routes,
+          url: href,
         })
       }),
     )
@@ -50,12 +57,13 @@ let chunkPagePairs = chunks.map((chunk, i) => [
   }),
 ])
 
-const pagesSwitch = compose(
-  withContext((req): AppNavContext => ({
+const routes = compose(
+  withContext((req, context): AppNavContext => ({
     // By adding the point at which the blog was mounted to context, it
     // makes it possible to easily scope all URLs to the blog root, thus
     // making it possible to mount the entire route on a subdirectory.
     blogRoot: req.mountpath,
+    ...context,
   })),
   withView((req, context) => {
     // Check if the current page is an index page by comparing the remaining
@@ -93,11 +101,10 @@ const pagesSwitch = compose(
     '/about': lazy(() => import('./about')),
 
     // Only the statically built copy of the RSS feed is intended to be opened,
-    // but the content is fetched here.
-    '/rss': route({
-      getData: req => req.router.resolveSiteMap('/posts', { method: 'GET' }),
-    }),
+    // but the route is defined here so that the static renderer will pick it
+    // up.
+    '/rss': route(),
   }),
 )
 
-export default pagesSwitch
+export default routes

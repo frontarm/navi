@@ -1,4 +1,4 @@
-import { compose, lazy, map, mount, redirect, route, withContext, withView } from 'navi'
+import { compose, lazy, map, mount, redirect, resolve, route, withContext, withView } from 'navi'
 import React from 'react'
 import { join } from 'path'
 import { chunk, fromPairs } from 'lodash'
@@ -14,14 +14,21 @@ let chunks = chunk(posts, siteMetadata.indexPageSize)
 let chunkPagePairs = chunks.map((chunk, i) => [
   '/' + (i + 1),
   map(async (req, context) => {
+    // Don't load anything when just crawling
+    if (req.method === 'HEAD') {
+      return route()
+    }
+
     // Get metadata for all pages on this page
     let postRoutes = await Promise.all(
       chunk.map(async post => {
         let href = join(context.blogRoot, 'posts', post.slug)
-        return await req.router.resolve(href, {
+        return await resolve({
           // If you want to show the page content on the index page, set
           // this to 'GET' to be able to access it.
           method: 'HEAD',
+          routes,
+          url: href,
         })
       }),
     )
@@ -86,10 +93,9 @@ const routes = compose(
     '/about': lazy(() => import('./about')),
 
     // Only the statically built copy of the RSS feed is intended to be opened,
-    // but the content is fetched here.
-    '/rss': route({
-      getData: req => req.router.resolveSiteMap('/posts', { method: 'GET' }),
-    }),
+    // but the route is defined here so that the static renderer will pick it
+    // up.
+    '/rss': route(),
   }),
 )
 

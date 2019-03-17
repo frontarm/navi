@@ -1,5 +1,5 @@
 import register from 'navi-scripts/register'
-import * as Navi from 'navi'
+import { createBrowserNavigation } from 'navi'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { NaviProvider, View } from 'react-navi'
@@ -18,12 +18,12 @@ register({
   // This will only be called when loading your app in the browser. It won't
   // be called when performing static generation.
   async main() {
-    let navigation = Navi.createBrowserNavigation({ routes })
+    let navigation = createBrowserNavigation({ routes })
 
     // Wait until the navigation has loaded the page's content, or failed to do
     // so. If you want to load other data in parallel while the initial page is
     // loading, make sure to start loading before this line.
-    await navigation.steady()
+    await navigation.getRoute()
 
     // React requires that you call `ReactDOM.hydrate` if there is statically
     // rendered content in the root element, but prefers us to call

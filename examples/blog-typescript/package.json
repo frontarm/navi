@@ -7,8 +7,6 @@
     "feed": "^2.0.2",
     "import-all.macro": "^2.0.3",
     "lodash": "^4.17.11",
-    "navi-scripts": "link:../../packages/navi-scripts",
-    "netlify-cli": "^2.6.0",
     "prismjs": "^1.15.0",
     "react-scripts-mdx": "2.1.4",
     "rimraf": "^2.6.2",
@@ -20,9 +18,7 @@
     "build": "react-scripts build && ts-node -O {\\\"module\\\":\\\"commonjs\\\"} node_modules/navi-scripts/bin/navi-scripts.js build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "serve": "navi-scripts serve",
-    "deploy": "netlify deploy --dir=build",
-    "deploy:prod": "netlify deploy --dir=build --prod"
+    "serve": "navi-scripts serve"
   },
   "eslintConfig": {
     "extends": "react-app"
