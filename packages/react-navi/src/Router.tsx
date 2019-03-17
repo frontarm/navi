@@ -12,7 +12,7 @@ export interface RouterProps<Context extends object> {
 
   history?: any
 
-  navigation?: Navigation<Context, Route>
+  navigation?: Navigation<Context>
 
   routes?: Matcher<Context>
 }
@@ -22,7 +22,7 @@ export class Router<Context extends object={}> extends React.Component<RouterPro
     fallback: undefined,
   }
 
-  navigation: Navigation<Context, Route>
+  navigation: Navigation<Context>
 
   constructor(props: RouterProps<Context>) {
     super(props)
