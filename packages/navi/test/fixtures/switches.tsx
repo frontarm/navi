@@ -40,15 +40,17 @@ export const fixtureMap = compose(
               view: 'basic-example'
             }))),
 
-            '/advanced': route({
-              title: 'Advanced example',
-              data: {
-                isPaywalled: true,
-              },
-              getView: async (request, context: any, dataPromise) => 
-                (context.contextName !== 'examples' || !context.isAuthenticated)
-                  ? 'please-login'
-                  : { isPaywalled: true }
+            '*': mount({
+              '/advanced': route({
+                title: 'Advanced example',
+                data: {
+                  isPaywalled: true,
+                },
+                getView: async (request, context: any, dataPromise) => 
+                  (context.contextName !== 'examples' || !context.isAuthenticated)
+                    ? 'please-login'
+                    : { isPaywalled: true }
+              })
             })
           })
         )

@@ -4,7 +4,6 @@ import { createRequest, NaviRequest } from './NaviRequest'
 
 
 export const KEY_WILDCARD = '\0'
-export const KEY_WILDCARD_REGEXP = /\0/g
 export const MEMO_KEY_PREFIX = '\0'
 
 
@@ -111,7 +110,7 @@ export function createMapping(pattern: string, matcher: Matcher<any>): Mapping {
         matcher,
         pattern: processedPattern,
         pathParamNames: pathParams.length ? pathParams : undefined,
-        regExp: new RegExp(regExpParts.join('/')),
+        regExp: processedPattern === '/' ? /^\/$/ : new RegExp(regExpParts.join('/')),
     }
 }
 

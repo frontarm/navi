@@ -17,6 +17,7 @@ export function mount<
   }
 
   let patterns = Object.keys(paths)
+  let nonWildcardPatterns = patterns.filter(pattern => pattern !== '*')
 
   if (process.env.NODE_ENV !== 'production') {
     let invalidPaths = patterns.filter(
@@ -33,7 +34,7 @@ export function mount<
   // Wildcards in PatternMap objects are null (\0) characters, so they'll
   // always be sorted to the top. As such, by sorting the patterns, the
   // most specific (i.e. without wildcard) will always be at the bottom.
-  let mappings = patterns
+  let mappings = nonWildcardPatterns
     .map(pattern => createMapping(pattern, paths[pattern]))
     .sort((x, y) => compareStrings(x.key, y.key))
 
@@ -47,8 +48,8 @@ export function mount<
       let crawler = request.crawler
       let crawling = crawler && (request.path === '' || request.path === '/')
 
-      // When crawling, if there, is no unmatched path remaining, then
-      // create requests for all mappings, and calls those matchers.
+      // When crawling, if there is no unmatched path remaining, then create
+      // requests for all mappings and call the associated matchers.
       if (crawling) {
         let crawlTuplesPromise  = createCrawlTuplesPromise(paths, crawler!, request)
         let crawlTuples: CrawlTuple[] | undefined
@@ -87,6 +88,15 @@ export function mount<
             // The first match is always the only match, as we don't allow
             // for ambiguous patterns.
             break
+          }
+        }
+
+        // If no matches are found, default to the wildcard pattern (if it
+        // exists)
+        if (!childIterators) {
+          let wildcardMatcher = paths['*']
+          if (wildcardMatcher) {
+            childIterators = [createMatcherIterator(wildcardMatcher(child), request, '*')]
           }
         }
       }
@@ -141,7 +151,10 @@ async function createCrawlTuplesPromise(
 ): Promise<CrawlTuple[]> {
   return concat(
     await Promise.all(Object.entries(paths).map(([pattern, matcher]) =>
-      crawler!(pattern, parentRequest).then(createTuplesWith(matcher))
+      crawler!(
+        pattern === '*' ? '' : pattern,
+        parentRequest
+      ).then(createTuplesWith(matcher))
     ))
   )
 }
