@@ -36,7 +36,7 @@ export interface CrawlResult {
   }
 }
 
-export async function crawl(options: CrawlOptions): Promise<CrawlResult> {
+export async function crawl<Context extends object = any>(options: CrawlOptions<Context>): Promise<CrawlResult> {
   let router = createRouter({
     basename: options.basename,
     context: options.context,
