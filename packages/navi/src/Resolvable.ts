@@ -1,4 +1,4 @@
-import { join } from './URLTools'
+import { joinPaths } from './URLTools'
 import { NotFoundError } from './Errors'
 import { NaviRequest } from './NaviRequest'
 import { Chunk, createChunk } from './Chunks'
@@ -43,7 +43,7 @@ export default function* resolveChunks<T>(
     if (unwrappedPromise.outcome === 'rejected') {
       let error = unwrappedPromise.error
       if (error instanceof NotFoundError && !error.pathname) {
-        error.pathname = join(request.mountpath, request.path)
+        error.pathname = joinPaths(request.mountpath, request.path)
       }
       yield [createChunk('error', request, { error })]
     }

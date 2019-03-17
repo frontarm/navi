@@ -3,7 +3,7 @@ import { Matcher } from './Matcher'
 import { NaviRequest } from './NaviRequest'
 import { createPromiseFromObservable } from './Observable'
 import { createRouter } from './Router'
-import { createURLDescriptor, URLDescriptor, join } from './URLTools'
+import { createURLDescriptor, URLDescriptor, joinPaths } from './URLTools'
 
 export interface CrawlOptions<Context extends object = any> {
   routes: Matcher<Context>
@@ -55,7 +55,7 @@ export async function crawl<Context extends object = any>(options: CrawlOptions<
     return patterns
       .map(pattern => ({
         headers: parentRequest.headers,
-        url: createURLDescriptor(join(parentRequest.mountpath, pattern)),
+        url: createURLDescriptor(joinPaths(parentRequest.mountpath, pattern)),
         context: parentRequest.headers,
       }))
       .filter(predicate)

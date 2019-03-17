@@ -132,7 +132,7 @@ function splitPath(path: string): string[] {
 // /users/123, ../..       => /
 // /a/b/c/d,   ../../one   => /a/b/one
 // /a/b/c/d,   .././one/    => /a/b/c/one/
-export function join(base: string, ...paths: string[]): string {
+export function joinPaths(base: string, ...paths: string[]): string {
   let allSegments = splitPath(base)
   for (let i = 0; i < paths.length; i++) {
     allSegments.push(...splitPath(paths[i]))

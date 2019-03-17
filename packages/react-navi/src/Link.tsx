@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { URLDescriptor, Navigation, createURLDescriptor, join } from 'navi'
+import { URLDescriptor, Navigation, createURLDescriptor, joinPaths } from 'navi'
 import { NaviContext } from './NaviContext'
 import { scrollToHash } from './scrollToHash';
 
@@ -177,7 +177,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
     // Resolve relative to the current "directory"
     let navigationURL = this.getNavigationURL()
     if (navigationURL && typeof href === 'string') {
-      href = href[0] === '/' ? href : join('/', navigationURL.pathname, href)
+      href = href[0] === '/' ? href : joinPaths('/', navigationURL.pathname, href)
     }
 
     return createURLDescriptor(href)

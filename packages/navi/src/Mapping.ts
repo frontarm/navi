@@ -1,5 +1,5 @@
 import { Matcher } from './Matcher'
-import { join } from './URLTools'
+import { joinPaths } from './URLTools'
 import { createRequest, NaviRequest } from './NaviRequest'
 
 
@@ -134,7 +134,7 @@ export function matchAgainstPathname(request: NaviRequest, mapping: Mapping): Na
     }
 
     let unmatchedPath = request.path.slice(matchedPathname.length) || ''
-    let mountpath = join(request.mountpath, matchedPathname) || '/'
+    let mountpath = joinPaths(request.mountpath, matchedPathname) || '/'
     return createRequest({
         ...request,
         params,

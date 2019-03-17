@@ -1,4 +1,4 @@
-import { URLDescriptor, createURLDescriptor, join, modifyTrailingSlash } from './URLTools'
+import { URLDescriptor, createURLDescriptor, joinPaths, modifyTrailingSlash } from './URLTools'
 import {
   Observable,
   Observer,
@@ -186,7 +186,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
           if (patterns && !item.walkedPatternLists.has(key)) {
             item.walkedPatternLists.add(key)
             for (let j = 0; j < patterns.length; j++) {
-              let expandedPatterns = await this.expandPatterns(join(pathname, patterns[j]))
+              let expandedPatterns = await this.expandPatterns(joinPaths(pathname, patterns[j]))
               for (let k = 0; k < expandedPatterns.length; k++) {
                 this.addToQueue(
                   expandedPatterns[k],
@@ -224,7 +224,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         lastChunk.type !== 'error' &&
         (lastChunk.type === 'busy' || !this.options.predicate || this.options.predicate(lastChunk, item.chunksCache!))) {
         chunksMapArray.push([
-          join(item.pathname, '/'),
+          joinPaths(item.pathname, '/'),
           item.chunksCache!,
           item.order
         ])

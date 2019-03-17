@@ -1,7 +1,7 @@
 import { Resolvable } from './Resolvable'
 import { Chunk } from './Chunks'
 import { NaviRequest } from './NaviRequest'
-import { join } from './URLTools'
+import { joinPaths } from './URLTools'
 
 export type Matcher<
   ParentContext extends object,
@@ -22,7 +22,7 @@ export function createMatcherIterator<Context extends object>(
   if (process.env.NODE_ENV !== 'production') {
     if (typeof matcherGenerator !== 'function') {
       console.error(
-        `A matcher at the URL "${join(
+        `A matcher at the URL "${joinPaths(
           request.mountpath,
           pattern,
         )}" is invalid. A generator function was expected, but "${String(matcherGenerator)}" was received.`,
