@@ -13,11 +13,11 @@ const defaultConfig = {
   getPagePathname: ({ url }) => {
     return url === '/' ? 'index.html' : path.join(url.pathname.slice(1), 'index.html')
   },
-  createRedirectFiles: async ({ config, siteMap }) => {
+  createRedirectFiles: async ({ config, redirects }) => {
     const chalk = require("chalk")
     const fs = config.fs
 
-    for (let [url, to] of Object.entries(siteMap.redirects)) {
+    for (let [url, to] of Object.entries(redirects)) {
       let pathname = url === '/' ? 'index.html' : path.join(url.split('?')[0].slice(1), 'index.html')
 
       console.log(chalk.yellow("[redirect] ")+pathname+chalk.grey(" -> "+to))
@@ -56,24 +56,21 @@ const configSchema = {
     context: {
       description: `The Navi context that will be used when building a site map.`,
     },
-    resolveSiteMapOptions: {
-      description: `The options object that will be passed as the second argument to router.resolveSiteMapOptions() when building a list of the URLs which should have static HTML generated.`,
-    },
     
     appGlobal: {
       description: `The property of the "window" object where your entry file places its exports.`,
       type: 'string',
     },
     renderPageToString: {
-      description: `The path to a module that exports a default function that accepts an { exports, url, siteMap, dependencies } object, and returns the page's contents as a string.`,
+      description: `The path to a module that exports a default function that accepts an { exports, url, paths, dependencies } object, and returns the page's contents as a string.`,
       type: 'string',
     },
     getPagePathname: {
-      description: `A function that accepts an { exports, url, siteMap } object, and returns the path under the root directory where the page's contents will be written to.`,
+      description: `A function that accepts an { exports, url, paths } object, and returns the path under the root directory where the page's contents will be written to.`,
       typeof: 'function',
     },
     createRedirectFiles: {
-      description: `A function that accepts an { siteMap, config } object, and creates any appropriate files to represent redirects.`,
+      description: `A function that accepts an { redirects, config } object, and creates any appropriate files to represent redirects.`,
       typeof: ['undefined', 'function'],
     },
     fs: {

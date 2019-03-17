@@ -96,19 +96,20 @@ program.command('build')
     }
   })
 
-program.command('map')
-  .description('Output a map of all statically-buildable URLs within your root switch.')
-  .option('-j, --json', 'Output the map as json.')
+program.command('crawl')
+  .alias('map')
+  .description('Crawls your site and outputs all statically-buildable URLs.')
+  .option('-j, --json', 'Output the result as json.')
   .option('-r, --root [directory]', configSchema.properties.root.description, defaultConfig.root)
   .option('-e, --entry [file]', configSchema.properties.entry.description, defaultConfig.entry)
   .option('-c, --config [file]', 'Specify a config file.')
   .option('-o, --output [file]', 'Write the map to a file.')
   .action(async function (command) {
     let config = await createConfigFromCommand(command)
-    let { createMap, formatMap } = require('../lib/map')
+    let { crawl, formatCrawlResult } = require('../lib/crawl')
     try {
-      let map = await createMap(config)
-      let string = !command.json ? formatMap(map) : JSON.stringify(map, undefined, 2)
+      let map = await crawl(config)
+      let string = !command.json ? formatCrawlResult(map) : JSON.stringify(map, undefined, 2)
       if (command.output) {
         await fs.writeFile(command.output, string)
       }

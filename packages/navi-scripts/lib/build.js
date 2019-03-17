@@ -1,15 +1,15 @@
 const chalk = require('chalk')
-const path = require('path')
+const { dirname, resolve } = require('path')
+const { createURLDescriptor } = require('navi')
 const { createScriptRunner } = require('./createScriptRunner')
-const { createMap } = require('./map')
+const { crawl } = require('./crawl')
 
 async function build(config) {
     let fs = config.fs
-    let siteMap = await createMap(config)
+    let { paths, redirects } = await crawl(config)
     let scriptRunner = await createScriptRunner(config)
 
-    for (let route of Object.values(siteMap.routes)) {
-        let url = route.url
+    for (let path of paths) {
         let dependencies = {
             scripts: new Set,
             stylesheets: new Set,
@@ -22,11 +22,11 @@ async function build(config) {
             app,
             routes: app.routes,
             exports: app.exports,
-            url,
-            siteMap,
+            paths,
+            redirects,
+            url: createURLDescriptor(path),
             dependencies,
             config,
-            route,
         }
 
         let html, pathname
@@ -68,9 +68,9 @@ async function build(config) {
             }
         }
 
-        let filesystemPath = path.resolve(config.root, pathname)
+        let filesystemPath = resolve(config.root, pathname)
 
-        await fs.ensureDir(path.dirname(filesystemPath))
+        await fs.ensureDir(dirname(filesystemPath))
         await fs.writeFile(filesystemPath, html)
     }
 
@@ -78,7 +78,7 @@ async function build(config) {
     // considerably between hosting platforms.
     if (config.createRedirectFiles) {
         config.createRedirectFiles({
-            siteMap,
+            redirects,
             config,
         })
     }
