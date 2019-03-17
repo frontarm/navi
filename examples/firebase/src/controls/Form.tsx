@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from 'react'
-import { useAction } from 'react-navi'
+import { useNavigation, useCurrentRoute } from 'react-navi'
 import { FORM_ERROR, FormApi, FormState } from 'final-form'
 import {
   Form as FinalForm,
@@ -14,76 +14,47 @@ export type FormErrors<Schema extends object> = Partial<Record<keyof Schema, str
 
 
 export interface FormProps<Schema extends object> extends Omit<FinalFormProps, 'children' | 'onSubmit' | 'validate'> {
-  action?: string
   children: React.ReactNode
   className?: string
   component?: string | React.ElementType<any>
   initialValues?: Schema
-  method?: string
   style?: React.CSSProperties
   submitError?: string | FormErrors<Schema>
   onSubmit?: (
     value: Schema,
     form: FormApi,
-  ) => undefined | FormErrors<Schema> | Promise<undefined | FormErrors<Schema>>,
+  ) => Promise<any>,
   validate?: (value: Schema) => undefined | FormErrors<Schema> | Promise<undefined | FormErrors<Schema>>
 }
 
 export function Form<Schema extends object>({
-  action,
   children,
   className,
   component: Component = 'form',
-  method,
   style,
-  submitError,
   onSubmit,
   validate,
   ...props
 }: FormProps<Schema>) {
-  // Keep props in a ref, so that latest errors are accessible from the
-  // submit and validate callbacks.
-  let propsRef = useRef({
-    submitError,
-    onSubmit,
-    validate,
-  })
-  propsRef.current = {
-    submitError,
-    onSubmit,
-    validate,
-  }
-
-  let submit = useAction(method || 'post', action)
-
   let onSubmitFinalForm = useCallback(async (value, form) => {
-    let props = propsRef.current
-
-    if (props.onSubmit) {
-      let errors = await props.onSubmit(value, form)
-      if (errors) {
-        return errors
+    if (onSubmit) {
+      try {
+        await onSubmit(value, form)
       }
-    }
-
-    if (method) {
-      let route = await submit(value)
-      if (route.type === 'error') {
-        let error = route.error
+      catch (error) {
         if (error instanceof Error) {
           error = error.message
         }
         return typeof error === 'string' ? { [FORM_ERROR]: error } : error
       }
     }
-  }, [method, submit])
+  }, [onSubmit])
 
   let validateFinalForm = useCallback(async (values: Schema) => {
-    let props = propsRef.current
-    let validateErrors = await (props.validate && props.validate(values))
+    let validateErrors = await (validate && validate(values))
     let submitErrors = props.submitError
     return combineErrors(validateErrors, submitErrors)
-  }, [])
+  }, [validate])
 
   return (
     <FinalForm
@@ -93,10 +64,8 @@ export function Form<Schema extends object>({
       validate={validateFinalForm as any}>
       {({ handleSubmit }) =>
         React.createElement(Component, {
-          action,
           children,
           className,
-          method,
           onSubmit: handleSubmit,
           style,
         })

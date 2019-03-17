@@ -1,35 +1,27 @@
 import React from 'react'
 import { map, redirect, route } from 'navi'
+import { useNavigation } from 'react-navi'
 import Form from '../styled/Form'
 import { RoutingContext } from '../types/RoutingContext'
 import AuthFormLayout from '../styled/AuthFormLayout'
 import { colors } from '../utils/theme'
+import Firebase from '../Firebase';
 
-export default map(async (request, context: RoutingContext) => {
-  try {
-    if (request.method !== 'post') {
-      throw undefined
-    }
-
-    let { email, password } = request.body
-    await request.serializeEffectToHistory(() =>
-      context.firebase.auth.signInWithEmailAndPassword(email, password)
-    )
-    return redirect('/')
-  }
-  catch (error) {
-    return route({
-      error,
-      view: <Login />,
-      title: 'Login',
-    })
-  }
+export default route<RoutingContext>({
+  getView: ({ context }) => <Login firebase={context.firebase} />,
+  title: 'Login',
 })
 
-function Login() {
+function Login({ firebase }: { firebase: Firebase }) {
+  let navigation = useNavigation()
+
   return (
     <AuthFormLayout heading='Login'>
-      <Form method='post'>
+      <Form onSubmit={async (value: any) => {
+        let { email, password } = value
+        await firebase.auth.signInWithEmailAndPassword(email, password)
+        await navigation.navigate('/')
+      }}>
         <Form.Errors />
         <Form.Field
           label='Email'

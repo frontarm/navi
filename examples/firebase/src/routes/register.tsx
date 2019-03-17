@@ -1,39 +1,34 @@
 import React from 'react'
 import { map, redirect, route } from 'navi'
+import { useNavigation } from 'react-navi'
 import Form from '../styled/Form'
 import { RoutingContext } from '../types/RoutingContext'
 import AuthFormLayout from '../styled/AuthFormLayout'
 import { colors } from '../utils/theme';
+import Firebase from '../Firebase';
 
-export default map(async (request, context: RoutingContext) => {
+export default map<RoutingContext>(({ context }) => {
   if (context.currentUser) {
     return redirect('/?welcome')
   }
-
-  try {
-    if (request.method !== 'post') {
-      throw undefined
-    }
-    
-    let { email, password } = request.body
-    await request.serializeEffectToHistory(() =>
-      context.firebase.auth.createUserWithEmailAndPassword(email, password)
-    )
-    return redirect('/?welcome')
-  }
-  catch (error) {
+  else {
     return route({
-      error,
-      view: <Register />,
+      view: <Register firebase={context.firebase} />,
       title: 'Register',
     })
   }
 })
 
-function Register() {
+function Register({ firebase }: { firebase: Firebase }) {
+  let navigation = useNavigation()
+
   return (
     <AuthFormLayout heading='Register'>
-      <Form method='post'>
+      <Form onSubmit={async (value: any) => {
+        let { email, password } = value
+        await firebase.auth.createUserWithEmailAndPassword(email, password)
+        await navigation.navigate('/?welcome')
+      }}>
         <Form.Errors />
         <Form.Field
           label='Email'
