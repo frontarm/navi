@@ -184,20 +184,19 @@ class InnerLink extends React.Component<InnerLinkProps> {
   }
   
   render() {
-    let { activeStyle, activeClassName, anchorRef, onClick, prefetch, render, ...props } = this.props
+    let { active, activeStyle, activeClassName, anchorRef, onClick, prefetch, render, exact, ...props } = this.props
     let navigationURL = this.getNavigationURL()
     let linkURL = this.getURL()
-    let active = props.active !== undefined ? props.active : !!(
+    active = active !== undefined ? active : !!(
       linkURL &&
       navigationURL &&
-      (props.exact
+      (exact
         ? linkURL.pathname === navigationURL.pathname
         : modifyTrailingSlash(navigationURL.pathname, 'add').indexOf(linkURL.pathname) === 0)
     )
 
     let context = {
       ...props,
-      url: linkURL,
       onClick: this.handleClick,
       ref: anchorRef,
       href: typeof props.href === 'string' ? props.href : (linkURL ? linkURL.href : '')
