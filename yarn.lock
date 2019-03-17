@@ -8536,13 +8536,6 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha1-Sr6/7tdUHywnrPspvbvRXI1bpPc=
 
-navi@^0.11.6:
-  version "0.11.6"
-  resolved "https://registry.yarnpkg.com/navi/-/navi-0.11.6.tgz#1996c5f8111f8313d6413bc491069283bfb0ceff"
-  integrity sha512-dVqw2vSMlXabJsw9ojQozdTDlBr+/ov13zU8dO4nRNwYLHExi6V1K46eY/mOKnsKqNWPorA+WyRx7jpsjhyT4g==
-  dependencies:
-    history "^4.7.2"
-
 needle@^2.2.1:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/needle/-/needle-2.2.4.tgz#51931bff82533b1928b7d1d69e01f1b00ffd2a4e"
