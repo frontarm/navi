@@ -100,8 +100,8 @@ export async function crawl<Context extends object = any>(options: CrawlOptions<
 
   return {
     paths:
-      options.trailingSlash
-        ? paths.map(path => modifyTrailingSlash(path, options.trailingSlash!))
+      options.trailingSlash !== null
+        ? paths.map(path => modifyTrailingSlash(path, options.trailingSlash || 'remove'))
         : paths,
     redirects,
   }
