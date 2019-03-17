@@ -326,7 +326,6 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         path: url.pathname,
         url: url.pathname+url.search,
         originalUrl: url.href,
-        crawling: false,
         state: {},
       }, this.router)
       let matchRequest = matchAgainstPathname(request, this.rootMapping)

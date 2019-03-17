@@ -8,7 +8,6 @@ import {
   createMatcherIterator
 } from './Matcher'
 import { NaviRequest } from './NaviRequest'
-import { Crawler } from './Crawler'
 
 export function createChunksMatcher<T, Context extends object>(
   maybeResolvable: T | Resolvable<T, Context>,
@@ -19,7 +18,6 @@ export function createChunksMatcher<T, Context extends object>(
 ): Matcher<Context> {
   function* chunksMatcherGenerator(
     request: NaviRequest,
-    crawler: null | Crawler,
     child?: MatcherGenerator<Context>
   ): MatcherIterator {
     let unmatchedPathnamePart = request.path
@@ -28,7 +26,7 @@ export function createChunksMatcher<T, Context extends object>(
     }
     else {
       let parentIterator =
-        (crawler && !processDuringCrawl)
+        (request.crawler && !processDuringCrawl)
           ? empty()
           : resolveChunks(
               maybeResolvable,
@@ -36,12 +34,12 @@ export function createChunksMatcher<T, Context extends object>(
               (value: T) => getChunks(value, request)
             )
         
-      yield* (child ? concatMatcherIterators(parentIterator, createMatcherIterator(child, request, crawler)) : parentIterator)
+      yield* (child ? concatMatcherIterators(parentIterator, createMatcherIterator(child, request)) : parentIterator)
     }
   }
 
-  return ((childGenerator?: MatcherGenerator<Context>) => (request: NaviRequest<Context>, crawler: null | Crawler) =>
-    chunksMatcherGenerator(request, crawler, forceChildMatcher ? forceChildMatcher(childGenerator) : childGenerator)
+  return ((childGenerator?: MatcherGenerator<Context>) => (request: NaviRequest<Context>) =>
+    chunksMatcherGenerator(request, forceChildMatcher ? forceChildMatcher(childGenerator) : childGenerator)
   ) as any
 }
 

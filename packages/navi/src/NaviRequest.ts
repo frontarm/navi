@@ -1,4 +1,5 @@
 import { Router } from './Router'
+import { Crawler } from './Crawler';
 
 export interface NaviRequest<Context extends object=any> {
   /**
@@ -52,7 +53,7 @@ export interface NaviRequest<Context extends object=any> {
   /**
    * Set to true if this request is being used to build an index.
    */
-  readonly crawling: boolean
+  readonly crawler?: Crawler
 
   /**
    * Contains any state associated with the request's history entry.

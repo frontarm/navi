@@ -6,7 +6,6 @@ import {
   createMatcherIterator,
 } from '../Matcher'
 import { NaviRequest } from '../NaviRequest'
-import { Crawler } from '../Crawler'
 
 export function withContext<
   ParentContext extends object = any,
@@ -27,7 +26,6 @@ export function withContext<
 
   function* contextMatcherGenerator(
     request: NaviRequest<ParentContext>,
-    crawler: null | Crawler,
     child: MatcherGenerator<ChildContext>
   ): MatcherIterator {
     yield* resolveChunks(
@@ -40,11 +38,10 @@ export function withContext<
             ...request,
             context: childContext! || {}
           },
-          crawler,
         )
     )
   }
 
-  return (child: MatcherGenerator<ChildContext>) => (request: NaviRequest, crawler: null | Crawler) =>
-    contextMatcherGenerator(request, crawler, forceChild ? forceChild(child) : child)
+  return (child: MatcherGenerator<ChildContext>) => (request: NaviRequest) =>
+    contextMatcherGenerator(request, forceChild ? forceChild(child) : child)
 }

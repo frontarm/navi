@@ -37,15 +37,13 @@ export function mount<
     .sort((x, y) => compareStrings(x.key, y.key))
 
   return (child: MatcherGenerator<any>) =>
-    function* mountMatcherGenerator(
-      request: NaviRequest<Context>,
-      crawler: null | Crawler,
-    ): MatcherIterator {
+    function* mountMatcherGenerator(request: NaviRequest<Context>): MatcherIterator {
       let chunks: Chunk[]
       let childIterators: MatcherIterator[] | undefined
       let childResults: IteratorResult<Chunk[]>[] = []
       let childChunkLists: Chunk[][] = []
       let crawlRequests: NaviRequest[] = []
+      let crawler = request.crawler
       let crawling = crawler && (request.path === '' || request.path === '/')
 
       // When crawling, if there, is no unmatched path remaining, then
@@ -72,7 +70,7 @@ export function mount<
             path: '',
           }
           crawlRequests[i] = crawlRequest
-          return createMatcherIterator(matcher(child), crawlRequest, crawler, crawlRequest.mountpath)
+          return createMatcherIterator(matcher(child), crawlRequest, crawlRequest.mountpath)
         })
       }
       else {
@@ -83,7 +81,7 @@ export function mount<
           let mapping = mappings[i]
           let childRequest = matchAgainstPathname(request, mapping)
           if (childRequest) {
-            childIterators = [createMatcherIterator(mapping.matcher(child), childRequest, crawler, mapping.pattern)]
+            childIterators = [createMatcherIterator(mapping.matcher(child), childRequest, mapping.pattern)]
 
             // The first match is always the only match, as we don't allow
             // for ambiguous patterns.

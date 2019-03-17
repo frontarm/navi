@@ -88,7 +88,7 @@ export class Router<Context extends object=any, R=Route> {
             url: url.pathname+url.search,
             originalUrl: url.href,
             path: url.pathname,
-            crawling: !!options.crawler,
+            crawler: options.crawler,
             state: url.state || {},
         }, this as any)
         let matchRequest = matchAgainstPathname(request, this.rootMapping)
