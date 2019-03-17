@@ -235,8 +235,8 @@ export class Navigation<Context extends object = any>
   // TODO:
   // Put any history state on a "prefetched state" object, so that on
   // navigation, any prefetched state can be reused.
-  prefetch(url: string | Partial<URLDescriptor>): Promise<Route> {
-    return resolve({
+  async prefetch(url: string | Partial<URLDescriptor>): Promise<void> {
+    await resolve({
       basename: this.basename,
       routes: this.matcher,
       context: this._router.context,
