@@ -3,7 +3,7 @@ import { Matcher } from './Matcher'
 import { NaviRequest } from './NaviRequest'
 import { createPromiseFromObservable } from './Observable'
 import { createRouter } from './Router'
-import { createURLDescriptor, URLDescriptor, joinPaths } from './URLTools'
+import { createURLDescriptor, URLDescriptor, joinPaths, modifyTrailingSlash } from './URLTools'
 
 export interface CrawlOptions<Context extends object = any> {
   routes: Matcher<Context>
@@ -27,6 +27,12 @@ export interface CrawlOptions<Context extends object = any> {
   ) => undefined | string[] | Promise<undefined | string[]>
   headers?: { [name: string]: string }
   hostname?: string
+
+  /**
+   * Configures whether a trailing slash will be added or removed. By default,
+   * the trailing slash will be removed.
+   */
+  trailingSlash?: 'add' | 'remove' | null
 }
 
 export interface CrawlResult {
@@ -93,7 +99,10 @@ export async function crawl<Context extends object = any>(options: CrawlOptions<
   }
 
   return {
-    paths,
+    paths:
+      options.trailingSlash
+        ? paths.map(path => modifyTrailingSlash(path, options.trailingSlash!))
+        : paths,
     redirects,
   }
 }

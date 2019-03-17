@@ -2,7 +2,7 @@ import { History, Location } from 'history'
 import { Router, RouterResolveOptions } from './Router'
 import { Route, routeReducer } from './Route'
 import { resolve } from './resolve'
-import { URLDescriptor, createURLDescriptor } from './URLTools'
+import { URLDescriptor, createURLDescriptor, modifyTrailingSlash } from './URLTools'
 import {
   Observer,
   Observable,
@@ -312,18 +312,11 @@ export class Navigation<Context extends object = any>
     // Ensure the pathname always has a trailing `/`, so that we don't
     // have multiple URLs referring to the same page.
     if (this.trailingSlash !== null) {
-      let hasTrailingSlash = location.pathname.slice(-1) === '/'
-      let newPathname: string | undefined
-      if (this.trailingSlash === 'add' && !hasTrailingSlash) {
-        newPathname = location.pathname + '/'
-      }
-      else if (this.trailingSlash === 'remove' && hasTrailingSlash) {
-        newPathname = location.pathname.slice(0, -1)
-      }
-      if (newPathname) {
+      let modifiedPathname = modifyTrailingSlash(location.pathname, this.trailingSlash)
+      if (location.pathname !== modifiedPathname) {
         this._history.replace({
           ...location,
-          pathname: newPathname,
+          pathname: modifiedPathname,
         })
         return
       }
