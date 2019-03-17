@@ -1,4 +1,4 @@
-import { crawl, mount, route, withData, withTitle } from '../src'
+import { compose, crawl, mount, route, withCrawlerPatterns, withData, withTitle } from '../src'
 import { fixtureMap } from './fixtures/switches'
 
 describe("crawl", () => {
@@ -44,6 +44,29 @@ describe("crawl", () => {
         '/about': route(),
         '/tags/:name': route()
       }),
+      expandPattern: pattern =>
+        pattern !== '/tags/:name'
+          ? [pattern]
+          : ['/tags/react', '/tags/navi']
+    })
+    expect(paths).toEqual([
+      '/about',
+      '/tags/react',
+      '/tags/navi',
+    ])
+  })
+
+  test("can use withCrawlerPatterns to expand paths", async () => {
+    let { paths } = await crawl({
+      routes: compose(
+        withCrawlerPatterns({
+          '/tags/:name': async () => ['/tags/react', '/tags/navi']
+        }),
+        mount({
+          '/about': route(),
+          '/tags/:name': route()
+        })
+      ),
       expandPattern: pattern =>
         pattern !== '/tags/:name'
           ? [pattern]

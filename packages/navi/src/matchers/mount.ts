@@ -3,6 +3,7 @@ import { createMapping, matchAgainstPathname, Mapping } from '../Mapping'
 import { Matcher, MatcherIterator, createMatcherIterator, MatcherGenerator } from '../Matcher'
 import { NaviRequest } from '../NaviRequest'
 import { Crawler, CrawlItem } from '../Crawler'
+import concat from '../utils/concat'
 
 export function mount<
   Context extends object,
@@ -131,10 +132,6 @@ function compareStrings(a, b) {
 
 function isBusy(chunk: Chunk) {
   return chunk.type === 'busy'
-}
-
-function concat<T>(args: (T | T[])[]): T[] {
-  return [].concat.apply([], args)
 }
 
 async function createCrawlTuplesPromise(
