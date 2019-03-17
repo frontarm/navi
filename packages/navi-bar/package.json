@@ -1,6 +1,6 @@
 {
   "name": "navi-bar",
-  "version": "0.11.8-beta.0",
+  "version": "0.12.0",
   "description": "A nav bar component for React and Navi.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -15,7 +15,7 @@
     "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/react-navi.min.js && rimraf dist/umd-intermediate",
     "build": "yarn build:es && yarn build:commonjs && yarn build:umd && yarn build:umd:min",
     "build:watch": "yarn run clean && yarn build:es -- --watch",
-    "prepublish": "yarn run clean && yarn build"
+    "prepare": "yarn run clean && yarn build"
   },
   "keywords": [
     "navi",
@@ -27,16 +27,16 @@
   ],
   "peerDependencies": {
     "@types/react": "^16.8.1",
-    "navi": "^0.12.0-alpha.0",
+    "navi": "^0.12.0",
     "react": "^16.8.0",
-    "react-navi": "^0.12.0-alpha.0"
+    "react-navi": "^0.12.0"
   },
   "dependencies": {
     "@types/history": "^4.6.2"
   },
   "devDependencies": {
-    "navi": "^0.11.8-beta.0",
-    "react-navi": "^0.11.8-beta.0"
+    "navi": "^0.12.0",
+    "react-navi": "^0.12.0"
   },
   "repository": {
     "type": "git",

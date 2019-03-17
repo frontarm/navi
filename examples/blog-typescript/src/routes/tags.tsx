@@ -39,7 +39,6 @@ const tagRoutes = compose(
   withCrawlerPatterns({
     '/:tag': async (req, context: TagsNavContext) => {
       if (!context.crawlingRoutes) {
-        alert(1)
         return getAvailableTagsFromRoutes(
           await crawlRoutes(context.blogRoot)
         ).map(tag => '/'+tag)

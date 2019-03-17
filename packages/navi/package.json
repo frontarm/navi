@@ -1,6 +1,6 @@
 {
   "name": "navi",
-  "version": "0.11.8-beta.0",
+  "version": "0.12.0",
   "description": "A router-loader for React.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "build:umd:min": "tsc --pretty --declaration --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/navi.min.js && rimraf dist/umd-intermediate",
     "build": "yarn run clean && yarn build:es && yarn build:commonjs && yarn build:types && yarn build:umd && yarn build:umd:min",
     "build:watch": "yarn run clean && yarn build:es -- --types --watch",
-    "prepublish": "yarn test && yarn build && cp ../../README.md .",
+    "prepare": "yarn test && yarn build && cp ../../README.md .",
     "test": "jest",
     "test:watch": "jest --watch"
   },
