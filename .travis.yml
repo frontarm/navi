@@ -10,5 +10,5 @@ before_install:
 before_script:
   - lerna bootstrap
 script:
-- yarn build
-- yarn test
+  - yarn build
+  - yarn test
