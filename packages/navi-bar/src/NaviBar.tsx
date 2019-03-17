@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Route, URLDescriptor } from 'navi'
+import { Route, URLDescriptor, modifyTrailingSlash, createURLDescriptor } from 'navi'
 import { Link, useCurrentRoute } from 'react-navi'
 import { defaultTheme } from './defaultTheme'
 import { Item, getItems } from './items'
@@ -101,7 +101,7 @@ export const NaviBar = Object.assign(
 
     return (
       <InnerNaviBar
-        activeURL={route.url} {...props}
+        activeURL={createURLDescriptor(route.url, { trailingSlash: 'add' })} {...props}
         activeId={id}
         activeParentIds={parentIds || []}
       />
