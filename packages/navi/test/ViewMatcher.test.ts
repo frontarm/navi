@@ -10,7 +10,7 @@ describe("ViewMatcher", () => {
       trailingSlash: null,
     })
 
-    let r = await nav.getSteadyValue()
+    let r = await nav.getRoute()
     
     expect(r.url.pathname).toBe('/test/')
   })
@@ -23,7 +23,7 @@ describe("ViewMatcher", () => {
       }),
     })
 
-    let r = await nav.getSteadyValue()
+    let r = await nav.getRoute()
     
     expect(r.data.title).toBe('/test')
   })
@@ -37,7 +37,7 @@ describe("ViewMatcher", () => {
       trailingSlash: null,
     })
 
-    let r = await nav.getSteadyValue()
+    let r = await nav.getRoute()
     
     expect(r.url.pathname).toBe('/test')
   })

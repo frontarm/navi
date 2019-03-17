@@ -56,7 +56,7 @@ describe("BrowserNavigation", () => {
   test("matchers have access to method, body and headers", async () => {
     let nav = createTestNavigation()
     let originalHistoryLength = window.history.length
-    await nav.steady()
+    await nav.getRoute()
     let r = await nav.navigate('/test', {
       body: 'hello',
       headers: { token: 'auth' },
@@ -72,9 +72,7 @@ describe("BrowserNavigation", () => {
     let nav = createTestNavigation()
     let originalHistoryLength = window.history.length
     nav.navigate('/test#1')
-    nav.navigate('/test#2')
-
-    await nav.steady()
+    await nav.navigate('/test#2')
 
     expect(window.history.length).toBe(originalHistoryLength + 2)
   })
@@ -82,15 +80,13 @@ describe("BrowserNavigation", () => {
   test("navigating to exactly the current URL defaults to replace instead of push", async () => {
     let nav = createTestNavigation()
     let originalHistoryLength = window.history.length
-    await nav.steady()
+    await nav.getRoute()
     nav.navigate('/test', {
       body: 'hello',
       headers: { token: 'auth' },
       method: 'POST',
     })
-    nav.navigate('/test')
-
-    let r = await nav.getSteadyValue()
+    let r = await nav.navigate('/test')
 
     expect(r.views[0].method).toBe('GET')
     expect(window.history.length).toBe(originalHistoryLength + 1)
@@ -123,9 +119,8 @@ describe("BrowserNavigation", () => {
       headers: { token: 'auth' },
       method: 'POST',
     })
-    nav.navigate('/')
+    await nav.navigate('/')
 
-    await nav.steady()
     let r = await nav.goBack()
 
     expect(window.history.length).toBe(originalHistoryLength + 2)
@@ -144,9 +139,7 @@ describe("BrowserNavigation", () => {
       headers: { token: 'auth' },
       method: 'POST',
     })
-    nav.navigate('/')
-
-    await nav.steady()
+    await nav.navigate('/')
 
     let r = await nav.goBack()
 
@@ -166,9 +159,7 @@ describe("BrowserNavigation", () => {
         headers: { token: 'auth' },
         method: 'POST',
       })
-      nav.navigate('/')
-  
-      await nav.steady()
+      await nav.navigate('/')
       await nav.goBack()
   
       let nav1 = createBrowserNavigation({
@@ -176,7 +167,7 @@ describe("BrowserNavigation", () => {
         routes: createRoutes()
       })
       
-      let r = await nav1.getSteadyValue()
+      let r = await nav1.getRoute()
 
       expect(window.history.length).toBe(originalHistoryLength + 2)
       expect(r.url.pathname).toBe('/test')

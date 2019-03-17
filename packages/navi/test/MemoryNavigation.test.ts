@@ -14,7 +14,7 @@ describe("MemoryNavigation", () => {
       }
     })
 
-    let r = await nav.getSteadyValue()
+    let r = await nav.getRoute()
 
     expect(r.views[0]).toBe('result')
   })

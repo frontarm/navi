@@ -162,7 +162,7 @@ export class Navigation<Context extends object = any>
     })
     this._history.go(n)
     await urlChanged
-    return this.getSteadyValue()
+    return this.getRoute()
   }
 
   goBack() {
@@ -229,7 +229,7 @@ export class Navigation<Context extends object = any>
     
     this._history[shouldReplace ? 'replace' : 'push'](nextLocation)
 
-    return this.getSteadyValue()
+    return this.getRoute()
   }
 
   // TODO:
@@ -244,20 +244,38 @@ export class Navigation<Context extends object = any>
     })
   }
 
-  refresh() {
+  refresh(): Promise<Route> {
     this.handleURLChange(createURLDescriptor(this._history.location), true)
+    return this.getRoute()
   }
 
-  setContext(context: Context) {
+  setContext(context: Context): Promise<Route> {
     this._router.setContext(context)
-    this.refresh()
+    return this.refresh()
   }
 
   /**
-   * Get the latest route
+   * Get the latest Route object, regardless of whether it is loading.
+   * 
+   * This is named as `getCurrentValue()` so that Navigation objects can be
+   * used with React's `createSubscription()`, and other tools that follow
+   * the same specification.
    */
   getCurrentValue(): Route {
     return this.lastRoute!
+  }
+
+  /**
+   * If loading, returns a promise to the non-busy route. Otherwise, returns
+   * the current route.
+   */
+  async getRoute(): Promise<Route> {
+    if (this.isLastRouteSteady) {
+      return this.lastRoute!
+    } else if (!this.waitUntilSteadyDeferred) {
+      this.waitUntilSteadyDeferred = new Deferred()
+    }
+    return this.waitUntilSteadyDeferred.promise
   }
 
   /**
@@ -266,16 +284,19 @@ export class Navigation<Context extends object = any>
    * view is loaded before making the first render.
    */
   async getSteadyValue(): Promise<Route> {
-    if (this.isLastRouteSteady) {
-      return Promise.resolve(this.lastRoute!)
-    } else if (!this.waitUntilSteadyDeferred) {
-      this.waitUntilSteadyDeferred = new Deferred()
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('Deprecation Warning: "navigation.getSteadyValue()" will be removed in Navi 0.13. Please use navigation.getRoute() instead.')
     }
-    return this.waitUntilSteadyDeferred.promise
+
+    return this.getRoute()
   }
 
   async steady() {
-    await this.getSteadyValue()
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('Deprecation Warning: "navigation.steady()" will be removed in Navi 0.13. Please use navigation.getRoute() instead.')
+    }
+
+    await this.getRoute()
   }
 
   extract(location?): NaviStates {

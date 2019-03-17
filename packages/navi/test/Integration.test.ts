@@ -12,7 +12,7 @@ describe("integration", () => {
     test("integration", async () => {
         let nav = createTestNavigation('/examples')
 
-        let route = await nav.getSteadyValue()
+        let route = await nav.getRoute()
         let firstChunk = route.chunks[0]
         
         expect(firstChunk.type).toBe('url')
@@ -31,26 +31,23 @@ describe("integration", () => {
         expect(firstChunk.url.query).toEqual({ referrer: 'frontarm' })
         expect(route.type).toEqual('busy')
 
-        route = await nav.getSteadyValue()
+        route = await nav.getRoute()
 
         expect(route.url.query).toEqual({ referrer: 'frontarm' })
         expect(route.title).toBe('Advanced example')
         expect(route.data['isPaywalled']).toBe(true)
         expect(route.views[route.views.length - 1]).toBe('please-login')
 
-        nav.setContext({
+        route = await nav.setContext({
             isAuthenticated: true
         })
 
-        route = await nav.getSteadyValue()
 
         expect((route.lastChunk as ViewChunk).view).toEqual({
             isPaywalled: true,
         })
 
-        nav.navigate('/examples/intermediate')
-
-        route = await nav.getSteadyValue()
+        route = await nav.navigate('/examples/intermediate')
         
         expect(route.error).toBeInstanceOf(NotFoundError)
         expect(route.error && route.error.pathname).toBe("/examples/intermediate")

@@ -9,7 +9,7 @@ describe("basename", () => {
       routes: fixtureMap,
     })
 
-    let route = await nav.getSteadyValue()
+    let route = await nav.getRoute()
     
     expect(route.title).toBe('Basic example')
   })
@@ -21,7 +21,7 @@ describe("basename", () => {
       routes: fixtureMap,
     })
 
-    let route = await nav.getSteadyValue()
+    let route = await nav.getRoute()
     
     expect(route.title).toBe('Basic example')
   })

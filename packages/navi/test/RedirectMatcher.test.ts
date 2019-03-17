@@ -12,7 +12,7 @@ describe("Redirect", () => {
       }),
     })
 
-    let r = await nav.getSteadyValue()
+    let r = await nav.getRoute()
     
     expect(r.url.pathname).toBe('/switch/to')
   })
