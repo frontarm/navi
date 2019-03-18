@@ -126,6 +126,30 @@ export function compose<A, B, C, D, E, F, G, T1, R>(
   f8: Func1<T1, A>
 ): Func1<T1, R>
 
+/* eight functions */
+export function compose<A, B, C, D, E, F, G, H, R>(
+  f1: (x: H) => R,
+  f2: (x: G) => H,
+  f3: (x: F) => G,
+  f4: (x: E) => F,
+  f5: (x: D) => E,
+  f6: (x: C) => D,
+  f7: (x: B) => C,
+  f8: (x: A) => B,
+  f9: Func0<A>
+): Func0<R>
+export function compose<A, B, C, D, E, F, G, H, T1, R>(
+  f1: (x: H) => R,
+  f2: (x: G) => H,
+  f3: (x: F) => G,
+  f4: (x: E) => F,
+  f5: (x: D) => E,
+  f6: (x: C) => D,
+  f7: (x: B) => C,
+  f8: (x: A) => B,
+  f9: Func1<T1, A>
+): Func1<T1, R>
+
 /* rest */
 export function compose<R>(
   f1: (b: any) => R,

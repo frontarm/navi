@@ -40,6 +40,12 @@ export interface Route<Data = any> {
   heads: any[]
 
   /**
+   * Any state from window.history.state that was used associated with the
+   * route.
+   */
+  state?: any
+
+  /**
    * A HTTP status code.
    */
   status?: number
@@ -124,6 +130,7 @@ function routeReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Rout
     data: route ? route.data : {},
     headers: route ? route.headers : {},
     heads: route ? route.heads : [],
+    state: route ? route.state : {},
     status: route ? route.status : 200,
     title: route && route.title,
     url: route ? route.url : chunk.url,
@@ -160,6 +167,12 @@ function routeReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Rout
       }
     case 'redirect':
       return { ...base, type: 'redirect', to: chunk.to }
+    case 'state':
+      return {
+        ...base,
+        type: 'ready',
+        data: { ...base.state, ...chunk.state }
+      }
     case 'status':
       return { ...base, type: 'ready', status: chunk.status }
     case 'title':

@@ -4,18 +4,20 @@ import { withContext } from './withContext'
 import { withData } from './withData'
 import { withHead } from './withHead'
 import { withHeaders } from './withHeaders'
+import { withState } from './withState'
 import { withStatus } from './withStatus'
 import { withView } from './withView'
 import { NaviRequest } from '../NaviRequest'
 import { withTitle } from './withTitle'
-import { createChunksMatcher } from '../createChunksMatcher';
-import { createChunk } from '../Chunks';
+import { createChunksMatcher } from '../createChunksMatcher'
+import { createChunk } from '../Chunks'
 
 interface Route<Data extends object = any> {
   data?: Data
   error?: any
   head?: any
   headers?: { [name: string]: string }
+  state?: any
   status?: number
   title?: string
   view?: any
@@ -26,15 +28,17 @@ interface RouteOptions<Context extends object, Data extends object = any> {
   getData?: Resolvable<Data, Context>
   error?: any
   head?: any
-  getHead?: Resolvable<any, Context, Promise<Data>>
+  getHead?: Resolvable<any, Context>
   headers?: { [name: string]: string }
-  getHeaders?: Resolvable<{ [name: string]: string }, Context, Promise<Data>>
+  getHeaders?: Resolvable<{ [name: string]: string }, Context>
+  state?: any
+  getState?: Resolvable<any, Context>
   status?: number
-  getStatus?: Resolvable<number, Context, Promise<Data>>
+  getStatus?: Resolvable<number, Context>
   title?: string
-  getTitle?: Resolvable<string, Context, Promise<Data>>
+  getTitle?: Resolvable<string, Context>
   view?: any
-  getView?: Resolvable<any, Context, Promise<Data>>
+  getView?: Resolvable<any, Context>
 }
 
 export function route<Context extends object, Data extends object = any>(
@@ -54,6 +58,8 @@ export function route<Context extends object, Data extends object = any>(
       getHead,
       headers,
       getHeaders,
+      state,
+      getState,
       status,
       getStatus,
       title,
@@ -87,23 +93,25 @@ export function route<Context extends object, Data extends object = any>(
       }
 
       let [headersMaybePromise, b] = extractValue(headers, getHeaders, req, context)
-      let [statusMaybePromise, c] = extractValue(status, getStatus, req, context)
-      let [titleMaybePromise, d] = extractValue(title, getTitle, req, context)
-      let [headMaybePromise, e] = extractValue(head, getHead, req, context)
+      let [stateMaybePromise, c] = extractValue(state, getState, req, context)
+      let [statusMaybePromise, d] = extractValue(status, getStatus, req, context)
+      let [titleMaybePromise, e] = extractValue(title, getTitle, req, context)
+      let [headMaybePromise, f] = extractValue(head, getHead, req, context)
 
       let viewMaybePromise: any | Promise<any | undefined> | undefined
-      let f: boolean | undefined
+      let g: boolean | undefined
       if (req.method !== 'HEAD') {
-        [viewMaybePromise, f] = extractValue(view, getView, req, context)
+        [viewMaybePromise, g] = extractValue(view, getView, req, context)
       }
 
       // If anything is a promise, return a promise
-      if (a || b || c || d || e || f) {
+      if (a || b || c || d || e || f || g) {
         return (async () => ({
           data: await dataMaybePromise,
           error,
           head: await headMaybePromise,
           headers: await headersMaybePromise,
+          state: await stateMaybePromise,
           status: await statusMaybePromise,
           title: await titleMaybePromise,
           view: await viewMaybePromise,
@@ -116,6 +124,7 @@ export function route<Context extends object, Data extends object = any>(
           error,
           head: headMaybePromise as { [name: string]: string },
           headers: headersMaybePromise as any,
+          state: stateMaybePromise as any,
           status: statusMaybePromise as number,
           title: titleMaybePromise as string,
           view: viewMaybePromise as any,
@@ -131,6 +140,7 @@ export function route<Context extends object, Data extends object = any>(
     withData(req => req.context.data),
     withHead(req => req.context.head),
     withHeaders(req => req.context.headers),
+    withState(req => req.context.state || null),
     withStatus(req => req.context.status),
     withTitle(req => req.context.title),
     withView(req => req.context.view, undefined, true),
