@@ -2,7 +2,7 @@ import register from "navi-scripts/register";
 import { createBrowserNavigation } from "navi";
 import React from "react";
 import ReactDOM from "react-dom";
-import { NaviProvider } from "react-navi";
+import { Router } from "react-navi";
 import "./index.css";
 import routes from "./routes";
 import App from "./App";
@@ -43,9 +43,9 @@ register({
 
     // Start react.
     renderer(
-      <NaviProvider navigation={navigation}>
+      <Router navigation={navigation}>
         <App />  
-      </NaviProvider>,
+      </Router>,
       document.getElementById("root")
     );
 

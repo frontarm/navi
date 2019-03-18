@@ -2,7 +2,7 @@ const Navi = require('navi')
 const React = require('react')
 const ReactDOMServer = require('react-dom/server')
 const { Helmet } = require('react-helmet')
-const { NaviProvider, View } = require('react-navi')
+const { Router, View } = require('react-navi')
 
 async function renderCreateReactAppTemplate({ config, replaceTitleWith, insertIntoRootDiv }) {
   let html = (await config.fs.readFile(config.entry)).toString('utf8')
@@ -45,7 +45,7 @@ async function renderPageToString({ config, exports={}, routes, siteMap, depende
   let bodyHTML =
     ReactDOMServer.renderToString(
       React.createElement(
-        NaviProvider,
+        Router,
         { navigation }, 
         React.createElement(exports.App || View)
       )

@@ -2,7 +2,7 @@ import register from "navi-scripts/register";
 import { createBrowserNavigation } from "navi";
 import React from "react";
 import ReactDOM from "react-dom";
-import { NaviProvider } from "react-navi";
+import { Router } from "react-navi";
 import {
   ServerStyleSheet,
   __DO_NOT_USE_OR_YOU_WILL_BE_HAUNTED_BY_SPOOKY_GHOSTS as scSecrets,
@@ -54,9 +54,9 @@ register({
 
     // Start react.
     renderer(
-      <NaviProvider navigation={navigation}>
+      <Router navigation={navigation}>
         <App />
-      </NaviProvider>,
+      </Router>,
       document.getElementById("root")
     );
 
