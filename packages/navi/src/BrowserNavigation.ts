@@ -7,8 +7,7 @@ export interface BrowserNavigationOptions<Context extends object> {
     /**
      * The Matcher that declares your app's pages.
      */
-    routes?: Matcher<Context>,
-    pages?: Matcher<Context>,
+    routes: Matcher<Context>,
 
     /**
      * If provided, this part of any URLs will be ignored. This is useful
@@ -44,16 +43,6 @@ export interface BrowserNavigationOptions<Context extends object> {
 
 
 export function createBrowserNavigation<Context extends object>(options: BrowserNavigationOptions<Context>) {
-    if (options.pages) {
-        if (process.env.NODE_ENV !== 'production') {
-            console.warn(
-                `Deprecation Warning: passing a "pages" option to "createBrowserNavigation()" will `+
-                `no longer be supported from Navi 0.13. Use the "routes" option instead.`
-            )
-        }
-        options.routes = options.pages
-    }
-
     // If there's a server state on the window object, use it and then remove
     // it so that it won't be picked up by any nested navigation objects.
     if (!options.state && typeof window !== undefined && window['__NAVI_STATE__']) {

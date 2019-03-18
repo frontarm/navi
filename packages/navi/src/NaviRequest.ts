@@ -72,41 +72,5 @@ export interface NaviRequest<Context extends object=any> {
 }
 
 export function createRequest<Context extends object=any>(request: NaviRequest<Context>, router?: Router) {
-  Object.defineProperties(request, {
-    mountname: {
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "request.mountname" will be removed in Navi 0.13. Please use "request.mountpath" instead.`)
-        }
-        return request.mountpath
-      },
-    },
-    pathname: {
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "request.pathname" will be removed in Navi 0.13. Please use "request.mountpath" instead.`)
-        }
-        return request.mountpath
-      }
-    },
-  })
-
-  if (router) {
-    Object.defineProperties(request, {
-      router: {
-        get: () => {
-          if (process.env.NODE_ENV !== 'production') {
-            console.warn(`Deprecation Warning: "request.router" will be removed in Navi 0.13. Please import and use the "resolve()" or "crawl()" functions instead.`)
-          }
-          return router
-        },
-        enumerable: false,
-      },
-      _router: {
-        value: router,
-      },
-    })
-  }
-
   return request
 }

@@ -8,8 +8,7 @@ export interface MemoryNavigationOptions<Context extends object> {
     /**
      * The Matcher that declares your app's pages.
      */
-    routes?: Matcher<Context>,
-    pages?: Matcher<Context>,
+    routes: Matcher<Context>,
 
     /**
      * The initial URL to match.
@@ -38,16 +37,6 @@ export interface MemoryNavigationOptions<Context extends object> {
 
 
 export function createMemoryNavigation<Context extends object>(options: MemoryNavigationOptions<Context>) {
-    if (options.pages) {
-        if (process.env.NODE_ENV !== 'production') {
-            console.warn(
-                `Deprecation Warning: passing a "pages" option to "createMemoryNavigation()" will `+
-                `no longer be supported from Navi 0.13. Use the "routes" option instead.`
-            )
-        }
-        options.routes = options.pages
-    }
-
     let url = options.url || (options.request && options.request.url)
 
     if (!url) {

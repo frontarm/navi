@@ -102,20 +102,6 @@ export class Navigation<Context extends object = any>
     )
   }
 
-  get history() {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(`Deprecation Warning: "navigation.history" will be removed in Navi 0.13. Please use "navigation.navigate()", "navigation.goBack()" or "navigation.goForward()" instead.`)
-    }
-    return this._history
-  }
-
-  get router() {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(`Deprecation Warning: "navigation.router" will be removed in Navi 0.13. Please import and use the "resolve()" or "crawl()" functions instead.`)
-    }
-    return this._router
-  }
-
   dispose() {
     this.observers.length = 0
     this.unlisten()
@@ -245,27 +231,6 @@ export class Navigation<Context extends object = any>
       this.waitUntilSteadyDeferred = new Deferred()
     }
     return this.waitUntilSteadyDeferred.promise
-  }
-
-  /**
-   * Returns a promise that resolves once the route is steady.
-   * This is useful for implementing static rendering, or for waiting until
-   * view is loaded before making the first render.
-   */
-  async getSteadyValue(): Promise<Route> {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('Deprecation Warning: "navigation.getSteadyValue()" will be removed in Navi 0.13. Please use navigation.getRoute() instead.')
-    }
-
-    return this.getRoute()
-  }
-
-  async steady() {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('Deprecation Warning: "navigation.steady()" will be removed in Navi 0.13. Please use navigation.getRoute() instead.')
-    }
-
-    await this.getRoute()
   }
 
   /**

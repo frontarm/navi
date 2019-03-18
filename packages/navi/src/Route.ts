@@ -60,49 +60,6 @@ export interface Route<Data = any> {
 }
 
 export function routeReducer(route: Route | undefined, chunk: Chunk): Route {
-  route = routeReducerWithoutCompat(route, chunk)
-  Object.defineProperties(route, {
-    meta: {
-      configurable: true,
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.13. Please use "route.data" instead.`)
-        }
-        return route!.data
-      },
-    },
-    content: {
-      configurable: true,
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.13. Please use "route.views" instead.`)
-        }
-        return chunk.view
-      },
-    },
-    segments: {
-      configurable: true,
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.13. Please use "route.views" instead.`)
-        }
-        return route!.chunks
-      },
-    },
-    lastSegment: {
-      configurable: true,
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.13. Please use "route.views" instead.`)
-        }
-        return route!.lastChunk
-      },
-    }
-  })
-  return route
-}
-
-function routeReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Route {
   if (route) {
     if (chunk.type === 'url') {
       return {

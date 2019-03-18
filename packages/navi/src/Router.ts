@@ -1,10 +1,8 @@
 import { Matcher, MatcherGenerator } from './Matcher'
 import { createRootMapping, matchAgainstPathname, Mapping } from './Mapping'
 import { ChunkListObservable } from './ChunkListObservable'
-import { ChunksMapObservable } from './ChunksMapObservable'
 import { Route, routeReducer } from './Route'
 import { Chunk } from './Chunks'
-import { SiteMap, RouteMap } from './Maps'
 import { createPromiseFromObservable } from './Observable'
 import { createURLDescriptor, URLDescriptor } from './URLTools'
 import { createRequest } from './NaviRequest'
@@ -99,17 +97,6 @@ export class Router<Context extends object=any> {
         }
     }
 
-    createMapObservable(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): ChunksMapObservable {
-        return new ChunksMapObservable(
-            createURLDescriptor(urlOrDescriptor),
-            this.context,
-            this.matcherGenerator,
-            this.rootMapping,
-            this,
-            options,
-        )
-    }
-
     resolve(url: string | Partial<URLDescriptor> | RouterResolveOptions, options?: RouterResolveOptions): Promise<Route>;
     resolve(urls: (string | Partial<URLDescriptor>)[], options?: RouterResolveOptions): Promise<Route[]>;
     resolve(urls: string | Partial<URLDescriptor> | (string | Partial<URLDescriptor>)[] | RouterResolveOptions, options: RouterResolveOptions = {}): Promise<Route | Route[]> {
@@ -138,37 +125,6 @@ export class Router<Context extends object=any> {
 
         let promises = urlDescriptors.map(url => this.getPageRoutePromise(url, options))
         return !Array.isArray(urls) ? promises[0] : Promise.all(promises)
-    }
-
-    resolveSiteMap(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): Promise<SiteMap<Route>> {
-        return createPromiseFromObservable(this.createMapObservable(urlOrDescriptor, options)).then(chunksMap => {
-            let routeMap = {} as RouteMap<Route>
-            let redirectMap = {} as { [name: string]: string }
-            let urls = Object.keys(chunksMap)
-            for (let i = 0; i < urls.length; i++) {
-                let url = urls[i]
-                let chunks = chunksMap[url]
-                let lastChunk = chunks[chunks.length - 1]
-                if (lastChunk.type === 'redirect') {
-                    redirectMap[url] = lastChunk.to
-                    continue
-                }
-                else {
-                    routeMap[url] =
-                        [{ type: 'url', url: createURLDescriptor(url) }]
-                            .concat(chunks)
-                            .reduce(routeReducer, undefined)!
-                }
-            }
-            return {
-                routes: routeMap,
-                redirects: redirectMap,
-            }
-        })
-    }
-
-    resolveRouteMap(urlOrDescriptor: string | Partial<URLDescriptor>, options: RouterMapOptions = {}): Promise<RouteMap<Route>> {
-        return this.resolveSiteMap(urlOrDescriptor, options).then(siteMap => siteMap.routes)
     }
 
     private getPageRoutePromise(url: URLDescriptor, options: RouterResolveOptions): Promise<Route> {
