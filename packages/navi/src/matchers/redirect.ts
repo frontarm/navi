@@ -5,7 +5,8 @@ import { URLDescriptor, joinPaths, createURLDescriptor } from '../URLTools'
 import { createChunksMatcher } from '../createChunksMatcher'
 
 export function redirect<Context extends object = any>(
-  maybeResolvableTo: string | Partial<URLDescriptor> | Resolvable<Partial<URLDescriptor> | string>
+  maybeResolvableTo: string | Partial<URLDescriptor> | Resolvable<Partial<URLDescriptor> | string>,
+  { exact = true } = {}
 ): Matcher<Context> {
   return createChunksMatcher(
     maybeResolvableTo,
@@ -16,7 +17,6 @@ export function redirect<Context extends object = any>(
         return [createNotFoundChunk(request)]
       }
 
-      // TODO: support all relative URLs
       let toHref: string | undefined
       if (typeof to === 'string') {
         toHref = to[0] === '/' ? to : joinPaths('/', request.mountpath, to)
@@ -26,7 +26,7 @@ export function redirect<Context extends object = any>(
       }
       return toHref ? [createChunk('redirect', request, { to: toHref })] as Chunk[] : []
     },
-    undefined,
+    exact,
     true // proccess during crawl
   )
 }

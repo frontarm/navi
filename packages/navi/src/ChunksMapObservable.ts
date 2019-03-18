@@ -322,6 +322,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         mountpath: '',
         query: url.query,
         search: url.search,
+        hash: url.hash,
         router: this.router,
         path: url.pathname,
         url: url.pathname+url.search,

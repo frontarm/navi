@@ -24,6 +24,11 @@ export interface NaviRequest<Context extends object=any> {
   readonly search: string
 
   /**
+   * The URL hash string, including any "#" character. E.g. "#top".
+   */
+  readonly hash: string
+
+  /**
    * A HTTP method as an uppercase string. This defaults to "GET".
    */
   readonly method: string

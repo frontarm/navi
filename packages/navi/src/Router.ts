@@ -67,17 +67,13 @@ export class Router<Context extends object=any> {
     }
 
     createObservable(url: URLDescriptor, options: RouterResolveOptions): ChunkListObservable | undefined {
-        if (url.hash) {
-            url = Object.assign({}, url)
-            delete url.hash
-        }
-
         let request = createRequest({
             body: options.body,
             context: this.context,
             headers: options.headers || {},
             method: options.method || 'GET',
             hostname: url.hostname,
+            hash: url.hash,
             mountpath: '/',
             params: url.query,
             query: url.query,
