@@ -15,6 +15,10 @@ import { Chunk } from './Chunks'
 import { OutOfRootError } from './Errors'
 import { Deferred } from './Deferred'
 
+// Keep track of the number of navigations since the last steady route,
+// so we can detect and bail out of navigation loops.
+const MAX_NAVIGATIONS_SINCE_STEADY = 100
+
 export interface NavigationOptions<Context extends object> {
   /**
    * The Matcher that declares your app's pages.
@@ -72,10 +76,10 @@ export class Navigation<Context extends object = any>
 
   // Stores the last receive location, even if we haven't processed it.
   private lastHandledLocation?: Location
-
+  
+  private navigationsSinceSteady: number
   private basename?: string
   private matcher: Matcher<Context>
-
   private waitUntilSteadyDeferred?: Deferred<Route>
   private observers: Observer<Route>[]
   private lastRoute?: Route
@@ -89,6 +93,7 @@ export class Navigation<Context extends object = any>
     this._history = options.history
     this.observers = []
     this.isLastRouteSteady = false
+    this.navigationsSinceSteady = 0
     this.basename = options.basename
     this.matcher = options.routes
     this._router = new Router({
@@ -309,6 +314,11 @@ export class Navigation<Context extends object = any>
       return
     }
 
+    if (++this.navigationsSinceSteady > MAX_NAVIGATIONS_SINCE_STEADY)  {
+      console.error(`Detected possible navigation loop with ${MAX_NAVIGATIONS_SINCE_STEADY} navigations between steady routes. Bailing.`)
+      return
+    }
+
     // Ensure the pathname always has a trailing `/`, so that we don't
     // have multiple URLs referring to the same page.
     if (this.trailingSlash !== null) {
@@ -320,15 +330,6 @@ export class Navigation<Context extends object = any>
         })
         return
       }
-    }
-
-    // Bail if the URL hasn't changed
-    if (
-      !force &&
-      this.lastHandledLocation &&
-      areLocationsEqual(this.lastHandledLocation, location)
-    ) {
-      return
     }
 
     let url = createURLDescriptor(location)
@@ -390,6 +391,10 @@ export class Navigation<Context extends object = any>
     if (route !== this.lastRoute) {
       this.lastRoute = route
       this.isLastRouteSteady = isSteady
+
+      if (isSteady) {
+        this.navigationsSinceSteady = 0
+      }
       
       for (let i = 0; i < this.observers.length; i++) {
         this.observers[i].next(route)
