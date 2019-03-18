@@ -452,7 +452,7 @@ interface PackLocationStateOptions extends RequestData {
 /**
  * Set the value of request.state without changing the other request data.
  */
-function setLocationRequestState(locationState: any, newState: any): any {
+function setLocationRequestState(locationState: any = {}, newState: any): any {
   return {
     ...newState,
     [NAVI_STATE_KEY]: locationState[NAVI_STATE_KEY],
