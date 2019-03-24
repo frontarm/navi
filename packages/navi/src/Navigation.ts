@@ -410,28 +410,6 @@ export class Navigation<Context extends object = any>
   }
 }
 
-// Compares states using reference equality, as opposed to the version of this
-// function exported from `history`, which compares by value.
-function areLocationsEqual(x: Location, y: Location): boolean {
-  if (x == y) {
-      return true
-  }
-  let xData = x && unpackLocationState(x.state)
-  let yData = y && unpackLocationState(y.state)
-  return (
-    x.pathname == y.pathname &&
-    x.search == y.search &&
-    x.hash == y.hash &&
-    (x.state === y.state || (
-      xData.body === yData.body &&
-      xData.headers === yData.headers &&
-      xData.method === yData.method &&
-      xData.state === yData.state
-    ))
-  )
-}
-
-
 const NAVI_STATE_KEY = '__navi__'
 
 interface RequestDataWithoutState {
