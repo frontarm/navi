@@ -4,11 +4,15 @@ export function scrollToHash(hash, behavior) {
         if (id) {
             let { top, left } = id.getBoundingClientRect()
 
-            window.scroll({
-                top: top + window.pageYOffset,
-                left: left + window.pageXOffset,
-                behavior,
-            })
+            try {
+                window.scroll({
+                    top: top + window.pageYOffset,
+                    left: left + window.pageXOffset,
+                    behavior,
+                })
+            } catch (err) {
+                window.scroll(left + window.pageXOffset, top + window.pageYOffset)   
+            }
 
             // Focus the element, as default behavior is cancelled.
             // https://css-tricks.com/snippets/jquery/smooth-scrolling/
