@@ -22,7 +22,7 @@ export function createChunksMatcher<T, Context extends object>(
     child?: MatcherGenerator<Context>
   ): MatcherIterator {
     let unmatchedPathnamePart = request.path
-    if ((!child || exact) && unmatchedPathnamePart && unmatchedPathnamePart !== '/') {
+    if ((exact === undefined ? !child : exact) && unmatchedPathnamePart && unmatchedPathnamePart !== '/') {
       yield [createNotFoundChunk(request)]
     }
     else {
