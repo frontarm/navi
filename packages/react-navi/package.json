@@ -1,6 +1,6 @@
 {
   "name": "react-navi",
-  "version": "0.12.5",
+  "version": "0.12.6",
   "description": "A batteries-included router for react.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -37,7 +37,7 @@
     "react-helmet": "^5.2.0"
   },
   "devDependencies": {
-    "navi": "^0.12.5"
+    "navi": "^0.12.6"
   },
   "homepage": "https://frontarm.com/navi/",
   "repository": {
