@@ -21,7 +21,7 @@ describe("View", () => {
       ),
     })
 
-    await navigation.steady()
+    await navigation.getRoute()
 
     let component = ReactTestRenderer.create(
       <NaviProvider navigation={navigation}>
@@ -48,7 +48,7 @@ describe("View", () => {
       }),
     })
 
-    await navigation.steady()
+    await navigation.getRoute()
 
     let component = ReactTestRenderer.create(
       <NaviProvider navigation={navigation}>
@@ -71,7 +71,7 @@ describe("View", () => {
       }),
     })
 
-    await navigation.steady()
+    await navigation.getRoute()
 
     let component = ReactTestRenderer.create(
       <NaviProvider navigation={navigation}>
@@ -92,7 +92,7 @@ describe("View", () => {
       }),
     })
 
-    await navigation.steady()
+    await navigation.getRoute()
 
     let component = ReactTestRenderer.create(
       <NaviProvider navigation={navigation}>
@@ -113,7 +113,7 @@ describe("View", () => {
       }),
     })
 
-    await navigation.steady()
+    await navigation.getRoute()
 
     let component = ReactTestRenderer.create(
       <NaviProvider navigation={navigation}>
