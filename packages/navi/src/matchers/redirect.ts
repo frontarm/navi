@@ -12,11 +12,6 @@ export function redirect<Context extends object = any>(
     maybeResolvableTo,
     undefined,
     (to, request) => {
-      let unmatchedPathnamePart = request.path
-      if (unmatchedPathnamePart && unmatchedPathnamePart !== '/') {
-        return [createNotFoundChunk(request)]
-      }
-
       let toHref: string | undefined
       if (typeof to === 'string') {
         toHref = to[0] === '/' ? to : joinPaths('/', request.mountpath, to)
