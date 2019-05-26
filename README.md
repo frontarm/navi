@@ -64,7 +64,9 @@ Who's using Navi?
 -----------------
 
 - [Frontend Armory](http://frontarm.com)
+- [Laska - a UI Builder for React Native](https://laska.io)
 - [Otovo](https://www.otovo.com/) uses Navi for serving 80+ pages across three different markets ([.no](https://www.otovo.no), [.se](https://www.otovo.se) and [.fr](https://www.otovo.fr/))
+- [Marek Calus' blog](https://mcalus.netlify.com/)
 - *Using Navi? Submit a Pull Request to add your site here!*
 
 
