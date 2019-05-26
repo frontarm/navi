@@ -171,7 +171,7 @@ function routeReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Rout
       return {
         ...base,
         type: 'ready',
-        data: { ...base.state, ...chunk.state }
+        state: { ...base.state, ...chunk.state }
       }
     case 'status':
       return { ...base, type: 'ready', status: chunk.status }
