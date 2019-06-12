@@ -37,9 +37,6 @@ function scroll(left: number, top: number, behavior: HashScrollBehavior) {
 }
 
 export function scrollToHash(hash: string | undefined | null, behavior: HashScrollBehavior = 'auto') {
-    console.trace()
-    console.log(hash, behavior)
-
     if (hash) {
         let id = document.getElementById(hash.slice(1))
         if (id) {
