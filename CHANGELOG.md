@@ -12,6 +12,11 @@
 
 -   Fix #90 (all links have a `context="[object Object]"` attribute)
 
+### navi-scripts
+
+-   Upgrade create-react-navi-app template to use react-scripts-mdx, with @mdx-js/mdx 1.
+
+
 ## 0.12.7
 
 ### navi

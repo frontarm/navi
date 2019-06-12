@@ -3,7 +3,7 @@
   "engine": {
     "node": ">=8.0.0"
   },
-  "version": "0.12.5",
+  "version": "0.12.8",
   "description": "Build static websites with navi-based apps.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
