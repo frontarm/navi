@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, View, NotFoundBoundary, useLoadingRoute } from 'react-navi';
-import { MDXProvider } from '@mdx-js/tag';
+import { MDXProvider } from '@mdx-js/react';
 import { ThemeProvider } from 'styled-components/macro';
 import GlobalStyle from './GlobalStyle';
 import Layout from './components/Layout';
