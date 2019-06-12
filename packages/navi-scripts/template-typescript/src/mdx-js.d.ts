@@ -1,5 +1,4 @@
-declare module '@mdx-js/tag' {
-  export const MDXTag: any;
+declare module '@mdx-js/react' {
   export const MDXProvider: any;
 }
 
