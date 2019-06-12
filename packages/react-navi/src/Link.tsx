@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { URLDescriptor, Navigation, createURLDescriptor, joinPaths, modifyTrailingSlash } from 'navi'
 import { NaviContext } from './NaviContext'
-import { scrollToHash } from './scrollToHash';
+import { HashScrollContext, HashScrollBehavior, scrollToHash } from './HashScroll';
 
 
 export interface LinkProps {
@@ -12,6 +12,7 @@ export interface LinkProps {
   className?: string,
   disabled?: boolean,
   exact?: boolean,
+  hashScrollBehavior?: HashScrollBehavior,
   hidden?: boolean,
   href: string | Partial<URLDescriptor>,
   id?: string,
@@ -105,9 +106,20 @@ export const Link: (React.ComponentClass<LinkProps & React.ClassAttributes<HTMLA
   Anchor: typeof LinkAnchor;
 }) = Object.assign(
   React.forwardRef((props: LinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => (
-    <NaviContext.Consumer>
-      {context => <InnerLink {...props as any} context={context} anchorRef={anchorRef} />}
-    </NaviContext.Consumer>
+    <HashScrollContext.Consumer>
+      {hashScrollBehavior =>
+        <NaviContext.Consumer>
+          {context =>
+            <InnerLink
+              {...props as any}
+              context={context}
+              anchorRef={anchorRef}
+              hashScrollBehavior={props.hashScrollBehavior || hashScrollBehavior}
+            />
+          }
+        </NaviContext.Consumer>
+      }
+    </HashScrollContext.Consumer>
   )),
   { Anchor: LinkAnchor }
 )
@@ -184,7 +196,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
   }
   
   render() {
-    let { active, activeStyle, activeClassName, anchorRef, onClick, prefetch, render, exact, ...props } = this.props
+    let { active, activeStyle, activeClassName, anchorRef, hashScrollBehavior, onClick, prefetch, render, exact, ...props } = this.props
     let navigationURL = this.getNavigationURL()
     let linkURL = this.getURL()
     active = active !== undefined ? active : !!(
@@ -257,7 +269,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
         let isSamePathname = modifyTrailingSlash(url.pathname, 'remove') === modifyTrailingSlash(currentURL.pathname, 'remove')
         this.props.context.navigation.navigate(url)
         if ((isSamePathname || url.pathname === '') && url.hash === currentURL.hash && url.hash) {
-          scrollToHash(currentURL.hash, 'smooth')
+          scrollToHash(currentURL.hash, this.props.hashScrollBehavior)
         }
       }
     }

@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { Helmet } from 'react-helmet'
 import { NaviError, Route, Chunk, ViewChunk, HeadChunk, TitleChunk } from 'navi'
+import { HashScrollContext, HashScrollBehavior, scrollToHash } from './HashScroll'
 import { NaviContext } from './NaviContext'
-import { scrollToHash } from './scrollToHash'
 
 
 export interface ViewProps {
@@ -12,7 +12,7 @@ export interface ViewProps {
   children?: (view: any, route: Route) => React.ReactNode
 
   disableScrolling?: boolean
-  hashScrollBehavior?: 'smooth' | 'auto' | 'instant'
+  hashScrollBehavior?: HashScrollBehavior
 
   /**
    * The first Chunk that matches this will be consumed, along with
@@ -25,13 +25,16 @@ export interface ViewProps {
 
 export const View: React.SFC<ViewProps> = function View(props: ViewProps) {
   return (
-    <NaviContext.Consumer>
-      {context => <InnerView {...props} context={context} />}
-    </NaviContext.Consumer>
+    <HashScrollContext.Consumer>
+      {hashScrollBehavior =>
+        <NaviContext.Consumer>
+          {context => <InnerView {...props} context={context} hashScrollBehavior={props.hashScrollBehavior || hashScrollBehavior} />}
+        </NaviContext.Consumer>
+      }
+    </HashScrollContext.Consumer>
   )
 }
 View.defaultProps = {
-  hashScrollBehavior: 'smooth',
   where: (Chunk: Chunk) => Chunk.type === 'view'
 }
 

@@ -7,7 +7,7 @@ import routes from "./routes"
 import * as serviceWorker from "./serviceWorker"
 
 ReactDOM.render(
-  <Router routes={routes}>
+  <Router hashScrollBehavior='smooth' routes={routes}>
     <Layout>
       <Suspense fallback={null}>
         <View />

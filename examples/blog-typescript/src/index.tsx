@@ -34,7 +34,7 @@ register({
     // Start react, passing in the current navigation state and
     // rendering the top-level view.
     renderer(
-      <Router navigation={navigation} />,
+      <Router hashScrollBehavior='smooth' navigation={navigation} />,
       document.getElementById("root")
     )
 

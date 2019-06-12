@@ -1,8 +1,10 @@
 import * as React from 'react'
 import { Navigation, Subscription, Route } from 'navi'
+import { HashScroll, HashScrollBehavior } from './HashScroll'
 import { NaviContext } from './NaviContext'
 
 export interface NaviProviderProps {
+  hashScrollBehavior?: HashScrollBehavior
   navigation: Navigation
 }
 
@@ -40,9 +42,11 @@ export class NaviProvider extends React.Component<NaviProviderProps, NaviProvide
 
   render() {
     return (
-      <NaviContext.Provider value={this.state}>
-        {this.props.children}
-      </NaviContext.Provider>
+      <HashScroll behavior={this.props.hashScrollBehavior}>
+        <NaviContext.Provider value={this.state}>
+          {this.props.children}
+        </NaviContext.Provider>
+      </HashScroll>
     )
   }
 

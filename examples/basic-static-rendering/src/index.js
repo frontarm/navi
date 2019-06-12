@@ -43,7 +43,7 @@ register({
 
     // Start react.
     renderer(
-      <Router navigation={navigation}>
+      <Router hashScrollBehavior='smooth' navigation={navigation}>
         <App />  
       </Router>,
       document.getElementById("root")
