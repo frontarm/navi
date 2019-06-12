@@ -8,6 +8,10 @@
     
     To enable smooth scroll, pass `hashScrollBehavior='smooth'` to your `<Router>` or `<NaviProvider>` component.
 
+    See https://github.com/frontarm/navi/issues/71
+
+-   Fix #90 (all links have a `context="[object Object]"` attribute)
+
 ## 0.12.7
 
 ### navi

@@ -112,7 +112,7 @@ export const Link: (React.ComponentClass<LinkProps & React.ClassAttributes<HTMLA
           {context =>
             <InnerLink
               {...props as any}
-              context={context}
+              naviContext={context}
               anchorRef={anchorRef}
               hashScrollBehavior={props.hashScrollBehavior || hashScrollBehavior}
             />
@@ -149,7 +149,7 @@ Link.defaultProps = {
 
 
 interface InnerLinkProps extends LinkProps {
-  context: NaviContext
+  naviContext: NaviContext
   anchorRef: React.Ref<HTMLAnchorElement>
 }
 
@@ -160,7 +160,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
     super(props)
 
     let url = this.getURL()
-    let navigation = props.context.navigation
+    let navigation = props.naviContext.navigation
     if (navigation && url && url.pathname && props.prefetch) {
       navigation.prefetch(url).catch((e) => {
         console.warn(
@@ -172,7 +172,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
   }
 
   getNavigationURL() {
-    let context = this.props.context
+    let context = this.props.naviContext
     let route = (context.steadyRoute || context.busyRoute)
     return route && route.url
   }
@@ -196,7 +196,7 @@ class InnerLink extends React.Component<InnerLinkProps> {
   }
   
   render() {
-    let { active, activeStyle, activeClassName, anchorRef, hashScrollBehavior, onClick, prefetch, render, exact, ...props } = this.props
+    let { active, activeStyle, activeClassName, anchorRef, hashScrollBehavior, naviContext, onClick, prefetch, render, exact, ...props } = this.props
     let navigationURL = this.getNavigationURL()
     let linkURL = this.getURL()
     active = active !== undefined ? active : !!(
@@ -265,9 +265,9 @@ class InnerLink extends React.Component<InnerLinkProps> {
       if (!event.defaultPrevented && url) {
         event.preventDefault()
 
-        let currentURL = (this.props.context.busyRoute || this.props.context.steadyRoute)!.url
+        let currentURL = (this.props.naviContext.busyRoute || this.props.naviContext.steadyRoute)!.url
         let isSamePathname = modifyTrailingSlash(url.pathname, 'remove') === modifyTrailingSlash(currentURL.pathname, 'remove')
-        this.props.context.navigation.navigate(url)
+        this.props.naviContext.navigation.navigate(url)
         if ((isSamePathname || url.pathname === '') && url.hash === currentURL.hash && url.hash) {
           scrollToHash(currentURL.hash, this.props.hashScrollBehavior)
         }
