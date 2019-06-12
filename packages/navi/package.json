@@ -36,7 +36,7 @@
     "@types/history": "^4.6.2"
   },
   "dependencies": {
-    "history": "^4.7.2"
+    "history": "^4.9.0"
   },
   "jest": {
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
