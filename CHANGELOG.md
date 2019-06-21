@@ -1,6 +1,16 @@
-# Changelog
+Changelog
+=========
 
-## 0.12.8
+0.12.9
+------
+
+### react-navi
+
+-   [Update typings so that they do not require `esModuleInterop` to be true.](https://github.com/frontarm/navi/issues/99)
+
+
+0.12.8
+------
 
 ### react-navi
 
@@ -17,7 +27,8 @@
 -   Upgrade create-react-navi-app template to use react-scripts-mdx, with @mdx-js/mdx 1.
 
 
-## 0.12.7
+0.12.7
+------
 
 ### navi
 
