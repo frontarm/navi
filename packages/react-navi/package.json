@@ -53,6 +53,9 @@
       "ts",
       "tsx"
     ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/test/setup.ts"
+    ],
     "preset": "ts-jest",
     "testMatch": null,
     "globals": {
