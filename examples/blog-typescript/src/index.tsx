@@ -3,6 +3,7 @@ import { createBrowserNavigation } from 'navi'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Router } from 'react-navi'
+import HelmetProvider from 'react-navi-helmet-async'
 import './index.module.css'
 import routes from './routes'
 import * as serviceWorker from './serviceWorker'
@@ -34,8 +35,10 @@ register({
     // Start react, passing in the current navigation state and
     // rendering the top-level view.
     renderer(
-      <Router hashScrollBehavior='smooth' navigation={navigation} />,
-      document.getElementById("root")
+      <HelmetProvider>
+        <Router hashScrollBehavior="smooth" navigation={navigation} />
+      </HelmetProvider>,
+      document.getElementById('root'),
     )
 
     // If you want your app to work offline and load faster, you can change

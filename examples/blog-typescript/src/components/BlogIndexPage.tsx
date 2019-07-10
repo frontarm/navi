@@ -15,7 +15,7 @@ interface BlogIndexPageProps {
 }
 
 function BlogIndexPage({
-  blogRoot: blogRoot,
+  blogRoot,
   pageCount,
   pageNumber,
   postRoutes,
@@ -49,9 +49,7 @@ function BlogIndexPage({
           </a>
           <Link href="./about">About</Link> &bull;{' '}
           <Link href="./tags">Tags</Link> &bull;{' '}
-          <a href="https://github.com/frontarm/create-react-blog">
-            Source
-          </a>
+          <a href="https://github.com/frontarm/create-react-blog">Source</a>
         </div>
       </footer>
     </div>

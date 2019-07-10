@@ -1,5 +1,14 @@
 import React from 'react'
-import { compose, crawl, mount, resolve, route, withContext, withCrawlerPatterns, Route, NaviRequest } from 'navi'
+import {
+  compose,
+  crawl,
+  mount,
+  resolve,
+  route,
+  withContext,
+  withCrawlerPatterns,
+  Route,
+} from 'navi'
 import { join } from 'path'
 import { fromPairs } from 'lodash'
 import TagIndexPage from '../components/TagIndexPage'
@@ -19,7 +28,7 @@ async function crawlRoutes(root): Promise<Route[]> {
       method: 'HEAD',
       routes,
       urls: paths,
-    }) 
+    })
   }
   return crawlRoutes.cache[root]
 }
@@ -32,19 +41,21 @@ interface TagsNavContext {
 }
 
 const tagRoutes = compose(
-  withContext((req, context): TagsNavContext => ({
-    ...context,
-    tagsRoot: req.mountpath,
-  })),
+  withContext(
+    (req, context): TagsNavContext => ({
+      ...context,
+      tagsRoot: req.mountpath,
+    }),
+  ),
   withCrawlerPatterns({
     '/:tag': async (req, context: TagsNavContext) => {
       if (!context.crawlingRoutes) {
         return getAvailableTagsFromRoutes(
-          await crawlRoutes(context.blogRoot)
-        ).map(tag => '/'+tag)
+          await crawlRoutes(context.blogRoot),
+        ).map(tag => '/' + tag)
       }
       return []
-    }
+    },
   }),
   mount({
     '/': route<TagsNavContext>({
@@ -103,7 +114,7 @@ const tagRoutes = compose(
         )
       },
     }),
-  })
+  }),
 )
 
 function getAvailableTagsFromRoutes(routes: Route[]): string[] {
