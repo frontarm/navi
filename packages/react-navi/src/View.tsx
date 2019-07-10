@@ -43,12 +43,12 @@ export interface UseViewResult {
   head: any
 }
 
-function useView({
+export function useView({
   disableScrolling = false,
   hashScrollBehavior,
   renderHead,
   where = defaultUseViewChunkPredicate,
-}: UseViewOptions): null | UseViewResult {
+}: UseViewOptions = {}): null | UseViewResult {
   let hashScrollBehaviorFromContext = React.useContext(HashScrollContext)
   let renderHeadFromContext = React.useContext(ViewHeadRendererContext)
   let context = React.useContext(NaviContext)
@@ -250,8 +250,8 @@ export const View: React.SFC<ViewProps> = function View({
     }
     return result.connect(
       <>
+        {result.head}
         {children(result.content, route)}
-        {result.content}
       </>,
     )
   } else {
