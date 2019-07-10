@@ -235,16 +235,20 @@ export interface LinkContext {
 }
 
 export class LinkAnchor extends React.Component<
-  React.AnchorHTMLAttributes<HTMLAnchorElement>
+  React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+    fromDefaultRenderer?: boolean
+  }
 > {
   constructor(props) {
     super(props)
 
     if (process.env.NODE_ENV !== 'production') {
-      console.warn(
-        `Deprecation Warning: "<LinkAnchor>" is deprecated. From Navi 0.14, ` +
-          `you'll need to use the "useLinkProps()" and "useActive()" hooks instead.`,
-      )
+      if (!props.fromDefaultRenderer) {
+        console.warn(
+          `Deprecation Warning: "<LinkAnchor>" is deprecated. From Navi 0.14, ` +
+            `you'll need to use the "useLinkProps()" and "useActive()" hooks instead.`,
+        )
+      }
     }
   }
 
@@ -253,6 +257,7 @@ export class LinkAnchor extends React.Component<
   }
 
   renderChildren = (context: LinkContext) => {
+    let { fromDefaultRenderer, ...props } = this.props
     let handleClick: React.MouseEventHandler<HTMLAnchorElement> =
       context.onClick
     if (this.props.onClick) {
@@ -264,7 +269,7 @@ export class LinkAnchor extends React.Component<
       }
     }
 
-    return <a {...context} {...this.props} onClick={handleClick} />
+    return <a {...context} {...props} onClick={handleClick} />
   }
 }
 
@@ -289,29 +294,52 @@ export const Link:
     }) = Object.assign(
   React.forwardRef(
     (props: LinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => {
-      let linkProps = useLinkProps(props)
-      let active = useActive(props.href, { exact: !!props.exact })
+      let {
+        active,
+        activeClassName,
+        activeStyle,
+        children,
+        exact,
+        hashScrollBehavior,
+        href,
+        onClick,
+        prefetch,
+        render,
+        ...rest
+      } = props
+
+      let linkProps = useLinkProps({
+        hashScrollBehavior,
+        href,
+        onClick,
+        prefetch,
+      })
+
+      let actualActive = useActive(href, { exact: !!exact })
+      if (active === undefined) {
+        active = actualActive
+      }
 
       let context = {
-        ...props,
+        ...rest,
         ...linkProps,
         ref: anchorRef,
       }
 
       React.useEffect(() => {
         if (process.env.NODE_ENV !== 'production') {
-          if (props.render !== defaultLinkRenderer) {
+          if (render !== defaultLinkRenderer) {
             console.warn(
               `Deprecation Warning: Passing a "render" prop to "<Link>" is deprecated. From Navi 0.14, ` +
                 `you'll need to use the "useLinkProps()" and "useActive()" hooks instead.`,
             )
           }
         }
-      }, [props.render])
+      }, [render])
 
       return (
         <LinkContext.Provider value={context}>
-          {props.render!({
+          {render!({
             active,
             activeClassName: props.activeClassName,
             activeStyle: props.activeStyle,
@@ -353,6 +381,7 @@ function defaultLinkRenderer(props: LinkRendererProps) {
       className={`${className || ''} ${(active && activeClassName) || ''}`}
       hidden={hidden}
       style={Object.assign({}, style, active ? activeStyle : {})}
+      fromDefaultRenderer
     />
   )
 }
