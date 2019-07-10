@@ -23,12 +23,12 @@ export default function renderViewHead(chunks: Chunk[]): React.ReactNode {
     React.createElement(
       Helmet,
       null,
-      ...headAndTitleChunks.map(Chunk =>
-        Chunk.type === 'title'
-          ? createTitleElement(Chunk.title)
-          : Chunk.head.type === React.Fragment || Chunk.head.type === 'head'
-          ? Chunk.head.props.children
-          : Chunk.head,
+      ...headAndTitleChunks.map(chunk =>
+        chunk.type === 'title'
+          ? createTitleElement(chunk.title)
+          : chunk.head.type === React.Fragment || chunk.head.type === 'head'
+          ? chunk.head.props.children
+          : chunk.head,
       ),
     )
   return helmet || null

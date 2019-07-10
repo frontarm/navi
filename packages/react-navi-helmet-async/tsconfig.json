@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+      "esModuleInterop": true,
+      "isolatedModules": true,
+      "jsx": "react",
+      "module": "es2015",
+      "moduleResolution": "node",
+      "outDir": "dist/es",
+      "removeComments": false,
+      "sourceMap": true,
+      "strictNullChecks": true,
+      "target": "es5",
+      "lib": [
+          "es5",
+          "es6",
+          "dom",
+          "dom.iterable",
+          "es2015.collection",
+          "es2017"
+      ]
+  },
+  "exclude": [
+      "dist",
+      "examples",
+      "node_modules",
+      "notes",
+      "test"
+  ]
+}
