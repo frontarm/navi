@@ -22,7 +22,7 @@ export function HelmetProvider({
 
   if (context && !Helmet.canUseDOM) {
     context.getHelmet = () => {
-      return context.renderStatic()
+      return Helmet.renderStatic()
     }
   }
 
