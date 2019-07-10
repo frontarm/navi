@@ -30,11 +30,10 @@
   ],
   "peerDependencies": {
     "navi": "^0.12.0",
-    "react": "^16.5.0"
+    "react": "^16.8.0"
   },
   "dependencies": {
-    "@types/history": "^4.6.2",
-    "react-helmet": "^5.2.0"
+    "@types/history": "^4.6.2"
   },
   "devDependencies": {
     "navi": "^0.12.9"

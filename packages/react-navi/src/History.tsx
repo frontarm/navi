@@ -17,6 +17,15 @@ export namespace History {
 }
 
 export function History(props: HistoryProps) {
+  React.useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(
+        `Deprecation Warning: "<History>" is deprecated. From Navi 0.14, ` +
+          `you'll need to use the "useHistory()" hook instead.`
+      )
+    }
+  }, [])
+
   return (
     <NaviContext.Consumer>
       {context => props.children(context.navigation.history)}

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Navigation, Route, Matcher, createBrowserNavigation } from 'navi'
+import { Chunk, Navigation, Matcher, createBrowserNavigation } from 'navi'
 import { HashScrollBehavior } from './HashScroll'
 import { NaviProvider } from './NaviProvider'
 import { View } from './View'
@@ -16,6 +16,8 @@ export interface RouterProps<Context extends object> {
   history?: any
 
   navigation?: Navigation<Context>
+
+  renderViewHead?: (chunks: Chunk[]) => React.ReactNode
 
   routes?: Matcher<Context>
 }
@@ -51,9 +53,9 @@ export class Router<Context extends object={}> extends React.Component<RouterPro
   }
 
   render() {
-    let { children, hashScrollBehavior } = this.props
+    let { children, hashScrollBehavior, renderViewHead } = this.props
     return (
-      <NaviProvider navigation={this.navigation} hashScrollBehavior={hashScrollBehavior}>
+      <NaviProvider navigation={this.navigation} hashScrollBehavior={hashScrollBehavior} renderViewHead={renderViewHead}>
         {children || <View />}
       </NaviProvider>
     )

@@ -1,8 +1,21 @@
 const Navi = require('navi')
 const React = require('react')
 const ReactDOMServer = require('react-dom/server')
-const { Helmet } = require('react-helmet')
 const { Router, View } = require('react-navi')
+
+// Helmet support is optional
+let Helmet, HelmetProvider
+try {
+  // Prefer react-helmet-async if available.
+  HelmetProvider = require('react-helmet-async').HelmetProvider
+}
+catch (e) {
+  try {
+    Helmet = require('react-helmet').Helmet
+  }
+  catch (e) {}
+}
+
 
 async function renderCreateReactAppTemplate({ config, replaceTitleWith, insertIntoRootDiv }) {
   let html = (await config.fs.readFile(config.entry)).toString('utf8')
@@ -41,13 +54,22 @@ async function renderPageToString({ config, exports={}, routes, siteMap, depende
   // manually let it know that we're doing static rendering.
   Helmet.canUseDOM = false
 
+  let app = React.createElement(exports.App || View)
+
+  // If using react-helmet-async, wrap the app with a helmet context.
+  let helmetContext
+  if (HelmetProvider) {
+    helmetContext = {}
+    app = React.createElement(HelmetProvider, { context: helmetContext }, app)
+  }
+
   // Render the content
   let bodyHTML =
     ReactDOMServer.renderToString(
       React.createElement(
         Router,
         { navigation }, 
-        React.createElement(exports.App || View)
+        app
       )
     )
 
@@ -57,13 +79,22 @@ async function renderPageToString({ config, exports={}, routes, siteMap, depende
     .map(pathname => `<link rel="stylesheet" href="${pathname}" />`)
     .join('')
   
-  // Generate page head
-  let helmet = Helmet.renderStatic();
-  let metaHTML = `
-    ${helmet.title && helmet.title.toString() || "<title>"+route.title+"</title>"}
-    ${helmet.meta && helmet.meta.toString()}
-    ${helmet.link && helmet.link.toString()}
-  `
+  // Generate page head if Helmet is available
+  let helmet
+  let metaHTML = ''
+  if (helmetContext) {
+    helmet = helmetContext.helmet
+  }
+  else if (Helmet) {
+    helmet = Helmet.renderStatic();
+  }
+  if (helmet) {
+    metaHTML = `
+      ${helmet.title && helmet.title.toString() || "<title>"+route.title+"</title>"}
+      ${helmet.meta && helmet.meta.toString()}
+      ${helmet.link && helmet.link.toString()}
+    `
+  }
   
   // This loads the react-scripts generated index.html file, and injects
   // our content into it

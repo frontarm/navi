@@ -1,5 +1,5 @@
 export { HashScroll } from './HashScroll'
-export { Link } from './Link'
+export { useLinkProps, useActive, Link } from './Link'
 export { NaviProvider } from './NaviProvider'
 export { NotFoundBoundary } from './NotFoundBoundary'
 export { Router } from './Router'

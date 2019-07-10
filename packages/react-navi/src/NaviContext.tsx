@@ -13,6 +13,8 @@ export interface NaviContext {
   
   // The routes that haven't been used yet. Initially identical to routingState.routes
   unconsumedSteadyRouteChunks?: Chunk[],
+
+  renderViewHead?: (chunks: Chunk[]) => React.ReactNode
 }
 
 export const NavContextProvider = NaviContext.Provider

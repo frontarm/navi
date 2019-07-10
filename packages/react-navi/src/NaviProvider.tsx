@@ -1,35 +1,29 @@
 import * as React from 'react'
-import { Navigation, Subscription, Route } from 'navi'
+import { Chunk, Navigation, Subscription, Route } from 'navi'
 import { HashScroll, HashScrollBehavior } from './HashScroll'
 import { NaviContext } from './NaviContext'
 
 export interface NaviProviderProps {
   hashScrollBehavior?: HashScrollBehavior
   navigation: Navigation
-}
-
-export interface NaviProviderState {
-  navigation: Navigation
-
-  steadyRoute?: Route
-  busyRoute?: Route
+  renderViewHead?: (chunks: Chunk[]) => React.ReactNode
 }
 
 export namespace NaviProvider {
   export type Props = NaviProviderProps
 }
 
-export class NaviProvider extends React.Component<NaviProviderProps, NaviProviderState> {
+export class NaviProvider extends React.Component<NaviProviderProps, NaviContext> {
   subscription?: Subscription
 
-  static getDerivedStateFromProps(props: NaviProviderProps, state: NaviProviderState): NaviProviderState | null {
+  static getDerivedStateFromProps(props: NaviProviderProps, state: NaviContext): NaviContext | null {
     if (state.navigation !== props.navigation) {
       let route = props.navigation.getCurrentValue()
 
       return (
         (route.type === 'busy')
-          ? { steadyRoute: state.steadyRoute, busyRoute: route, navigation: props.navigation }
-          : { steadyRoute: route, busyRoute: undefined, navigation: props.navigation }
+          ? { steadyRoute: state.steadyRoute, busyRoute: route, navigation: props.navigation, renderViewHead: props.renderViewHead }
+          : { steadyRoute: route, busyRoute: undefined, navigation: props.navigation, renderViewHead: props.renderViewHead }
       )
     }
     return null

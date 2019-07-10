@@ -3,21 +3,26 @@ import React, { Component } from 'react'
 import ReactTestRenderer from 'react-test-renderer'
 import { View, NaviProvider } from '../src'
 
-describe("View", () => {
-  test("supports nested nested views", async () => {
+describe('View', () => {
+  test('supports nested nested views', async () => {
     let navigation = createMemoryNavigation({
       url: '/test/',
       routes: compose(
-        withView(() =>
-          function Wrapper() {
-            return <div><View /></div>
-          }
+        withView(
+          () =>
+            function Wrapper() {
+              return (
+                <div>
+                  <View />
+                </div>
+              )
+            },
         ),
         mount({
           '/test': route({
-            view: 'nested content'
+            view: 'nested content',
           }),
-        })
+        }),
       ),
     })
 
@@ -38,12 +43,11 @@ describe("View", () => {
       routes: mount({
         '/test': route({
           title: 'title',
-          view:
-            class TestClassComponent extends Component<any> {
-                render() {
-                    return this.props.route.title
-                }
-            },
+          view: class TestClassComponent extends Component<any> {
+            render() {
+              return this.props.route.title
+            }
+          },
         }),
       }),
     })
@@ -56,7 +60,7 @@ describe("View", () => {
       </NaviProvider>,
     )
     let output = component.toJSON()
-    
+
     expect(output).toEqual('title')
   })
 
@@ -66,7 +70,7 @@ describe("View", () => {
       routes: mount({
         '/test': route({
           title: 'title',
-          view: ({ route }) => route.title
+          view: ({ route }) => route.title,
         }),
       }),
     })
@@ -78,16 +82,16 @@ describe("View", () => {
         <View />
       </NaviProvider>,
     )
-    
+
     expect(component.toJSON()).toEqual('title')
   })
 
-  test("renders element content", async () => {
+  test('renders element content', async () => {
     let navigation = createMemoryNavigation({
       url: '/test/',
       routes: mount({
         '/test': route({
-          view: <>test content</>
+          view: <>test content</>,
         }),
       }),
     })
@@ -99,16 +103,16 @@ describe("View", () => {
         <View />
       </NaviProvider>,
     )
-    
+
     expect(component.toJSON()).toEqual('test content')
   })
 
-  test("renders string content", async () => {
+  test('renders string content', async () => {
     let navigation = createMemoryNavigation({
       url: '/test/',
       routes: mount({
         '/test': route({
-          view: "test content"
+          view: 'test content',
         }),
       }),
     })
@@ -120,7 +124,7 @@ describe("View", () => {
         <View />
       </NaviProvider>,
     )
-    
+
     expect(component.toJSON()).toEqual('test content')
   })
 })
