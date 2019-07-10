@@ -1,33 +1,49 @@
 import * as React from 'react'
-import { URLDescriptor, createURLDescriptor, joinPaths, modifyTrailingSlash } from 'navi'
+import {
+  URLDescriptor,
+  createURLDescriptor,
+  joinPaths,
+  modifyTrailingSlash,
+} from 'navi'
 import { NaviContext } from './NaviContext'
-import { HashScrollContext, HashScrollBehavior, scrollToHash } from './HashScroll';
+import {
+  HashScrollContext,
+  HashScrollBehavior,
+  scrollToHash,
+} from './HashScroll'
 
 export interface UseLinkPropsOptions {
-  children?: any,
-  className?: string,
-  disabled?: boolean,
-  hashScrollBehavior?: HashScrollBehavior,
-  hidden?: boolean,
-  href: string | Partial<URLDescriptor>,
-  id?: string,
-  lang?: string,
-  prefetch?: boolean,
-  rel?: string,
-  style?: object,
-  tabIndex?: number,
-  target?: string,
-  title?: string,
-  onClick?: React.MouseEventHandler<HTMLAnchorElement>,
+  children?: any
+  className?: string
+  disabled?: boolean
+  hashScrollBehavior?: HashScrollBehavior
+  hidden?: boolean
+  href: string | Partial<URLDescriptor>
+  id?: string
+  lang?: string
+  prefetch?: boolean
+  rel?: string
+  style?: object
+  tabIndex?: number
+  target?: string
+  title?: string
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>
 }
 
 function isExternalHref(href) {
   // If this is an external link, return undefined so that the native
   // response will be used.
-  return (!href || (typeof href === 'string' && ((href.indexOf('://') !== -1 || href.indexOf('mailto:') === 0))))
+  return (
+    !href ||
+    (typeof href === 'string' &&
+      (href.indexOf('://') !== -1 || href.indexOf('mailto:') === 0))
+  )
 }
 
-function getLinkURL(href: string | Partial<URLDescriptor>, routeURL?: URLDescriptor): undefined | URLDescriptor {
+function getLinkURL(
+  href: string | Partial<URLDescriptor>,
+  routeURL?: URLDescriptor,
+): undefined | URLDescriptor {
   if (!isExternalHref(href)) {
     // Resolve relative to the current "directory"
     if (routeURL && typeof href === 'string') {
@@ -37,18 +53,23 @@ function getLinkURL(href: string | Partial<URLDescriptor>, routeURL?: URLDescrip
   }
 }
 
-export const useActive = (href: string | Partial<URLDescriptor>, exact?: boolean) => {
+export const useActive = (
+  href: string | Partial<URLDescriptor>,
+  { exact }: { exact?: boolean } = { exact: true },
+) => {
   let context = React.useContext(NaviContext)
   let route = context.steadyRoute || context.busyRoute
   let routeURL = route && route.url
   let linkURL = getLinkURL(href, routeURL)
-  
+
   return !!(
     linkURL &&
     routeURL &&
     (exact
       ? linkURL.pathname === routeURL.pathname
-      : modifyTrailingSlash(routeURL.pathname, 'add').indexOf(linkURL.pathname) === 0)
+      : modifyTrailingSlash(routeURL.pathname, 'add').indexOf(
+          linkURL.pathname,
+        ) === 0)
   )
 }
 
@@ -77,7 +98,8 @@ export const useLinkProps = ({
     let resolvedHref = href
     // Resolve relative to the current "directory"
     if (routeURL && typeof href === 'string') {
-      resolvedHref = href[0] === '/' ? href : joinPaths('/', routeURL.pathname, href)
+      resolvedHref =
+        href[0] === '/' ? href : joinPaths('/', routeURL.pathname, href)
     }
     linkURL = createURLDescriptor(resolvedHref)
   }
@@ -85,105 +107,115 @@ export const useLinkProps = ({
   // Prefetch on mount if required, or if `prefetch` becomes `true`.
   React.useEffect(() => {
     if (prefetch && navigation && linkURL && linkURL.pathname) {
-      navigation.prefetch(linkURL).catch((e) => {
+      navigation.prefetch(linkURL).catch(e => {
         console.warn(
           `A <Link> tried to prefetch "${linkURL!.pathname}", but the ` +
-          `router was unable to fetch this path.`
+            `router was unable to fetch this path.`,
         )
       })
     }
   }, [navigation, prefetch, linkURL && linkURL.href])
 
-  let handleClick = React.useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
-    // Let the browser handle the event directly if:
-    // - The user used the middle/right mouse button
-    // - The user was holding a modifier key
-    // - A `target` property is set (which may cause the browser to open the
-    //   link in another tab)
-    if (event.button === 0 &&
-        !(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)) {
+  let handleClick = React.useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      // Let the browser handle the event directly if:
+      // - The user used the middle/right mouse button
+      // - The user was holding a modifier key
+      // - A `target` property is set (which may cause the browser to open the
+      //   link in another tab)
+      if (
+        event.button === 0 &&
+        !(event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
+      ) {
+        if (disabled) {
+          event.preventDefault()
+          return
+        }
 
-      if (disabled) {
-        event.preventDefault()
-        return
-      }
+        if (onClick) {
+          onClick(event)
+        }
 
-      if (onClick) {
-        onClick(event)
-      }
-      
-      // Let the browser handle targets natively
-      if (target) {
-        return
-      }
+        // Let the browser handle targets natively
+        if (target) {
+          return
+        }
 
-      // Sanity check
-      if (!routeURL) {
-        return
-      }
-      
-      if (!event.defaultPrevented && linkURL) {
-        event.preventDefault()
+        // Sanity check
+        if (!routeURL) {
+          return
+        }
 
-        let isSamePathname = modifyTrailingSlash(linkURL.pathname, 'remove') === modifyTrailingSlash(routeURL.pathname, 'remove')
-        navigation.navigate(linkURL)
-        if ((isSamePathname || linkURL.pathname === '') && linkURL.hash === routeURL.hash && linkURL.hash) {
-          scrollToHash(routeURL.hash, hashScrollBehavior)
+        if (!event.defaultPrevented && linkURL) {
+          event.preventDefault()
+
+          let isSamePathname =
+            modifyTrailingSlash(linkURL.pathname, 'remove') ===
+            modifyTrailingSlash(routeURL.pathname, 'remove')
+          navigation.navigate(linkURL)
+          if (
+            (isSamePathname || linkURL.pathname === '') &&
+            linkURL.hash === routeURL.hash &&
+            linkURL.hash
+          ) {
+            scrollToHash(routeURL.hash, hashScrollBehavior)
+          }
         }
       }
-    }
-  }, [disabled, onClick, target, routeURL && routeURL.href])
+    },
+    [disabled, onClick, target, routeURL && routeURL.href],
+  )
 
   return {
     disabled,
     onClick: handleClick,
-    href: linkURL ? linkURL.href : href as string,
+    href: linkURL ? linkURL.href : (href as string),
     ...rest,
   }
 }
 
 export interface LinkProps {
-  active?: boolean,
-  activeClassName?: string,
-  activeStyle?: object,
-  children?: any,
-  className?: string,
-  disabled?: boolean,
-  exact?: boolean,
-  hashScrollBehavior?: HashScrollBehavior,
-  hidden?: boolean,
-  href: string | Partial<URLDescriptor>,
-  id?: string,
-  lang?: string,
-  prefetch?: boolean,
-  ref?: React.Ref<HTMLAnchorElement>,
-  rel?: string,
-  style?: object,
-  tabIndex?: number,
-  target?: string,
-  title?: string,
-  onClick?: React.MouseEventHandler<HTMLAnchorElement>,
+  active?: boolean
+  activeClassName?: string
+  activeStyle?: object
+  children?: any
+  className?: string
+  disabled?: boolean
+  exact?: boolean
+  hashScrollBehavior?: HashScrollBehavior
+  hidden?: boolean
+  href: string | Partial<URLDescriptor>
+  id?: string
+  lang?: string
+  prefetch?: boolean
+  ref?: React.Ref<HTMLAnchorElement>
+  rel?: string
+  style?: object
+  tabIndex?: number
+  target?: string
+  title?: string
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>
 
-  render?: (props: LinkRendererProps) => any,
+  render?: (props: LinkRendererProps) => any
 }
 
 export interface LinkRendererProps {
-  anchorProps: LinkContext,
-  active: boolean,
-  activeClassName?: string,
-  activeStyle?: object,
-  children: any,
-  className?: string,
-  disabled?: boolean,
-  tabIndex?: number,
-  hidden?: boolean,
-  href: string,
-  id?: string,
-  lang?: string,
-  style?: object,
-  target?: string,
-  title?: string,
-  onClick: React.MouseEventHandler<any>,
+  anchorProps: LinkContext
+  active: boolean
+  activeClassName?: string
+  activeStyle?: object
+  children: any
+  className?: string
+  disabled?: boolean
+  tabIndex?: number
+  hidden?: boolean
+  href: string
+  id?: string
+  lang?: string
+  style?: object
+  target?: string
+  title?: string
+  onClick: React.MouseEventHandler<any>
 }
 
 export interface LinkAnchorProps extends LinkContext {}
@@ -191,26 +223,27 @@ export interface LinkAnchorProps extends LinkContext {}
 export const LinkContext = React.createContext<LinkContext>(undefined as any)
 
 export interface LinkContext {
-  onClick: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+  onClick: (event: React.MouseEvent<HTMLAnchorElement>) => void
   ref: React.Ref<HTMLAnchorElement>
-  id?: string;
-  lang?: string;
-  rel?: string;
-  tabIndex?: number;
-  target?: string;
-  title?: string;
-  href?: string;
+  id?: string
+  lang?: string
+  rel?: string
+  tabIndex?: number
+  target?: string
+  title?: string
+  href?: string
 }
 
-
-export class LinkAnchor extends React.Component<React.AnchorHTMLAttributes<HTMLAnchorElement>> {
+export class LinkAnchor extends React.Component<
+  React.AnchorHTMLAttributes<HTMLAnchorElement>
+> {
   constructor(props) {
     super(props)
 
     if (process.env.NODE_ENV !== 'production') {
       console.warn(
         `Deprecation Warning: "<LinkAnchor>" is deprecated. From Navi 0.14, ` +
-          `you'll need to use the "useLinkProps()" and "useActive()" hooks instead.`
+          `you'll need to use the "useLinkProps()" and "useActive()" hooks instead.`,
       )
     }
   }
@@ -220,7 +253,8 @@ export class LinkAnchor extends React.Component<React.AnchorHTMLAttributes<HTMLA
   }
 
   renderChildren = (context: LinkContext) => {
-    let handleClick: React.MouseEventHandler<HTMLAnchorElement> = context.onClick
+    let handleClick: React.MouseEventHandler<HTMLAnchorElement> =
+      context.onClick
     if (this.props.onClick) {
       handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         this.props.onClick!(e)
@@ -230,16 +264,9 @@ export class LinkAnchor extends React.Component<React.AnchorHTMLAttributes<HTMLA
       }
     }
 
-    return (
-      <a
-        {...context}
-        {...this.props}
-        onClick={handleClick}
-      />
-    )
+    return <a {...context} {...this.props} onClick={handleClick} />
   }
 }
-
 
 export namespace Link {
   export type Props = LinkProps
@@ -249,56 +276,64 @@ export namespace Link {
 
 // Need to include this type definition, as the automatically generated one
 // is incompatible with some versions of the react typings.
-export const Link: (React.ComponentClass<LinkProps & React.ClassAttributes<HTMLAnchorElement>> & {
-  Anchor: typeof LinkAnchor;
-}) | (React.StatelessComponent<LinkProps & React.ClassAttributes<HTMLAnchorElement>> & {
-  Anchor: typeof LinkAnchor;
-}) = Object.assign(
-  React.forwardRef((props: LinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => {
-    let linkProps = useLinkProps(props)
-    let active = useActive(props.href, props.exact)
+export const Link:
+  | (React.ComponentClass<
+      LinkProps & React.ClassAttributes<HTMLAnchorElement>
+    > & {
+      Anchor: typeof LinkAnchor
+    })
+  | (React.StatelessComponent<
+      LinkProps & React.ClassAttributes<HTMLAnchorElement>
+    > & {
+      Anchor: typeof LinkAnchor
+    }) = Object.assign(
+  React.forwardRef(
+    (props: LinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => {
+      let linkProps = useLinkProps(props)
+      let active = useActive(props.href, { exact: !!props.exact })
 
-    let context = {
-      ...props,
-      ...linkProps,
-      ref: anchorRef,
-    }
-
-    React.useEffect(() => {
-      if (process.env.NODE_ENV !== 'production') {
-        if (props.render !== defaultLinkRenderer) {
-          console.warn(
-            `Deprecation Warning: Passing a "render" prop to "<Link>" is deprecated. From Navi 0.14, ` +
-              `you'll need to use the "useLinkProps()" and "useActive()" hooks instead.`
-          )
-        }
+      let context = {
+        ...props,
+        ...linkProps,
+        ref: anchorRef,
       }
-    }, [props.render])
 
-    return (
-      <LinkContext.Provider value={context} >
-        {props.render!({
-          active,
-          activeClassName: props.activeClassName,
-          activeStyle: props.activeStyle,
-          anchorProps: context,
-          children: props.children,
-          className: props.className,
-          disabled: props.disabled,
-          tabIndex: props.tabIndex,
-          hidden: props.hidden,
-          href: linkProps.href,
-          id: props.id,
-          lang: props.lang,
-          style: props.style,
-          target: props.target,
-          title: props.title,
-          onClick: linkProps.onClick,
-        })}
-      </LinkContext.Provider>
-    ) 
-  }),
-  { Anchor: LinkAnchor }
+      React.useEffect(() => {
+        if (process.env.NODE_ENV !== 'production') {
+          if (props.render !== defaultLinkRenderer) {
+            console.warn(
+              `Deprecation Warning: Passing a "render" prop to "<Link>" is deprecated. From Navi 0.14, ` +
+                `you'll need to use the "useLinkProps()" and "useActive()" hooks instead.`,
+            )
+          }
+        }
+      }, [props.render])
+
+      return (
+        <LinkContext.Provider value={context}>
+          {props.render!({
+            active,
+            activeClassName: props.activeClassName,
+            activeStyle: props.activeStyle,
+            anchorProps: context,
+            children: props.children,
+            className: props.className,
+            disabled: props.disabled,
+            tabIndex: props.tabIndex,
+            hidden: props.hidden,
+            href: linkProps.href,
+            id: props.id,
+            lang: props.lang,
+            style: props.style,
+            target: props.target,
+            title: props.title,
+            onClick: linkProps.onClick,
+          })}
+        </LinkContext.Provider>
+      )
+    },
+  ),
+  { Anchor: LinkAnchor },
 )
 
 function defaultLinkRenderer(props: LinkRendererProps) {
@@ -323,6 +358,5 @@ function defaultLinkRenderer(props: LinkRendererProps) {
 }
 
 Link.defaultProps = {
-  render: defaultLinkRenderer
+  render: defaultLinkRenderer,
 }
-

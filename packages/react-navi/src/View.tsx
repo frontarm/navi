@@ -70,12 +70,6 @@ function useView({
   let index = unconsumedChunks.findIndex(where)
   let view = index !== -1 && (unconsumedChunks[index] as ViewChunk).view
 
-  // If there's no steady route, then we'll need to wait until a steady
-  // route becomes available using Supsense.
-  if (!view && unconsumedChunks.length) {
-    throw context.navigation.getRoute()
-  }
-
   // Find any other chunks that come before this chunk, or after this one if
   // this is the final view chunk.
   let final = index === -1 || !unconsumedChunks.slice(index + 1).find(where)
@@ -86,10 +80,16 @@ function useView({
   )
 
   // Look for an error amongst any route chunks that haven't already been used
-  // by a `useView()`. If one is found, throw it
+  // by a `useView()` and throw it.
   let errorChunk = chunks.find(chunk => chunk.type === 'error')
   if (errorChunk) {
     throw errorChunk.error || new Error('Unknown routing error')
+  }
+
+  // If there's no steady route, then we'll need to wait until a steady
+  // route becomes available using Supsense.
+  if (!view && unconsumedChunks.length) {
+    throw context.navigation.getRoute()
   }
 
   let childContext = React.useMemo(
