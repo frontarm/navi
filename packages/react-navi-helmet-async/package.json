@@ -1,0 +1,66 @@
+{
+  "name": "react-navi-helmet-async",
+  "version": "0.12.9",
+  "description": "Use react-helmet-async to render your Navi routes' title and head.",
+  "author": "James K Nelson <james@jamesknelson.com>",
+  "license": "MIT",
+  "main": "dist/commonjs/renderViewHead.js",
+  "module": "dist/es/renderViewHead.js",
+  "types": "dist/types/renderViewHead.d.ts",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build:commonjs": "tsc --pretty --module commonjs --outDir dist/commonjs",
+    "build:es": "tsc --pretty --module es2015 --outDir dist/es",
+    "build:types": "tsc --pretty --declaration --emitDeclarationOnly --outDir dist/types --isolatedModules false",
+    "build:umd": "tsc --pretty --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=development rollup -c -o dist/umd/react-navi.js && rimraf dist/umd-intermediate",
+    "build:umd:min": "tsc --module es2015 --outDir dist/umd-intermediate && cross-env NODE_ENV=production rollup -c -o dist/umd/react-navi.min.js && rimraf dist/umd-intermediate",
+    "build": "yarn run clean && yarn build:es && yarn build:commonjs && yarn build:types && yarn build:umd && yarn build:umd:min",
+    "build:watch": "yarn run clean && yarn build:es -- --watch",
+    "prepare": "yarn build && yarn test",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "navi",
+    "navigation",
+    "react",
+    "router",
+    "routing",
+    "helmet",
+    "head"
+  ],
+  "peerDependencies": {
+    "navi": "^0.12.0",
+    "react": "^16.8.0"
+  },
+  "dependencies": {
+    "react-helmet-async": "^1.0.2"
+  },
+  "devDependencies": {
+    "navi": "^0.12.9"
+  },
+  "homepage": "https://frontarm.com/navi/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frontarm/navi.git"
+  },
+  "jest": {
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "testEnvironment": "jsdom",
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "jsx",
+      "ts",
+      "tsx"
+    ],
+    "preset": "ts-jest",
+    "testMatch": null,
+    "globals": {
+      "ts-jest": {
+        "babelConfig": null,
+        "diagnostics": false
+      }
+    }
+  }
+}
