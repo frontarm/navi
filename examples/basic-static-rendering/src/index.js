@@ -1,12 +1,13 @@
-import register from "navi-scripts/register";
-import { createBrowserNavigation } from "navi";
-import React from "react";
-import ReactDOM from "react-dom";
-import { Router } from "react-navi";
-import "./index.css";
-import routes from "./routes";
-import App from "./App";
-import * as serviceWorker from "./serviceWorker";
+import register from 'navi-scripts/register'
+import { createBrowserNavigation } from 'navi'
+import React from 'react'
+import ReactDOM from 'react-dom'
+import { Router } from 'react-navi'
+import HelmetProvider from 'react-navi-helmet-async'
+import './index.css'
+import routes from './routes'
+import App from './App'
+import * as serviceWorker from './serviceWorker'
 
 // `register()` is responsible for exporting your app's pages and App
 // component to the static renderer, and for starting the app with the
@@ -28,30 +29,32 @@ register({
   async main() {
     let navigation = createBrowserNavigation({
       routes,
-    });
+    })
 
     // Wait until the navigation has loaded the page's content, or failed to do
     // so. If you want to load other data in parallel while the initial page is
     // loading, make sure to start loading before this line.
-    await navigation.getRoute();
+    await navigation.getRoute()
 
     // React requires that you call `ReactDOM.hydrate` if there is statically
     // rendered content in the root element, but prefers us to call
     // `ReactDOM.render` when it is empty.
-    let hasStaticContent = process.env.NODE_ENV === "production";
-    let renderer = hasStaticContent ? ReactDOM.hydrate : ReactDOM.render;
+    let hasStaticContent = process.env.NODE_ENV === 'production'
+    let renderer = hasStaticContent ? ReactDOM.hydrate : ReactDOM.render
 
     // Start react.
     renderer(
-      <Router hashScrollBehavior='smooth' navigation={navigation}>
-        <App />  
-      </Router>,
-      document.getElementById("root")
-    );
+      <HelmetProvider>
+        <Router hashScrollBehavior="smooth" navigation={navigation}>
+          <App />
+        </Router>
+      </HelmetProvider>,
+      document.getElementById('root'),
+    )
 
     // If you want your app to work offline and load faster, you can change
     // unregister() to register() below. Note this comes with some pitfalls.
     // Learn more about service workers: http://bit.ly/CRA-PWA
-    serviceWorker.unregister();
-  }
-});
+    serviceWorker.unregister()
+  },
+})

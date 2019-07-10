@@ -11,18 +11,18 @@ export interface RouterProps<Context extends object> {
 
   context?: Context
 
-  hashScrollBehavior?: HashScrollBehavior,
+  hashScrollBehavior?: HashScrollBehavior
 
   history?: any
 
   navigation?: Navigation<Context>
 
-  renderViewHead?: (chunks: Chunk[]) => React.ReactNode
-
   routes?: Matcher<Context>
 }
 
-export class Router<Context extends object={}> extends React.Component<RouterProps<Context>> {
+export class Router<Context extends object = {}> extends React.Component<
+  RouterProps<Context>
+> {
   static defaultProps = {
     fallback: undefined,
   }
@@ -34,28 +34,38 @@ export class Router<Context extends object={}> extends React.Component<RouterPro
 
     if (process.env.NODE_ENV !== 'production' && props.navigation) {
       if (props.basename) {
-        console.warn(`Warning: <Router> can't receive both a "basename" and a "navigation" prop. Proceeding by ignoring "basename".`)
+        console.warn(
+          `Warning: <Router> can't receive both a "basename" and a "navigation" prop. Proceeding by ignoring "basename".`,
+        )
       }
       if (props.routes) {
-        console.warn(`Warning: <Router> can't receive both a "routes" and a "navigation" prop. Proceeding by ignoring "routes".`)
+        console.warn(
+          `Warning: <Router> can't receive both a "routes" and a "navigation" prop. Proceeding by ignoring "routes".`,
+        )
       }
       if (props.history) {
-        console.warn(`Warning: <Router> can't receive both a "history" and a "navigation" prop. Proceeding by ignoring "history".`)
+        console.warn(
+          `Warning: <Router> can't receive both a "history" and a "navigation" prop. Proceeding by ignoring "history".`,
+        )
       }
     }
 
-    this.navigation = props.navigation || createBrowserNavigation({
-      basename: props.basename,
-      context: props.context,
-      history: props.history,
-      routes: props.routes,
-    })
+    this.navigation =
+      props.navigation ||
+      createBrowserNavigation({
+        basename: props.basename,
+        context: props.context,
+        history: props.history,
+        routes: props.routes,
+      })
   }
 
   render() {
-    let { children, hashScrollBehavior, renderViewHead } = this.props
+    let { children, hashScrollBehavior } = this.props
     return (
-      <NaviProvider navigation={this.navigation} hashScrollBehavior={hashScrollBehavior} renderViewHead={renderViewHead}>
+      <NaviProvider
+        navigation={this.navigation}
+        hashScrollBehavior={hashScrollBehavior}>
         {children || <View />}
       </NaviProvider>
     )
@@ -84,7 +94,7 @@ export class Router<Context extends object={}> extends React.Component<RouterPro
 
 // Pulled from react-compat
 // https://github.com/developit/preact-compat/blob/7c5de00e7c85e2ffd011bf3af02899b63f699d3a/src/index.js#L349
-function shallowDiffers (a, b) {
+function shallowDiffers(a, b) {
   for (let i in a) if (!(i in b)) return true
   for (let i in b) if (a[i] !== b[i]) return true
   return false

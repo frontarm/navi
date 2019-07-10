@@ -1,30 +1,41 @@
 import * as React from 'react'
-import { Chunk, Navigation, Subscription, Route } from 'navi'
+import { Navigation, Subscription, Route } from 'navi'
 import { HashScroll, HashScrollBehavior } from './HashScroll'
 import { NaviContext } from './NaviContext'
 
 export interface NaviProviderProps {
   hashScrollBehavior?: HashScrollBehavior
   navigation: Navigation
-  renderViewHead?: (chunks: Chunk[]) => React.ReactNode
 }
 
 export namespace NaviProvider {
   export type Props = NaviProviderProps
 }
 
-export class NaviProvider extends React.Component<NaviProviderProps, NaviContext> {
+export class NaviProvider extends React.Component<
+  NaviProviderProps,
+  NaviContext
+> {
   subscription?: Subscription
 
-  static getDerivedStateFromProps(props: NaviProviderProps, state: NaviContext): NaviContext | null {
+  static getDerivedStateFromProps(
+    props: NaviProviderProps,
+    state: NaviContext,
+  ): NaviContext | null {
     if (state.navigation !== props.navigation) {
       let route = props.navigation.getCurrentValue()
 
-      return (
-        (route.type === 'busy')
-          ? { steadyRoute: state.steadyRoute, busyRoute: route, navigation: props.navigation, renderViewHead: props.renderViewHead }
-          : { steadyRoute: route, busyRoute: undefined, navigation: props.navigation, renderViewHead: props.renderViewHead }
-      )
+      return route.type === 'busy'
+        ? {
+            steadyRoute: state.steadyRoute,
+            busyRoute: route,
+            navigation: props.navigation,
+          }
+        : {
+            steadyRoute: route,
+            busyRoute: undefined,
+            navigation: props.navigation,
+          }
     }
     return null
   }
@@ -61,12 +72,14 @@ export class NaviProvider extends React.Component<NaviProviderProps, NaviContext
 
   subscribe() {
     if (!this.props.navigation) {
-      throw new Error(`A <NaviProvider> component must receive a "navigation" prop.`)
+      throw new Error(
+        `A <NaviProvider> component must receive a "navigation" prop.`,
+      )
     }
 
     this.subscription = this.props.navigation.subscribe(
       this.handleNavigationSnapshot,
-      this.handleError
+      this.handleError,
     )
   }
 
@@ -83,8 +96,7 @@ export class NaviProvider extends React.Component<NaviProviderProps, NaviContext
         steadyRoute: route,
         busyRoute: undefined,
       })
-    }
-    else {
+    } else {
       this.setState({
         busyRoute: route,
       })

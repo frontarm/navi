@@ -1,23 +1,22 @@
 import React, { Suspense } from 'react'
 import ReactDOM from 'react-dom'
 import { Router, View } from 'react-navi'
-import reactNaviHelmet from 'react-navi-helmet'
+import HelmetProvider from 'react-navi-helmet'
 import Layout from './components/AppLayout'
 import './index.css'
 import routes from './routes'
 import * as serviceWorker from './serviceWorker'
 
 ReactDOM.render(
-  <Router
-    hashScrollBehavior="smooth"
-    routes={routes}
-    renderViewHead={reactNaviHelmet}>
-    <Layout>
-      <Suspense fallback={null}>
-        <View />
-      </Suspense>
-    </Layout>
-  </Router>,
+  <HelmetProvider>
+    <Router hashScrollBehavior="smooth" routes={routes}>
+      <Layout>
+        <Suspense fallback={null}>
+          <View />
+        </Suspense>
+      </Layout>
+    </Router>
+  </HelmetProvider>,
   document.getElementById('root'),
 )
 

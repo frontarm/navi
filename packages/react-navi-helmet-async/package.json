@@ -4,9 +4,9 @@
   "description": "Use react-helmet-async to render your Navi routes' title and head.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
-  "main": "dist/commonjs/renderViewHead.js",
-  "module": "dist/es/renderViewHead.js",
-  "types": "dist/types/renderViewHead.d.ts",
+  "main": "dist/commonjs/index.js",
+  "module": "dist/es/index.js",
+  "types": "dist/types/index.d.ts",
   "scripts": {
     "clean": "rimraf dist",
     "build:commonjs": "tsc --pretty --module commonjs --outDir dist/commonjs",
@@ -29,13 +29,15 @@
   ],
   "peerDependencies": {
     "navi": "^0.12.0",
-    "react": "^16.8.0"
+    "react": "^16.8.0",
+    "react-navi": "^0.12.0"
   },
   "dependencies": {
     "react-helmet-async": "^1.0.2"
   },
   "devDependencies": {
-    "navi": "^0.12.9"
+    "navi": "^0.12.9",
+    "react-navi": "^0.12.9"
   },
   "homepage": "https://frontarm.com/navi/",
   "repository": {

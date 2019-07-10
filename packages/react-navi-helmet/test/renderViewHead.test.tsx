@@ -1,5 +1,5 @@
 import React from 'react'
-import renderViewHead from '../src/renderViewHead'
+import { renderViewHead } from '../src'
 
 describe('renderViewHead', () => {
   test('returns an element', () => {

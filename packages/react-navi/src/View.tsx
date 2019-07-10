@@ -6,6 +6,7 @@ import {
   scrollToHash,
 } from './HashScroll'
 import { NaviContext } from './NaviContext'
+import { ViewHeadRendererContext } from './ViewHeadRendererContext'
 
 function defaultUseViewChunkPredicate(chunk: Chunk) {
   return chunk.type === 'view'
@@ -49,13 +50,14 @@ function useView({
   where = defaultUseViewChunkPredicate,
 }: UseViewOptions): null | UseViewResult {
   let hashScrollBehaviorFromContext = React.useContext(HashScrollContext)
+  let renderHeadFromContext = React.useContext(ViewHeadRendererContext)
   let context = React.useContext(NaviContext)
 
   if (hashScrollBehavior === undefined) {
     hashScrollBehavior = hashScrollBehaviorFromContext
   }
-  if (renderHead === undefined) {
-    renderHead = context.renderViewHead
+  if (renderHead === undefined && renderHeadFromContext) {
+    renderHead = renderHeadFromContext
   }
 
   let route = context.steadyRoute || context.busyRoute

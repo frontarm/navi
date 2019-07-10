@@ -12,16 +12,9 @@ export default function register(options) {
     try {
       app.sharedModules['react'] = require('react')
       app.sharedModules['react-navi'] = require('react-navi')
-      app.sharedModules['react-helmet'] = require('react-helmet')
-    }
-    catch (e) {
+    } catch (e) {
       // Doesn't matter if React isn't available. We just want to export it if it is.
     }
-    try {
-      // Use this if we can...
-      app.sharedModules['react-helmet-async'] = require('react-helmet-async')
-    }
-    catch (e) {}
   }
   if (!app.environment) {
     app.environment = process.env.NODE_ENV
