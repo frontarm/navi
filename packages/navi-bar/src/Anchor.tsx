@@ -1,5 +1,5 @@
-import { NavLink } from 'react-navi'
+import { Link } from 'react-navi'
 
 export const Anchor: React.ComponentType<
   React.AnchorHTMLAttributes<HTMLAnchorElement>
-> = NavLink.Anchor
+> = Link.Anchor

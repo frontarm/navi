@@ -1,5 +1,10 @@
 import * as React from 'react'
-import { Route, URLDescriptor, modifyTrailingSlash, createURLDescriptor } from 'navi'
+import {
+  Route,
+  URLDescriptor,
+  modifyTrailingSlash,
+  createURLDescriptor,
+} from 'navi'
 import { Link, useCurrentRoute } from 'react-navi'
 import { defaultTheme } from './defaultTheme'
 import { Item, getItems } from './items'
@@ -7,7 +12,6 @@ import { Anchor } from './Anchor'
 import { CloseOverlay, CloseOverlayContext } from './CloseOverlay'
 import { useScrollSpy } from './useScrollSpy'
 import { TableOfContents, TableOfContentsItem } from './TableOfContents'
-
 
 export interface NaviBarProps<Data extends object = any> {
   routes?: Route<Data>[]
@@ -34,9 +38,7 @@ export interface NaviBarProps<Data extends object = any> {
    */
   comparator?: (x: Item, y: Item) => -1 | 0 | 1
 
-  render?: (
-    options: NaviBarRendererProps
-  ) => React.ReactElement<any> | null
+  render?: (options: NaviBarRendererProps) => React.ReactElement<any> | null
   renderSection?: (
     options: NaviBarSectionRendererProps<Data>,
   ) => React.ReactElement<any> | null
@@ -51,7 +53,7 @@ export interface NaviBarProps<Data extends object = any> {
 export interface NaviBarRendererProps {
   children: React.ReactNode
   open: boolean
-  toggleOpen: () => void,
+  toggleOpen: () => void
 }
 
 export interface NaviBarSectionRendererProps<Data = any> {
@@ -87,21 +89,26 @@ export namespace NaviBar {
   export type Props = NaviBarProps
 
   export type RendererProps = NaviBarRendererProps
-  export type PageRendererProps<Data extends object = any> = NaviBarPageRendererProps<Data>
-  export type SectionRendererProps<Data extends object = any> = NaviBarSectionRendererProps<Data>
+  export type PageRendererProps<
+    Data extends object = any
+  > = NaviBarPageRendererProps<Data>
+  export type SectionRendererProps<
+    Data extends object = any
+  > = NaviBarSectionRendererProps<Data>
   export type HeadingRendererProps = NaviBarHeadingRendererProps
 }
 
 export const NaviBar = Object.assign(
   function NaviBar<Data extends object = any>(props: NaviBarProps<Data>) {
     let { id, parentIds } = useScrollSpy({
-      tableOfContents: props.tableOfContents!
+      tableOfContents: props.tableOfContents!,
     })
     let route = useCurrentRoute()
 
     return (
       <InnerNaviBar
-        activeURL={createURLDescriptor(route.url, { trailingSlash: 'add' })} {...props}
+        activeURL={createURLDescriptor(route.url, { trailingSlash: 'add' })}
+        {...props}
         activeId={id}
         activeParentIds={parentIds || []}
       />
@@ -110,8 +117,8 @@ export const NaviBar = Object.assign(
   {
     Anchor: Anchor,
     CloseOverlay: CloseOverlay,
-    defaultProps: defaultTheme
-  }
+    defaultProps: defaultTheme,
+  },
 )
 
 export interface InnerNaviBarProps<Data extends object = any>
@@ -122,8 +129,8 @@ export interface InnerNaviBarProps<Data extends object = any>
 }
 
 export interface InnerNaviBarState {
-  open: boolean,
-  toggleOpen: () => void,
+  open: boolean
+  toggleOpen: () => void
 }
 
 export class InnerNaviBar<Data extends object = any> extends React.Component<
@@ -133,7 +140,7 @@ export class InnerNaviBar<Data extends object = any> extends React.Component<
   activePageRef = React.createRef<HTMLAnchorElement>()
 
   constructor(props: InnerNaviBarProps<Data>) {
-    super(props) 
+    super(props)
 
     this.state = {
       open: false,
@@ -151,8 +158,7 @@ export class InnerNaviBar<Data extends object = any> extends React.Component<
     let children: React.ReactNode = null
     if (!this.props.routes) {
       children = this.renderTableOfContents()
-    }
-    else {
+    } else {
       let items = getItems(this.props.routes, this.props.comparator)
       if (items.length !== 0) {
         children = items.map(this.renderItem)
@@ -172,7 +178,8 @@ export class InnerNaviBar<Data extends object = any> extends React.Component<
   }
 
   renderHeading = (heading: TableOfContentsItem, index: number) => {
-    let childElements = heading.children && heading.children.map(this.renderHeading)
+    let childElements =
+      heading.children && heading.children.map(this.renderHeading)
     let headingContent = this.props.renderHeading!({
       active: this.props.activeId === heading.id,
       descendantActive: this.props.activeParentIds.indexOf(heading.id) !== -1,
@@ -195,7 +202,10 @@ export class InnerNaviBar<Data extends object = any> extends React.Component<
   renderItem = (item: Item, index: number) => {
     let active =
       this.props.activeURL.pathname.indexOf(item.url.pathname) === 0 &&
-      (item.type === 'group' || Math.abs(this.props.activeURL.pathname.length - item.url.pathname.length) <= 1)
+      (item.type === 'group' ||
+        Math.abs(
+          this.props.activeURL.pathname.length - item.url.pathname.length,
+        ) <= 1)
 
     if (item.type === 'page') {
       let pageContent = this.props.renderPage!({
@@ -263,13 +273,12 @@ export class InnerNaviBar<Data extends object = any> extends React.Component<
 
       if (this.state.open) {
         this.setState({
-          open: false
+          open: false,
         })
       }
     }
   }
 }
-
 
 // Get the highest level group of headings that has more than one item
 function getHeadings(toc?: TableOfContents): TableOfContents {
@@ -285,7 +294,7 @@ function getHeadings(toc?: TableOfContents): TableOfContents {
   return []
 }
 
-// Renderer for <NavLink> elements
+// Renderer for <Link> elements
 function renderChildren(props: Link.RendererProps) {
   return props.children
 }
