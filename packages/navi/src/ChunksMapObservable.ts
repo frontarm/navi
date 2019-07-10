@@ -1,4 +1,9 @@
-import { URLDescriptor, createURLDescriptor, joinPaths, modifyTrailingSlash } from './URLTools'
+import {
+  URLDescriptor,
+  createURLDescriptor,
+  joinPaths,
+  modifyTrailingSlash,
+} from './URLTools'
 import {
   Observable,
   Observer,
@@ -9,7 +14,6 @@ import { Chunk, BusyChunk } from './Chunks'
 import { MatcherGenerator, MatcherIterator } from './Matcher'
 import { RouterMapOptions, Router } from './Router'
 import { Mapping, matchAgainstPathname } from './Mapping'
-import { createRequest } from './NaviRequest';
 
 interface MapItem {
   url: URLDescriptor
@@ -39,7 +43,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
   private router: Router
   private options: RouterMapOptions
   private lastListenId: number
-  
+
   private seenPathnames: Set<string>
   private mapItems: MapItem[]
 
@@ -69,18 +73,18 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
       pathname = pathname.substr(0, pathname.length - 1)
     }
 
-    this.addToQueue(pathname, 0, new Set)
+    this.addToQueue(pathname, 0, new Set())
   }
 
   subscribe(
-    onNextOrObserver:
-      | Observer<ChunksMap>
-      | ((value: ChunksMap) => void),
+    onNextOrObserver: Observer<ChunksMap> | ((value: ChunksMap) => void),
     onError?: (error: any) => void,
     onComplete?: () => void,
   ): SimpleSubscription {
     if (!this.observers) {
-      throw new Error("Can't subscribe to an already-complete RoutingObservable.")
+      throw new Error(
+        "Can't subscribe to an already-complete RoutingObservable.",
+      )
     }
 
     let observer = createOrPassthroughObserver(
@@ -98,7 +102,10 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
 
   private async expandPatterns(pattern: string) {
     if (this.options.expandPattern) {
-      let expandedPatterns = await this.options.expandPattern(pattern, this.router)
+      let expandedPatterns = await this.options.expandPattern(
+        pattern,
+        this.router,
+      )
       if (expandedPatterns) {
         return expandedPatterns
       }
@@ -113,13 +120,12 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
     }
   }
 
-  private handleResolverUpdate = (listenId) => {
+  private handleResolverUpdate = listenId => {
     if (listenId === this.lastListenId) {
       this.lastListenId++
       if (!this.isRefreshing) {
         this.refresh()
-      }
-      else if (!this.isRefreshScheduled) {
+      } else if (!this.isRefreshScheduled) {
         this.isRefreshScheduled = true
       }
     }
@@ -131,11 +137,10 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
 
     let allChunks: Chunk[] = []
     let i = 0
-    
+
     // This is a while loop instead of a for loop, as new items can be added
     // to this.mapItems within the loop body.
-    items:
-    while (this.mapItems && i < this.mapItems.length) {
+    items: while (this.mapItems && i < this.mapItems.length) {
       let item = this.mapItems[i]
 
       let pathname = item.pathname
@@ -145,18 +150,19 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
       }
       let chunks = item.lastResult.value
       item.chunksCache = chunks || []
-      let focusIndex = chunks.findIndex(chunk =>
-        chunk.type === 'error' ||
-        (chunk.url.href.length >= item.url.href.length) && (
-          (chunk.type === 'mount' && item.lastMountPatterns !== chunk.patterns) ||
-          (chunk.type === 'redirect' && item.lastRedirectTo !== chunk.to)
-        )
+      let focusIndex = chunks.findIndex(
+        chunk =>
+          chunk.type === 'error' ||
+          (chunk.url.href.length >= item.url.href.length &&
+            ((chunk.type === 'mount' &&
+              item.lastMountPatterns !== chunk.patterns) ||
+              (chunk.type === 'redirect' && item.lastRedirectTo !== chunk.to))),
       )
 
       while (focusIndex >= 0 && focusIndex < chunks.length) {
         let focusChunk = chunks[focusIndex]
         focusIndex++
-      
+
         // If an item in the map cannot be found, throws an error, or is
         // no longer referenced by other items, then remove it from the
         // map.
@@ -166,7 +172,8 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         // will still be removed.
         if (
           focusChunk.type === 'error' ||
-          (this.options.predicate && !this.options.predicate(focusChunk, chunks))
+          (this.options.predicate &&
+            !this.options.predicate(focusChunk, chunks))
         ) {
           this.removeFromQueue(item)
           continue items
@@ -175,25 +182,36 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         if (focusChunk.type === 'redirect') {
           item.lastRedirectTo = focusChunk.to
           if (this.options.followRedirects) {
-            this.addToQueue(focusChunk.to, item.depth + 1, item.walkedPatternLists, pathname, item.order)
+            this.addToQueue(
+              focusChunk.to,
+              item.depth + 1,
+              item.walkedPatternLists,
+              pathname,
+              item.order,
+            )
           }
         }
 
         if (focusChunk.type === 'mount') {
           let patterns = focusChunk.patterns
           item.lastMountPatterns = patterns
-          let key = patterns.slice(0).sort().join("\n")
+          let key = patterns
+            .slice(0)
+            .sort()
+            .join('\n')
           if (patterns && !item.walkedPatternLists.has(key)) {
             item.walkedPatternLists.add(key)
             for (let j = 0; j < patterns.length; j++) {
-              let expandedPatterns = await this.expandPatterns(joinPaths(pathname, patterns[j]))
+              let expandedPatterns = await this.expandPatterns(
+                joinPaths(pathname, patterns[j]),
+              )
               for (let k = 0; k < expandedPatterns.length; k++) {
                 this.addToQueue(
                   expandedPatterns[k],
                   item.depth + 1,
                   item.walkedPatternLists,
                   pathname,
-                  item.order.concat(j, k)
+                  item.order.concat(j, k),
                 )
               }
             }
@@ -222,34 +240,36 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
       if (
         lastChunk.type !== 'mount' &&
         lastChunk.type !== 'error' &&
-        (lastChunk.type === 'busy' || !this.options.predicate || this.options.predicate(lastChunk, item.chunksCache!))) {
+        (lastChunk.type === 'busy' ||
+          !this.options.predicate ||
+          this.options.predicate(lastChunk, item.chunksCache!))
+      ) {
         chunksMapArray.push([
           joinPaths(item.pathname, '/'),
           item.chunksCache!,
-          item.order
+          item.order,
         ])
       }
     }
 
     let listenId = ++this.lastListenId
     let handleUpdate = () => this.handleResolverUpdate(listenId)
-    Promise.race(
-      allChunks
-            .filter(isBusy)
-            .map(pickChunkPromise)
-    ).then(handleUpdate, handleUpdate)
+    Promise.race(allChunks.filter(isBusy).map(pickChunkPromise)).then(
+      handleUpdate,
+      handleUpdate,
+    )
 
     chunksMapArray.sort((itemX, itemY) => {
       let x = itemX[2]
       let y = itemY[2]
-    
+
       if (x.length < y.length) {
         return -1
       }
       if (x.length > y.length) {
         return 1
       }
-    
+
       for (let i = 0; i < x.length; i++) {
         if (x[i] < y[i]) {
           return -1
@@ -258,14 +278,13 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
           return 1
         }
       }
-      
+
       return 0
     })
 
     if (this.isRefreshScheduled) {
       this.refresh()
-    }
-    else {
+    } else {
       let chunksMap: ChunksMap = {}
       let isSteady = true
       for (let i = 0; i < chunksMapArray.length; i++) {
@@ -275,7 +294,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         }
         chunksMap[modifyTrailingSlash(pathname, 'remove')] = chunks
       }
-      
+
       for (let i = 0; i < this.observers.length; i++) {
         let observer = this.observers[i]
         observer.next(chunksMap)
@@ -301,7 +320,13 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
     }
   }
 
-  private addToQueue(pathname: string, depth: number, walkedPatternLists: Set<string>, fromPathname?: string, order = [0]) {
+  private addToQueue(
+    pathname: string,
+    depth: number,
+    walkedPatternLists: Set<string>,
+    fromPathname?: string,
+    order = [0],
+  ) {
     if (this.seenPathnames.has(pathname)) {
       return
     }
@@ -312,7 +337,7 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
       let url = createURLDescriptor(pathname, {
         removeHash: true,
       })
-      let request = createRequest({
+      let request = {
         body: null,
         context: this.rootContext,
         headers: this.options.headers || {},
@@ -323,12 +348,11 @@ export class ChunksMapObservable implements Observable<ChunksMap> {
         query: url.query,
         search: url.search,
         hash: url.hash,
-        router: this.router,
         path: url.pathname,
-        url: url.pathname+url.search,
+        url: url.pathname + url.search,
         originalUrl: url.href,
         state: {},
-      }, this.router)
+      }
       let matchRequest = matchAgainstPathname(request, this.rootMapping)
       if (matchRequest) {
         this.mapItems.push({

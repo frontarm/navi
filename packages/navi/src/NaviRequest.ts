@@ -1,7 +1,6 @@
-import { Router } from './Router'
-import { Crawler } from './Crawler';
+import { Crawler } from './Crawler'
 
-export interface NaviRequest<Context extends object=any> {
+export interface NaviRequest<Context extends object = any> {
   /**
    * The path at which the matcher is mounted.
    */
@@ -40,7 +39,7 @@ export interface NaviRequest<Context extends object=any> {
 
   /**
    * Contains the unmatched part of the request URL, as a string.
-   * 
+   *
    * This is a string instead of a URLDescriptor, to be consistent
    * with the Request type for Express.
    */
@@ -69,49 +68,4 @@ export interface NaviRequest<Context extends object=any> {
    * The current routing context
    */
   readonly context: Context
-
-  // TODO: these are deprecated, remove in Navi 0.13
-  readonly mountname?: string
-  readonly pathname?: string
-  readonly router: Router<any>
-}
-
-export function createRequest<Context extends object=any>(request: NaviRequest<Context>, router?: Router) {
-  Object.defineProperties(request, {
-    mountname: {
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "request.mountname" will be removed in Navi 0.13. Please use "request.mountpath" instead.`)
-        }
-        return request.mountpath
-      },
-    },
-    pathname: {
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "request.pathname" will be removed in Navi 0.13. Please use "request.mountpath" instead.`)
-        }
-        return request.mountpath
-      }
-    },
-  })
-
-  if (router) {
-    Object.defineProperties(request, {
-      router: {
-        get: () => {
-          if (process.env.NODE_ENV !== 'production') {
-            console.warn(`Deprecation Warning: "request.router" will be removed in Navi 0.13. Please import and use the "resolve()" or "crawl()" functions instead.`)
-          }
-          return router
-        },
-        enumerable: false,
-      },
-      _router: {
-        value: router,
-      },
-    })
-  }
-
-  return request
 }

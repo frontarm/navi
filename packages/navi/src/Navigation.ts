@@ -2,7 +2,11 @@ import { History, Location } from 'history'
 import { Router, RouterResolveOptions } from './Router'
 import { Route, routeReducer } from './Route'
 import { resolve } from './resolve'
-import { URLDescriptor, createURLDescriptor, modifyTrailingSlash } from './URLTools'
+import {
+  URLDescriptor,
+  createURLDescriptor,
+  modifyTrailingSlash,
+} from './URLTools'
 import {
   Observer,
   Observable,
@@ -70,13 +74,12 @@ export interface NavigateOptions extends NavigateOptionsWithoutURL {
 
 export class Navigation<Context extends object = any>
   implements Observable<Route> {
-
   private _router: Router<Context>
   private _history: History
 
   // Stores the last receive location, even if we haven't processed it.
   private lastHandledLocation?: Location
-  
+
   private navigationsSinceSteady: number
   private basename?: string
   private matcher: Matcher<Context>
@@ -101,24 +104,11 @@ export class Navigation<Context extends object = any>
       routes: options.routes,
       basename: options.basename,
     })
-    this.trailingSlash = options.trailingSlash === undefined ? 'remove' : options.trailingSlash
+    this.trailingSlash =
+      options.trailingSlash === undefined ? 'remove' : options.trailingSlash
     this.unlisten = this._history.listen(location =>
       this.handleLocationChange(location, false),
     )
-  }
-
-  get history() {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(`Deprecation Warning: "navigation.history" will be removed in Navi 0.13. Please use "navigation.navigate()", "navigation.goBack()" or "navigation.goForward()" instead.`)
-    }
-    return this._history
-  }
-
-  get router() {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(`Deprecation Warning: "navigation.router" will be removed in Navi 0.13. Please import and use the "resolve()" or "crawl()" functions instead.`)
-    }
-    return this._router
   }
 
   dispose() {
@@ -151,11 +141,11 @@ export class Navigation<Context extends object = any>
   }
 
   goBack() {
-    return this.go(-1)  
+    return this.go(-1)
   }
 
   goForward() {
-    return this.go(1)  
+    return this.go(1)
   }
 
   navigate(
@@ -176,7 +166,9 @@ export class Navigation<Context extends object = any>
     } else if (url) {
       nextURL = createURLDescriptor(url as Partial<URLDescriptor>)
     } else {
-      throw new Error(`You must specify a URL or state to navigation.navigate().`)
+      throw new Error(
+        `You must specify a URL or state to navigation.navigate().`,
+      )
     }
 
     let currentLocation = this._history.location
@@ -189,7 +181,7 @@ export class Navigation<Context extends object = any>
         currentLocation.pathname === nextURL.pathname &&
         currentLocation.search === nextURL.search &&
         currentLocation.hash === nextURL.hash)
-    
+
     this._history[shouldReplace ? 'replace' : 'push']({
       pathname: nextURL.pathname,
       search: nextURL.search,
@@ -230,7 +222,7 @@ export class Navigation<Context extends object = any>
 
   /**
    * Get the latest Route object, regardless of whether it is loading.
-   * 
+   *
    * This is named as `getCurrentValue()` so that Navigation objects can be
    * used with React's `createSubscription()`, and other tools that follow
    * the same specification.
@@ -259,7 +251,9 @@ export class Navigation<Context extends object = any>
    */
   async getSteadyValue(): Promise<Route> {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('Deprecation Warning: "navigation.getSteadyValue()" will be removed in Navi 0.13. Please use navigation.getRoute() instead.')
+      console.warn(
+        'Deprecation Warning: "navigation.getSteadyValue()" will be removed in Navi 0.13. Please use navigation.getRoute() instead.',
+      )
     }
 
     return this.getRoute()
@@ -267,7 +261,9 @@ export class Navigation<Context extends object = any>
 
   async steady() {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('Deprecation Warning: "navigation.steady()" will be removed in Navi 0.13. Please use navigation.getRoute() instead.')
+      console.warn(
+        'Deprecation Warning: "navigation.steady()" will be removed in Navi 0.13. Please use navigation.getRoute() instead.',
+      )
     }
 
     await this.getRoute()
@@ -305,24 +301,26 @@ export class Navigation<Context extends object = any>
     }
   }
 
-  private handleLocationChange(
-    location: Location,
-    force?: boolean,
-  ) {
+  private handleLocationChange(location: Location, force?: boolean) {
     if (this.ignoreNextLocationChange) {
       this.ignoreNextLocationChange = false
       return
     }
 
-    if (++this.navigationsSinceSteady > MAX_NAVIGATIONS_SINCE_STEADY)  {
-      console.error(`Detected possible navigation loop with ${MAX_NAVIGATIONS_SINCE_STEADY} navigations between steady routes. Bailing.`)
+    if (++this.navigationsSinceSteady > MAX_NAVIGATIONS_SINCE_STEADY) {
+      console.error(
+        `Detected possible navigation loop with ${MAX_NAVIGATIONS_SINCE_STEADY} navigations between steady routes. Bailing.`,
+      )
       return
     }
 
     // Ensure the pathname always has a trailing `/`, so that we don't
     // have multiple URLs referring to the same page.
     if (this.trailingSlash !== null) {
-      let modifiedPathname = modifyTrailingSlash(location.pathname, this.trailingSlash)
+      let modifiedPathname = modifyTrailingSlash(
+        location.pathname,
+        this.trailingSlash,
+      )
       if (location.pathname !== modifiedPathname) {
         this._history.replace({
           ...location,
@@ -338,7 +336,10 @@ export class Navigation<Context extends object = any>
     if (this.observableSubscription) {
       this.observableSubscription.unsubscribe()
     }
-    let observable = this._router.createObservable(url, unpackLocationState(location.state))
+    let observable = this._router.createObservable(
+      url,
+      unpackLocationState(location.state),
+    )
     if (observable) {
       this.observableSubscription = observable.subscribe(this.handleChunkList)
     } else if (!lastHandledLocation) {
@@ -371,8 +372,7 @@ export class Navigation<Context extends object = any>
             state: revertedState,
           })
           this._history.push(chunk.to)
-        }
-        else {
+        } else {
           this._history.replace(chunk.to)
         }
         return
@@ -395,7 +395,7 @@ export class Navigation<Context extends object = any>
       if (isSteady) {
         this.navigationsSinceSteady = 0
       }
-      
+
       for (let i = 0; i < this.observers.length; i++) {
         this.observers[i].next(route)
       }
@@ -413,18 +413,18 @@ export class Navigation<Context extends object = any>
 const NAVI_STATE_KEY = '__navi__'
 
 interface RequestDataWithoutState {
-  method?: string,
-  body?: string,
-  headers?: { [name: string]: string },
+  method?: string
+  body?: string
+  headers?: { [name: string]: string }
 }
 
 interface RequestData extends RequestDataWithoutState {
-  // The current `request.state` is stored directly on `window.history.state`.  
-  state?: any,
+  // The current `request.state` is stored directly on `window.history.state`.
+  state?: any
 }
 
 interface NaviState {
-  requestDataWithoutState?: RequestDataWithoutState,
+  requestDataWithoutState?: RequestDataWithoutState
   revertTo?: any
 }
 
@@ -442,7 +442,11 @@ function setLocationRequestState(locationState: any = {}, newState: any): any {
   }
 }
 
-function packLocationState({ revertTo, state, ...requestDataWithoutState }: PackLocationStateOptions): any {
+function packLocationState({
+  revertTo,
+  state,
+  ...requestDataWithoutState
+}: PackLocationStateOptions): any {
   if (revertTo) {
     revertTo = { ...revertTo }
     if (revertTo[NAVI_STATE_KEY]) {
@@ -454,14 +458,14 @@ function packLocationState({ revertTo, state, ...requestDataWithoutState }: Pack
     [NAVI_STATE_KEY]: {
       requestDataWithoutState,
       revertTo,
-    }
+    },
   }
 }
 
-function unpackLocationState(state: any = {}): RequestData { 
+function unpackLocationState(state: any = {}): RequestData {
   let requestDataState = { ...state }
   delete requestDataState[NAVI_STATE_KEY]
-  let naviState: NaviState = state[NAVI_STATE_KEY] || {}  
+  let naviState: NaviState = state[NAVI_STATE_KEY] || {}
   return {
     ...naviState.requestDataWithoutState,
     state: Object.keys(requestDataState).length ? requestDataState : undefined,

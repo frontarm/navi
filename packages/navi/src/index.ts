@@ -2,7 +2,6 @@
 // Exports
 //
 
-export * from './matchers/compat'
 export * from './matchers/map'
 export * from './matchers/mount'
 export * from './matchers/redirect'
@@ -27,7 +26,12 @@ export { compose } from './utils/compose'
 export { Router, createRouter } from './Router'
 export { Route, RouteType, routeReducer } from './Route'
 export { SiteMap, RouteMap } from './Maps'
-export { Matcher, MatcherGenerator, MatcherIterator, concatMatcherIterators } from './Matcher'
+export {
+  Matcher,
+  MatcherGenerator,
+  MatcherIterator,
+  concatMatcherIterators,
+} from './Matcher'
 export { Navigation } from './Navigation'
 export { Resolvable, default as resolveChunks } from './Resolvable'
 export { createBrowserNavigation } from './BrowserNavigation'
