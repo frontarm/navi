@@ -2,14 +2,18 @@ import * as React from 'react'
 import { History as IHistory } from 'history'
 import { NaviContext } from './NaviContext'
 
-
 export function useHistory() {
-  return React.useContext(NaviContext).navigation.history
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(
+      `Deprecation Warning: "useHistory()" is deprecated. It will be removed in a future version.`,
+    )
+  }
+
+  return React.useContext(NaviContext).navigation._history
 }
 
-
 export interface HistoryProps {
-  children: (history: IHistory) => React.ReactNode,
+  children: (history: IHistory) => React.ReactNode
 }
 
 export namespace History {
@@ -20,15 +24,14 @@ export function History(props: HistoryProps) {
   React.useEffect(() => {
     if (process.env.NODE_ENV !== 'production') {
       console.warn(
-        `Deprecation Warning: "<History>" is deprecated. From Navi 0.14, ` +
-          `you'll need to use the "useHistory()" hook instead.`
+        `Deprecation Warning: "<History>" is deprecated. It will be removed in a future version.`,
       )
     }
   }, [])
 
   return (
     <NaviContext.Consumer>
-      {context => props.children(context.navigation.history)}
+      {context => props.children(context.navigation._history)}
     </NaviContext.Consumer>
   )
 }

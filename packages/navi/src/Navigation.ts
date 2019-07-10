@@ -75,7 +75,8 @@ export interface NavigateOptions extends NavigateOptionsWithoutURL {
 export class Navigation<Context extends object = any>
   implements Observable<Route> {
   private _router: Router<Context>
-  private _history: History
+
+  _history: History
 
   // Stores the last receive location, even if we haven't processed it.
   private lastHandledLocation?: Location
