@@ -3,7 +3,17 @@ import * as React from 'react'
 import { Helmet, HelmetProvider } from 'react-helmet-async'
 import { ViewHeadRendererContext } from 'react-navi'
 
-function NaviHelmetProvider({ canUseDOM, context, children }) {
+interface NaviHelmetProviderProps {
+  canUseDOM?: boolean
+  children: React.ReactNode
+  context?: any
+}
+
+function NaviHelmetProvider({
+  canUseDOM,
+  context,
+  children,
+}: NaviHelmetProviderProps): React.ReactElement<any> {
   let parent = React.useContext(ViewHeadRendererContext)
   let { current: defaultContext } = React.useRef({})
 
@@ -26,7 +36,7 @@ function NaviHelmetProvider({ canUseDOM, context, children }) {
   if (parent) {
     // If someone has already wrapped the app with a HeadProvider, e.g. for
     // server side rendering, then just use that.
-    return children
+    return <>{children}</>
   } else {
     return (
       <HelmetProvider context={context}>

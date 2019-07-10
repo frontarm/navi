@@ -3,7 +3,17 @@ import * as React from 'react'
 import { Helmet } from 'react-helmet'
 import { ViewHeadRendererContext } from 'react-navi'
 
-export function HelmetProvider({ canUseDOM, context, children }) {
+interface HelmetProviderProps {
+  canUseDOM?: boolean
+  children: React.ReactNode
+  context?: any
+}
+
+export function HelmetProvider({
+  canUseDOM,
+  context,
+  children,
+}: HelmetProviderProps): React.ReactElement<any> {
   // react-helmet thinks it's in a browser because of JSDOM, so we need to
   // manually let it know that we're doing static rendering.
   if (canUseDOM !== undefined) {
