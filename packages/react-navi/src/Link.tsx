@@ -321,6 +321,7 @@ export const Link:
       }
 
       let context = {
+        children,
         ...rest,
         ...linkProps,
         ref: anchorRef,
