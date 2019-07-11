@@ -13,7 +13,7 @@ function defaultUseViewChunkPredicate(chunk: Chunk) {
 }
 
 export function useViewElement(
-  options: UseViewOptions,
+  options: UseViewOptions = {},
 ): React.ReactElement<any> | null {
   let result = useView(options)
   return result && result.element
