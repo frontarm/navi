@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.12.10
+-------
+
+-   Fix bug where matching was overly aggressive
+    
+    https://github.com/frontarm/navi/issues/109
+
+
 0.12.9
 ------
 
