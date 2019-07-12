@@ -131,6 +131,11 @@ export function matchAgainstPathname(
   }
 
   let matchedPathname = match[0]
+  let unmatchedPath = request.path.slice(matchedPathname.length) || ''
+
+  if (unmatchedPath.length && unmatchedPath[0] !== '/') {
+    return
+  }
 
   // Set path params using RegExp match
   let params = request.params
@@ -142,7 +147,6 @@ export function matchAgainstPathname(
     }
   }
 
-  let unmatchedPath = request.path.slice(matchedPathname.length) || ''
   let mountpath = joinPaths(request.mountpath, matchedPathname) || '/'
   return {
     ...request,

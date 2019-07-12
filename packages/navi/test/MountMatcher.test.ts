@@ -30,4 +30,18 @@ describe("Mount", () => {
       expect(e.message.indexOf('/fail') > -1).toBeTruthy()
     }
   })
+
+  test("Matches wildcard parameters when they start with an adjecent route", async () => {
+    let navigation = await createMemoryNavigation({
+      url: '/test2',
+      routes: mount({
+        '/test': route({title: 'no match'})
+        '/:x': route({title: 'match'})
+      })
+    })
+
+    let r = await navigation.getRoute()
+
+    expect(r.title).toEqual('match')
+  })
 })
