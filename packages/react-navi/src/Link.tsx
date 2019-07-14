@@ -163,7 +163,13 @@ export const useLinkProps = ({
         }
       }
     },
-    [disabled, onClick, target, routeURL && routeURL.href],
+    [
+      disabled,
+      onClick,
+      target,
+      linkURL && linkURL.href,
+      routeURL && routeURL.href,
+    ],
   )
 
   return {
