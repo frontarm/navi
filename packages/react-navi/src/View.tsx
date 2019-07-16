@@ -74,7 +74,13 @@ export function useView({
 
   // Find any other chunks that come before this chunk, or after this one if
   // this is the final view chunk.
-  let final = index === -1 || !unconsumedChunks.slice(index + 1).find(where)
+  //
+  // Don't treat this as the final chunk is there is an error, as that means
+  // we don't know whether this is really meant to be the final chunk, and we
+  // don't want to throw an error before rendering whatever views we can.
+  let final =
+    (index === -1 || !unconsumedChunks.slice(index + 1).find(where)) &&
+    route.type !== 'error'
 
   let chunks = React.useMemo(
     () => (final ? unconsumedChunks : unconsumedChunks.slice(0, index + 1)),
