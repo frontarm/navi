@@ -1,6 +1,6 @@
 {
   "name": "react-navi-helmet-async",
-  "version": "0.13.0-beta.3",
+  "version": "0.13.0-beta.4",
   "description": "Use react-helmet-async to render your Navi routes' title and head.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "navi": "^0.13.0-beta.1",
-    "react-navi": "^0.13.0-beta.3"
+    "react-navi": "^0.13.0-beta.4"
   },
   "homepage": "https://frontarm.com/navi/",
   "repository": {
