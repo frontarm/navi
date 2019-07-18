@@ -67,7 +67,7 @@ export function renderViewHead(chunks: Chunk[]): React.ReactNode {
 
 // If building with navi-scripts, we'll need to register this module so that
 // it can use it to add <head> tags to the build output.
-if (typeof window !== undefined) {
+if (typeof window !== 'undefined') {
   let app = window['NaviScripts']
   if (!app) {
     app = window['NaviScripts'] = {}
