@@ -1,6 +1,6 @@
 {
   "name": "navi-bar",
-  "version": "0.13.1",
+  "version": "0.13.3",
   "description": "A nav bar component for React and Navi.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -35,8 +35,8 @@
     "@types/history": "^4.6.2"
   },
   "devDependencies": {
-    "navi": "^0.13.1",
-    "react-navi": "^0.13.1"
+    "navi": "^0.13.3",
+    "react-navi": "^0.13.3"
   },
   "repository": {
     "type": "git",
