@@ -29,7 +29,7 @@
     "static"
   ],
   "peerDependencies": {
-    "navi": "^0.12.0",
+    "navi": "^0.13.0",
     "react": "^16.8.0"
   },
   "dependencies": {
