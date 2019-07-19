@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.13.1
+------
+
+- Fix a regression where nested `<View />` components with async routes inside of a `<Suspense />` were failing to render.
+
+
 0.13.0
 ------
 
@@ -38,6 +44,8 @@ In fact, the Navi `<View>` and `<Link>` components now use these hooks internall
     ReactDOM.render(
       <HelmetProvider>
         <Router routes={routes}>
+          ...
+        </Router>
       </HelmetProvider>,
       document.getElementById('root')
     )
