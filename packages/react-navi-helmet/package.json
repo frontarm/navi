@@ -33,6 +33,7 @@
     "react-navi": "^16.8.0"
   },
   "dependencies": {
+    "@types/react-helmet": "^5.0.8",
     "react-helmet": "^5.2.1"
   },
   "devDependencies": {
