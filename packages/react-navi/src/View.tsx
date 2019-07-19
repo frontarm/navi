@@ -96,7 +96,7 @@ export function useView({
 
   // If there's no steady route, then we'll need to wait until a steady
   // route becomes available using Supsense.
-  if (!view && unconsumedChunks.length) {
+  if (!view && !context.steadyRoute) {
     throw context.navigation.getRoute()
   }
 
