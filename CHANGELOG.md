@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.13.2
+0.13.4
 ------
 
 - Add a `loading` option to `useActive`, so that you can easily find whether a given link has been clicked -- even if it is still loading. This makes links to pages with async dependencies feel more responsive.
