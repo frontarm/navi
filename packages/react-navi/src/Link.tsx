@@ -63,8 +63,8 @@ function getLinkURL(
 export const useActive = (
   href: string | Partial<URLDescriptor>,
   {
-    exact,
-    loading,
+    exact = true,
+    loading = false,
   }: {
     /**
      * If false, will return true even if viewing a child of this route.
@@ -76,10 +76,7 @@ export const useActive = (
      * loading.
      */
     loading?: boolean
-  } = {
-    exact: true,
-    loading: false,
-  },
+  } = {},
 ) => {
   let context = React.useContext(NaviContext)
   let route = loading

@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.13.5
+------
+
+- Fix bug where the new `loading` option for `useActive` caused `exact` to be false by default.
+
+
 0.13.4
 ------
 
@@ -12,6 +18,18 @@ let active = useActive('/url-with-async-dependencies', {
   loading: true
 })
 ```
+
+
+0.13.3
+------
+
+- Fix `peerDependencies`
+
+
+0.13.2
+------
+
+- Include react-helmet types, so that react-navi-helmet works out of the box with TypeScript
 
 
 0.13.1

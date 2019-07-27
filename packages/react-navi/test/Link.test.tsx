@@ -4,7 +4,7 @@ import ReactTestRenderer from 'react-test-renderer'
 import { Router, useActive } from '../src'
 
 function Active() {
-  let rootActive = useActive('/')
+  let rootActive = useActive('/', { loading: true })
   let anywhereActive = useActive('/', { exact: false })
 
   return [rootActive && 'root', anywhereActive && 'anywhere']
