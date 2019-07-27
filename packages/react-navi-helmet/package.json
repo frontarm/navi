@@ -1,6 +1,6 @@
 {
   "name": "react-navi-helmet",
-  "version": "0.13.3",
+  "version": "0.13.4",
   "description": "Use react-helmet to render your Navi routes' title and head.",
   "author": "James K Nelson <james@jamesknelson.com>",
   "license": "MIT",
@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "navi": "^0.13.3",
-    "react-navi": "^0.13.3"
+    "react-navi": "^0.13.4"
   },
   "homepage": "https://frontarm.com/navi/",
   "repository": {
