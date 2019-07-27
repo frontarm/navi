@@ -53,12 +53,38 @@ function getLinkURL(
   }
 }
 
+/**
+ * Returns a boolean that indicates whether the user is currently
+ * viewing the specified href.
+ * @param href
+ * @param options.exact If false, will match any URL underneath this href
+ * @param options.loading If true, will match even if the route is currently loading
+ */
 export const useActive = (
   href: string | Partial<URLDescriptor>,
-  { exact }: { exact?: boolean } = { exact: true },
+  {
+    exact,
+    loading,
+  }: {
+    /**
+     * If false, will return true even if viewing a child of this route.
+     */
+    exact?: boolean
+
+    /**
+     * If true, this will return true even if the route is currently just
+     * loading.
+     */
+    loading?: boolean
+  } = {
+    exact: true,
+    loading: false,
+  },
 ) => {
   let context = React.useContext(NaviContext)
-  let route = context.steadyRoute || context.busyRoute
+  let route = loading
+    ? context.busyRoute || context.steadyRoute
+    : context.steadyRoute || context.busyRoute
   let routeURL = route && route.url
   let linkURL = getLinkURL(href, routeURL)
 
