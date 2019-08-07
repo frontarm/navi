@@ -29,7 +29,7 @@ export type URLDescriptor = {
 
   /**
    * An object containing string values of parameters extracted from
-   * the `pathname` or `search` properties. 
+   * the `search` properties. Defaults to an empty object.
    */
   query: Params,
 
