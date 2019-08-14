@@ -110,6 +110,7 @@ export class Navigation<Context extends object = any>
     this.unlisten = this._history.listen(location =>
       this.handleLocationChange(location, false),
     )
+    this.navigate = this.navigate.bind(this)
   }
 
   dispose() {
