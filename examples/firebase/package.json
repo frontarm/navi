@@ -20,7 +20,7 @@
     "@types/blueimp-md5": "*",
     "@types/lodash-es": "*",
     "@types/ramda": "*",
-    "@types/react-dom": "^16.8.5",
+    "@types/react-dom": "*",
     "@types/styled-components": "*",
     "typescript": "*"
   },
