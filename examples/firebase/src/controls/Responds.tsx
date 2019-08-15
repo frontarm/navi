@@ -161,7 +161,7 @@ function useFocusCounter() {
       }
     }
     return () => {}
-  }, [])
+  }, [timeouts])
 
   return [count, increment] as [number, (triggerWithDelayOut?: number | undefined) => () => void]
 }
@@ -188,6 +188,7 @@ function useTriggers(
 
   useEffect(() => {
     let node = ref.current!
+    let current = stateRef.current
 
     let handleFocusIn = () => {
       stateRef.current.focusTimeout = setTimeout(() => {
@@ -234,17 +235,17 @@ function useTriggers(
     }
 
     return () => {
-      if (stateRef.current.focusTimeout) {
-        clearTimeout(stateRef.current.focusTimeout)
+      if (current.focusTimeout) {
+        clearTimeout(current.focusTimeout)
       }
-      if (!stateRef.current.focus && stateRef.current.focusOut) {
-        stateRef.current.focusOut()
+      if (!current.focus && current.focusOut) {
+        current.focusOut()
       }
-      if (stateRef.current.hoverTimeout) {
-        clearTimeout(stateRef.current.hoverTimeout)
+      if (current.hoverTimeout) {
+        clearTimeout(current.hoverTimeout)
       }
-      if (!stateRef.current.hover && stateRef.current.hoverOut) {
-        stateRef.current.hoverOut()
+      if (!current.hover && current.hoverOut) {
+        current.hoverOut()
       }
       if (focus) {
         node.removeEventListener('focusin', handleFocusIn, false)
@@ -255,7 +256,7 @@ function useTriggers(
         node.removeEventListener('mouseleave', handleMouseLeave, false)
       }
     }
-  }, [hover, focus, delayIn, delayOut])
+  }, [hover, focus, delayIn, delayOut, context, ref])
 }
 
 // Based on the `cloneWithRef` from react-dnd

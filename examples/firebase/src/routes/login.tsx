@@ -1,5 +1,5 @@
 import React from 'react'
-import { map, redirect, route } from 'navi'
+import { route } from 'navi'
 import { useNavigation } from 'react-navi'
 import Form from '../styled/Form'
 import { RoutingContext } from '../types/RoutingContext'
@@ -26,7 +26,7 @@ function Login({ firebase }: { firebase: Firebase }) {
         <Form.Field
           label='Email'
           name='email'
-          validate={value =>
+          validate={(value: any) =>
             value === '' ? 'Please enter your email.' : undefined
           }
         />
@@ -34,7 +34,7 @@ function Login({ firebase }: { firebase: Firebase }) {
           label='Password'
           name='password'
           type='password'
-          validate={value =>
+          validate={(value: any) =>
             value === '' ? 'Please enter your password.' : undefined
           }
         />

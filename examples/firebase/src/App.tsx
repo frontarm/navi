@@ -1,7 +1,7 @@
 import React, { Suspense, useState, useEffect } from 'react'
 import { withView, compose } from 'navi'
 import { Router, View } from 'react-navi'
-import firebase from 'firebase/app'
+import * as firebaseApp from 'firebase/app'
 import Firebase from './Firebase'
 import GlobalStyle from './GlobalStyle'
 import routes from './routes'
@@ -25,8 +25,8 @@ const routesWithLayout = compose(
 
 function App() {
   let [firebase] = useState(() => new Firebase())
-  let [currentUser, setCurrentUser] = useState<firebase.User | null | undefined>(undefined)
-  useEffect(() => firebase.auth.onAuthStateChanged(setCurrentUser), [])
+  let [currentUser, setCurrentUser] = useState<firebaseApp.User | null | undefined>(undefined)
+  useEffect(() => firebase.auth.onAuthStateChanged(setCurrentUser), [firebase.auth, currentUser])
 
   let context: RoutingContext = {
     currentUser,

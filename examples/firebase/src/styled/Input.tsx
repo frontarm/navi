@@ -1,5 +1,5 @@
 import styled from 'styled-components'
-import { fontSizes, radius, colors, radiuses, boxShadows, durations } from '../utils/theme';
+import { fontSizes, colors, radiuses, boxShadows, durations } from '../utils/theme';
 
 const Input = styled.input`
   appearance: none;
