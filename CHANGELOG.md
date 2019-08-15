@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.13.6
+
+- Bind `navigate` method of Navigation class, so that it can be destructured from return of `useNavigation()`
+
+
 0.13.5
 ------
 
