@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { Link, useCurrentRoute } from 'react-navi'
 import firebase from 'firebase/app'
 import { css } from 'styled-components/macro'
@@ -70,7 +70,7 @@ const Identity = React.forwardRef(({ user, tabIndex }: { user: firebase.User, ta
         color: ${colors.lighterGray};
       }
     `}>
-      {photoURL && <img src={photoURL} />}
+      {photoURL && <img src={photoURL} alt={`Identity`}/>}
       <Gravatar
         email={email!}
         size={32}

@@ -29,5 +29,5 @@ export default function Gravatar({
   defaultURL,
   ...imgProps
 }: GravatarProps) {
-  return <img src={getGravatarURL({ email, size, defaultURL })} {...imgProps} />
+  return <img src={getGravatarURL({ email, size, defaultURL })} {...imgProps} alt={imgProps.alt}/>
 }
