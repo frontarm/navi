@@ -56,7 +56,7 @@ const configSchema = {
     context: {
       description: `The Navi context that will be used when building a site map.`,
     },
-    
+
     appGlobal: {
       description: `The property of the "window" object where your entry file places its exports.`,
       type: 'string',
@@ -94,6 +94,10 @@ const configSchema = {
         },
       },
     },
+    runPostBuild: {
+      description: `A function that accepts an config object, and will be executed after navi-scripts build`,
+      typeof: ['undefined', 'function'],
+    }
   }
 }
 
@@ -141,7 +145,7 @@ async function processConfig(config) {
   let originalReadfile = config.fs.readFile
   let cache = {}
   config.fs.readFile = (pathname) => {
-    let cached = cache[pathname] 
+    let cached = cache[pathname]
     if (!cached) {
       cached = cache[pathname] = originalReadfile(pathname)
     }

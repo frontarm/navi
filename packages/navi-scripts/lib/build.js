@@ -52,7 +52,7 @@ async function build(config) {
 
             let renderPageToStringModule = require(config.renderPageToString)
             let renderPageToString = renderPageToStringModule.default || renderPageToStringModule
-            
+
             html = await renderPageToString(options)
         }
         catch (e) {
@@ -81,6 +81,12 @@ async function build(config) {
             redirects,
             config,
         })
+    }
+
+    // Post build hooks
+    // Magic things happen here (sitemap, etc)
+    if(config.runPostBuild) {
+        config.runPostBuild(config)
     }
 }
 
