@@ -1758,6 +1758,13 @@
   dependencies:
     "@types/react" "*"
 
+"@types/react-helmet@^5.0.8":
+  version "5.0.11"
+  resolved "https://registry.yarnpkg.com/@types/react-helmet/-/react-helmet-5.0.11.tgz#d2642af4658e7b97accb46ea8b00d6dc614c99fa"
+  integrity sha512-id9DjHp/+Cm+x3etN+EWs5OP76PPpz8jXw+iN9xcXltssF0KHNjAzlan///ASXegEewaItlw5FhFnoLxRUJQ9g==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react@*", "@types/react@^16.8.1":
   version "16.8.8"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-16.8.8.tgz#4b60a469fd2469f7aa6eaa0f8cfbc51f6d76e662"
