@@ -86,7 +86,7 @@ async function build(config) {
     // Post build hooks
     // Magic things happen here (sitemap, etc)
     if(config.runPostBuild) {
-        config.runPostBuild(config)
+        config.runPostBuild({config, paths, redirects})
     }
 }
 

@@ -95,7 +95,7 @@ const configSchema = {
       },
     },
     runPostBuild: {
-      description: `A function that accepts an config object, and will be executed after navi-scripts build`,
+      description: `A function that accepts an {config, paths, redirects} object, and will be executed after navi-scripts build`,
       typeof: ['undefined', 'function'],
     }
   }
