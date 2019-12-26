@@ -44,7 +44,7 @@ function FormErrors({ defaultMessage = '' }) {
   )
 }
 
-interface FormFieldProps extends FormControlFieldProps, Omit<FieldProps, 'children'> {
+interface FormFieldProps extends FormControlFieldProps<any, any>, Omit<FieldProps, 'children'> {
   type?: string
 }
 

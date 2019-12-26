@@ -1,5 +1,4 @@
-import React, { useRef, useCallback } from 'react'
-import { useNavigation, useCurrentRoute } from 'react-navi'
+import React, { useCallback } from 'react'
 import { FORM_ERROR, FormApi, FormState } from 'final-form'
 import {
   Form as FinalForm,
@@ -13,7 +12,7 @@ import { Omit } from '../types/Omit'
 export type FormErrors<Schema extends object> = Partial<Record<keyof Schema, string>>
 
 
-export interface FormProps<Schema extends object> extends Omit<FinalFormProps, 'children' | 'onSubmit' | 'validate'> {
+export interface FormProps<Schema extends object> extends Omit<FinalFormProps, 'component' | 'children' | 'onSubmit' | 'validate'> {
   children: React.ReactNode
   className?: string
   component?: string | React.ElementType<any>
@@ -42,10 +41,11 @@ export function Form<Schema extends object>({
         await onSubmit(value, form)
       }
       catch (error) {
+        let message;
         if (error instanceof Error) {
-          error = error.message
+          message = error.message
         }
-        return typeof error === 'string' ? { [FORM_ERROR]: error } : error
+        return typeof error === 'string' ? { [FORM_ERROR]: message } : error
       }
     }
   }, [onSubmit])
@@ -54,7 +54,7 @@ export function Form<Schema extends object>({
     let validateErrors = await (validate && validate(values))
     let submitErrors = props.submitError
     return combineErrors(validateErrors, submitErrors)
-  }, [validate])
+  }, [validate, props.submitError])
 
   return (
     <FinalForm
@@ -115,7 +115,7 @@ export interface FormSubmitButtonProps extends React.ButtonHTMLAttributes<HTMLBu
   render: (props: FormSubmitRenderProps) => React.ReactElement<any>,
 }
 
-export interface FormSubmitRenderProps extends FormState {
+export interface FormSubmitRenderProps extends FormState<any> {
   button: React.ButtonHTMLAttributes<HTMLButtonElement>
 }
 

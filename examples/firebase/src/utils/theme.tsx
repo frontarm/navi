@@ -2,8 +2,6 @@ import { css } from 'styled-components/macro'
 import {
   desaturate,
   lighten,
-  margin as polishedMargin,
-  padding as polishedPadding,
 } from 'polished'
 
 const createMediaQuery = (minWidth: number) =>

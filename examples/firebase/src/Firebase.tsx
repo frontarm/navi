@@ -9,7 +9,7 @@ class Firebase {
   db: firebase.database.Database
 
   constructor() {
-    let app = firebase.initializeApp(config.firebase);
+    let app = firebase.apps.length !== 0 ? firebase.app() : firebase.initializeApp(config.firebase);
 
     this.auth = app.auth();
     this.db = app.database();
