@@ -259,206 +259,61 @@ export interface LinkProps
   activeStyle?: object
   exact?: boolean
   ref?: React.Ref<HTMLAnchorElement>
-
-  render?: (props: LinkRendererProps) => any
-}
-
-export interface LinkRendererProps {
-  anchorProps: LinkContext
-  active: boolean
-  activeClassName?: string
-  activeStyle?: object
-  children: any
-  className?: string
-  disabled?: boolean
-  tabIndex?: number
-  hidden?: boolean
-  href: string
-  id?: string
-  lang?: string
-  style?: object
-  target?: string
-  title?: string
-  onClick?: React.MouseEventHandler<any>
-}
-
-export interface LinkAnchorProps extends LinkContext {}
-
-export const LinkContext = React.createContext<LinkContext>(undefined as any)
-
-export interface LinkContext {
-  onClick: (event: React.MouseEvent<HTMLAnchorElement>) => void
-  ref: React.Ref<HTMLAnchorElement>
-  id?: string
-  lang?: string
-  rel?: string
-  tabIndex?: number
-  target?: string
-  title?: string
-  href?: string
-}
-
-export class LinkAnchor extends React.Component<
-  React.AnchorHTMLAttributes<HTMLAnchorElement> & {
-    fromDefaultRenderer?: boolean
-  }
-> {
-  constructor(props) {
-    super(props)
-
-    if (process.env.NODE_ENV !== 'production') {
-      if (!props.fromDefaultRenderer) {
-        console.warn(
-          `Deprecation Warning: "<LinkAnchor>" is deprecated. From Navi 0.14, ` +
-            `you'll need to use the "useLinkProps()" and "useActive()" hooks instead.`,
-        )
-      }
-    }
-  }
-
-  render() {
-    return <LinkContext.Consumer children={this.renderChildren} />
-  }
-
-  renderChildren = (context: LinkContext) => {
-    let { fromDefaultRenderer, ...props } = this.props
-    let handleClick: React.MouseEventHandler<HTMLAnchorElement> =
-      context.onClick
-    if (this.props.onClick) {
-      handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        this.props.onClick!(e)
-        if (!e.defaultPrevented) {
-          context.onClick(e)
-        }
-      }
-    }
-
-    return <a {...context} {...props} onClick={handleClick} />
-  }
 }
 
 export namespace Link {
   export type Props = LinkProps
-  export type RendererProps = LinkRendererProps
-  export type AnchorProps = LinkAnchorProps
 }
 
 // Need to include this type definition, as the automatically generated one
 // is incompatible with some versions of the react typings.
-export const Link:
-  | (React.ComponentClass<
-      LinkProps & React.ClassAttributes<HTMLAnchorElement>
-    > & {
-      Anchor: typeof LinkAnchor
+export const Link: React.FunctionComponent<LinkProps> = React.forwardRef(
+  (props: LinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => {
+    let {
+      active,
+      activeClassName,
+      activeStyle,
+      className,
+      disabled,
+      exact,
+      hashScrollBehavior,
+      href: hrefProp,
+      onClick: onClickProp,
+      onMouseEnter: onMouseEnterProp,
+      prefetch,
+      state,
+      style,
+      ...rest
+    } = props
+
+    let { onClick, onMouseEnter, ...linkProps } = useLinkProps({
+      hashScrollBehavior,
+      href: hrefProp,
+      onClick: onClickProp,
+      onMouseEnter: onMouseEnterProp,
+      prefetch,
+      state,
     })
-  | (React.StatelessComponent<
-      LinkProps & React.ClassAttributes<HTMLAnchorElement>
-    > & {
-      Anchor: typeof LinkAnchor
-    }) = Object.assign(
-  React.forwardRef(
-    (props: LinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => {
-      let {
-        active,
-        activeClassName,
-        activeStyle,
-        children,
-        disabled,
-        exact,
-        hashScrollBehavior,
-        href: hrefProp,
-        onClick: onClickProp,
-        onMouseEnter: onMouseEnterProp,
-        prefetch,
-        render,
-        state,
-        ...rest
-      } = props
 
-      let linkProps = useLinkProps({
-        hashScrollBehavior,
-        href: hrefProp,
-        onClick: onClickProp,
-        onMouseEnter: onMouseEnterProp,
-        prefetch,
-        state,
-      })
+    let actualActive = useActive(linkProps.href, { exact: !!exact })
+    if (active === undefined) {
+      active = actualActive
+    }
 
-      let actualActive = useActive(linkProps.href, { exact: !!exact })
-      if (active === undefined) {
-        active = actualActive
-      }
-
-      let context = {
-        ...rest,
-        ...linkProps,
-        children,
-        ref: anchorRef,
-
-        // Don't capture clicks on links with a `target` prop.
-        onClick: props.target ? onClickProp : linkProps.onClick,
-      }
-
-      React.useEffect(() => {
-        if (process.env.NODE_ENV !== 'production') {
-          if (render !== defaultLinkRenderer) {
-            console.warn(
-              `Deprecation Warning: Passing a "render" prop to "<Link>" is deprecated. From Navi 0.14, ` +
-                `you'll need to use the "useLinkProps()" and "useActive()" hooks instead.`,
-            )
-          }
+    return (
+      <a
+        className={`${className || ''} ${(active && activeClassName) || ''}`}
+        style={
+          style && activeStyle
+            ? Object.assign({}, style, active ? activeStyle : {})
+            : undefined
         }
-      }, [render])
-
-      return (
-        <LinkContext.Provider value={context as LinkContext}>
-          {render!({
-            active,
-            activeClassName: props.activeClassName,
-            activeStyle: props.activeStyle,
-            anchorProps: context as LinkContext,
-            children: props.children,
-            className: props.className,
-            disabled: props.disabled,
-            tabIndex: props.tabIndex,
-            hidden: props.hidden,
-            href: linkProps.href,
-            id: props.id,
-            lang: props.lang,
-            style: props.style,
-            target: props.target,
-            title: props.title,
-            onClick: context.onClick,
-          })}
-        </LinkContext.Provider>
-      )
-    },
-  ),
-  { Anchor: LinkAnchor },
+        {...rest}
+        {...linkProps}
+        // Don't handle events on links with a `target` prop.
+        onClick={props.target ? onClickProp : onClick}
+        onMouseEnter={props.target ? onMouseEnterProp : onMouseEnter}
+      />
+    )
+  },
 )
-
-function defaultLinkRenderer(props: LinkRendererProps) {
-  let {
-    active,
-    activeClassName,
-    activeStyle,
-    children,
-    className,
-    hidden,
-    style,
-  } = props
-
-  return (
-    <LinkAnchor
-      children={children}
-      className={`${className || ''} ${(active && activeClassName) || ''}`}
-      hidden={hidden}
-      style={Object.assign({}, style, active ? activeStyle : {})}
-      fromDefaultRenderer
-    />
-  )
-}
-
-Link.defaultProps = {
-  render: defaultLinkRenderer,
-}
