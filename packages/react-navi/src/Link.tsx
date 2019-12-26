@@ -5,29 +5,19 @@ import {
   joinPaths,
   modifyTrailingSlash,
 } from 'navi'
-import { NaviContext } from './NaviContext'
 import {
   HashScrollContext,
   HashScrollBehavior,
   scrollToHash,
 } from './HashScroll'
+import { NaviContext } from './NaviContext'
 
 export interface UseLinkPropsOptions {
-  children?: any
-  className?: string
   disabled?: boolean
   hashScrollBehavior?: HashScrollBehavior
-  hidden?: boolean
   href: string | Partial<URLDescriptor>
-  id?: string
-  lang?: string
   prefetch?: boolean
-  rel?: string
   state?: object
-  style?: object
-  tabIndex?: number
-  target?: string
-  title?: string
   onClick?: React.MouseEventHandler<HTMLAnchorElement>
 }
 
@@ -103,9 +93,7 @@ export const useLinkProps = ({
   href,
   prefetch,
   state,
-  target,
   onClick,
-  ...rest
 }: UseLinkPropsOptions) => {
   let hashScrollBehaviorFromContext = React.useContext(HashScrollContext)
   let context = React.useContext(NaviContext)
@@ -161,11 +149,6 @@ export const useLinkProps = ({
           onClick(event)
         }
 
-        // Let the browser handle targets natively
-        if (target) {
-          return
-        }
-
         // Sanity check
         if (!routeURL) {
           return
@@ -188,44 +171,26 @@ export const useLinkProps = ({
         }
       }
     },
-    [
-      disabled,
-      onClick,
-      target,
-      linkURL && linkURL.href,
-      routeURL && routeURL.href,
-    ],
+    [disabled, onClick, linkURL && linkURL.href, routeURL && routeURL.href],
   )
 
   return {
-    disabled,
     onClick: handleClick,
     href: linkURL ? linkURL.href : (href as string),
-    ...rest,
   }
 }
 
-export interface LinkProps {
+export interface LinkProps
+  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
   active?: boolean
   activeClassName?: string
   activeStyle?: object
-  children?: any
-  className?: string
   disabled?: boolean
   exact?: boolean
   hashScrollBehavior?: HashScrollBehavior
-  hidden?: boolean
   href: string | Partial<URLDescriptor>
-  id?: string
-  lang?: string
   prefetch?: boolean
   ref?: React.Ref<HTMLAnchorElement>
-  rel?: string
-  style?: object
-  tabIndex?: number
-  target?: string
-  title?: string
-  onClick?: React.MouseEventHandler<HTMLAnchorElement>
 
   render?: (props: LinkRendererProps) => any
 }
@@ -246,7 +211,7 @@ export interface LinkRendererProps {
   style?: object
   target?: string
   title?: string
-  onClick: React.MouseEventHandler<any>
+  onClick?: React.MouseEventHandler<any>
 }
 
 export interface LinkAnchorProps extends LinkContext {}
@@ -330,19 +295,20 @@ export const Link:
         activeClassName,
         activeStyle,
         children,
+        disabled,
         exact,
         hashScrollBehavior,
-        href,
-        onClick,
+        href: hrefProp,
+        onClick: onClickProp,
         prefetch,
         render,
         ...rest
       } = props
 
-      let linkProps = useLinkProps({
+      let { onClick, href } = useLinkProps({
         hashScrollBehavior,
-        href,
-        onClick,
+        href: hrefProp,
+        onClick: onClickProp,
         prefetch,
       })
 
@@ -352,10 +318,13 @@ export const Link:
       }
 
       let context = {
-        children,
         ...rest,
-        ...linkProps,
+        children,
+        href,
         ref: anchorRef,
+
+        // Don't capture clicks on links with a `target` prop.
+        onClick: props.target ? onClickProp : onClick,
       }
 
       React.useEffect(() => {
@@ -370,24 +339,24 @@ export const Link:
       }, [render])
 
       return (
-        <LinkContext.Provider value={context}>
+        <LinkContext.Provider value={context as LinkContext}>
           {render!({
             active,
             activeClassName: props.activeClassName,
             activeStyle: props.activeStyle,
-            anchorProps: context,
+            anchorProps: context as LinkContext,
             children: props.children,
             className: props.className,
             disabled: props.disabled,
             tabIndex: props.tabIndex,
             hidden: props.hidden,
-            href: linkProps.href,
+            href: href,
             id: props.id,
             lang: props.lang,
             style: props.style,
             target: props.target,
             title: props.title,
-            onClick: linkProps.onClick,
+            onClick: context.onClick,
           })}
         </LinkContext.Provider>
       )
