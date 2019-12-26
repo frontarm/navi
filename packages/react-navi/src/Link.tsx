@@ -23,6 +23,7 @@ export interface UseLinkPropsOptions {
   lang?: string
   prefetch?: boolean
   rel?: string
+  state?: object
   style?: object
   tabIndex?: number
   target?: string
@@ -101,6 +102,7 @@ export const useLinkProps = ({
   hashScrollBehavior,
   href,
   prefetch,
+  state,
   target,
   onClick,
   ...rest
@@ -175,7 +177,7 @@ export const useLinkProps = ({
           let isSamePathname =
             modifyTrailingSlash(linkURL.pathname, 'remove') ===
             modifyTrailingSlash(routeURL.pathname, 'remove')
-          navigation.navigate(linkURL)
+          navigation.navigate(linkURL, state ? { state } : undefined)
           if (
             (isSamePathname || linkURL.pathname === '') &&
             linkURL.hash === routeURL.hash &&
