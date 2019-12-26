@@ -199,11 +199,6 @@ export function useView({
 }
 
 export interface ViewProps {
-  /**
-   * A render function that will be used to render the selected Chunk.
-   */
-  children?: (view: any, route: Route) => React.ReactNode
-
   disableScrolling?: boolean
   hashScrollBehavior?: HashScrollBehavior
 
@@ -218,14 +213,12 @@ export interface ViewProps {
   where?: (Chunk: Chunk) => boolean
 }
 
-export const View: React.SFC<ViewProps> = function View({
-  children,
+export const View: React.FunctionComponent<ViewProps> = function View({
   disableScrolling,
   hashScrollBehavior,
   renderHead,
   where,
 }: ViewProps) {
-  let context = React.useContext(NaviContext)
   let result = useView({
     disableScrolling,
     hashScrollBehavior,
@@ -233,34 +226,8 @@ export const View: React.SFC<ViewProps> = function View({
     where,
   })
 
-  React.useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      if (children) {
-        console.warn(
-          `Deprecation Warning: Passing a render prop for "<View>" children is deprecated. From Navi 0.14, ` +
-            `you'll need to use the "useView()" hook instead.`,
-        )
-      }
-    }
-  }, [children])
-
   if (!result) {
     throw new Error('A Navi <View> was not able to find a view to render.')
   }
-  if (children) {
-    let route = (context.steadyRoute || context.busyRoute)!
-    if (typeof children !== 'function') {
-      throw new Error(
-        `A Navi <View> expects any children to be a function, but instead received "${children}".`,
-      )
-    }
-    return result.connect(
-      <>
-        {result.head}
-        {children(result.content, route)}
-      </>,
-    )
-  } else {
-    return result.element
-  }
+  return result.element
 }
