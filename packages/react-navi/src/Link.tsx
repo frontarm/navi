@@ -16,9 +16,10 @@ export interface UseLinkPropsOptions {
   disabled?: boolean
   hashScrollBehavior?: HashScrollBehavior
   href: string | Partial<URLDescriptor>
-  prefetch?: boolean
+  prefetch?: boolean | 'hover' | 'mount'
   state?: object
   onClick?: React.MouseEventHandler<HTMLAnchorElement>
+  onMouseEnter?: React.MouseEventHandler<HTMLAnchorElement>
 }
 
 function isExternalHref(href) {
@@ -94,17 +95,45 @@ export const useLinkProps = ({
   prefetch,
   state,
   onClick,
+  onMouseEnter,
 }: UseLinkPropsOptions) => {
-  let hashScrollBehaviorFromContext = React.useContext(HashScrollContext)
-  let context = React.useContext(NaviContext)
-  let navigation = context.navigation
+  if (prefetch && state) {
+    prefetch = false
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(
+        `Warning: A <Link> component received both "prefetch" and "state" ` +
+          `props, but links with state cannot be prefetched. Skipping prefetch.`,
+      )
+    }
+  }
+
+  if (prefetch === true) {
+    prefetch = 'mount'
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(
+        `Warning: A <Link> component received a "prefetch" value of "true". ` +
+          `This value is no longer supported - please set it to "mount" instead.`,
+      )
+    }
+  }
+
+  // Prefetch on hover by default.
+  if (prefetch === undefined) {
+    prefetch = 'hover'
+  }
+
+  const hashScrollBehaviorFromContext = React.useContext(HashScrollContext)
+  const context = React.useContext(NaviContext)
+  const navigation = context.navigation
 
   if (hashScrollBehavior === undefined) {
     hashScrollBehavior = hashScrollBehaviorFromContext
   }
 
-  let route = context.steadyRoute || context.busyRoute
-  let routeURL = route && route.url
+  const route = context.steadyRoute || context.busyRoute
+  const routeURL = React.useMemo(() => route && route.url, [route?.url.href])
   let linkURL = getLinkURL(href, routeURL)
 
   if (!isExternalHref(href)) {
@@ -117,17 +146,58 @@ export const useLinkProps = ({
     linkURL = createURLDescriptor(resolvedHref)
   }
 
+  // We need a URL descriptor that stays referentially equal so that we don't
+  // trigger prefetches more than we'd like.
+  const memoizedLinkURL = React.useMemo(() => linkURL, [linkURL?.href])
+
+  let doPrefetch = React.useMemo(() => {
+    let hasPrefetched = false
+
+    return () => {
+      if (
+        !hasPrefetched &&
+        memoizedLinkURL &&
+        memoizedLinkURL.pathname &&
+        navigation
+      ) {
+        hasPrefetched = true
+        navigation.prefetch(memoizedLinkURL).catch(e => {
+          console.warn(
+            `A <Link> tried to prefetch "${
+              memoizedLinkURL!.pathname
+            }", but the ` + `router was unable to fetch this path.`,
+          )
+        })
+      }
+    }
+  }, [memoizedLinkURL, navigation])
+
   // Prefetch on mount if required, or if `prefetch` becomes `true`.
   React.useEffect(() => {
-    if (prefetch && navigation && linkURL && linkURL.pathname) {
-      navigation.prefetch(linkURL).catch(e => {
-        console.warn(
-          `A <Link> tried to prefetch "${linkURL!.pathname}", but the ` +
-            `router was unable to fetch this path.`,
-        )
-      })
+    if (prefetch === true) {
+      doPrefetch()
     }
-  }, [navigation, prefetch, linkURL && linkURL.href])
+  }, [prefetch, doPrefetch])
+
+  let handleMouseEnter = React.useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      if (prefetch === 'hover') {
+        if (onMouseEnter) {
+          onMouseEnter(event)
+        }
+
+        if (disabled) {
+          event.preventDefault()
+          return
+        }
+
+        if (!event.defaultPrevented) {
+          doPrefetch()
+        }
+      }
+    },
+    [disabled, doPrefetch, onMouseEnter, prefetch],
+  )
 
   let handleClick = React.useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -176,20 +246,18 @@ export const useLinkProps = ({
 
   return {
     onClick: handleClick,
+    onMouseEnter: handleMouseEnter,
     href: linkURL ? linkURL.href : (href as string),
   }
 }
 
 export interface LinkProps
-  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+  extends UseLinkPropsOptions,
+    Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
   active?: boolean
   activeClassName?: string
   activeStyle?: object
-  disabled?: boolean
   exact?: boolean
-  hashScrollBehavior?: HashScrollBehavior
-  href: string | Partial<URLDescriptor>
-  prefetch?: boolean
   ref?: React.Ref<HTMLAnchorElement>
 
   render?: (props: LinkRendererProps) => any
@@ -300,31 +368,35 @@ export const Link:
         hashScrollBehavior,
         href: hrefProp,
         onClick: onClickProp,
+        onMouseEnter: onMouseEnterProp,
         prefetch,
         render,
+        state,
         ...rest
       } = props
 
-      let { onClick, href } = useLinkProps({
+      let linkProps = useLinkProps({
         hashScrollBehavior,
         href: hrefProp,
         onClick: onClickProp,
+        onMouseEnter: onMouseEnterProp,
         prefetch,
+        state,
       })
 
-      let actualActive = useActive(href, { exact: !!exact })
+      let actualActive = useActive(linkProps.href, { exact: !!exact })
       if (active === undefined) {
         active = actualActive
       }
 
       let context = {
         ...rest,
+        ...linkProps,
         children,
-        href,
         ref: anchorRef,
 
         // Don't capture clicks on links with a `target` prop.
-        onClick: props.target ? onClickProp : onClick,
+        onClick: props.target ? onClickProp : linkProps.onClick,
       }
 
       React.useEffect(() => {
@@ -350,7 +422,7 @@ export const Link:
             disabled: props.disabled,
             tabIndex: props.tabIndex,
             hidden: props.hidden,
-            href: href,
+            href: linkProps.href,
             id: props.id,
             lang: props.lang,
             style: props.style,
