@@ -83,13 +83,6 @@ export function createMapping(pattern: string, matcher: Matcher<any>): Mapping {
     }
     processedPattern = processedPattern.replace(/\/{2,}/g, '/')
   }
-  if (!/^([A-Za-z0-9\$\-_\.+!*'\(\),\/]|\/:)+$/.test(processedPattern)) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(
-        `The pattern "${pattern}" uses non-URL safe characters. The URL-safe characters are: A-Z a-z 0-9 $ - _ . + ! * ' ( ) ,`,
-      )
-    }
-  }
 
   if (processedPattern.length === 0) {
     throw new Error(`You cannot use an empty string "" as a pattern!`)
