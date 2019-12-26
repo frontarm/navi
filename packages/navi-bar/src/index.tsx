@@ -1,5 +1,0 @@
-export { defaultTheme } from './defaultTheme'
-export { NaviBar } from './NaviBar'
-export { CloseOverlayContext } from './CloseOverlay'
-export { Item, ItemType, GroupItem as SwitchItem, PageItem } from './items'
-export * from './TableOfContents'
