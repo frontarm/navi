@@ -1,11 +1,7 @@
 import { Chunk } from './Chunks'
 import { URLDescriptor } from './URLTools'
 
-export type RouteType =
-  | 'busy'
-  | 'ready'
-  | 'error'
-  | 'redirect'
+export type RouteType = 'busy' | 'ready' | 'error' | 'redirect'
 
 export interface Route<Data = any> {
   type: RouteType
@@ -13,7 +9,7 @@ export interface Route<Data = any> {
   method: string
   chunks: Chunk[]
   lastChunk: Chunk
-  
+
   /**
    * When "type" is "redirect", contains the redirected to URL.
    */
@@ -30,7 +26,7 @@ export interface Route<Data = any> {
   data?: Data
 
   /**
-   * An object contains HTTP headers added by header chunks. 
+   * An object contains HTTP headers added by header chunks.
    */
   headers: { [name: string]: string }
 
@@ -66,49 +62,6 @@ export interface Route<Data = any> {
 }
 
 export function routeReducer(route: Route | undefined, chunk: Chunk): Route {
-  route = routeReducerWithoutCompat(route, chunk)
-  Object.defineProperties(route, {
-    meta: {
-      configurable: true,
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "route.meta" will be removed in Navi 0.13. Please use "route.data" instead.`)
-        }
-        return route!.data
-      },
-    },
-    content: {
-      configurable: true,
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.13. Please use "route.views" instead.`)
-        }
-        return chunk.view
-      },
-    },
-    segments: {
-      configurable: true,
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.13. Please use "route.views" instead.`)
-        }
-        return route!.chunks
-      },
-    },
-    lastSegment: {
-      configurable: true,
-      get: () => {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`Deprecation Warning: "route.content" will be removed in Navi 0.13. Please use "route.views" instead.`)
-        }
-        return route!.lastChunk
-      },
-    }
-  })
-  return route
-}
-
-function routeReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Route {
   if (route) {
     if (chunk.type === 'url') {
       return {
@@ -126,7 +79,7 @@ function routeReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Rout
     lastChunk: chunk,
     method: (chunk.request && chunk.request.method)!,
     chunks: route ? route.chunks.concat(chunk) : [chunk],
-    
+
     data: route ? route.data : {},
     headers: route ? route.headers : {},
     heads: route ? route.heads : [],
@@ -136,7 +89,7 @@ function routeReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Rout
     url: route ? route.url : chunk.url,
     views: route ? route.views : [],
   }
-  
+
   switch (chunk.type) {
     case 'busy':
       return { ...base, type: 'busy' }
@@ -144,26 +97,29 @@ function routeReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Rout
       return {
         ...base,
         type: 'ready',
-        data: { ...base.data, ...chunk.data }
+        data: { ...base.data, ...chunk.data },
       }
     case 'error':
       return {
         ...base,
         type: 'error',
         error: chunk.error,
-        status: (base.status && base.status >= 400) ? base.status : (chunk.error.status || 500),
+        status:
+          base.status && base.status >= 400
+            ? base.status
+            : chunk.error.status || 500,
       }
     case 'head':
       return {
         ...base,
         type: 'ready',
-        heads: base.heads.concat(chunk.head)
+        heads: base.heads.concat(chunk.head),
       }
     case 'headers':
       return {
         ...base,
         type: 'ready',
-        headers: { ...base.headers, ...chunk.headers }
+        headers: { ...base.headers, ...chunk.headers },
       }
     case 'redirect':
       return { ...base, type: 'redirect', to: chunk.to }
@@ -171,7 +127,7 @@ function routeReducerWithoutCompat(route: Route | undefined, chunk: Chunk): Rout
       return {
         ...base,
         type: 'ready',
-        state: { ...base.state, ...chunk.state }
+        state: { ...base.state, ...chunk.state },
       }
     case 'status':
       return { ...base, type: 'ready', status: chunk.status }
