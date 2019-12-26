@@ -1,7 +1,52 @@
 Changelog
 =========
 
+
+0.14.0
+------
+
+### New features
+
+- The `<Router hashScrollBehavior>` prop and the `<HashScroll>` component now accept a value of "none" to completely scrolling completely, or a function that can be used to implement custom scrolling behaviors. This will allow you to [use Navi with react-native apps](https://github.com/frontarm/navi/issues/154).
+
+```js
+<Router hashScrollBehavior="none">
+  ...
+</Router>
+```
+
+- The `<Link>` component now accepts a `state` prop, allowing you to pass state to your routes from the view.
+
+- The `<Link prefetch>` prop now supports a value of `hover`, which is the new default. When prefetch is set to `hover`, the link's content will be prefetched whenever the user's mouse hovers over the link, using an `onMouseEnter` handler. This can be disabled by passing a `prefetch={false}` prop.
+
+
+### Removed features
+
+- Removed warning when patterns contain characters that aren't URL safe. For reason, [see here](https://github.com/frontarm/navi/issues/149).
+
+- Remove deprecated `navigation` methods:
+  * `getSteadyValue()` - use `getRoute()` instead
+  * `steady()` - use `getRoute()` instead
+
+- Remove deprecated route properties:
+  * `meta`
+  * `content`
+  * `segments`
+  * `lastSegment`
+
+- Remove support for `render` props in favor of hooks:
+  * Instead of `<Link render>`, use `useLinkProps()`
+  * Instead of `<View children>`, use `useView()`
+  * Instead of `<CurrentRoute>`, use `useCurrentRoute()`
+  * Instead of `<LoadingRoute>`, use `useLoadingRoute()`
+  * Instead of `<NaviConsumer>`, use `useNavigation()`
+
+If you still need any of these render props, you can create your own custom
+component that accepts a render prop and uses the hook internally.
+
+
 0.13.6
+------
 
 - Bind `navigate` method of Navigation class, so that it can be destructured from return of `useNavigation()`
 
