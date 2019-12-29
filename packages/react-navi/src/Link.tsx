@@ -302,6 +302,7 @@ export const Link: React.FunctionComponent<LinkProps> = React.forwardRef(
 
     return (
       <a
+        ref={anchorRef}
         className={`${className || ''} ${(active && activeClassName) || ''}`}
         style={
           style && activeStyle
