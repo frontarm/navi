@@ -174,7 +174,7 @@ export const useLinkProps = ({
 
   // Prefetch on mount if required, or if `prefetch` becomes `true`.
   React.useEffect(() => {
-    if (prefetch === true) {
+    if (prefetch === 'mount') {
       doPrefetch()
     }
   }, [prefetch, doPrefetch])
