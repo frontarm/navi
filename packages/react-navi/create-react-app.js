@@ -46,7 +46,7 @@ async function renderPageToString({
   })
 
   // Wait for any asynchronous content to finish fetching
-  let route = await navigation.getSteadyValue()
+  let route = await navigation.getRoute()
 
   // Extract the navigation state into a script tag to bootstrap the browser Navigation.
   let state = `<script>window.__NAVI_STATE__=${JSON.stringify(
