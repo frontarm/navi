@@ -22,7 +22,7 @@ export interface UseLinkPropsOptions {
   onMouseEnter?: React.MouseEventHandler<HTMLAnchorElement>
 }
 
-function isExternalHref(href) {
+function isExternalHref(href: string | Partial<URLDescriptor>) {
   // If this is an external link, return undefined so that the native
   // response will be used.
   return (
@@ -43,6 +43,7 @@ function getLinkURL(
     }
     return createURLDescriptor(href)
   }
+  return undefined
 }
 
 /**
@@ -161,7 +162,7 @@ export const useLinkProps = ({
         navigation
       ) {
         hasPrefetched = true
-        navigation.prefetch(memoizedLinkURL).catch(e => {
+        navigation.prefetch(memoizedLinkURL).catch(_e => {
           console.warn(
             `A <Link> tried to prefetch "${
               memoizedLinkURL!.pathname
