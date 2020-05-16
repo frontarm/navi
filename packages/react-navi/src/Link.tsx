@@ -271,9 +271,9 @@ export const Link: React.FunctionComponent<LinkProps> = React.forwardRef(
   (props: LinkProps, anchorRef: React.Ref<HTMLAnchorElement>) => {
     let {
       active,
-      activeClassName,
-      activeStyle,
-      className,
+      activeClassName = '',
+      activeStyle = {},
+      className = '',
       disabled,
       exact,
       hashScrollBehavior,
@@ -282,7 +282,7 @@ export const Link: React.FunctionComponent<LinkProps> = React.forwardRef(
       onMouseEnter: onMouseEnterProp,
       prefetch,
       state,
-      style,
+      style = {},
       ...rest
     } = props
 
@@ -303,12 +303,11 @@ export const Link: React.FunctionComponent<LinkProps> = React.forwardRef(
     return (
       <a
         ref={anchorRef}
-        className={`${className || ''} ${(active && activeClassName) || ''}`}
-        style={
-          style && activeStyle
-            ? Object.assign({}, style, active ? activeStyle : {})
-            : undefined
-        }
+        className={`${className} ${(active ? activeClassName : '')}`}
+        style={{
+          ...style,
+          ...(active ? activeStyle : {})
+        }}
         {...rest}
         {...linkProps}
         // Don't handle events on links with a `target` prop.
