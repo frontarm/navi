@@ -23,17 +23,17 @@ describe("integration", () => {
         expect(route.views[2]).toBe('basic-example')
         expect(route.title).toBe('Basic example')
 
-        nav.navigate('/examples/advanced?referrer=frontarm')
+        nav.navigate('/examples/advanced?referrer=frontend+armory')
 
         firstChunk = nav.getCurrentValue().chunks[0]
         route = nav.getCurrentValue()
         
-        expect(firstChunk.url.query).toEqual({ referrer: 'frontarm' })
+        expect(firstChunk.url.query).toEqual({ referrer: 'frontend armory' })
         expect(route.type).toEqual('busy')
 
         route = await nav.getRoute()
 
-        expect(route.url.query).toEqual({ referrer: 'frontarm' })
+        expect(route.url.query).toEqual({ referrer: 'frontend armory' })
         expect(route.title).toBe('Advanced example')
         expect(route.data['isPaywalled']).toBe(true)
         expect(route.views[route.views.length - 1]).toBe('please-login')
