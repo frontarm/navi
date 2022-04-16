@@ -1,15 +1,9 @@
-<p align="center">
-  <a href='https://frontarm.com/navi/'>
-    <img src='/media/logo.png' height='100' alt='Navi Logo' aria-label='frontarm.com/navi' />
-  </a>
-</p>
-
 <h2 align="center">
-  Navi
+  Navi (unmainted)
 </h2>
 
 <p align="center">
-  Declarative, asynchronous routing for React.
+  <strong>Unmaintained</strong> declarative, asynchronous routing for React.
 </p>
 
 <p align="center">
@@ -17,7 +11,7 @@
   <a href="https://travis-ci.org/frontarm/navi"><img alt="Build" src="https://travis-ci.org/frontarm/navi.svg?branch=master"></a>
 </p>
 
-**Navi is a JavaScript library for declaratively mapping URLs to asynchronous content.**
+**Navi is an *unmaintained* JavaScript library for declaratively mapping URLs to asynchronous content.**
 
 It comes with:
 
