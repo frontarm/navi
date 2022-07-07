@@ -10,7 +10,7 @@ export namespace NotFoundBoundary {
   export type Props = NotFoundBoundaryProps
 }
 
-export const NotFoundBoundary: React.SFC<NotFoundBoundaryProps> = function ErrorBoundary(props: NotFoundBoundaryProps) {
+export const NotFoundBoundary: React.FC<NotFoundBoundaryProps> = function ErrorBoundary(props: NotFoundBoundaryProps) {
   return (
     <NaviContext.Consumer>
       {context => <InnerNotFoundBoundary context={context} {...props} />}
