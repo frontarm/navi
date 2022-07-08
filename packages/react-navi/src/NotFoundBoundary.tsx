@@ -4,6 +4,7 @@ import { NaviContext } from './NaviContext'
 
 export interface NotFoundBoundaryProps {
   render: (error: NotFoundError) => React.ReactNode,
+  children?: React.ReactNode | undefined,
 }
 
 export namespace NotFoundBoundary {
