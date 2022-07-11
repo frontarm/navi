@@ -4,8 +4,9 @@ import { HashScroll, HashScrollBehavior } from './HashScroll'
 import { NaviContext } from './NaviContext'
 
 export interface NaviProviderProps {
-  hashScrollBehavior?: HashScrollBehavior
-  navigation: Navigation
+  hashScrollBehavior?: HashScrollBehavior,
+  navigation: Navigation,
+  children?: React.ReactNode | undefined,
 }
 
 export namespace NaviProvider {
