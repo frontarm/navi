@@ -1,5 +1,5 @@
 <h2 align="center">
-  Navi (unmainted)
+  Navi (unmaintained)
 </h2>
 
 <p align="center">
