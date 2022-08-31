@@ -98,7 +98,8 @@ export function parseQuery(queryString?: string, leadingCharacter='?'): Params {
   let queryParts = queryString.slice(1).split('&')
   for (let i = 0, len = queryParts.length; i < len; i++) {
       const x = queryParts[i].split('=')
-      query[x[0]] = x[1] ? decodeURIComponent(x[1]) : ''
+      const value = x[1] ? x[1].replace(/\+/g, '%20') : ''
+      query[x[0]] = decodeURIComponent(value)
   }
   return query
 }
